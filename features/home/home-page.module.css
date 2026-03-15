@@ -1,0 +1,401 @@
+.page {
+  display: grid;
+  gap: var(--space-7);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.75fr);
+  gap: var(--space-6);
+  padding: var(--space-8);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at top right, rgba(184, 94, 59, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(245, 239, 228, 0.95));
+  box-shadow: var(--shadow-panel);
+}
+
+.heroCopy {
+  max-width: 42rem;
+}
+
+.eyebrow {
+  margin-bottom: var(--space-3);
+  color: var(--color-clay-terracotta);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.heroCopy h1,
+.sectionIntro h2,
+.narrativeCard h2,
+.newsletterCard h2 {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.04em;
+}
+
+.heroCopy h1 {
+  font-size: clamp(3rem, 6vw, 5rem);
+  line-height: 0.95;
+}
+
+.lede {
+  max-width: 38rem;
+  margin-top: var(--space-5);
+  color: rgba(34, 33, 38, 0.82);
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.primaryAction,
+.secondaryAction,
+.newsletterButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 1.3rem;
+  border-radius: 999px;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.primaryAction,
+.newsletterButton {
+  border: 1px solid var(--color-clay-terracotta);
+  background: var(--color-clay-terracotta);
+  color: var(--color-white);
+}
+
+.secondaryAction {
+  border: 1px solid var(--color-border-strong);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--color-charcoal-ink);
+}
+
+.primaryAction:hover,
+.secondaryAction:hover,
+.newsletterButton:hover,
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible,
+.newsletterButton:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.heroAside {
+  display: flex;
+  align-items: stretch;
+}
+
+.statsPanel {
+  display: grid;
+  width: 100%;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(34, 33, 38, 0.94);
+  color: var(--color-wool-cream);
+}
+
+.panelLabel {
+  color: rgba(245, 239, 228, 0.72);
+  font-size: 0.76rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.statsGrid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.statCard {
+  display: grid;
+  gap: 0.25rem;
+  padding: var(--space-4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.statCard strong {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.statCard span {
+  color: rgba(245, 239, 228, 0.78);
+  line-height: 1.5;
+}
+
+.trustBanner {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.trustBanner p,
+.badgeCard {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.65);
+  color: rgba(34, 33, 38, 0.82);
+  text-align: center;
+}
+
+.sectionIntro {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 42rem;
+  margin-bottom: var(--space-5);
+}
+
+.sectionIntro h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1;
+}
+
+.sectionBody {
+  color: rgba(34, 33, 38, 0.78);
+  line-height: 1.75;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.categoryCard,
+.productCard,
+.narrativeCard,
+.testimonialCard,
+.newsletterCard {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-soft);
+}
+
+.categoryCard {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  min-height: 15rem;
+  padding: var(--space-5);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(245, 239, 228, 0.94)),
+    linear-gradient(135deg, rgba(184, 94, 59, 0.08), transparent);
+}
+
+.categoryIndex {
+  color: rgba(34, 33, 38, 0.45);
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+}
+
+.categoryCard h3,
+.productMeta h3 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+}
+
+.categoryCard p,
+.productMeta p,
+.narrativeCard p,
+.testimonialCard p {
+  color: rgba(34, 33, 38, 0.78);
+  line-height: 1.7;
+}
+
+.featuredLayout,
+.testimonialsLayout,
+.badgesSection {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.featuredGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.productCard {
+  overflow: hidden;
+}
+
+.productImagePlaceholder {
+  display: flex;
+  min-height: 18rem;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  background:
+    linear-gradient(135deg, rgba(34, 33, 38, 0.08), rgba(184, 94, 59, 0.16)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(245, 239, 228, 0.4));
+}
+
+.productImagePlaceholder span {
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(34, 33, 38, 0.78);
+}
+
+.productMeta {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+}
+
+.productPrice {
+  color: var(--color-clay-terracotta);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.narrativeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.narrativeCard {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.narrativeCard h2 {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  line-height: 1.05;
+}
+
+.badgesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.badgeCard {
+  font-size: 0.95rem;
+}
+
+.testimonialsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.testimonialCard {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.testimonialCard footer {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.testimonialCard footer strong {
+  font-size: 0.98rem;
+}
+
+.testimonialCard footer span {
+  color: rgba(34, 33, 38, 0.65);
+  font-size: 0.9rem;
+}
+
+.newsletterCard {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(245, 239, 228, 0.95)),
+    radial-gradient(circle at top right, rgba(184, 94, 59, 0.12), transparent 38%);
+}
+
+.newsletterForm {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.newsletterLabel {
+  font-size: 0.9rem;
+}
+
+.newsletterControls {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.newsletterInput {
+  flex: 1;
+  min-height: 3.4rem;
+  padding: 0 1rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--color-charcoal-ink);
+  font: inherit;
+}
+
+.newsletterInput::placeholder {
+  color: rgba(34, 33, 38, 0.48);
+}
+
+@media (max-width: 1100px) {
+  .categoryGrid,
+  .badgesGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero,
+  .featuredGrid,
+  .narrativeGrid,
+  .testimonialsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: var(--space-6);
+  }
+
+  .trustBanner,
+  .categoryGrid,
+  .badgesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .newsletterControls {
+    flex-direction: column;
+  }
+
+  .primaryAction,
+  .secondaryAction,
+  .newsletterButton {
+    width: 100%;
+  }
+}
