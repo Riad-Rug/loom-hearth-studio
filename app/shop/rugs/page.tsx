@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { CatalogPageView } from "@/features/catalog/catalog-page-view";
 
 export default function RugsPage() {
-  return (
-    <PlaceholderPanel
-      title="Rugs listing placeholder"
-      body="Rug category browsing is reserved here. The unique-item product flow is defined in shared types only."
-    />
-  );
+  return <CatalogPageView category="rugs" />;
 }

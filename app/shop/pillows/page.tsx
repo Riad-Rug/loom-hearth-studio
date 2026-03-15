@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { CatalogPageView } from "@/features/catalog/catalog-page-view";
 
 export default function PillowsPage() {
-  return (
-    <PlaceholderPanel
-      title="Pillows placeholder"
-      body="This route exists to preserve the PRD structure while catalog features remain unimplemented."
-    />
-  );
+  return <CatalogPageView category="pillows" />;
 }

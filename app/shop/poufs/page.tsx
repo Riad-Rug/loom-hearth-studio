@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { CatalogPageView } from "@/features/catalog/catalog-page-view";
 
 export default function PoufsPage() {
-  return (
-    <PlaceholderPanel
-      title="Poufs placeholder"
-      body="Multi-unit catalog pages are scaffolded only. Inventory and variant handling are not implemented yet."
-    />
-  );
+  return <CatalogPageView category="poufs" />;
 }

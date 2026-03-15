@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { CatalogPageView } from "@/features/catalog/catalog-page-view";
 
 export default function ShopPage() {
-  return (
-    <PlaceholderPanel
-      title="Shop placeholder"
-      body="Catalog browsing will be implemented against the product repository and category models."
-    />
-  );
+  return <CatalogPageView />;
 }
