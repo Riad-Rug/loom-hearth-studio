@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
 import { siteConfig } from "@/config/site";
+import { CartDrawer } from "@/features/cart/cart-drawer";
 
 export function SiteHeader() {
   return (
@@ -26,6 +27,9 @@ export function SiteHeader() {
               </Link>
             ))}
           </nav>
+          <div className="site-header__actions">
+            <CartDrawer />
+          </div>
         </div>
       </Container>
     </header>
