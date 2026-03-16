@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { BlogIndexPageView } from "@/features/blog/blog-index-page-view";
 
 export default function BlogPage() {
-  return (
-    <PlaceholderPanel
-      title="Blog placeholder"
-      body="Blog listing and article rendering will be implemented once content persistence is wired."
-    />
-  );
+  return <BlogIndexPageView />;
 }
