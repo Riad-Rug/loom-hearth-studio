@@ -1,9 +1,12 @@
 import type { PaymentStatus } from "@/types/domain/order";
 
 import type {
+  StripeCheckoutConfirmationStatus,
   StripeCheckoutMissingClientConfig,
   StripeCheckoutMissingServerConfig,
   StripeIntegrationMode,
+  StripeCheckoutWebhookEndpointPath,
+  StripeCheckoutWebhookStatus,
 } from "@/lib/stripe/config";
 
 export type StripePaymentMethod = "stripe-placeholder";
@@ -17,6 +20,10 @@ export type StripeCheckoutServiceStatus =
 export type StripeCheckoutExecutionStatus =
   | "missing-server-config"
   | "ready";
+export type StripeCheckoutWebhookEventType =
+  | "checkout.session.completed"
+  | "checkout.session.async_payment_failed"
+  | "checkout.session.expired";
 
 export type StripeOrderPaymentInput = {
   checkoutMode: "guest";
@@ -88,6 +95,70 @@ export type StripeCheckoutExecutionAttemptState = {
   message: string | null;
 };
 
+export type StripeCheckoutWebhookSession = {
+  id: string;
+  mode: "checkout";
+  paymentStatus: "paid" | "unpaid" | "no_payment_required";
+  status: "complete" | "expired" | "open";
+  paymentIntentId?: string;
+  customerEmail?: string;
+  customerDetails?: {
+    email?: string;
+  };
+  metadata: {
+    checkoutMode: StripeOrderPaymentInput["checkoutMode"];
+  };
+};
+
+export type StripeCheckoutWebhookEvent = {
+  id: string;
+  type: StripeCheckoutWebhookEventType;
+  livemode: boolean;
+  account?: string;
+  apiVersion?: string;
+  createdAt?: string;
+  data: {
+    object: StripeCheckoutWebhookSession;
+  };
+};
+
+export type StripeCheckoutWebhookBoundary = {
+  mode: "checkout";
+  endpointPath: StripeCheckoutWebhookEndpointPath;
+  status: StripeCheckoutWebhookStatus;
+  missingServerConfig: StripeCheckoutMissingServerConfig[];
+  supportedEventTypes: ReadonlyArray<StripeCheckoutWebhookEventType>;
+};
+
+export type StripeCheckoutConfirmationBoundary = {
+  mode: "checkout";
+  source: "webhook";
+  webhookEndpointPath: StripeCheckoutWebhookEndpointPath;
+  status: StripeCheckoutConfirmationStatus;
+  missingServerConfig: StripeCheckoutMissingServerConfig[];
+  supportedEventTypes: ReadonlyArray<StripeCheckoutWebhookEventType>;
+};
+
+export type StripeCheckoutPaymentConfirmation = {
+  provider: "stripe";
+  mode: "checkout";
+  source: "webhook";
+  eventId: string;
+  eventType: StripeCheckoutWebhookEventType;
+  paymentStatus: Extract<PaymentStatus, "pending" | "paid" | "failed">;
+  checkoutSessionId: string;
+  paymentIntentId: string | null;
+  customerEmail: string | null;
+  checkoutMode: StripeOrderPaymentInput["checkoutMode"];
+  orderReference: string | null;
+};
+
+export type StripeCheckoutPaymentConfirmationResult = {
+  status: "confirmed" | "ignored" | "configuration-error" | "signature-error";
+  confirmation: StripeCheckoutPaymentConfirmation | null;
+  message: string;
+};
+
 export type StripeCheckoutPaymentDraft = {
   provider: "stripe";
   method: StripePaymentMethod;
@@ -113,9 +184,13 @@ export const stripeContractsTodo = {
   sessionCreation:
     "TODO: Keep the Checkout session request/response contract limited to hosted Checkout session creation only for now.",
   checkoutService:
-    "TODO: Keep the Checkout service boundary scoped to session creation only. Do not add payment confirmation or webhook handling in this slice.",
+    "TODO: Keep the Checkout service boundary scoped to session creation only. Do not mix webhook confirmation into the browser execution path.",
   checkoutExecution:
     "TODO: Hosted Checkout redirect execution is wired. Do not extend this boundary into post-payment processing until later slices.",
+  webhook:
+    "TODO: Verify and parse real Stripe Checkout webhook payloads at a dedicated webhook route before any order or email side effects are added.",
+  confirmation:
+    "TODO: Map supported Checkout webhook events into confirmation status only. Leave order creation, fulfillment, and email side effects for later slices.",
   refund:
     "TODO: Keep refund references typed only; do not implement refund execution until order operations are defined.",
 } as const;

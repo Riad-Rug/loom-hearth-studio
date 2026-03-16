@@ -4,10 +4,17 @@ import { getEnvSnapshot, getPublicEnv } from "@/lib/validation/env";
 export type StripeIntegrationMode = "checkout";
 export const launchStripeIntegrationMode: StripeIntegrationMode = "checkout";
 export type StripeCheckoutServiceMode = "checkout";
+export type StripeCheckoutWebhookEndpointPath = "/api/stripe/webhook";
 export type StripeCheckoutMissingClientConfig = "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY";
 export type StripeCheckoutMissingServerConfig =
   | "STRIPE_SECRET_KEY"
   | "STRIPE_WEBHOOK_SECRET";
+export type StripeCheckoutWebhookStatus =
+  | "missing-server-config"
+  | "ready";
+export type StripeCheckoutConfirmationStatus =
+  | "missing-server-config"
+  | "ready";
 
 export type StripePublicConfig = {
   publishableKey?: string;
@@ -30,6 +37,22 @@ export type StripeCheckoutServiceConfig = {
   successUrl: string;
   cancelUrl: string;
   missingClientConfig: StripeCheckoutMissingClientConfig[];
+  missingServerConfig: StripeCheckoutMissingServerConfig[];
+};
+
+export type StripeCheckoutWebhookConfig = {
+  mode: StripeCheckoutServiceMode;
+  endpointPath: StripeCheckoutWebhookEndpointPath;
+  webhookSecret?: string;
+  status: StripeCheckoutWebhookStatus;
+  missingServerConfig: StripeCheckoutMissingServerConfig[];
+};
+
+export type StripeCheckoutConfirmationConfig = {
+  mode: StripeCheckoutServiceMode;
+  source: "webhook";
+  webhookEndpointPath: StripeCheckoutWebhookEndpointPath;
+  status: StripeCheckoutConfirmationStatus;
   missingServerConfig: StripeCheckoutMissingServerConfig[];
 };
 
@@ -80,6 +103,33 @@ export function getStripeCheckoutServiceConfig(): StripeCheckoutServiceConfig {
   };
 }
 
+export function getStripeCheckoutWebhookConfig(): StripeCheckoutWebhookConfig {
+  const serverConfig = getStripeServerConfig();
+  const missingServerConfig = serverConfig.webhookSecret
+    ? []
+    : (["STRIPE_WEBHOOK_SECRET"] as StripeCheckoutMissingServerConfig[]);
+
+  return {
+    mode: launchStripeIntegrationMode,
+    endpointPath: "/api/stripe/webhook",
+    webhookSecret: serverConfig.webhookSecret,
+    status: missingServerConfig.length ? "missing-server-config" : "ready",
+    missingServerConfig,
+  };
+}
+
+export function getStripeCheckoutConfirmationConfig(): StripeCheckoutConfirmationConfig {
+  const webhookConfig = getStripeCheckoutWebhookConfig();
+
+  return {
+    mode: launchStripeIntegrationMode,
+    source: "webhook",
+    webhookEndpointPath: webhookConfig.endpointPath,
+    status: webhookConfig.status,
+    missingServerConfig: webhookConfig.missingServerConfig,
+  };
+}
+
 export function hasStripePublishableKey() {
   return Boolean(getStripePublicConfig().publishableKey);
 }
@@ -100,5 +150,17 @@ export function hasStripeCheckoutServiceConfig() {
   );
 }
 
+export function hasStripeCheckoutWebhookConfig() {
+  const config = getStripeCheckoutWebhookConfig();
+
+  return Boolean(config.webhookSecret);
+}
+
+export function hasStripeCheckoutConfirmationConfig() {
+  const config = getStripeCheckoutConfirmationConfig();
+
+  return config.status === "ready";
+}
+
 export const stripeConfigTodo =
-  "TODO: Implement the Stripe Checkout execution path, using the fixed Checkout success/cancel URLs and server credentials defined in this boundary.";
+  "TODO: Keep Stripe Checkout as the only launch mode while wiring the remaining webhook verification and payment-confirmation boundary steps in later slices.";
