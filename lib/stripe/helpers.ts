@@ -41,18 +41,34 @@ export function createStripeOrderPaymentInput(input: {
 
 export function createStripeCheckoutPaymentDraft(
   paymentInput: StripeOrderPaymentInput,
+  selectedMode: StripeCheckoutPaymentDraft["mode"],
 ): StripeCheckoutPaymentDraft {
   const config = getStripePublicConfig();
+  const mode = selectedMode ?? config.selectedMode;
+  const publishableKeyReady = Boolean(config.publishableKey);
+  const missingConfig: StripeCheckoutPaymentDraft["missingConfig"] = publishableKeyReady
+    ? []
+    : ["NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"];
+  const isModeSelected = Boolean(mode);
+  const paymentStepStatus = !isModeSelected
+    ? "needs-mode-selection"
+    : publishableKeyReady
+      ? "ready-placeholder"
+      : "mode-selected-missing-config";
 
   return {
     provider: "stripe",
     method: "stripe-placeholder",
-    mode: config.selectedMode,
-    publishableKeyReady: Boolean(config.publishableKey),
+    mode,
+    publishableKeyReady,
+    missingConfig,
+    isModeSelected,
+    isReadyForPlaceholderFlow: isModeSelected,
+    paymentStepStatus,
     session: paymentInput.lineItems.length
       ? {
           id: "stripe-session-placeholder",
-          mode: config.selectedMode,
+          mode,
           status: "placeholder",
         }
       : null,

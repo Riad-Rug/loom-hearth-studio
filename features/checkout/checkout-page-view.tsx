@@ -35,6 +35,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
   const { items, shippingUsd, subtotalUsd, totalUsd } = useCart();
   const {
     canAccessPayment,
+    canAccessReview,
     canAccessShipping,
     continueFromInformation,
     continueFromPayment,
@@ -42,8 +43,10 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     continueFromShipping,
     information,
     orderDraft,
+    paymentState,
     submissionPreview,
     shippingMethod,
+    updatePaymentMode,
     updateInformation,
   } = useCheckout();
   const lineItems =
@@ -80,7 +83,10 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
       priceUsd: item.priceUsd,
     })),
   });
-  const stripePaymentDraft = createStripeCheckoutPaymentDraft(stripeOrderPaymentInput);
+  const stripePaymentDraft = createStripeCheckoutPaymentDraft(
+    stripeOrderPaymentInput,
+    paymentState.selectedMode,
+  );
   const orderSubmissionPayload = createOrderSubmissionPayload({
     orderDraft,
     stripePaymentDraft,
@@ -136,6 +142,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
           <div className={styles.mainCard}>
             {renderStep(step, {
               canAccessPayment,
+              canAccessReview,
               canAccessShipping,
               continueFromInformation,
               continueFromPayment,
@@ -144,9 +151,11 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               information,
               orderDraft,
               orderSubmissionPayload,
+              paymentState,
               submissionPreview: submissionPreview ?? derivedSubmissionPreview,
               shippingMethod,
               stripePaymentDraft,
+              updatePaymentMode,
               updateInformation,
             })}
           </div>
@@ -198,6 +207,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
 
 type CheckoutStepRenderProps = {
   canAccessPayment: boolean;
+  canAccessReview: boolean;
   canAccessShipping: boolean;
   continueFromInformation: () => void;
   continueFromPayment: () => void;
@@ -245,6 +255,9 @@ type CheckoutStepRenderProps = {
     paymentMethod: "stripe-placeholder";
     paymentStatus: "pending";
   } | null;
+  paymentState: {
+    selectedMode: "checkout" | "elements" | null;
+  };
   submissionPreview: {
     status: "placeholder";
     orderReference: string;
@@ -260,11 +273,19 @@ type CheckoutStepRenderProps = {
     method: "stripe-placeholder";
     mode: "checkout" | "elements" | null;
     publishableKeyReady: boolean;
+    missingConfig: Array<"NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY">;
+    isModeSelected: boolean;
+    isReadyForPlaceholderFlow: boolean;
+    paymentStepStatus:
+      | "needs-mode-selection"
+      | "mode-selected-missing-config"
+      | "ready-placeholder";
     session: {
       id: string;
     } | null;
     paymentStatus: "pending";
   };
+  updatePaymentMode: (mode: "checkout" | "elements") => void;
   updateInformation: (
     field:
       | "email"
@@ -435,6 +456,29 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
                 {props.stripePaymentDraft.provider} {props.stripePaymentDraft.method}
               </span>
             </div>
+            <div className={styles.reviewCard}>
+              <h3>Stripe mode selection</h3>
+              <div className={styles.badges}>
+                <button
+                  className={styles.secondaryAction}
+                  type="button"
+                  onClick={() => props.updatePaymentMode("checkout")}
+                >
+                  {props.paymentState.selectedMode === "checkout"
+                    ? "Stripe Checkout selected"
+                    : "Select Stripe Checkout"}
+                </button>
+                <button
+                  className={styles.secondaryAction}
+                  type="button"
+                  onClick={() => props.updatePaymentMode("elements")}
+                >
+                  {props.paymentState.selectedMode === "elements"
+                    ? "Stripe Elements selected"
+                    : "Select Stripe Elements"}
+                </button>
+              </div>
+            </div>
             <div className={styles.formGrid}>
               <label className={styles.field}>
                 <span>Cardholder name</span>
@@ -453,25 +497,35 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           <div className={styles.reviewCard}>
             <h3>Stripe boundary state</h3>
             <p>Mode: {props.stripePaymentDraft.mode ?? "Undecided placeholder"}</p>
+            <p>Status: {props.stripePaymentDraft.paymentStepStatus}</p>
             <p>
               Publishable key:{" "}
               {props.stripePaymentDraft.publishableKeyReady
                 ? "Configured"
                 : "Missing placeholder env"}
             </p>
+            {props.stripePaymentDraft.missingConfig.length ? (
+              <p>Missing config: {props.stripePaymentDraft.missingConfig.join(", ")}</p>
+            ) : null}
             <p>
               Session:{" "}
               {props.stripePaymentDraft.session
                 ? props.stripePaymentDraft.session.id
                 : "Not created"}
             </p>
-            <p>Status: {props.stripePaymentDraft.paymentStatus}</p>
+            <p>Payment status: {props.stripePaymentDraft.paymentStatus}</p>
+            <p>
+              Review readiness:{" "}
+              {props.stripePaymentDraft.isReadyForPlaceholderFlow
+                ? "Mode selected"
+                : "Select a Stripe mode to continue"}
+            </p>
           </div>
           <p className={styles.summaryNote}>{checkoutFoundationTodos.payment}</p>
           <p className={styles.summaryNote}>{stripeHelpersTodo.checkoutState}</p>
           <button
             className={styles.primaryAction}
-            disabled={!props.canAccessPayment}
+            disabled={!props.canAccessReview}
             type="button"
             onClick={props.continueFromPayment}
           >

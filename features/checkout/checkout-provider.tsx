@@ -15,7 +15,7 @@ import type { CartStoreItem } from "@/features/cart/cart-provider";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
 import type { OrderSubmissionPreview } from "@/lib/order";
-import type { StripePaymentMethod } from "@/lib/stripe";
+import type { StripeIntegrationMode, StripePaymentMethod } from "@/lib/stripe";
 import type { OrderAddress } from "@/types/domain";
 
 const CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout";
@@ -50,6 +50,11 @@ export type OrderDraft = {
 type StoredCheckoutState = {
   information: CheckoutInformation;
   shippingMethod: CheckoutShippingMethod | null;
+  paymentState: CheckoutPaymentState;
+};
+
+type CheckoutPaymentState = {
+  selectedMode: StripeIntegrationMode | null;
 };
 
 type CheckoutContextValue = {
@@ -61,11 +66,13 @@ type CheckoutContextValue = {
   canAccessReview: boolean;
   canAccessConfirmation: boolean;
   orderDraft: OrderDraft;
+  paymentState: CheckoutPaymentState;
   submissionPreview: OrderSubmissionPreview | null;
   updateInformation: (
     field: keyof CheckoutInformation,
     value: CheckoutInformation[keyof CheckoutInformation],
   ) => void;
+  updatePaymentMode: (mode: StripeIntegrationMode) => void;
   continueFromInformation: () => void;
   continueFromShipping: () => void;
   continueFromPayment: () => void;
@@ -90,6 +97,10 @@ const initialInformation: CheckoutInformation = {
   country: "US",
 };
 
+const initialPaymentState: CheckoutPaymentState = {
+  selectedMode: null,
+};
+
 const stepPathMap: Record<Exclude<CheckoutStepKey, "start">, string> = {
   information: "/checkout/information",
   shipping: "/checkout/shipping",
@@ -106,6 +117,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const { items, shippingUsd, subtotalUsd, totalUsd } = useCart();
   const [information, setInformation] = useState<CheckoutInformation>(initialInformation);
   const [shippingMethod, setShippingMethod] = useState<CheckoutShippingMethod | null>(null);
+  const [paymentState, setPaymentState] = useState<CheckoutPaymentState>(initialPaymentState);
   const [hasVisitedConfirmation, setHasVisitedConfirmation] = useState(false);
   const [submissionPreview, setSubmissionPreview] = useState<OrderSubmissionPreview | null>(null);
 
@@ -130,6 +142,13 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       if (parsedValue.shippingMethod?.id === "standard") {
         setShippingMethod(defaultShippingMethod);
       }
+
+      if (
+        parsedValue.paymentState?.selectedMode === "checkout" ||
+        parsedValue.paymentState?.selectedMode === "elements"
+      ) {
+        setPaymentState(parsedValue.paymentState);
+      }
     } catch {
       // Ignore malformed local checkout data and continue with a clean guest checkout state.
     }
@@ -139,10 +158,11 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     const storedState: StoredCheckoutState = {
       information,
       shippingMethod,
+      paymentState,
     };
 
     window.localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(storedState));
-  }, [information, shippingMethod]);
+  }, [information, paymentState, shippingMethod]);
 
   const currentStep = getStepFromPathname(pathname);
   const isInformationComplete = requiredInformationFields.every(
@@ -151,7 +171,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const hasCartItems = items.length > 0;
   const canAccessShipping = hasCartItems && isInformationComplete;
   const canAccessPayment = canAccessShipping && shippingMethod?.id === "standard";
-  const canAccessReview = canAccessPayment;
+  const canAccessReview = canAccessPayment && Boolean(paymentState.selectedMode);
   const canAccessConfirmation = canAccessReview && hasVisitedConfirmation;
 
   useEffect(() => {
@@ -214,12 +234,16 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     canAccessReview,
     canAccessConfirmation,
     orderDraft,
+    paymentState,
     submissionPreview,
     updateInformation(field, value) {
       setInformation((current) => ({
         ...current,
         [field]: value,
       }));
+    },
+    updatePaymentMode(mode) {
+      setPaymentState({ selectedMode: mode });
     },
     continueFromInformation() {
       if (!canAccessShipping) {

@@ -3,6 +3,10 @@ import type { PaymentStatus } from "@/types/domain/order";
 import type { StripeIntegrationMode } from "@/lib/stripe/config";
 
 export type StripePaymentMethod = "stripe-placeholder";
+export type StripePaymentStepStatus =
+  | "needs-mode-selection"
+  | "mode-selected-missing-config"
+  | "ready-placeholder";
 
 export type StripeOrderPaymentInput = {
   checkoutMode: "guest";
@@ -33,6 +37,10 @@ export type StripeCheckoutPaymentDraft = {
   method: StripePaymentMethod;
   mode: StripeIntegrationMode | null;
   publishableKeyReady: boolean;
+  missingConfig: Array<"NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY">;
+  isModeSelected: boolean;
+  isReadyForPlaceholderFlow: boolean;
+  paymentStepStatus: StripePaymentStepStatus;
   session: StripePaymentSession | null;
   paymentStatus: Extract<PaymentStatus, "pending">;
 };
