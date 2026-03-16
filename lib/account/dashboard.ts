@@ -29,7 +29,19 @@ export type AccountOrderHistoryData = AccountOrderHistorySummary & {
 export type AccountProfileSummary = {
   fullName: string;
   email: string;
-  phoneLabel: string;
+  phone: string | null;
+};
+
+export type AccountProfileContactRow = {
+  id: "email" | "phone";
+  label: string;
+  value: string;
+  tone: "default" | "muted";
+};
+
+export type AccountProfileSummaryView = {
+  fullNameLabel: string;
+  contactRows: AccountProfileContactRow[];
 };
 
 export type AccountDashboardData = {
@@ -37,6 +49,32 @@ export type AccountDashboardData = {
   orders: AccountOrderHistoryData;
   profile: AccountProfileSummary;
 };
+
+export function createAccountProfileSummaryView(
+  profile: AccountProfileSummary | null,
+): AccountProfileSummaryView | null {
+  if (!profile) {
+    return null;
+  }
+
+  return {
+    fullNameLabel: profile.fullName,
+    contactRows: [
+      {
+        id: "email",
+        label: "Email",
+        value: profile.email,
+        tone: "default",
+      },
+      {
+        id: "phone",
+        label: "Phone",
+        value: profile.phone ?? "Phone not available in placeholder data",
+        tone: profile.phone ? "default" : "muted",
+      },
+    ],
+  };
+}
 
 function formatPlaceholderOrderTotal(totalUsd: number) {
   return new Intl.NumberFormat("en-US", {
@@ -92,7 +130,7 @@ export function getPlaceholderAccountDashboardData(
     profile: {
       fullName: "Customer name placeholder",
       email: user.email,
-      phoneLabel: "Phone not available in placeholder data",
+      phone: null,
     },
   };
 }

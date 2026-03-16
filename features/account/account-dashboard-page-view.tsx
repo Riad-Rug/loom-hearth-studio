@@ -14,6 +14,7 @@ import {
 } from "@/lib/auth";
 import {
   accountDashboardDataTodo,
+  createAccountProfileSummaryView,
   getPlaceholderAccountDashboardData,
 } from "@/lib/account/dashboard";
 import {
@@ -34,12 +35,13 @@ export function AccountDashboardPageView() {
     routeKind: "dashboard",
   });
   const dashboardData = getPlaceholderAccountDashboardData(placeholderUser);
+  const profileSummaryView = createAccountProfileSummaryView(dashboardData?.profile ?? null);
   const [signOutState, setSignOutState] = useState(createInitialSignOutRequestState());
   const [profileFullName, setProfileFullName] = useState(
     dashboardData?.profile.fullName ?? "",
   );
   const [profileEmail, setProfileEmail] = useState(dashboardData?.profile.email ?? "");
-  const [profilePhone, setProfilePhone] = useState("");
+  const [profilePhone, setProfilePhone] = useState(dashboardData?.profile.phone ?? "");
   const [profileUpdateState, setProfileUpdateState] = useState(
     createInitialAccountProfileUpdateState(),
   );
@@ -160,7 +162,7 @@ export function AccountDashboardPageView() {
                 ? dashboardData?.overview.accountEmail
                 : section.id === "orders"
                   ? dashboardData?.orders.latestOrderLabel
-                  : dashboardData?.profile.phoneLabel;
+                  : undefined;
 
             return (
               <article key={section.id} className={styles.dashboardCard}>
@@ -182,6 +184,23 @@ export function AccountDashboardPageView() {
                 ) : null}
                 {section.id === "profile" ? (
                   <div className={styles.formStack}>
+                    {profileSummaryView ? (
+                      <div className={styles.profileSummaryList}>
+                        <strong>{profileSummaryView.fullNameLabel}</strong>
+                        {profileSummaryView.contactRows.map((row) => (
+                          <div key={row.id} className={styles.profileSummaryItem}>
+                            <span>{row.label}</span>
+                            <strong
+                              className={
+                                row.tone === "muted" ? styles.mutedSummaryValue : undefined
+                              }
+                            >
+                              {row.value}
+                            </strong>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
                     <label className={styles.field}>
                       <span>Full name</span>
                       <input
