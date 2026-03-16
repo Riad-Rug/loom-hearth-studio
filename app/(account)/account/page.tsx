@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { AccountDashboardPageView } from "@/features/account/account-dashboard-page-view";
 
 export default function AccountPage() {
-  return (
-    <PlaceholderPanel
-      title="Account area placeholder"
-      body="Customer account views are scaffolded only. Final auth flow depends on the unresolved auth strategy."
-    />
-  );
+  return <AccountDashboardPageView />;
 }

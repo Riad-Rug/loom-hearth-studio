@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { AccountAuthPageView } from "@/features/account/account-auth-page-view";
 
 export default function LoginPage() {
-  return (
-    <PlaceholderPanel
-      title="Login placeholder"
-      body="Authentication provider selection is still pending. This route exists to preserve the PRD route map."
-    />
-  );
+  return <AccountAuthPageView mode="login" />;
 }

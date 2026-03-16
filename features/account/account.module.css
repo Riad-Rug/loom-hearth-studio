@@ -1,0 +1,173 @@
+.page {
+  display: grid;
+  gap: var(--space-7);
+  width: min(100% - 2rem, var(--container-width-wide));
+  margin: 0 auto;
+}
+
+.authShell,
+.dashboardHero,
+.dashboardCard,
+.dashboardEmptyState,
+.formCard {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-soft);
+}
+
+.authShell,
+.dashboardHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.85fr);
+  gap: var(--space-5);
+  padding: var(--space-7);
+  background:
+    radial-gradient(circle at top right, rgba(184, 94, 59, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 228, 0.96));
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--color-clay-terracotta);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.authIntro h1,
+.dashboardHero h1,
+.dashboardCard h2 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.04em;
+}
+
+.authIntro h1,
+.dashboardHero h1 {
+  font-size: clamp(2.6rem, 4vw, 4rem);
+  line-height: 0.97;
+}
+
+.lede,
+.dashboardEmptyState p,
+.dashboardCard p {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.78);
+  line-height: 1.8;
+}
+
+.authLinks,
+.dashboardLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.authLinks a,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.05rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-charcoal-ink);
+}
+
+.authIntro {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.formCard {
+  padding: var(--space-6);
+}
+
+.formStack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.field span {
+  color: rgba(34, 33, 38, 0.72);
+  font-size: 0.92rem;
+}
+
+.field input {
+  min-height: 3.25rem;
+  padding: 0 1rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--color-charcoal-ink);
+  font: inherit;
+}
+
+.primaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 1.25rem;
+  border: 1px solid var(--color-clay-terracotta);
+  border-radius: 999px;
+  background: var(--color-clay-terracotta);
+  color: var(--color-white);
+  font: inherit;
+}
+
+.dashboardEmptyState {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  padding: var(--space-5);
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.dashboardCard {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6);
+}
+
+.dashboardCard h2 {
+  font-size: 1.8rem;
+  line-height: 1.05;
+}
+
+@media (max-width: 1100px) {
+  .authShell,
+  .dashboardHero,
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    width: min(100% - 1rem, var(--container-width-wide));
+  }
+
+  .authShell,
+  .dashboardHero,
+  .formCard,
+  .dashboardCard {
+    padding: var(--space-5);
+  }
+
+  .authLinks,
+  .dashboardLinks {
+    flex-direction: column;
+  }
+}

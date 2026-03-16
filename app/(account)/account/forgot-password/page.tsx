@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { AccountAuthPageView } from "@/features/account/account-auth-page-view";
 
 export default function ForgotPasswordPage() {
-  return (
-    <PlaceholderPanel
-      title="Forgot password placeholder"
-      body="Password recovery flow is pending the auth and email provider decisions."
-    />
-  );
+  return <AccountAuthPageView mode="forgot-password" />;
 }
