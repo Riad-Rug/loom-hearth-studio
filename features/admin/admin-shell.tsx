@@ -3,6 +3,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { adminNav } from "@/features/admin/admin-data";
+import { createAuthSessionState, createSessionSummary } from "@/lib/auth";
 
 import styles from "./admin.module.css";
 
@@ -11,6 +12,17 @@ type AdminShellProps = {
 };
 
 export function AdminShell({ children }: AdminShellProps) {
+  const sessionSummary = createSessionSummary(
+    createAuthSessionState(
+      {
+        id: "admin-session-placeholder",
+        email: "admin@example.com",
+        role: "admin",
+      },
+      "admin",
+    ),
+  );
+
   return (
     <div className={styles.page}>
       <aside className={styles.sidebar}>
@@ -21,6 +33,12 @@ export function AdminShell({ children }: AdminShellProps) {
             Placeholder-only admin shell. Route protection and role enforcement are not
             implemented.
           </p>
+        </div>
+        <div className={styles.sessionPanel}>
+          <strong>Session boundary</strong>
+          <span>Status: {sessionSummary.status}</span>
+          <span>Role: {sessionSummary.roleLabel}</span>
+          <span>{sessionSummary.todo}</span>
         </div>
         <nav className={styles.nav} aria-label="Admin navigation">
           {adminNav.map((item) => (

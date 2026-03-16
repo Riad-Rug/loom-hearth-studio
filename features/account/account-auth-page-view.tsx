@@ -5,6 +5,7 @@ import {
   accountAuthContent,
   type AccountAuthMode,
 } from "@/features/account/account-data";
+import { createAuthSessionState, createSessionSummary } from "@/lib/auth";
 
 import styles from "./account.module.css";
 
@@ -14,6 +15,7 @@ type AccountAuthPageViewProps = {
 
 export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
   const content = accountAuthContent[mode];
+  const sessionSummary = createSessionSummary(createAuthSessionState(null, "account"));
 
   return (
     <div className={styles.page}>
@@ -22,6 +24,12 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
           <p className={styles.eyebrow}>{content.eyebrow}</p>
           <h1>{content.title}</h1>
           <p className={styles.lede}>{content.body}</p>
+          <div className={styles.sessionNote}>
+            <strong>Auth boundary</strong>
+            <span>
+              {sessionSummary.status} on the account surface. {sessionSummary.todo}
+            </span>
+          </div>
           <div className={styles.authLinks}>
             <Link href={"/account/login" as Route}>Login</Link>
             <Link href={"/account/register" as Route}>Register</Link>

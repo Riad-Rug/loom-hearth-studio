@@ -2,10 +2,13 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { accountDashboardSections } from "@/features/account/account-data";
+import { createAuthSessionState, createSessionSummary } from "@/lib/auth";
 
 import styles from "./account.module.css";
 
 export function AccountDashboardPageView() {
+  const sessionSummary = createSessionSummary(createAuthSessionState(null, "account"));
+
   return (
     <div className={styles.page}>
       <section className={styles.dashboardHero}>
@@ -24,6 +27,17 @@ export function AccountDashboardPageView() {
             actions are not implemented in this slice.
           </p>
         </div>
+      </section>
+
+      <section className={styles.sessionCard}>
+        <p className={styles.eyebrow}>Session boundary</p>
+        <h2>Account auth/session placeholder</h2>
+        <p>
+          Status: {sessionSummary.status}. Authenticated:{" "}
+          {sessionSummary.isAuthenticated ? "yes" : "no"}.
+        </p>
+        <p>Mode: {sessionSummary.roleLabel}</p>
+        <p>{sessionSummary.todo}</p>
       </section>
 
       <section className={styles.dashboardGrid}>

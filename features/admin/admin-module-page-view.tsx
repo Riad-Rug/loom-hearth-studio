@@ -1,4 +1,5 @@
 import { adminModules, type AdminModuleKey } from "@/features/admin/admin-data";
+import { authConfig } from "@/lib/auth";
 
 import styles from "./admin.module.css";
 
@@ -23,6 +24,7 @@ export function AdminModulePageView({ moduleKey }: AdminModulePageViewProps) {
           Admin, Editor, and Viewer are PRD-defined roles. This slice shows that as
           presentation only, without auth or route protection.
         </span>
+        <span>Supported boundary roles: {authConfig.admin.roles.join(", ")}</span>
       </div>
 
       <div className={styles.cardGrid}>

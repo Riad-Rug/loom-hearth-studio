@@ -9,7 +9,8 @@
 .sidebar,
 .moduleShell,
 .roleNote,
-.card {
+.card,
+.sessionPanel {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   background: rgba(255, 255, 255, 0.82);
@@ -24,7 +25,8 @@
 }
 
 .sidebarIntro,
-.moduleHeader {
+.moduleHeader,
+.sessionPanel {
   display: grid;
   gap: var(--space-3);
 }
@@ -97,6 +99,20 @@
 
 .roleNote strong {
   font-size: 0.95rem;
+}
+
+.sessionPanel {
+  padding: var(--space-4);
+}
+
+.sessionPanel strong,
+.sessionPanel span {
+  margin: 0;
+}
+
+.sessionPanel span {
+  color: rgba(34, 33, 38, 0.78);
+  line-height: 1.7;
 }
 
 .cardGrid {

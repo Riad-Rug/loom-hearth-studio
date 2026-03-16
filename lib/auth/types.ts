@@ -6,6 +6,20 @@ export type AuthenticatedUser = {
   role?: AdminRole;
 };
 
+export type AuthSessionState = {
+  status: "placeholder-authenticated" | "placeholder-unauthenticated";
+  user: AuthenticatedUser | null;
+  surface: "account" | "admin";
+};
+
+export type SessionSummary = {
+  surface: "account" | "admin";
+  status: AuthSessionState["status"];
+  roleLabel: AdminRole | "customer-account";
+  isAuthenticated: boolean;
+  todo: string;
+};
+
 export interface AuthService {
   getSession(): Promise<AuthenticatedUser | null>;
   signIn(email: string, password: string): Promise<void>;
