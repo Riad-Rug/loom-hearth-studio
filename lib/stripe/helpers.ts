@@ -63,6 +63,9 @@ export function createStripeCheckoutPaymentDraft(
     : checkoutConfig.missingServerConfig.length
       ? "missing-server-config"
       : "ready-placeholder";
+  const checkoutSessionResponse = checkoutSessionRequest
+    ? createStripeCheckoutSessionPlaceholder(checkoutSessionRequest)
+    : null;
 
   return {
     provider: "stripe",
@@ -76,15 +79,22 @@ export function createStripeCheckoutPaymentDraft(
     checkoutService: {
       mode: checkoutConfig.mode,
       status: checkoutServiceStatus,
+      sessionEndpointPath: checkoutConfig.sessionEndpointPath,
       successUrl: checkoutConfig.successUrl,
       cancelUrl: checkoutConfig.cancelUrl,
       missingClientConfig: checkoutConfig.missingClientConfig,
       missingServerConfig: checkoutConfig.missingServerConfig,
     },
+    checkoutExecution: {
+      endpointPath: checkoutConfig.sessionEndpointPath,
+      status: checkoutConfig.missingServerConfig.length
+        ? "missing-server-config"
+        : "ready",
+      redirectTarget: checkoutSessionResponse?.url ?? null,
+      missingServerConfig: checkoutConfig.missingServerConfig,
+    },
     checkoutSessionRequest,
-    checkoutSessionResponse: checkoutSessionRequest
-      ? createStripeCheckoutSessionPlaceholder(checkoutSessionRequest)
-      : null,
+    checkoutSessionResponse,
     paymentStatus: "pending",
   };
 }

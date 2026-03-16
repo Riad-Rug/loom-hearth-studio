@@ -14,6 +14,9 @@ export type StripeCheckoutServiceStatus =
   | "missing-client-config"
   | "missing-server-config"
   | "ready-placeholder";
+export type StripeCheckoutExecutionStatus =
+  | "missing-server-config"
+  | "ready";
 
 export type StripeOrderPaymentInput = {
   checkoutMode: "guest";
@@ -52,16 +55,31 @@ export type StripeCheckoutSessionResponse = {
   mode: StripeIntegrationMode;
   url?: string;
   expiresAt?: string;
-  status: "placeholder";
+  status: "placeholder" | "created";
 };
 
 export type StripeCheckoutServiceBoundary = {
   mode: "checkout";
   status: StripeCheckoutServiceStatus;
+  sessionEndpointPath: string;
   successUrl: string;
   cancelUrl: string;
   missingClientConfig: StripeCheckoutMissingClientConfig[];
   missingServerConfig: StripeCheckoutMissingServerConfig[];
+};
+
+export type StripeCheckoutExecutionBoundary = {
+  endpointPath: string;
+  status: StripeCheckoutExecutionStatus;
+  redirectTarget: string | null;
+  missingServerConfig: StripeCheckoutMissingServerConfig[];
+};
+
+export type StripeCheckoutSessionCreationResult = {
+  status: "created" | "configuration-error" | "api-error";
+  session: StripeCheckoutSessionResponse | null;
+  redirectTarget: string | null;
+  message: string;
 };
 
 export type StripeCheckoutPaymentDraft = {
@@ -74,6 +92,7 @@ export type StripeCheckoutPaymentDraft = {
   isReadyForPlaceholderFlow: boolean;
   paymentStepStatus: StripePaymentStepStatus;
   checkoutService: StripeCheckoutServiceBoundary;
+  checkoutExecution: StripeCheckoutExecutionBoundary;
   checkoutSessionRequest: StripeCheckoutSessionRequest | null;
   checkoutSessionResponse: StripeCheckoutSessionResponse | null;
   paymentStatus: Extract<PaymentStatus, "pending">;
@@ -89,6 +108,8 @@ export const stripeContractsTodo = {
     "TODO: Replace the placeholder Checkout session request/response shapes with the real Stripe Checkout session-creation contract when server execution is implemented.",
   checkoutService:
     "TODO: Wire the Checkout service boundary to real Stripe Checkout session creation after server execution is added.",
+  checkoutExecution:
+    "TODO: Invoke the Checkout session-creation execution boundary from the payment flow when redirect execution is implemented.",
   refund:
     "TODO: Keep refund references typed only; do not implement refund execution until order operations are defined.",
 } as const;

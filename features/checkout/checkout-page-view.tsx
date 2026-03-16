@@ -331,9 +331,16 @@ type CheckoutStepRenderProps = {
       };
       checkoutService: {
         statusLabel: string;
+        endpointLabel: string;
         successUrlLabel: string;
         cancelUrlLabel: string;
         missingClientConfigLabel: string | null;
+        missingServerConfigLabel: string | null;
+      };
+      checkoutExecution: {
+        statusLabel: string;
+        endpointLabel: string;
+        redirectTargetLabel: string | null;
         missingServerConfigLabel: string | null;
       };
       checkoutSessionRequest: {
@@ -427,9 +434,16 @@ type CheckoutStepRenderProps = {
     checkoutService: {
       mode: "checkout";
       status: "missing-client-config" | "missing-server-config" | "ready-placeholder";
+      sessionEndpointPath: string;
       successUrl: string;
       cancelUrl: string;
       missingClientConfig: Array<"NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY">;
+      missingServerConfig: Array<"STRIPE_SECRET_KEY" | "STRIPE_WEBHOOK_SECRET">;
+    };
+    checkoutExecution: {
+      endpointPath: string;
+      status: "missing-server-config" | "ready";
+      redirectTarget: string | null;
       missingServerConfig: Array<"STRIPE_SECRET_KEY" | "STRIPE_WEBHOOK_SECRET">;
     };
     checkoutSessionRequest: {
@@ -457,7 +471,7 @@ type CheckoutStepRenderProps = {
       mode: "checkout";
       url?: string;
       expiresAt?: string;
-      status: "placeholder";
+      status: "placeholder" | "created";
     } | null;
     paymentStatus: "pending";
   };
@@ -632,6 +646,7 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             <div className={styles.reviewCard}>
               <h3>Checkout service boundary</h3>
               <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.statusLabel}</p>
+              <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.endpointLabel}</p>
               <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.successUrlLabel}</p>
               <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.cancelUrlLabel}</p>
               {props.nonConfirmationRouteViewModel.payment.checkoutService
@@ -648,6 +663,29 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
                 <p>
                   {
                     props.nonConfirmationRouteViewModel.payment.checkoutService
+                      .missingServerConfigLabel
+                  }
+                </p>
+              ) : null}
+            </div>
+            <div className={styles.reviewCard}>
+              <h3>Checkout execution boundary</h3>
+              <p>{props.nonConfirmationRouteViewModel.payment.checkoutExecution.statusLabel}</p>
+              <p>{props.nonConfirmationRouteViewModel.payment.checkoutExecution.endpointLabel}</p>
+              {props.nonConfirmationRouteViewModel.payment.checkoutExecution
+                .redirectTargetLabel ? (
+                <p>
+                  {
+                    props.nonConfirmationRouteViewModel.payment.checkoutExecution
+                      .redirectTargetLabel
+                  }
+                </p>
+              ) : null}
+              {props.nonConfirmationRouteViewModel.payment.checkoutExecution
+                .missingServerConfigLabel ? (
+                <p>
+                  {
+                    props.nonConfirmationRouteViewModel.payment.checkoutExecution
                       .missingServerConfigLabel
                   }
                 </p>

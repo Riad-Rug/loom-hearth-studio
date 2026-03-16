@@ -48,9 +48,16 @@ export type CheckoutNonConfirmationRouteViewModel = {
     };
     checkoutService: {
       statusLabel: string;
+      endpointLabel: string;
       successUrlLabel: string;
       cancelUrlLabel: string;
       missingClientConfigLabel: string | null;
+      missingServerConfigLabel: string | null;
+    };
+    checkoutExecution: {
+      statusLabel: string;
+      endpointLabel: string;
+      redirectTargetLabel: string | null;
       missingServerConfigLabel: string | null;
     };
     checkoutSessionRequest: {
@@ -79,6 +86,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
     | "publishableKeyReady"
     | "missingConfig"
     | "checkoutService"
+    | "checkoutExecution"
     | "checkoutSessionRequest"
     | "checkoutSessionResponse"
     | "paymentStatus"
@@ -159,6 +167,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
       },
       checkoutService: {
         statusLabel: `Service status: ${input.stripePaymentDraft.checkoutService.status}`,
+        endpointLabel: `Session endpoint: ${input.stripePaymentDraft.checkoutService.sessionEndpointPath}`,
         successUrlLabel: `Success URL: ${input.stripePaymentDraft.checkoutService.successUrl}`,
         cancelUrlLabel: `Cancel URL: ${input.stripePaymentDraft.checkoutService.cancelUrl}`,
         missingClientConfigLabel: input.stripePaymentDraft.checkoutService.missingClientConfig
@@ -168,6 +177,17 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
         missingServerConfigLabel: input.stripePaymentDraft.checkoutService.missingServerConfig
           .length
           ? `Missing server config: ${input.stripePaymentDraft.checkoutService.missingServerConfig.join(", ")}`
+          : null,
+      },
+      checkoutExecution: {
+        statusLabel: `Execution status: ${input.stripePaymentDraft.checkoutExecution.status}`,
+        endpointLabel: `Execution endpoint: ${input.stripePaymentDraft.checkoutExecution.endpointPath}`,
+        redirectTargetLabel: input.stripePaymentDraft.checkoutExecution.redirectTarget
+          ? `Redirect target: ${input.stripePaymentDraft.checkoutExecution.redirectTarget}`
+          : null,
+        missingServerConfigLabel: input.stripePaymentDraft.checkoutExecution.missingServerConfig
+          .length
+          ? `Missing server config: ${input.stripePaymentDraft.checkoutExecution.missingServerConfig.join(", ")}`
           : null,
       },
       checkoutSessionRequest: input.stripePaymentDraft.checkoutSessionRequest

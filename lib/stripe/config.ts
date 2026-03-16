@@ -26,6 +26,7 @@ export type StripeCheckoutServiceConfig = {
   publishableKey?: string;
   secretKey?: string;
   webhookSecret?: string;
+  sessionEndpointPath: "/api/stripe/checkout-session";
   successUrl: string;
   cancelUrl: string;
   missingClientConfig: StripeCheckoutMissingClientConfig[];
@@ -62,6 +63,7 @@ export function getStripeCheckoutServiceConfig(): StripeCheckoutServiceConfig {
     publishableKey: publicConfig.publishableKey,
     secretKey: serverConfig.secretKey,
     webhookSecret: serverConfig.webhookSecret,
+    sessionEndpointPath: "/api/stripe/checkout-session",
     successUrl: new URL("/checkout/success", siteUrl).toString(),
     cancelUrl: new URL("/checkout/payment", siteUrl).toString(),
     missingClientConfig: publicConfig.publishableKey
