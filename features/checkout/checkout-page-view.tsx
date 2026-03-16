@@ -14,6 +14,11 @@ import {
   checkoutFoundationTodos,
   useCheckout,
 } from "@/features/checkout/checkout-provider";
+import {
+  createStripeCheckoutPaymentDraft,
+  createStripeOrderPaymentInput,
+  stripeHelpersTodo,
+} from "@/lib/stripe";
 
 import styles from "./checkout-page.module.css";
 
@@ -54,6 +59,23 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     marketLabel: checkoutSummary.marketLabel,
     currencyLabel: checkoutSummary.currencyLabel,
   };
+  const stripePaymentDraft = createStripeCheckoutPaymentDraft(
+    createStripeOrderPaymentInput({
+      checkoutMode: orderDraft.checkoutMode,
+      email: orderDraft.shippingAddress?.email,
+      subtotalUsd: orderDraft.subtotalUsd,
+      shippingUsd: orderDraft.shippingUsd,
+      taxUsd: orderDraft.taxUsd,
+      totalUsd: orderDraft.totalUsd,
+      currency: orderDraft.currency,
+      items: orderDraft.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        priceUsd: item.priceUsd,
+      })),
+    }),
+  );
 
   return (
     <div className={styles.page}>
@@ -111,6 +133,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               information,
               orderDraft,
               shippingMethod,
+              stripePaymentDraft,
               updateInformation,
             })}
           </div>
@@ -198,6 +221,16 @@ type CheckoutStepRenderProps = {
     label: string;
     priceUsd: 0;
   } | null;
+  stripePaymentDraft: {
+    provider: "stripe";
+    method: "stripe-placeholder";
+    mode: "checkout" | "elements" | null;
+    publishableKeyReady: boolean;
+    session: {
+      id: string;
+    } | null;
+    paymentStatus: "pending";
+  };
   updateInformation: (
     field:
       | "email"
@@ -364,7 +397,9 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           </div>
           <div className={styles.paymentShell}>
             <div className={styles.cardPreview}>
-              <span>Stripe payment step placeholder</span>
+              <span>
+                {props.stripePaymentDraft.provider} {props.stripePaymentDraft.method}
+              </span>
             </div>
             <div className={styles.formGrid}>
               <label className={styles.field}>
@@ -381,7 +416,25 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             Stripe is confirmed, but this page is UI only. No payment capture, webhook
             handling, or order creation is implemented yet.
           </p>
+          <div className={styles.reviewCard}>
+            <h3>Stripe boundary state</h3>
+            <p>Mode: {props.stripePaymentDraft.mode ?? "Undecided placeholder"}</p>
+            <p>
+              Publishable key:{" "}
+              {props.stripePaymentDraft.publishableKeyReady
+                ? "Configured"
+                : "Missing placeholder env"}
+            </p>
+            <p>
+              Session:{" "}
+              {props.stripePaymentDraft.session
+                ? props.stripePaymentDraft.session.id
+                : "Not created"}
+            </p>
+            <p>Status: {props.stripePaymentDraft.paymentStatus}</p>
+          </div>
           <p className={styles.summaryNote}>{checkoutFoundationTodos.payment}</p>
+          <p className={styles.summaryNote}>{stripeHelpersTodo.checkoutState}</p>
           <button
             className={styles.primaryAction}
             disabled={!props.canAccessPayment}

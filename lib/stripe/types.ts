@@ -1,15 +1,17 @@
 import type { Order } from "@/types/domain";
 
-export type PaymentSession = {
-  id: string;
-  clientSecret?: string;
-  redirectUrl?: string;
-};
+import type {
+  StripeOrderPaymentInput,
+  StripePaymentSession,
+  StripeRefundReference,
+} from "@/lib/stripe/contracts";
+
+export type PaymentSession = StripePaymentSession;
 
 export interface PaymentService {
-  createPaymentSession(order: Order): Promise<PaymentSession>;
+  createPaymentSession(input: StripeOrderPaymentInput): Promise<PaymentSession>;
   getPaymentStatus(referenceId: string): Promise<Order["paymentStatus"]>;
-  refundPayment(referenceId: string): Promise<void>;
+  refundPayment(reference: StripeRefundReference): Promise<void>;
 }
 
 export const stripeServiceTodo =

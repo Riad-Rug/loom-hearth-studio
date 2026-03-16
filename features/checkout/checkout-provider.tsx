@@ -14,6 +14,7 @@ import {
 import type { CartStoreItem } from "@/features/cart/cart-provider";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
+import type { StripePaymentMethod } from "@/lib/stripe";
 import type { OrderAddress } from "@/types/domain";
 
 const CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout";
@@ -42,7 +43,7 @@ export type OrderDraft = {
   taxUsd: 0;
   totalUsd: number;
   currency: "USD";
-  paymentMethod: "stripe-placeholder";
+  paymentMethod: StripePaymentMethod;
 };
 
 type StoredCheckoutState = {
