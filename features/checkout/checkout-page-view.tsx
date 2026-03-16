@@ -15,6 +15,11 @@ import {
   useCheckout,
 } from "@/features/checkout/checkout-provider";
 import {
+  createOrderConfirmationEmailPayload,
+  createOrderConfirmationEmailPreview,
+  orderConfirmationEmailTodo,
+} from "@/lib/email";
+import {
   createOrderSubmissionFailure,
   createOrderSubmissionPayload,
   createOrderSubmissionPreview,
@@ -95,6 +100,15 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     stripeOrderPaymentInput,
   });
   const derivedSubmissionPreview = createOrderSubmissionPreview(orderSubmissionPayload);
+  const resolvedSubmissionPreview = submissionPreview ?? derivedSubmissionPreview;
+  const orderConfirmationEmailPayload = createOrderConfirmationEmailPayload({
+    submissionPayload: orderSubmissionPayload,
+    submissionPreview:
+      submissionAttempt.status === "success" ? resolvedSubmissionPreview : null,
+  });
+  const orderConfirmationEmailPreview = createOrderConfirmationEmailPreview(
+    orderConfirmationEmailPayload,
+  );
   const submissionFailure = createOrderSubmissionFailure({
     hasPayload: Boolean(orderSubmissionPayload),
     hasPaymentConfig: stripePaymentDraft.publishableKeyReady,
@@ -156,11 +170,13 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               continueFromShipping,
               information,
               orderDraft,
+              orderConfirmationEmailPayload,
+              orderConfirmationEmailPreview,
               orderSubmissionPayload,
               paymentState,
               submissionAttempt,
               submissionFailure,
-              submissionPreview: submissionPreview ?? derivedSubmissionPreview,
+              submissionPreview: resolvedSubmissionPreview,
               shippingMethod,
               stripePaymentDraft,
               updatePaymentMode,
@@ -260,6 +276,23 @@ type CheckoutStepRenderProps = {
     } | null;
     paymentMethod: "stripe-placeholder";
   };
+  orderConfirmationEmailPayload: {
+    to: string;
+    orderReference: string;
+    customerName: string;
+    shippingLabel: string;
+    totalUsd: number;
+    currency: "USD";
+    itemCount: number;
+  } | null;
+  orderConfirmationEmailPreview: {
+    status: "placeholder";
+    subject: string;
+    message: {
+      to: string;
+      subject: string;
+    };
+  } | null;
   orderSubmissionPayload: {
     email: string;
     items: Array<{
@@ -677,6 +710,24 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             {props.submissionPreview ? <p>{props.submissionPreview.paymentStatus}</p> : null}
             {props.shippingMethod ? <p>{props.shippingMethod.label}</p> : null}
           </div>
+          <div className={styles.confirmationCard}>
+            <strong>Order confirmation email boundary</strong>
+            {props.orderConfirmationEmailPayload && props.orderConfirmationEmailPreview ? (
+              <>
+                <p>State: placeholder payload ready</p>
+                <p>To: {props.orderConfirmationEmailPayload.to}</p>
+                <p>Subject: {props.orderConfirmationEmailPreview.subject}</p>
+                <p>Items: {props.orderConfirmationEmailPayload.itemCount}</p>
+                <p>
+                  Total: {formatUsd(props.orderConfirmationEmailPayload.totalUsd)}{" "}
+                  {props.orderConfirmationEmailPayload.currency}
+                </p>
+              </>
+            ) : (
+              <p>No confirmation email payload is available until the submission attempt succeeds.</p>
+            )}
+          </div>
+          <p className={styles.summaryNote}>{orderConfirmationEmailTodo}</p>
           <Link className={styles.secondaryAction} href="/shop">
             Return to shop
           </Link>
