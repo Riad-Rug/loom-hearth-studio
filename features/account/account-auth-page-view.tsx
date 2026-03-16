@@ -1,11 +1,22 @@
+"use client";
+
 import type { Route } from "next";
 import Link from "next/link";
+import { useState } from "react";
 
 import {
   accountAuthContent,
   type AccountAuthMode,
 } from "@/features/account/account-data";
-import { accountGuardTodo, getAccountAccessDecision } from "@/lib/auth";
+import {
+  accountGuardTodo,
+  createForgotPasswordRequestPayload,
+  createForgotPasswordResetEmailPreview,
+  forgotPasswordRequestTodo,
+  getAccountAccessDecision,
+  type ForgotPasswordRequestState,
+} from "@/lib/auth";
+import { emailServiceTodo } from "@/lib/email";
 
 import styles from "./account.module.css";
 
@@ -19,6 +30,44 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
     user: null,
     routeKind: mode,
   });
+  const [email, setEmail] = useState("");
+  const [requestState, setRequestState] = useState<ForgotPasswordRequestState>({
+    status: "idle",
+    payload: null,
+    resetEmailPreview: null,
+    message: null,
+  });
+
+  function handleForgotPasswordRequest() {
+    const payload = createForgotPasswordRequestPayload(email);
+
+    setRequestState({
+      status: "submitting",
+      payload,
+      resetEmailPreview: null,
+      message: null,
+    });
+
+    window.setTimeout(() => {
+      if (!payload) {
+        setRequestState({
+          status: "failure",
+          payload: null,
+          resetEmailPreview: null,
+          message: "Enter a valid email address to create the placeholder password-reset request.",
+        });
+        return;
+      }
+
+      setRequestState({
+        status: "success",
+        payload,
+        resetEmailPreview: createForgotPasswordResetEmailPreview(payload),
+        message:
+          "Placeholder forgot-password request created. Real token generation and email delivery are not implemented.",
+      });
+    }, 350);
+  }
 
   return (
     <div className={styles.page}>
@@ -71,7 +120,12 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
 
             <label className={styles.field}>
               <span>Email address</span>
-              <input placeholder="name@example.com" type="email" />
+              <input
+                placeholder="name@example.com"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
             </label>
 
             {mode !== "forgot-password" ? (
@@ -81,9 +135,30 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
               </label>
             ) : null}
 
-            <button className={styles.primaryAction} type="button">
+            <button
+              className={styles.primaryAction}
+              type="button"
+              onClick={mode === "forgot-password" ? handleForgotPasswordRequest : undefined}
+            >
               {content.primaryLabel}
             </button>
+
+            {mode === "forgot-password" ? (
+              <div className={styles.sessionNote}>
+                <strong>Forgot-password boundary</strong>
+                <span>Request state: {requestState.status}</span>
+                {requestState.message ? <span>{requestState.message}</span> : null}
+                {requestState.payload ? <span>Request email: {requestState.payload.email}</span> : null}
+                {requestState.resetEmailPreview ? (
+                  <>
+                    <span>Email payload ready for: {requestState.resetEmailPreview.to}</span>
+                    <span>Subject: {requestState.resetEmailPreview.subject}</span>
+                  </>
+                ) : null}
+                <span>{forgotPasswordRequestTodo}</span>
+                <span>{emailServiceTodo}</span>
+              </div>
+            ) : null}
           </div>
         </div>
       </section>
