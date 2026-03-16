@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { CheckoutProvider } from "@/features/checkout/checkout-provider";
+
 export const metadata: Metadata = {
   robots: {
     index: false,
@@ -13,5 +15,5 @@ type CheckoutLayoutProps = {
 };
 
 export default function CheckoutLayout({ children }: CheckoutLayoutProps) {
-  return children;
+  return <CheckoutProvider>{children}</CheckoutProvider>;
 }

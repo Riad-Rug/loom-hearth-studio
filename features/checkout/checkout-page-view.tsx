@@ -10,6 +10,10 @@ import {
   type CheckoutStepKey,
 } from "@/features/checkout/checkout-data";
 import { formatUsd, getCartItemLabel, useCart } from "@/features/cart/cart-provider";
+import {
+  checkoutFoundationTodos,
+  useCheckout,
+} from "@/features/checkout/checkout-provider";
 
 import styles from "./checkout-page.module.css";
 
@@ -19,6 +23,18 @@ type CheckoutPageViewProps = {
 
 export function CheckoutPageView({ step }: CheckoutPageViewProps) {
   const { items, shippingUsd, subtotalUsd, totalUsd } = useCart();
+  const {
+    canAccessPayment,
+    canAccessShipping,
+    continueFromInformation,
+    continueFromPayment,
+    continueFromReview,
+    continueFromShipping,
+    information,
+    orderDraft,
+    shippingMethod,
+    updateInformation,
+  } = useCheckout();
   const lineItems =
     items.length > 0
       ? items.map((item) => ({
@@ -84,11 +100,24 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
         </ol>
 
         <div className={styles.contentGrid}>
-          <div className={styles.mainCard}>{renderStep(step)}</div>
+          <div className={styles.mainCard}>
+            {renderStep(step, {
+              canAccessPayment,
+              canAccessShipping,
+              continueFromInformation,
+              continueFromPayment,
+              continueFromReview,
+              continueFromShipping,
+              information,
+              orderDraft,
+              shippingMethod,
+              updateInformation,
+            })}
+          </div>
           <aside className={styles.summaryCard}>
             <div className={styles.summaryHeader}>
               <p className={styles.eyebrow}>Order summary</p>
-              <h2>Static checkout summary</h2>
+              <h2>Checkout summary</h2>
             </div>
 
             <div className={styles.itemList}>
@@ -118,6 +147,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
                 <span>Estimated tax</span>
                 <strong>{summary.taxUsdLabel}</strong>
               </div>
+              <p className={styles.summaryNote}>{checkoutFoundationTodos.tax}</p>
               <div className={styles.summaryTotal}>
                 <span>Total</span>
                 <strong>{summary.totalUsdLabel}</strong>
@@ -130,7 +160,59 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
   );
 }
 
-function renderStep(step: CheckoutStepKey) {
+type CheckoutStepRenderProps = {
+  canAccessPayment: boolean;
+  canAccessShipping: boolean;
+  continueFromInformation: () => void;
+  continueFromPayment: () => void;
+  continueFromReview: () => void;
+  continueFromShipping: () => void;
+  information: {
+    email: string;
+    fullName: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: "US";
+  };
+  orderDraft: {
+    shippingAddress: {
+      fullName: string;
+      email: string;
+      address1: string;
+      address2?: string;
+      city: string;
+      state: string;
+      postalCode: string;
+      country: "US";
+    } | null;
+    shippingMethod: {
+      label: string;
+      priceUsd: 0;
+    } | null;
+    paymentMethod: "stripe-placeholder";
+  };
+  shippingMethod: {
+    label: string;
+    priceUsd: 0;
+  } | null;
+  updateInformation: (
+    field:
+      | "email"
+      | "fullName"
+      | "address1"
+      | "address2"
+      | "city"
+      | "state"
+      | "postalCode"
+      | "country",
+    value: string,
+  ) => void;
+};
+
+function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
   switch (step) {
     case "start":
       return (
@@ -141,16 +223,12 @@ function renderStep(step: CheckoutStepKey) {
           </div>
           <p className={styles.panelBody}>
             Guest checkout is the only supported mode in the PRD. Use the step links below
-            to preview the 5-step UI structure.
+            to move through the existing 5-step flow using the current client-side
+            checkout state.
           </p>
-          <div className={styles.actionGrid}>
-            {checkoutSteps.map((item) => (
-              <Link key={item.key} className={styles.linkCard} href={item.href}>
-                <strong>{item.label}</strong>
-                <span>Open {item.label.toLowerCase()} step</span>
-              </Link>
-            ))}
-          </div>
+          <Link className={styles.primaryAction} href="/checkout/information">
+            Start guest checkout
+          </Link>
         </div>
       );
     case "information":
@@ -163,27 +241,55 @@ function renderStep(step: CheckoutStepKey) {
           <div className={styles.formGrid}>
             <label className={styles.field}>
               <span>Email address</span>
-              <input placeholder="name@example.com" type="email" />
+              <input
+                placeholder="name@example.com"
+                type="email"
+                value={props.information.email}
+                onChange={(event) => props.updateInformation("email", event.target.value)}
+              />
             </label>
             <label className={styles.field}>
               <span>Full name</span>
-              <input placeholder="Jordan Smith" type="text" />
+              <input
+                placeholder="Jordan Smith"
+                type="text"
+                value={props.information.fullName}
+                onChange={(event) => props.updateInformation("fullName", event.target.value)}
+              />
             </label>
             <label className={styles.field}>
               <span>Address line 1</span>
-              <input placeholder="123 Main Street" type="text" />
+              <input
+                placeholder="123 Main Street"
+                type="text"
+                value={props.information.address1}
+                onChange={(event) => props.updateInformation("address1", event.target.value)}
+              />
             </label>
             <label className={styles.field}>
               <span>Address line 2</span>
-              <input placeholder="Apartment, suite, etc." type="text" />
+              <input
+                placeholder="Apartment, suite, etc."
+                type="text"
+                value={props.information.address2}
+                onChange={(event) => props.updateInformation("address2", event.target.value)}
+              />
             </label>
             <label className={styles.field}>
               <span>City</span>
-              <input placeholder="Los Angeles" type="text" />
+              <input
+                placeholder="Los Angeles"
+                type="text"
+                value={props.information.city}
+                onChange={(event) => props.updateInformation("city", event.target.value)}
+              />
             </label>
             <label className={styles.field}>
               <span>State</span>
-              <select defaultValue="">
+              <select
+                value={props.information.state}
+                onChange={(event) => props.updateInformation("state", event.target.value)}
+              >
                 <option disabled value="">
                   Select a state
                 </option>
@@ -196,16 +302,30 @@ function renderStep(step: CheckoutStepKey) {
             </label>
             <label className={styles.field}>
               <span>ZIP code</span>
-              <input placeholder="90001" type="text" />
+              <input
+                placeholder="90001"
+                type="text"
+                value={props.information.postalCode}
+                onChange={(event) => props.updateInformation("postalCode", event.target.value)}
+              />
             </label>
             <label className={styles.field}>
               <span>Country</span>
               <input readOnly value="United States" />
             </label>
           </div>
-          <Link className={styles.primaryAction} href="/checkout/shipping">
+          <p className={styles.summaryNote}>
+            Guest email and US shipping address are stored in local client state only for
+            this slice.
+          </p>
+          <button
+            className={styles.primaryAction}
+            disabled={!props.canAccessShipping}
+            type="button"
+            onClick={props.continueFromInformation}
+          >
             Continue to shipping
-          </Link>
+          </button>
         </div>
       );
     case "shipping":
@@ -226,9 +346,13 @@ function renderStep(step: CheckoutStepKey) {
             Shipping is fixed at $0.00 for launch in the PRD. No shipping provider or rate
             calculation logic is implemented in this slice.
           </p>
-          <Link className={styles.primaryAction} href="/checkout/payment">
+          <button
+            className={styles.primaryAction}
+            type="button"
+            onClick={props.continueFromShipping}
+          >
             Continue to payment
-          </Link>
+          </button>
         </div>
       );
     case "payment":
@@ -257,9 +381,15 @@ function renderStep(step: CheckoutStepKey) {
             Stripe is confirmed, but this page is UI only. No payment capture, webhook
             handling, or order creation is implemented yet.
           </p>
-          <Link className={styles.primaryAction} href="/checkout/review">
+          <p className={styles.summaryNote}>{checkoutFoundationTodos.payment}</p>
+          <button
+            className={styles.primaryAction}
+            disabled={!props.canAccessPayment}
+            type="button"
+            onClick={props.continueFromPayment}
+          >
             Continue to review
-          </Link>
+          </button>
         </div>
       );
     case "review":
@@ -271,22 +401,50 @@ function renderStep(step: CheckoutStepKey) {
           </div>
           <div className={styles.reviewCard}>
             <h3>Shipping address</h3>
-            <p>Jordan Smith</p>
-            <p>123 Main Street</p>
-            <p>Los Angeles, California 90001</p>
-            <p>United States</p>
+            {props.orderDraft.shippingAddress ? (
+              <>
+                <p>{props.orderDraft.shippingAddress.fullName}</p>
+                <p>{props.orderDraft.shippingAddress.address1}</p>
+                {props.orderDraft.shippingAddress.address2 ? (
+                  <p>{props.orderDraft.shippingAddress.address2}</p>
+                ) : null}
+                <p>
+                  {props.orderDraft.shippingAddress.city}, {props.orderDraft.shippingAddress.state}{" "}
+                  {props.orderDraft.shippingAddress.postalCode}
+                </p>
+                <p>United States</p>
+                <p>{props.orderDraft.shippingAddress.email}</p>
+              </>
+            ) : (
+              <p>Guest information must be completed before review.</p>
+            )}
+          </div>
+          <div className={styles.reviewCard}>
+            <h3>Shipping method</h3>
+            <p>
+              {props.orderDraft.shippingMethod
+                ? `${props.orderDraft.shippingMethod.label} (${formatUsd(
+                    props.orderDraft.shippingMethod.priceUsd,
+                  )})`
+                : "Standard shipping will be set in the shipping step."}
+            </p>
           </div>
           <div className={styles.reviewCard}>
             <h3>Payment</h3>
-            <p>Stripe payment placeholder</p>
+            <p>
+              {props.orderDraft.paymentMethod === "stripe-placeholder"
+                ? "Stripe placeholder boundary preserved for a future payment slice."
+                : ""}
+            </p>
           </div>
           <p className={styles.panelBody}>
             This review step is presentation only. Place-order behavior and confirmation
             side effects remain out of scope for this slice.
           </p>
-          <Link className={styles.primaryAction} href="/checkout/success">
+          <p className={styles.summaryNote}>{checkoutFoundationTodos.submission}</p>
+          <button className={styles.primaryAction} type="button" onClick={props.continueFromReview}>
             Place order UI placeholder
-          </Link>
+          </button>
         </div>
       );
     case "confirmation":
@@ -297,12 +455,14 @@ function renderStep(step: CheckoutStepKey) {
             <h2>Confirmation</h2>
           </div>
           <div className={styles.confirmationCard}>
-            <strong>Order confirmation UI shell</strong>
-            <p>Order #LH-0001</p>
+            <strong>Order draft confirmation UI shell</strong>
+            <p>{props.orderDraft.shippingAddress?.fullName ?? "Guest checkout draft"}</p>
             <p>
-              Confirmation and email delivery are not implemented in this slice. This page
-              exists to complete the PRD checkout flow shell.
+              Confirmation, order submission, payment execution, and email delivery are not
+              implemented in this slice. This page exists to complete the PRD checkout flow
+              shell with client-side draft state only.
             </p>
+            {props.shippingMethod ? <p>{props.shippingMethod.label}</p> : null}
           </div>
           <Link className={styles.secondaryAction} href="/shop">
             Return to shop
