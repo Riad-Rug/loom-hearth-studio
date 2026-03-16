@@ -33,5 +33,23 @@ export type OrderSubmissionPreview = {
   confirmationLabel: string;
 };
 
+export type OrderSubmissionAttemptStatus =
+  | "idle"
+  | "submitting"
+  | "success"
+  | "failure";
+
+export type OrderSubmissionFailure = {
+  status: "placeholder";
+  code: "missing-payload" | "missing-payment-config";
+  message: string;
+};
+
+export type OrderSubmissionAttemptState = {
+  status: OrderSubmissionAttemptStatus;
+  preview: OrderSubmissionPreview | null;
+  failure: OrderSubmissionFailure | null;
+};
+
 export const orderSubmissionTodo =
   "TODO: Replace the placeholder submission contract with a real backend request once Stripe execution and order persistence are implemented.";

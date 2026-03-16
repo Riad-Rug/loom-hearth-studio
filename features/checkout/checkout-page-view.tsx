@@ -15,6 +15,7 @@ import {
   useCheckout,
 } from "@/features/checkout/checkout-provider";
 import {
+  createOrderSubmissionFailure,
   createOrderSubmissionPayload,
   createOrderSubmissionPreview,
   orderSubmissionTodo,
@@ -44,6 +45,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     information,
     orderDraft,
     paymentState,
+    submissionAttempt,
     submissionPreview,
     shippingMethod,
     updatePaymentMode,
@@ -93,6 +95,10 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     stripeOrderPaymentInput,
   });
   const derivedSubmissionPreview = createOrderSubmissionPreview(orderSubmissionPayload);
+  const submissionFailure = createOrderSubmissionFailure({
+    hasPayload: Boolean(orderSubmissionPayload),
+    hasPaymentConfig: stripePaymentDraft.publishableKeyReady,
+  });
 
   return (
     <div className={styles.page}>
@@ -152,6 +158,8 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               orderDraft,
               orderSubmissionPayload,
               paymentState,
+              submissionAttempt,
+              submissionFailure,
               submissionPreview: submissionPreview ?? derivedSubmissionPreview,
               shippingMethod,
               stripePaymentDraft,
@@ -211,12 +219,19 @@ type CheckoutStepRenderProps = {
   canAccessShipping: boolean;
   continueFromInformation: () => void;
   continueFromPayment: () => void;
-  continueFromReview: (submissionPreview: {
-    status: "placeholder";
-    orderReference: string;
-    paymentStatus: "pending";
-    confirmationLabel: string;
-  } | null) => void;
+  continueFromReview: (input: {
+    submissionPreview: {
+      status: "placeholder";
+      orderReference: string;
+      paymentStatus: "pending";
+      confirmationLabel: string;
+    } | null;
+    submissionFailure: {
+      status: "placeholder";
+      code: "missing-payload" | "missing-payment-config";
+      message: string;
+    } | null;
+  }) => void;
   continueFromShipping: () => void;
   information: {
     email: string;
@@ -258,6 +273,25 @@ type CheckoutStepRenderProps = {
   paymentState: {
     selectedMode: "checkout" | "elements" | null;
   };
+  submissionAttempt: {
+    status: "idle" | "submitting" | "success" | "failure";
+    preview: {
+      status: "placeholder";
+      orderReference: string;
+      paymentStatus: "pending";
+      confirmationLabel: string;
+    } | null;
+    failure: {
+      status: "placeholder";
+      code: "missing-payload" | "missing-payment-config";
+      message: string;
+    } | null;
+  };
+  submissionFailure: {
+    status: "placeholder";
+    code: "missing-payload" | "missing-payment-config";
+    message: string;
+  } | null;
   submissionPreview: {
     status: "placeholder";
     orderReference: string;
@@ -597,12 +631,24 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           </p>
           <p className={styles.summaryNote}>{checkoutFoundationTodos.submission}</p>
           <p className={styles.summaryNote}>{orderSubmissionTodo}</p>
+          <div className={styles.reviewCard}>
+            <h3>Submission attempt state</h3>
+            <p>Current state: {props.submissionAttempt.status}</p>
+            {props.submissionFailure ? <p>{props.submissionFailure.message}</p> : null}
+          </div>
           <button
             className={styles.primaryAction}
             type="button"
-            onClick={() => props.continueFromReview(props.submissionPreview)}
+            onClick={() =>
+              props.continueFromReview({
+                submissionPreview: props.submissionPreview,
+                submissionFailure: props.submissionFailure,
+              })
+            }
           >
-            Place order UI placeholder
+            {props.submissionAttempt.status === "submitting"
+              ? "Submitting placeholder..."
+              : "Place order UI placeholder"}
           </button>
         </div>
       );
@@ -615,15 +661,19 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           </div>
           <div className={styles.confirmationCard}>
             <strong>
-              {props.submissionPreview?.confirmationLabel ?? "Order draft confirmation UI shell"}
+              {props.submissionAttempt.status === "failure"
+                ? "Order submission attempt failed"
+                : props.submissionPreview?.confirmationLabel ?? "Order draft confirmation UI shell"}
             </strong>
             <p>{props.orderDraft.shippingAddress?.fullName ?? "Guest checkout draft"}</p>
+            <p>Submission state: {props.submissionAttempt.status}</p>
             {props.submissionPreview ? <p>{props.submissionPreview.orderReference}</p> : null}
             <p>
               Confirmation, order submission, payment execution, and email delivery are not
               implemented in this slice. This page exists to complete the PRD checkout flow
               shell with client-side draft state only.
             </p>
+            {props.submissionAttempt.failure ? <p>{props.submissionAttempt.failure.message}</p> : null}
             {props.submissionPreview ? <p>{props.submissionPreview.paymentStatus}</p> : null}
             {props.shippingMethod ? <p>{props.shippingMethod.label}</p> : null}
           </div>

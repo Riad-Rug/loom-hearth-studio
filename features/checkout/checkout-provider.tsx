@@ -14,7 +14,7 @@ import {
 import type { CartStoreItem } from "@/features/cart/cart-provider";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
-import type { OrderSubmissionPreview } from "@/lib/order";
+import type { OrderSubmissionAttemptState, OrderSubmissionFailure, OrderSubmissionPreview } from "@/lib/order";
 import type { StripeIntegrationMode, StripePaymentMethod } from "@/lib/stripe";
 import type { OrderAddress } from "@/types/domain";
 
@@ -67,6 +67,7 @@ type CheckoutContextValue = {
   canAccessConfirmation: boolean;
   orderDraft: OrderDraft;
   paymentState: CheckoutPaymentState;
+  submissionAttempt: OrderSubmissionAttemptState;
   submissionPreview: OrderSubmissionPreview | null;
   updateInformation: (
     field: keyof CheckoutInformation,
@@ -76,7 +77,10 @@ type CheckoutContextValue = {
   continueFromInformation: () => void;
   continueFromShipping: () => void;
   continueFromPayment: () => void;
-  continueFromReview: (submissionPreview: OrderSubmissionPreview | null) => void;
+  continueFromReview: (input: {
+    submissionPreview: OrderSubmissionPreview | null;
+    submissionFailure: OrderSubmissionFailure | null;
+  }) => void;
 };
 
 const defaultShippingMethod: CheckoutShippingMethod = {
@@ -101,6 +105,12 @@ const initialPaymentState: CheckoutPaymentState = {
   selectedMode: null,
 };
 
+const initialSubmissionAttempt: OrderSubmissionAttemptState = {
+  status: "idle",
+  preview: null,
+  failure: null,
+};
+
 const stepPathMap: Record<Exclude<CheckoutStepKey, "start">, string> = {
   information: "/checkout/information",
   shipping: "/checkout/shipping",
@@ -120,6 +130,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [paymentState, setPaymentState] = useState<CheckoutPaymentState>(initialPaymentState);
   const [hasVisitedConfirmation, setHasVisitedConfirmation] = useState(false);
   const [submissionPreview, setSubmissionPreview] = useState<OrderSubmissionPreview | null>(null);
+  const [submissionAttempt, setSubmissionAttempt] =
+    useState<OrderSubmissionAttemptState>(initialSubmissionAttempt);
 
   useEffect(() => {
     try {
@@ -235,6 +247,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     canAccessConfirmation,
     orderDraft,
     paymentState,
+    submissionAttempt,
     submissionPreview,
     updateInformation(field, value) {
       setInformation((current) => ({
@@ -263,14 +276,39 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
       router.push(stepPathMap.review as Route);
     },
-    continueFromReview(nextSubmissionPreview) {
+    continueFromReview({ submissionFailure, submissionPreview: nextSubmissionPreview }) {
       if (!canAccessReview) {
         return;
       }
 
-      setSubmissionPreview(nextSubmissionPreview);
-      setHasVisitedConfirmation(true);
-      router.push(stepPathMap.confirmation as Route);
+      setSubmissionAttempt({
+        status: "submitting",
+        preview: null,
+        failure: null,
+      });
+
+      window.setTimeout(() => {
+        if (submissionFailure) {
+          setSubmissionPreview(null);
+          setSubmissionAttempt({
+            status: "failure",
+            preview: null,
+            failure: submissionFailure,
+          });
+          setHasVisitedConfirmation(true);
+          router.push(stepPathMap.confirmation as Route);
+          return;
+        }
+
+        setSubmissionPreview(nextSubmissionPreview);
+        setSubmissionAttempt({
+          status: "success",
+          preview: nextSubmissionPreview,
+          failure: null,
+        });
+        setHasVisitedConfirmation(true);
+        router.push(stepPathMap.confirmation as Route);
+      }, 350);
     },
   };
 

@@ -5,6 +5,7 @@ import type {
 } from "@/lib/stripe";
 
 import type {
+  OrderSubmissionFailure,
   OrderSubmissionPayload,
   OrderSubmissionPreview,
 } from "@/lib/order/contracts";
@@ -57,4 +58,28 @@ export function createOrderSubmissionPreview(
     paymentStatus: payload.paymentStatus,
     confirmationLabel: "Order submission placeholder only",
   };
+}
+
+export function createOrderSubmissionFailure(input: {
+  hasPayload: boolean;
+  hasPaymentConfig: boolean;
+}): OrderSubmissionFailure | null {
+  if (!input.hasPayload) {
+    return {
+      status: "placeholder",
+      code: "missing-payload",
+      message: "Order submission payload is incomplete. Review the checkout details before retrying.",
+    };
+  }
+
+  if (!input.hasPaymentConfig) {
+    return {
+      status: "placeholder",
+      code: "missing-payment-config",
+      message:
+        "Stripe publishable key is still missing in this placeholder environment, so the submission attempt cannot proceed beyond the boundary state.",
+    };
+  }
+
+  return null;
 }
