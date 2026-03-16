@@ -344,8 +344,8 @@ type CheckoutStepRenderProps = {
         statusLabel: string;
         publishableKeyLabel: string;
         missingConfigLabel: string | null;
-        sessionLabel: string;
-        sessionStatusLabel: string;
+        sessionResponseLabel: string;
+        sessionResponseStatusLabel: string;
         paymentStatusLabel: string;
         readinessLabel: string;
       };
@@ -472,8 +472,11 @@ type CheckoutStepRenderProps = {
         checkoutMode: "guest";
       };
     } | null;
-    session: {
+    checkoutSessionResponse: {
       id: string;
+      mode: "checkout";
+      url?: string;
+      expiresAt?: string;
       status: "placeholder";
     } | null;
     paymentStatus: "pending";
@@ -716,10 +719,10 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             {props.nonConfirmationRouteViewModel.payment.boundary.missingConfigLabel ? (
               <p>{props.nonConfirmationRouteViewModel.payment.boundary.missingConfigLabel}</p>
             ) : null}
-            <p>{props.nonConfirmationRouteViewModel.payment.boundary.sessionLabel}</p>
-            <p>{props.nonConfirmationRouteViewModel.payment.boundary.sessionStatusLabel}</p>
-            <p>{props.nonConfirmationRouteViewModel.payment.boundary.paymentStatusLabel}</p>
-            <p>{props.nonConfirmationRouteViewModel.payment.boundary.readinessLabel}</p>
+            <p>{props.nonConfirmationRouteViewModel.payment.boundary.sessionResponseLabel}</p>
+            <p>{props.nonConfirmationRouteViewModel.payment.boundary.sessionResponseStatusLabel}</p>
+          <p>{props.nonConfirmationRouteViewModel.payment.boundary.paymentStatusLabel}</p>
+          <p>{props.nonConfirmationRouteViewModel.payment.boundary.readinessLabel}</p>
           </div>
           <p className={styles.summaryNote}>{checkoutFoundationTodos.payment}</p>
           <p className={styles.summaryNote}>{stripeHelpersTodo.checkoutState}</p>

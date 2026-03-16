@@ -41,8 +41,8 @@ export type CheckoutNonConfirmationRouteViewModel = {
       statusLabel: string;
       publishableKeyLabel: string;
       missingConfigLabel: string | null;
-      sessionLabel: string;
-      sessionStatusLabel: string;
+      sessionResponseLabel: string;
+      sessionResponseStatusLabel: string;
       paymentStatusLabel: string;
       readinessLabel: string;
     };
@@ -80,7 +80,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
     | "missingConfig"
     | "checkoutService"
     | "checkoutSessionRequest"
-    | "session"
+    | "checkoutSessionResponse"
     | "paymentStatus"
     | "isReadyForPlaceholderFlow"
   >;
@@ -142,13 +142,13 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
         missingConfigLabel: input.stripePaymentDraft.missingConfig.length
           ? `Missing config: ${input.stripePaymentDraft.missingConfig.join(", ")}`
           : null,
-        sessionLabel: `Session: ${
-          input.stripePaymentDraft.session
-            ? input.stripePaymentDraft.session.id
+        sessionResponseLabel: `Session response: ${
+          input.stripePaymentDraft.checkoutSessionResponse
+            ? input.stripePaymentDraft.checkoutSessionResponse.id
             : "Not created"
         }`,
-        sessionStatusLabel: `Session status: ${
-          input.stripePaymentDraft.session?.status ?? "Not created"
+        sessionResponseStatusLabel: `Session response status: ${
+          input.stripePaymentDraft.checkoutSessionResponse?.status ?? "Not created"
         }`,
         paymentStatusLabel: `Payment status: ${input.stripePaymentDraft.paymentStatus}`,
         readinessLabel: `Review readiness: ${

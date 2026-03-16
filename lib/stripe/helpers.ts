@@ -6,8 +6,8 @@ import {
 import type {
   StripeCheckoutPaymentDraft,
   StripeCheckoutSessionRequest,
+  StripeCheckoutSessionResponse,
   StripeOrderPaymentInput,
-  StripePaymentSession,
 } from "@/lib/stripe/contracts";
 
 export function createStripeOrderPaymentInput(input: {
@@ -82,7 +82,7 @@ export function createStripeCheckoutPaymentDraft(
       missingServerConfig: checkoutConfig.missingServerConfig,
     },
     checkoutSessionRequest,
-    session: checkoutSessionRequest
+    checkoutSessionResponse: checkoutSessionRequest
       ? createStripeCheckoutSessionPlaceholder(checkoutSessionRequest)
       : null,
     paymentStatus: "pending",
@@ -113,10 +113,11 @@ export function createStripeCheckoutSessionRequest(
 
 export function createStripeCheckoutSessionPlaceholder(
   request: StripeCheckoutSessionRequest,
-): StripePaymentSession {
+): StripeCheckoutSessionResponse {
   return {
     id: "stripe-checkout-session-placeholder",
     mode: request.mode,
+    url: request.successUrl,
     status: "placeholder",
   };
 }

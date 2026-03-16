@@ -47,11 +47,11 @@ export type StripeCheckoutSessionRequest = {
   };
 };
 
-export type StripePaymentSession = {
+export type StripeCheckoutSessionResponse = {
   id: string;
   mode: StripeIntegrationMode;
-  clientSecret?: string;
-  redirectUrl?: string;
+  url?: string;
+  expiresAt?: string;
   status: "placeholder";
 };
 
@@ -75,7 +75,7 @@ export type StripeCheckoutPaymentDraft = {
   paymentStepStatus: StripePaymentStepStatus;
   checkoutService: StripeCheckoutServiceBoundary;
   checkoutSessionRequest: StripeCheckoutSessionRequest | null;
-  session: StripePaymentSession | null;
+  checkoutSessionResponse: StripeCheckoutSessionResponse | null;
   paymentStatus: Extract<PaymentStatus, "pending">;
 };
 
@@ -85,8 +85,8 @@ export type StripeRefundReference = {
 };
 
 export const stripeContractsTodo = {
-  session:
-    "TODO: Replace the placeholder Stripe session shape with the final Stripe Checkout contract when execution is implemented.",
+  sessionCreation:
+    "TODO: Replace the placeholder Checkout session request/response shapes with the real Stripe Checkout session-creation contract when server execution is implemented.",
   checkoutService:
     "TODO: Wire the Checkout service boundary to real Stripe Checkout session creation after server execution is added.",
   refund:
