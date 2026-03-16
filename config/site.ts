@@ -6,6 +6,7 @@ export const siteConfig = {
   locale: "en-US",
   currency: "USD",
   market: "US",
+  ogImagePath: "/og/default-placeholder.jpg",
   tagline: "Handcrafted Moroccan rugs and home decor",
   announcement: "United States launch. USD only.",
   primaryNav: [

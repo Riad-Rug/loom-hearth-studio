@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { JsonLd } from "@/components/seo/json-ld";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { siteConfig } from "@/config/site";
+import { organizationSchema, websiteSchema } from "@/lib/seo/schema";
 
 import "./globals.css";
 
@@ -24,6 +26,13 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     locale: siteConfig.locale,
     type: "website",
+    siteName: siteConfig.name,
+    url: siteConfig.siteUrl,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description,
   },
 };
 
@@ -35,6 +44,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
+        <JsonLd data={organizationSchema()} />
+        <JsonLd data={websiteSchema()} />
         <div className="site-shell">
           <SiteHeader />
           <main className="site-main">{children}</main>
