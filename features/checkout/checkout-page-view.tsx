@@ -338,10 +338,11 @@ type CheckoutStepRenderProps = {
     emailBoundary: {
       headline: string;
       stateLabel: string;
-      to: string | null;
-      subject: string | null;
+      toLabel: string | null;
+      subjectLabel: string | null;
       itemCountLabel: string | null;
       totalLabel: string | null;
+      previewTextLabel: string | null;
     };
   };
   reviewViewModel: {
@@ -766,17 +767,20 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           <div className={styles.confirmationCard}>
             <strong>{props.confirmationViewModel.emailBoundary.headline}</strong>
             <p>{props.confirmationViewModel.emailBoundary.stateLabel}</p>
-            {props.confirmationViewModel.emailBoundary.to ? (
-              <p>To: {props.confirmationViewModel.emailBoundary.to}</p>
+            {props.confirmationViewModel.emailBoundary.toLabel ? (
+              <p>{props.confirmationViewModel.emailBoundary.toLabel}</p>
             ) : null}
-            {props.confirmationViewModel.emailBoundary.subject ? (
-              <p>Subject: {props.confirmationViewModel.emailBoundary.subject}</p>
+            {props.confirmationViewModel.emailBoundary.subjectLabel ? (
+              <p>{props.confirmationViewModel.emailBoundary.subjectLabel}</p>
             ) : null}
             {props.confirmationViewModel.emailBoundary.itemCountLabel ? (
               <p>{props.confirmationViewModel.emailBoundary.itemCountLabel}</p>
             ) : null}
             {props.confirmationViewModel.emailBoundary.totalLabel ? (
               <p>{props.confirmationViewModel.emailBoundary.totalLabel}</p>
+            ) : null}
+            {props.confirmationViewModel.emailBoundary.previewTextLabel ? (
+              <p>{props.confirmationViewModel.emailBoundary.previewTextLabel}</p>
             ) : null}
           </div>
           <p className={styles.summaryNote}>{orderConfirmationEmailTodo}</p>

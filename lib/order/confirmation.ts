@@ -1,4 +1,8 @@
-import type { OrderConfirmationEmailPayload, OrderConfirmationEmailPreview } from "@/lib/email";
+import {
+  createOrderConfirmationEmailPresentation,
+  type OrderConfirmationEmailPayload,
+  type OrderConfirmationEmailPreview,
+} from "@/lib/email";
 import type {
   OrderSubmissionAttemptState,
   OrderSubmissionPreview,
@@ -13,22 +17,8 @@ export type CheckoutConfirmationViewModel = {
   failureMessage: string | null;
   paymentStatusLabel: string | null;
   shippingLabel: string | null;
-  emailBoundary: {
-    headline: string;
-    stateLabel: string;
-    to: string | null;
-    subject: string | null;
-    itemCountLabel: string | null;
-    totalLabel: string | null;
-  };
+  emailBoundary: ReturnType<typeof createOrderConfirmationEmailPresentation>;
 };
-
-function formatConfirmationTotal(totalUsd: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(totalUsd);
-}
 
 export function createCheckoutConfirmationViewModel(input: {
   submissionAttempt: OrderSubmissionAttemptState;
@@ -53,20 +43,9 @@ export function createCheckoutConfirmationViewModel(input: {
     failureMessage: submissionAttempt.failure?.message ?? null,
     paymentStatusLabel: submissionPreview?.paymentStatus ?? null,
     shippingLabel: input.shippingLabel,
-    emailBoundary: {
-      headline: "Order confirmation email boundary",
-      stateLabel:
-        input.orderConfirmationEmailPayload && input.orderConfirmationEmailPreview
-          ? "State: placeholder payload ready"
-          : "No confirmation email payload is available until the submission attempt succeeds.",
-      to: input.orderConfirmationEmailPayload?.to ?? null,
-      subject: input.orderConfirmationEmailPreview?.subject ?? null,
-      itemCountLabel: input.orderConfirmationEmailPayload
-        ? `Items: ${input.orderConfirmationEmailPayload.itemCount}`
-        : null,
-      totalLabel: input.orderConfirmationEmailPayload
-        ? `Total: ${formatConfirmationTotal(input.orderConfirmationEmailPayload.totalUsd)} ${input.orderConfirmationEmailPayload.currency}`
-        : null,
-    },
+    emailBoundary: createOrderConfirmationEmailPresentation({
+      payload: input.orderConfirmationEmailPayload,
+      preview: input.orderConfirmationEmailPreview,
+    }),
   };
 }
