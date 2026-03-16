@@ -5,10 +5,14 @@ import type {
 } from "@/lib/stripe";
 
 import type {
+  OrderCreationBoundary,
+  OrderCreationRequest,
+  OrderCreationResult,
   OrderSubmissionFailure,
   OrderSubmissionPayload,
   OrderSubmissionPreview,
 } from "@/lib/order/contracts";
+import type { StripeCheckoutPaymentConfirmation } from "@/lib/stripe";
 
 export function createOrderSubmissionPayload(input: {
   orderDraft: OrderDraft;
@@ -82,4 +86,60 @@ export function createOrderSubmissionFailure(input: {
   }
 
   return null;
+}
+
+export function createOrderCreationBoundary(): OrderCreationBoundary {
+  return {
+    source: "stripe-checkout-confirmation",
+    paymentProvider: "stripe",
+    status: "ready-placeholder",
+    acceptedPaymentStatuses: ["paid"],
+  };
+}
+
+export function createOrderCreationRequestFromStripeConfirmation(
+  confirmation: StripeCheckoutPaymentConfirmation | null,
+): OrderCreationResult {
+  const boundary = createOrderCreationBoundary();
+
+  if (!confirmation) {
+    return {
+      status: "ignored",
+      request: null,
+      message: "Stripe Checkout confirmation is required before order creation can be prepared.",
+    };
+  }
+
+  if (confirmation.paymentStatus !== "paid") {
+    return {
+      status: "ignored",
+      request: null,
+      message:
+        "Only confirmed paid Stripe Checkout events can hand off into backend order creation.",
+    };
+  }
+
+  const request: OrderCreationRequest = {
+    source: "stripe-checkout-webhook",
+    checkoutMode: confirmation.checkoutMode,
+    checkoutSessionId: confirmation.checkoutSessionId,
+    paymentIntentId: confirmation.paymentIntentId,
+    paymentMethod: "stripe-checkout",
+    paymentStatus: boundary.acceptedPaymentStatuses[0],
+    customerEmail: confirmation.customerEmail,
+    orderReference: confirmation.orderReference,
+    lineItems: [],
+    metadata: {
+      stripeEventId: confirmation.eventId,
+      stripeEventType: confirmation.eventType,
+      checkoutMode: confirmation.checkoutMode,
+    },
+  };
+
+  return {
+    status: "ready",
+    request,
+    message:
+      "Stripe Checkout payment confirmation is ready to hand off into backend order creation.",
+  };
 }

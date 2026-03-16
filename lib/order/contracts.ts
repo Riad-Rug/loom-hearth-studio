@@ -1,7 +1,10 @@
 import type { PaymentStatus } from "@/types/domain/order";
 
 import type { OrderDraft } from "@/features/checkout/checkout-provider";
-import type { StripeCheckoutPaymentDraft } from "@/lib/stripe";
+import type {
+  StripeCheckoutPaymentConfirmation,
+  StripeCheckoutPaymentDraft,
+} from "@/lib/stripe";
 
 export type OrderSubmissionPayload = {
   checkoutMode: OrderDraft["checkoutMode"];
@@ -51,5 +54,49 @@ export type OrderSubmissionAttemptState = {
   failure: OrderSubmissionFailure | null;
 };
 
+export type OrderCreationRequest = {
+  source: "stripe-checkout-webhook";
+  checkoutMode: OrderDraft["checkoutMode"];
+  checkoutSessionId: string;
+  paymentIntentId: string | null;
+  paymentMethod: "stripe-checkout";
+  paymentStatus: Extract<PaymentStatus, "paid">;
+  customerEmail: string | null;
+  orderReference: string | null;
+  lineItems: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    unitAmountUsd: number | null;
+  }>;
+  metadata: {
+    stripeEventId: string;
+    stripeEventType: StripeCheckoutPaymentConfirmation["eventType"];
+    checkoutMode: StripeCheckoutPaymentConfirmation["checkoutMode"];
+  };
+};
+
+export type OrderCreationResult = {
+  status: "ready" | "ignored" | "configuration-error";
+  request: OrderCreationRequest | null;
+  message: string;
+};
+
+export type OrderCreationBoundary = {
+  source: "stripe-checkout-confirmation";
+  paymentProvider: "stripe";
+  status: "ready-placeholder";
+  acceptedPaymentStatuses: ReadonlyArray<Extract<PaymentStatus, "paid">>;
+};
+
 export const orderSubmissionTodo =
   "TODO: Replace the placeholder submission contract with a real backend request once Stripe execution and order persistence are implemented.";
+
+export const orderCreationTodo = {
+  boundary:
+    "TODO: Keep backend order creation scoped to confirmed Stripe Checkout payment only until real persistence is implemented.",
+  persistence:
+    "TODO: Hand the order-creation request to a real repository/service only after database persistence is implemented.",
+  sideEffects:
+    "TODO: Trigger email and fulfillment side effects only after real order persistence exists.",
+} as const;
