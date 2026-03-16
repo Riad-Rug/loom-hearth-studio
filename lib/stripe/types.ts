@@ -5,6 +5,7 @@ import type {
   StripeCheckoutSessionCreationResult,
   StripeCheckoutSessionRequest,
   StripeCheckoutSessionResponse,
+  StripeWebhookSignatureVerificationResult,
   StripeRefundReference,
 } from "@/lib/stripe/contracts";
 
@@ -19,6 +20,10 @@ export interface StripeCheckoutService {
     payload: string,
     signatureHeader: string | null,
   ): Promise<StripeCheckoutPaymentConfirmationResult>;
+  verifyCheckoutWebhookSignature(
+    payload: string,
+    signatureHeader: string | null,
+  ): Promise<StripeWebhookSignatureVerificationResult>;
   getPaymentStatus(referenceId: string): Promise<Order["paymentStatus"]>;
   refundPayment(reference: StripeRefundReference): Promise<void>;
 }

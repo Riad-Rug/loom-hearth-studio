@@ -5,15 +5,21 @@ import {
   getStripeWebhookSignatureHeader,
   stripeConfirmationTodo,
 } from "@/lib/stripe";
+import { verifyStripeCheckoutWebhookSignature } from "@/lib/stripe/service";
 
 export async function POST(request: Request) {
   const payload = await request.text();
   const signatureHeader = getStripeWebhookSignatureHeader({
     headers: request.headers,
   });
+  const signatureVerification = verifyStripeCheckoutWebhookSignature({
+    payload,
+    signatureHeader,
+  });
   const receipt = createStripeCheckoutWebhookReceipt({
     payload,
     signatureHeader,
+    signatureVerification,
   });
 
   return NextResponse.json(
@@ -27,7 +33,9 @@ export async function POST(request: Request) {
           ? 200
           : receipt.status === "invalid-payload"
             ? 400
-            : 503,
+            : receipt.confirmationResult?.status === "signature-error"
+              ? 400
+              : 503,
     },
   );
 }

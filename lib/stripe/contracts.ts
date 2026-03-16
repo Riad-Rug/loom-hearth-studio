@@ -159,10 +159,22 @@ export type StripeCheckoutPaymentConfirmationResult = {
   message: string;
 };
 
+export type StripeWebhookSignature = {
+  timestamp: string;
+  signatures: string[];
+  scheme: "v1";
+};
+
+export type StripeWebhookSignatureVerificationResult = {
+  status: "verified" | "missing-header" | "invalid-header" | "configuration-error" | "mismatch";
+  message: string;
+};
+
 export type StripeCheckoutWebhookReceipt = {
   status: "accepted" | "ignored" | "configuration-error" | "invalid-payload";
   message: string;
   signaturePresent: boolean;
+  signatureVerification: StripeWebhookSignatureVerificationResult;
   eventType: StripeCheckoutWebhookEventType | null;
   eventId: string | null;
   confirmationResult: StripeCheckoutPaymentConfirmationResult | null;

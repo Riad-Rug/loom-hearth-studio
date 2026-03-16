@@ -1,13 +1,18 @@
 import "server-only";
 
+import { createHmac, timingSafeEqual } from "node:crypto";
+
 import {
   getStripeCheckoutServiceConfig,
+  getStripeCheckoutWebhookConfig,
   launchStripeIntegrationMode,
 } from "@/lib/stripe/config";
 import type {
   StripeCheckoutSessionCreationResult,
   StripeCheckoutSessionRequest,
   StripeCheckoutSessionResponse,
+  StripeWebhookSignature,
+  StripeWebhookSignatureVerificationResult,
 } from "@/lib/stripe/contracts";
 
 export async function createStripeCheckoutSession(
@@ -82,6 +87,54 @@ export async function createStripeCheckoutSessionWithResult(
   };
 }
 
+export function verifyStripeCheckoutWebhookSignature(input: {
+  payload: string;
+  signatureHeader: string | null;
+}): StripeWebhookSignatureVerificationResult {
+  const config = getStripeCheckoutWebhookConfig();
+
+  if (!config.webhookSecret) {
+    return {
+      status: "configuration-error",
+      message:
+        "Stripe webhook secret is missing for Checkout webhook signature verification.",
+    };
+  }
+
+  if (!input.signatureHeader) {
+    return {
+      status: "missing-header",
+      message: "Stripe webhook signature header is missing.",
+    };
+  }
+
+  const parsedSignature = parseStripeWebhookSignature(input.signatureHeader);
+
+  if (!parsedSignature) {
+    return {
+      status: "invalid-header",
+      message: "Stripe webhook signature header is malformed.",
+    };
+  }
+
+  const expectedSignature = createHmac("sha256", config.webhookSecret)
+    .update(`${parsedSignature.timestamp}.${input.payload}`)
+    .digest("hex");
+  const hasMatchingSignature = parsedSignature.signatures.some((candidate) =>
+    compareStripeSignatures(candidate, expectedSignature),
+  );
+
+  return hasMatchingSignature
+    ? {
+        status: "verified",
+        message: "Stripe Checkout webhook signature verified.",
+      }
+    : {
+        status: "mismatch",
+        message: "Stripe Checkout webhook signature did not match the expected value.",
+      };
+}
+
 function createStripeCheckoutSessionFormBody(input: StripeCheckoutSessionRequest) {
   const formBody = new URLSearchParams();
 
@@ -106,4 +159,50 @@ function createStripeCheckoutSessionFormBody(input: StripeCheckoutSessionRequest
   });
 
   return formBody;
+}
+
+function parseStripeWebhookSignature(value: string): StripeWebhookSignature | null {
+  const parts = value.split(",");
+  let timestamp: string | null = null;
+  const signatures: string[] = [];
+
+  for (const part of parts) {
+    const [key, rawValue] = part.split("=", 2);
+    const trimmedKey = key?.trim();
+    const trimmedValue = rawValue?.trim();
+
+    if (!trimmedKey || !trimmedValue) {
+      continue;
+    }
+
+    if (trimmedKey === "t") {
+      timestamp = trimmedValue;
+      continue;
+    }
+
+    if (trimmedKey === "v1") {
+      signatures.push(trimmedValue);
+    }
+  }
+
+  if (!timestamp || signatures.length === 0) {
+    return null;
+  }
+
+  return {
+    timestamp,
+    signatures,
+    scheme: "v1",
+  };
+}
+
+function compareStripeSignatures(candidate: string, expected: string) {
+  const candidateBuffer = Buffer.from(candidate, "hex");
+  const expectedBuffer = Buffer.from(expected, "hex");
+
+  if (candidateBuffer.length !== expectedBuffer.length) {
+    return false;
+  }
+
+  return timingSafeEqual(candidateBuffer, expectedBuffer);
 }
