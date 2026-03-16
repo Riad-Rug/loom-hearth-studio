@@ -338,14 +338,29 @@ type CheckoutStepRenderProps = {
     payment: {
       body: string;
       launchModeLabel: string;
+      handoffLabel: string;
       boundary: {
         modeLabel: string;
         statusLabel: string;
         publishableKeyLabel: string;
         missingConfigLabel: string | null;
         sessionLabel: string;
+        sessionStatusLabel: string;
         paymentStatusLabel: string;
         readinessLabel: string;
+      };
+      checkoutService: {
+        statusLabel: string;
+        successUrlLabel: string;
+        cancelUrlLabel: string;
+        missingClientConfigLabel: string | null;
+        missingServerConfigLabel: string | null;
+      };
+      checkoutSessionRequest: {
+        customerEmailLabel: string | null;
+        lineItemsLabel: string | null;
+        totalLabel: string | null;
+        emptyLabel: string | null;
       };
       actionLabel: string;
     };
@@ -429,8 +444,37 @@ type CheckoutStepRenderProps = {
     missingConfig: Array<"NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY">;
     isReadyForPlaceholderFlow: boolean;
     paymentStepStatus: "launch-mode-missing-config" | "ready-placeholder";
+    checkoutService: {
+      mode: "checkout";
+      status: "missing-client-config" | "missing-server-config" | "ready-placeholder";
+      successUrl: string;
+      cancelUrl: string;
+      missingClientConfig: Array<"NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY">;
+      missingServerConfig: Array<"STRIPE_SECRET_KEY" | "STRIPE_WEBHOOK_SECRET">;
+    };
+    checkoutSessionRequest: {
+      mode: "checkout";
+      customerEmail?: string;
+      successUrl: string;
+      cancelUrl: string;
+      currency: "USD";
+      subtotalUsd: number;
+      shippingUsd: 0;
+      taxUsd: number;
+      totalUsd: number;
+      lineItems: Array<{
+        id: string;
+        name: string;
+        quantity: number;
+        unitAmountUsd: number;
+      }>;
+      metadata: {
+        checkoutMode: "guest";
+      };
+    } | null;
     session: {
       id: string;
+      status: "placeholder";
     } | null;
     paymentStatus: "pending";
   };
@@ -598,15 +642,69 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
               <h3>Stripe launch mode</h3>
               <p>{props.nonConfirmationRouteViewModel.payment.launchModeLabel}</p>
             </div>
-            <div className={styles.formGrid}>
-              <label className={styles.field}>
-                <span>Cardholder name</span>
-                <input placeholder="Jordan Smith" type="text" />
-              </label>
-              <label className={styles.field}>
-                <span>Card details</span>
-                <input placeholder="•••• •••• •••• ••••" type="text" />
-              </label>
+            <div className={styles.reviewCard}>
+              <h3>Hosted Checkout handoff</h3>
+              <p>{props.nonConfirmationRouteViewModel.payment.handoffLabel}</p>
+            </div>
+            <div className={styles.reviewCard}>
+              <h3>Checkout service boundary</h3>
+              <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.statusLabel}</p>
+              <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.successUrlLabel}</p>
+              <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.cancelUrlLabel}</p>
+              {props.nonConfirmationRouteViewModel.payment.checkoutService
+                .missingClientConfigLabel ? (
+                <p>
+                  {
+                    props.nonConfirmationRouteViewModel.payment.checkoutService
+                      .missingClientConfigLabel
+                  }
+                </p>
+              ) : null}
+              {props.nonConfirmationRouteViewModel.payment.checkoutService
+                .missingServerConfigLabel ? (
+                <p>
+                  {
+                    props.nonConfirmationRouteViewModel.payment.checkoutService
+                      .missingServerConfigLabel
+                  }
+                </p>
+              ) : null}
+            </div>
+            <div className={styles.reviewCard}>
+              <h3>Checkout session request</h3>
+              {props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest.emptyLabel ? (
+                <p>{props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest.emptyLabel}</p>
+              ) : (
+                <>
+                  {props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
+                    .customerEmailLabel ? (
+                    <p>
+                      {
+                        props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
+                          .customerEmailLabel
+                      }
+                    </p>
+                  ) : null}
+                  {props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
+                    .lineItemsLabel ? (
+                    <p>
+                      {
+                        props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
+                          .lineItemsLabel
+                      }
+                    </p>
+                  ) : null}
+                  {props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
+                    .totalLabel ? (
+                    <p>
+                      {
+                        props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
+                          .totalLabel
+                      }
+                    </p>
+                  ) : null}
+                </>
+              )}
             </div>
           </div>
           <p className={styles.panelBody}>{props.nonConfirmationRouteViewModel.payment.body}</p>
@@ -619,6 +717,7 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
               <p>{props.nonConfirmationRouteViewModel.payment.boundary.missingConfigLabel}</p>
             ) : null}
             <p>{props.nonConfirmationRouteViewModel.payment.boundary.sessionLabel}</p>
+            <p>{props.nonConfirmationRouteViewModel.payment.boundary.sessionStatusLabel}</p>
             <p>{props.nonConfirmationRouteViewModel.payment.boundary.paymentStatusLabel}</p>
             <p>{props.nonConfirmationRouteViewModel.payment.boundary.readinessLabel}</p>
           </div>

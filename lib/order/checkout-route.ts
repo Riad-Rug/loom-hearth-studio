@@ -35,14 +35,29 @@ export type CheckoutNonConfirmationRouteViewModel = {
   payment: {
     body: string;
     launchModeLabel: string;
+    handoffLabel: string;
     boundary: {
       modeLabel: string;
       statusLabel: string;
       publishableKeyLabel: string;
       missingConfigLabel: string | null;
       sessionLabel: string;
+      sessionStatusLabel: string;
       paymentStatusLabel: string;
       readinessLabel: string;
+    };
+    checkoutService: {
+      statusLabel: string;
+      successUrlLabel: string;
+      cancelUrlLabel: string;
+      missingClientConfigLabel: string | null;
+      missingServerConfigLabel: string | null;
+    };
+    checkoutSessionRequest: {
+      customerEmailLabel: string | null;
+      lineItemsLabel: string | null;
+      totalLabel: string | null;
+      emptyLabel: string | null;
     };
     actionLabel: string;
   };
@@ -63,6 +78,8 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
     | "paymentStepStatus"
     | "publishableKeyReady"
     | "missingConfig"
+    | "checkoutService"
+    | "checkoutSessionRequest"
     | "session"
     | "paymentStatus"
     | "isReadyForPlaceholderFlow"
@@ -110,8 +127,10 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
     },
     payment: {
       body:
-        "Stripe Checkout is the only supported launch path in this boundary layer. No payment capture, webhook handling, or order creation is implemented yet.",
+        "Stripe Checkout is the only supported launch path in this boundary layer. This step now reflects the hosted Checkout handoff state only. No payment capture, webhook handling, or order creation is implemented yet.",
       launchModeLabel: `Launch mode: Stripe ${input.stripePaymentDraft.launchMode}`,
+      handoffLabel:
+        "Hosted Stripe Checkout remains placeholder-only in this slice. The current UI consumes the Checkout service boundary and session-request draft without executing Stripe.",
       boundary: {
         modeLabel: `Mode: ${input.stripePaymentDraft.mode}`,
         statusLabel: `Status: ${input.stripePaymentDraft.paymentStepStatus}`,
@@ -128,6 +147,9 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
             ? input.stripePaymentDraft.session.id
             : "Not created"
         }`,
+        sessionStatusLabel: `Session status: ${
+          input.stripePaymentDraft.session?.status ?? "Not created"
+        }`,
         paymentStatusLabel: `Payment status: ${input.stripePaymentDraft.paymentStatus}`,
         readinessLabel: `Review readiness: ${
           input.stripePaymentDraft.isReadyForPlaceholderFlow
@@ -135,6 +157,34 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
             : "Unavailable"
         }`,
       },
+      checkoutService: {
+        statusLabel: `Service status: ${input.stripePaymentDraft.checkoutService.status}`,
+        successUrlLabel: `Success URL: ${input.stripePaymentDraft.checkoutService.successUrl}`,
+        cancelUrlLabel: `Cancel URL: ${input.stripePaymentDraft.checkoutService.cancelUrl}`,
+        missingClientConfigLabel: input.stripePaymentDraft.checkoutService.missingClientConfig
+          .length
+          ? `Missing client config: ${input.stripePaymentDraft.checkoutService.missingClientConfig.join(", ")}`
+          : null,
+        missingServerConfigLabel: input.stripePaymentDraft.checkoutService.missingServerConfig
+          .length
+          ? `Missing server config: ${input.stripePaymentDraft.checkoutService.missingServerConfig.join(", ")}`
+          : null,
+      },
+      checkoutSessionRequest: input.stripePaymentDraft.checkoutSessionRequest
+        ? {
+            customerEmailLabel: input.stripePaymentDraft.checkoutSessionRequest.customerEmail
+              ? `Customer email: ${input.stripePaymentDraft.checkoutSessionRequest.customerEmail}`
+              : "Customer email: not collected yet",
+            lineItemsLabel: `Line items: ${input.stripePaymentDraft.checkoutSessionRequest.lineItems.length}`,
+            totalLabel: `Checkout total: $${input.stripePaymentDraft.checkoutSessionRequest.totalUsd.toFixed(2)}`,
+            emptyLabel: null,
+          }
+        : {
+            customerEmailLabel: null,
+            lineItemsLabel: null,
+            totalLabel: null,
+            emptyLabel: "Checkout session request will be prepared once cart items are present.",
+          },
       actionLabel: "Continue to review",
     },
   };
