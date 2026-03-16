@@ -1,10 +1,13 @@
 import {
+  getStripeCheckoutServiceConfig,
   getStripePublicConfig,
   stripeConfigTodo,
 } from "@/lib/stripe/config";
 import type {
   StripeCheckoutPaymentDraft,
+  StripeCheckoutSessionRequest,
   StripeOrderPaymentInput,
+  StripePaymentSession,
 } from "@/lib/stripe/contracts";
 
 export function createStripeOrderPaymentInput(input: {
@@ -43,6 +46,7 @@ export function createStripeCheckoutPaymentDraft(
   paymentInput: StripeOrderPaymentInput,
 ): StripeCheckoutPaymentDraft {
   const config = getStripePublicConfig();
+  const checkoutConfig = getStripeCheckoutServiceConfig();
   const mode = config.selectedMode;
   const publishableKeyReady = Boolean(config.publishableKey);
   const missingConfig: StripeCheckoutPaymentDraft["missingConfig"] = publishableKeyReady
@@ -51,6 +55,14 @@ export function createStripeCheckoutPaymentDraft(
   const paymentStepStatus = publishableKeyReady
     ? "ready-placeholder"
     : "launch-mode-missing-config";
+  const checkoutSessionRequest = paymentInput.lineItems.length
+    ? createStripeCheckoutSessionRequest(paymentInput)
+    : null;
+  const checkoutServiceStatus = missingConfig.length
+    ? "missing-client-config"
+    : checkoutConfig.missingServerConfig.length
+      ? "missing-server-config"
+      : "ready-placeholder";
 
   return {
     provider: "stripe",
@@ -61,19 +73,56 @@ export function createStripeCheckoutPaymentDraft(
     missingConfig,
     isReadyForPlaceholderFlow: true,
     paymentStepStatus,
-    session: paymentInput.lineItems.length
-      ? {
-          id: "stripe-session-placeholder",
-          mode,
-          status: "placeholder",
-        }
+    checkoutService: {
+      mode: checkoutConfig.mode,
+      status: checkoutServiceStatus,
+      successUrl: checkoutConfig.successUrl,
+      cancelUrl: checkoutConfig.cancelUrl,
+      missingClientConfig: checkoutConfig.missingClientConfig,
+      missingServerConfig: checkoutConfig.missingServerConfig,
+    },
+    checkoutSessionRequest,
+    session: checkoutSessionRequest
+      ? createStripeCheckoutSessionPlaceholder(checkoutSessionRequest)
       : null,
     paymentStatus: "pending",
   };
 }
 
+export function createStripeCheckoutSessionRequest(
+  paymentInput: StripeOrderPaymentInput,
+): StripeCheckoutSessionRequest {
+  const config = getStripeCheckoutServiceConfig();
+
+  return {
+    mode: config.mode,
+    customerEmail: paymentInput.email,
+    successUrl: config.successUrl,
+    cancelUrl: config.cancelUrl,
+    currency: paymentInput.currency,
+    subtotalUsd: paymentInput.subtotalUsd,
+    shippingUsd: paymentInput.shippingUsd,
+    taxUsd: paymentInput.taxUsd,
+    totalUsd: paymentInput.totalUsd,
+    lineItems: paymentInput.lineItems,
+    metadata: {
+      checkoutMode: paymentInput.checkoutMode,
+    },
+  };
+}
+
+export function createStripeCheckoutSessionPlaceholder(
+  request: StripeCheckoutSessionRequest,
+): StripePaymentSession {
+  return {
+    id: "stripe-checkout-session-placeholder",
+    mode: request.mode,
+    status: "placeholder",
+  };
+}
+
 export const stripeHelpersTodo = {
   checkoutState:
-    "TODO: Replace the placeholder payment draft helper with real Stripe Checkout session creation once Stripe execution is implemented.",
+    "TODO: Replace the placeholder Checkout session request and placeholder session helper with real Stripe Checkout execution once server wiring is added.",
   config: stripeConfigTodo,
 } as const;

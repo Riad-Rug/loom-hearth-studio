@@ -1,7 +1,13 @@
+import { siteConfig } from "@/config/site";
 import { getEnvSnapshot, getPublicEnv } from "@/lib/validation/env";
 
 export type StripeIntegrationMode = "checkout";
 export const launchStripeIntegrationMode: StripeIntegrationMode = "checkout";
+export type StripeCheckoutServiceMode = "checkout";
+export type StripeCheckoutMissingClientConfig = "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY";
+export type StripeCheckoutMissingServerConfig =
+  | "STRIPE_SECRET_KEY"
+  | "STRIPE_WEBHOOK_SECRET";
 
 export type StripePublicConfig = {
   publishableKey?: string;
@@ -13,6 +19,17 @@ export type StripeServerConfig = {
   secretKey?: string;
   webhookSecret?: string;
   selectedMode: StripeIntegrationMode;
+};
+
+export type StripeCheckoutServiceConfig = {
+  mode: StripeCheckoutServiceMode;
+  publishableKey?: string;
+  secretKey?: string;
+  webhookSecret?: string;
+  successUrl: string;
+  cancelUrl: string;
+  missingClientConfig: StripeCheckoutMissingClientConfig[];
+  missingServerConfig: StripeCheckoutMissingServerConfig[];
 };
 
 export function getStripePublicConfig(): StripePublicConfig {
@@ -35,6 +52,32 @@ export function getStripeServerConfig(): StripeServerConfig {
   };
 }
 
+export function getStripeCheckoutServiceConfig(): StripeCheckoutServiceConfig {
+  const publicConfig = getStripePublicConfig();
+  const serverConfig = getStripeServerConfig();
+  const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL ?? siteConfig.siteUrl;
+
+  return {
+    mode: launchStripeIntegrationMode,
+    publishableKey: publicConfig.publishableKey,
+    secretKey: serverConfig.secretKey,
+    webhookSecret: serverConfig.webhookSecret,
+    successUrl: new URL("/checkout/success", siteUrl).toString(),
+    cancelUrl: new URL("/checkout/payment", siteUrl).toString(),
+    missingClientConfig: publicConfig.publishableKey
+      ? []
+      : ["NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"],
+    missingServerConfig: [
+      ...(serverConfig.secretKey
+        ? []
+        : (["STRIPE_SECRET_KEY"] as StripeCheckoutMissingServerConfig[])),
+      ...(serverConfig.webhookSecret
+        ? []
+        : (["STRIPE_WEBHOOK_SECRET"] as StripeCheckoutMissingServerConfig[])),
+    ],
+  };
+}
+
 export function hasStripePublishableKey() {
   return Boolean(getStripePublicConfig().publishableKey);
 }
@@ -45,5 +88,15 @@ export function hasStripeServerKeys() {
   return Boolean(config.secretKey && config.webhookSecret);
 }
 
+export function hasStripeCheckoutServiceConfig() {
+  const config = getStripeCheckoutServiceConfig();
+
+  return Boolean(
+    config.publishableKey &&
+      config.secretKey &&
+      config.webhookSecret,
+  );
+}
+
 export const stripeConfigTodo =
-  "TODO: Implement the Stripe Checkout execution path, wallets, and webhook handling without widening launch support beyond Stripe Checkout.";
+  "TODO: Implement the Stripe Checkout execution path, using the fixed Checkout success/cancel URLs and server credentials defined in this boundary.";

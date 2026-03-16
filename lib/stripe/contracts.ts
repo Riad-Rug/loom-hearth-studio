@@ -1,10 +1,18 @@
 import type { PaymentStatus } from "@/types/domain/order";
 
-import type { StripeIntegrationMode } from "@/lib/stripe/config";
+import type {
+  StripeCheckoutMissingClientConfig,
+  StripeCheckoutMissingServerConfig,
+  StripeIntegrationMode,
+} from "@/lib/stripe/config";
 
 export type StripePaymentMethod = "stripe-placeholder";
 export type StripePaymentStepStatus =
   | "launch-mode-missing-config"
+  | "ready-placeholder";
+export type StripeCheckoutServiceStatus =
+  | "missing-client-config"
+  | "missing-server-config"
   | "ready-placeholder";
 
 export type StripeOrderPaymentInput = {
@@ -23,12 +31,37 @@ export type StripeOrderPaymentInput = {
   }>;
 };
 
+export type StripeCheckoutSessionRequest = {
+  mode: "checkout";
+  customerEmail?: string;
+  successUrl: string;
+  cancelUrl: string;
+  currency: StripeOrderPaymentInput["currency"];
+  subtotalUsd: StripeOrderPaymentInput["subtotalUsd"];
+  shippingUsd: StripeOrderPaymentInput["shippingUsd"];
+  taxUsd: StripeOrderPaymentInput["taxUsd"];
+  totalUsd: StripeOrderPaymentInput["totalUsd"];
+  lineItems: StripeOrderPaymentInput["lineItems"];
+  metadata: {
+    checkoutMode: StripeOrderPaymentInput["checkoutMode"];
+  };
+};
+
 export type StripePaymentSession = {
   id: string;
   mode: StripeIntegrationMode;
   clientSecret?: string;
   redirectUrl?: string;
   status: "placeholder";
+};
+
+export type StripeCheckoutServiceBoundary = {
+  mode: "checkout";
+  status: StripeCheckoutServiceStatus;
+  successUrl: string;
+  cancelUrl: string;
+  missingClientConfig: StripeCheckoutMissingClientConfig[];
+  missingServerConfig: StripeCheckoutMissingServerConfig[];
 };
 
 export type StripeCheckoutPaymentDraft = {
@@ -40,6 +73,8 @@ export type StripeCheckoutPaymentDraft = {
   launchMode: StripeIntegrationMode;
   isReadyForPlaceholderFlow: boolean;
   paymentStepStatus: StripePaymentStepStatus;
+  checkoutService: StripeCheckoutServiceBoundary;
+  checkoutSessionRequest: StripeCheckoutSessionRequest | null;
   session: StripePaymentSession | null;
   paymentStatus: Extract<PaymentStatus, "pending">;
 };
@@ -52,6 +87,8 @@ export type StripeRefundReference = {
 export const stripeContractsTodo = {
   session:
     "TODO: Replace the placeholder Stripe session shape with the final Stripe Checkout contract when execution is implemented.",
+  checkoutService:
+    "TODO: Wire the Checkout service boundary to real Stripe Checkout session creation after server execution is added.",
   refund:
     "TODO: Keep refund references typed only; do not implement refund execution until order operations are defined.",
 } as const;

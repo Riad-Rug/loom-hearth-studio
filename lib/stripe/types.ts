@@ -1,6 +1,7 @@
 import type { Order } from "@/types/domain";
 
 import type {
+  StripeCheckoutSessionRequest,
   StripeOrderPaymentInput,
   StripePaymentSession,
   StripeRefundReference,
@@ -8,11 +9,12 @@ import type {
 
 export type PaymentSession = StripePaymentSession;
 
-export interface PaymentService {
+export interface StripeCheckoutService {
+  createCheckoutSession(input: StripeCheckoutSessionRequest): Promise<PaymentSession>;
   createPaymentSession(input: StripeOrderPaymentInput): Promise<PaymentSession>;
   getPaymentStatus(referenceId: string): Promise<Order["paymentStatus"]>;
   refundPayment(reference: StripeRefundReference): Promise<void>;
 }
 
 export const stripeServiceTodo =
-  "TODO: Implement the Stripe Checkout service boundary, webhook handling, wallet support, and refund workflow.";
+  "TODO: Implement the StripeCheckoutService with real Checkout session creation, payment-status lookup, webhook handling, and refund workflow.";
