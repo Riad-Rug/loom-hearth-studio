@@ -20,6 +20,7 @@ import {
   orderConfirmationEmailTodo,
 } from "@/lib/email";
 import {
+  createCheckoutConfirmationViewModel,
   createOrderSubmissionFailure,
   createOrderSubmissionPayload,
   createOrderSubmissionPreview,
@@ -109,6 +110,14 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
   const orderConfirmationEmailPreview = createOrderConfirmationEmailPreview(
     orderConfirmationEmailPayload,
   );
+  const confirmationViewModel = createCheckoutConfirmationViewModel({
+    submissionAttempt,
+    submissionPreview: resolvedSubmissionPreview,
+    orderConfirmationEmailPayload,
+    orderConfirmationEmailPreview,
+    customerName: orderDraft.shippingAddress?.fullName ?? null,
+    shippingLabel: shippingMethod?.label ?? null,
+  });
   const submissionFailure = createOrderSubmissionFailure({
     hasPayload: Boolean(orderSubmissionPayload),
     hasPaymentConfig: stripePaymentDraft.publishableKeyReady,
@@ -174,6 +183,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               orderConfirmationEmailPreview,
               orderSubmissionPayload,
               paymentState,
+              confirmationViewModel,
               submissionAttempt,
               submissionFailure,
               submissionPreview: resolvedSubmissionPreview,
@@ -305,6 +315,24 @@ type CheckoutStepRenderProps = {
   } | null;
   paymentState: {
     selectedMode: "checkout" | "elements" | null;
+  };
+  confirmationViewModel: {
+    headline: string;
+    customerLabel: string;
+    submissionStateLabel: string;
+    orderReference: string | null;
+    body: string;
+    failureMessage: string | null;
+    paymentStatusLabel: string | null;
+    shippingLabel: string | null;
+    emailBoundary: {
+      headline: string;
+      stateLabel: string;
+      to: string | null;
+      subject: string | null;
+      itemCountLabel: string | null;
+      totalLabel: string | null;
+    };
   };
   submissionAttempt: {
     status: "idle" | "submitting" | "success" | "failure";
@@ -693,39 +721,38 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             <h2>Confirmation</h2>
           </div>
           <div className={styles.confirmationCard}>
-            <strong>
-              {props.submissionAttempt.status === "failure"
-                ? "Order submission attempt failed"
-                : props.submissionPreview?.confirmationLabel ?? "Order draft confirmation UI shell"}
-            </strong>
-            <p>{props.orderDraft.shippingAddress?.fullName ?? "Guest checkout draft"}</p>
-            <p>Submission state: {props.submissionAttempt.status}</p>
-            {props.submissionPreview ? <p>{props.submissionPreview.orderReference}</p> : null}
-            <p>
-              Confirmation, order submission, payment execution, and email delivery are not
-              implemented in this slice. This page exists to complete the PRD checkout flow
-              shell with client-side draft state only.
-            </p>
-            {props.submissionAttempt.failure ? <p>{props.submissionAttempt.failure.message}</p> : null}
-            {props.submissionPreview ? <p>{props.submissionPreview.paymentStatus}</p> : null}
-            {props.shippingMethod ? <p>{props.shippingMethod.label}</p> : null}
+            <strong>{props.confirmationViewModel.headline}</strong>
+            <p>{props.confirmationViewModel.customerLabel}</p>
+            <p>Submission state: {props.confirmationViewModel.submissionStateLabel}</p>
+            {props.confirmationViewModel.orderReference ? (
+              <p>{props.confirmationViewModel.orderReference}</p>
+            ) : null}
+            <p>{props.confirmationViewModel.body}</p>
+            {props.confirmationViewModel.failureMessage ? (
+              <p>{props.confirmationViewModel.failureMessage}</p>
+            ) : null}
+            {props.confirmationViewModel.paymentStatusLabel ? (
+              <p>{props.confirmationViewModel.paymentStatusLabel}</p>
+            ) : null}
+            {props.confirmationViewModel.shippingLabel ? (
+              <p>{props.confirmationViewModel.shippingLabel}</p>
+            ) : null}
           </div>
           <div className={styles.confirmationCard}>
-            <strong>Order confirmation email boundary</strong>
-            {props.orderConfirmationEmailPayload && props.orderConfirmationEmailPreview ? (
-              <>
-                <p>State: placeholder payload ready</p>
-                <p>To: {props.orderConfirmationEmailPayload.to}</p>
-                <p>Subject: {props.orderConfirmationEmailPreview.subject}</p>
-                <p>Items: {props.orderConfirmationEmailPayload.itemCount}</p>
-                <p>
-                  Total: {formatUsd(props.orderConfirmationEmailPayload.totalUsd)}{" "}
-                  {props.orderConfirmationEmailPayload.currency}
-                </p>
-              </>
-            ) : (
-              <p>No confirmation email payload is available until the submission attempt succeeds.</p>
-            )}
+            <strong>{props.confirmationViewModel.emailBoundary.headline}</strong>
+            <p>{props.confirmationViewModel.emailBoundary.stateLabel}</p>
+            {props.confirmationViewModel.emailBoundary.to ? (
+              <p>To: {props.confirmationViewModel.emailBoundary.to}</p>
+            ) : null}
+            {props.confirmationViewModel.emailBoundary.subject ? (
+              <p>Subject: {props.confirmationViewModel.emailBoundary.subject}</p>
+            ) : null}
+            {props.confirmationViewModel.emailBoundary.itemCountLabel ? (
+              <p>{props.confirmationViewModel.emailBoundary.itemCountLabel}</p>
+            ) : null}
+            {props.confirmationViewModel.emailBoundary.totalLabel ? (
+              <p>{props.confirmationViewModel.emailBoundary.totalLabel}</p>
+            ) : null}
           </div>
           <p className={styles.summaryNote}>{orderConfirmationEmailTodo}</p>
           <Link className={styles.secondaryAction} href="/shop">
