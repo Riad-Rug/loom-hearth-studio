@@ -10,6 +10,7 @@ import {
 } from "@/features/account/account-data";
 import {
   accountGuardTodo,
+  createAccountAuthRouteViewModel,
   createForgotPasswordRequestPayload,
   createForgotPasswordResetEmailPreview,
   createLoginRequestPayload,
@@ -55,6 +56,18 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
     status: "idle",
     payload: null,
     message: null,
+  });
+  const routeViewModel = createAccountAuthRouteViewModel({
+    mode,
+    accessDecision,
+    forgotPasswordState: requestState,
+    loginState,
+    registerState,
+    accountGuardTodo,
+    forgotPasswordRequestTodo,
+    loginRequestTodo,
+    registerRequestTodo,
+    emailServiceTodo,
   });
 
   function handleForgotPasswordRequest() {
@@ -158,15 +171,10 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
           <h1>{content.title}</h1>
           <p className={styles.lede}>{content.body}</p>
           <div className={styles.sessionNote}>
-            <strong>Auth boundary</strong>
-            <span>
-              {accessDecision.sessionSummary.status} on the account surface. Access:{" "}
-              {accessDecision.status}.
-            </span>
-            <span>Boundary redirect target: {accessDecision.redirectTarget}</span>
-            <span>
-              {accessDecision.sessionSummary.todo} {accountGuardTodo}
-            </span>
+            <strong>{routeViewModel.authBoundary.title}</strong>
+            <span>{routeViewModel.authBoundary.statusLine}</span>
+            <span>{routeViewModel.authBoundary.redirectTargetLine}</span>
+            <span>{routeViewModel.authBoundary.todoLine}</span>
           </div>
           <div className={styles.authLinks}>
             <Link href={"/account/login" as Route}>Login</Link>
@@ -177,13 +185,9 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
 
         <div className={styles.formCard}>
           <div className={styles.sessionNote}>
-            <strong>Guest-only route</strong>
-            <span>
-              These auth routes remain available to signed-out customers only at the
-              boundary level. Placeholder signed-in customers would be redirected to
-              `/account` once real auth exists.
-            </span>
-            <span>Boundary redirect target: {accessDecision.redirectTarget}</span>
+            <strong>{routeViewModel.guestRoute.title}</strong>
+            <span>{routeViewModel.guestRoute.body}</span>
+            <span>{routeViewModel.guestRoute.redirectTargetLine}</span>
           </div>
           <div className={styles.formStack}>
             {mode === "register" ? (
@@ -245,43 +249,19 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
               {content.primaryLabel}
             </button>
 
-            {mode === "forgot-password" ? (
-              <div className={styles.sessionNote}>
-                <strong>Forgot-password boundary</strong>
-                <span>Request state: {requestState.status}</span>
-                {requestState.message ? <span>{requestState.message}</span> : null}
-                {requestState.payload ? <span>Request email: {requestState.payload.email}</span> : null}
-                {requestState.resetEmailPreview ? (
-                  <>
-                    <span>Email payload ready for: {requestState.resetEmailPreview.to}</span>
-                    <span>Subject: {requestState.resetEmailPreview.subject}</span>
-                  </>
-                ) : null}
-                <span>{forgotPasswordRequestTodo}</span>
-                <span>{emailServiceTodo}</span>
-              </div>
-            ) : mode === "login" ? (
-              <div className={styles.sessionNote}>
-                <strong>Login boundary</strong>
-                <span>Request state: {loginState.status}</span>
-                {loginState.message ? <span>{loginState.message}</span> : null}
-                {loginState.payload ? <span>Request email: {loginState.payload.email}</span> : null}
-                <span>{loginRequestTodo}</span>
-              </div>
-            ) : (
-              <div className={styles.sessionNote}>
-                <strong>Register boundary</strong>
-                <span>Request state: {registerState.status}</span>
-                {registerState.message ? <span>{registerState.message}</span> : null}
-                {registerState.payload ? (
-                  <span>
-                    Request customer: {registerState.payload.firstName}{" "}
-                    {registerState.payload.lastName}
-                  </span>
-                ) : null}
-                <span>{registerRequestTodo}</span>
-              </div>
-            )}
+            <div className={styles.sessionNote}>
+              <strong>{routeViewModel.requestPresentation.title}</strong>
+              <span>{routeViewModel.requestPresentation.stateLine}</span>
+              {routeViewModel.requestPresentation.message ? (
+                <span>{routeViewModel.requestPresentation.message}</span>
+              ) : null}
+              {routeViewModel.requestPresentation.payloadLines.map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+              {routeViewModel.requestPresentation.todoLines.map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+            </div>
           </div>
         </div>
       </section>

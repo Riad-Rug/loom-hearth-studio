@@ -1,3 +1,4 @@
+export * from "@/lib/auth/account-auth-route";
 export * from "@/lib/auth/admin-gate";
 export * from "@/lib/auth/admin-module-route";
 export * from "@/lib/auth/admin-shell-route";
