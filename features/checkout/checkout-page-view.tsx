@@ -15,6 +15,11 @@ import {
   useCheckout,
 } from "@/features/checkout/checkout-provider";
 import {
+  createOrderSubmissionPayload,
+  createOrderSubmissionPreview,
+  orderSubmissionTodo,
+} from "@/lib/order";
+import {
   createStripeCheckoutPaymentDraft,
   createStripeOrderPaymentInput,
   stripeHelpersTodo,
@@ -37,6 +42,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     continueFromShipping,
     information,
     orderDraft,
+    submissionPreview,
     shippingMethod,
     updateInformation,
   } = useCheckout();
@@ -59,23 +65,28 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     marketLabel: checkoutSummary.marketLabel,
     currencyLabel: checkoutSummary.currencyLabel,
   };
-  const stripePaymentDraft = createStripeCheckoutPaymentDraft(
-    createStripeOrderPaymentInput({
-      checkoutMode: orderDraft.checkoutMode,
-      email: orderDraft.shippingAddress?.email,
-      subtotalUsd: orderDraft.subtotalUsd,
-      shippingUsd: orderDraft.shippingUsd,
-      taxUsd: orderDraft.taxUsd,
-      totalUsd: orderDraft.totalUsd,
-      currency: orderDraft.currency,
-      items: orderDraft.items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity,
-        priceUsd: item.priceUsd,
-      })),
-    }),
-  );
+  const stripeOrderPaymentInput = createStripeOrderPaymentInput({
+    checkoutMode: orderDraft.checkoutMode,
+    email: orderDraft.shippingAddress?.email,
+    subtotalUsd: orderDraft.subtotalUsd,
+    shippingUsd: orderDraft.shippingUsd,
+    taxUsd: orderDraft.taxUsd,
+    totalUsd: orderDraft.totalUsd,
+    currency: orderDraft.currency,
+    items: orderDraft.items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      quantity: item.quantity,
+      priceUsd: item.priceUsd,
+    })),
+  });
+  const stripePaymentDraft = createStripeCheckoutPaymentDraft(stripeOrderPaymentInput);
+  const orderSubmissionPayload = createOrderSubmissionPayload({
+    orderDraft,
+    stripePaymentDraft,
+    stripeOrderPaymentInput,
+  });
+  const derivedSubmissionPreview = createOrderSubmissionPreview(orderSubmissionPayload);
 
   return (
     <div className={styles.page}>
@@ -132,6 +143,8 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               continueFromShipping,
               information,
               orderDraft,
+              orderSubmissionPayload,
+              submissionPreview: submissionPreview ?? derivedSubmissionPreview,
               shippingMethod,
               stripePaymentDraft,
               updateInformation,
@@ -188,7 +201,12 @@ type CheckoutStepRenderProps = {
   canAccessShipping: boolean;
   continueFromInformation: () => void;
   continueFromPayment: () => void;
-  continueFromReview: () => void;
+  continueFromReview: (submissionPreview: {
+    status: "placeholder";
+    orderReference: string;
+    paymentStatus: "pending";
+    confirmationLabel: string;
+  } | null) => void;
   continueFromShipping: () => void;
   information: {
     email: string;
@@ -217,6 +235,22 @@ type CheckoutStepRenderProps = {
     } | null;
     paymentMethod: "stripe-placeholder";
   };
+  orderSubmissionPayload: {
+    email: string;
+    items: Array<{
+      id: string;
+      name: string;
+      quantity: number;
+    }>;
+    paymentMethod: "stripe-placeholder";
+    paymentStatus: "pending";
+  } | null;
+  submissionPreview: {
+    status: "placeholder";
+    orderReference: string;
+    paymentStatus: "pending";
+    confirmationLabel: string;
+  } | null;
   shippingMethod: {
     label: string;
     priceUsd: 0;
@@ -490,12 +524,30 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
                 : ""}
             </p>
           </div>
+          <div className={styles.reviewCard}>
+            <h3>Order submission boundary</h3>
+            {props.orderSubmissionPayload ? (
+              <>
+                <p>Email: {props.orderSubmissionPayload.email}</p>
+                <p>Items: {props.orderSubmissionPayload.items.length}</p>
+                <p>Payment method: {props.orderSubmissionPayload.paymentMethod}</p>
+                <p>Status: {props.orderSubmissionPayload.paymentStatus}</p>
+              </>
+            ) : (
+              <p>Submission payload requires completed guest shipping details.</p>
+            )}
+          </div>
           <p className={styles.panelBody}>
             This review step is presentation only. Place-order behavior and confirmation
             side effects remain out of scope for this slice.
           </p>
           <p className={styles.summaryNote}>{checkoutFoundationTodos.submission}</p>
-          <button className={styles.primaryAction} type="button" onClick={props.continueFromReview}>
+          <p className={styles.summaryNote}>{orderSubmissionTodo}</p>
+          <button
+            className={styles.primaryAction}
+            type="button"
+            onClick={() => props.continueFromReview(props.submissionPreview)}
+          >
             Place order UI placeholder
           </button>
         </div>
@@ -508,13 +560,17 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             <h2>Confirmation</h2>
           </div>
           <div className={styles.confirmationCard}>
-            <strong>Order draft confirmation UI shell</strong>
+            <strong>
+              {props.submissionPreview?.confirmationLabel ?? "Order draft confirmation UI shell"}
+            </strong>
             <p>{props.orderDraft.shippingAddress?.fullName ?? "Guest checkout draft"}</p>
+            {props.submissionPreview ? <p>{props.submissionPreview.orderReference}</p> : null}
             <p>
               Confirmation, order submission, payment execution, and email delivery are not
               implemented in this slice. This page exists to complete the PRD checkout flow
               shell with client-side draft state only.
             </p>
+            {props.submissionPreview ? <p>{props.submissionPreview.paymentStatus}</p> : null}
             {props.shippingMethod ? <p>{props.shippingMethod.label}</p> : null}
           </div>
           <Link className={styles.secondaryAction} href="/shop">

@@ -14,6 +14,7 @@ import {
 import type { CartStoreItem } from "@/features/cart/cart-provider";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
+import type { OrderSubmissionPreview } from "@/lib/order";
 import type { StripePaymentMethod } from "@/lib/stripe";
 import type { OrderAddress } from "@/types/domain";
 
@@ -60,6 +61,7 @@ type CheckoutContextValue = {
   canAccessReview: boolean;
   canAccessConfirmation: boolean;
   orderDraft: OrderDraft;
+  submissionPreview: OrderSubmissionPreview | null;
   updateInformation: (
     field: keyof CheckoutInformation,
     value: CheckoutInformation[keyof CheckoutInformation],
@@ -67,7 +69,7 @@ type CheckoutContextValue = {
   continueFromInformation: () => void;
   continueFromShipping: () => void;
   continueFromPayment: () => void;
-  continueFromReview: () => void;
+  continueFromReview: (submissionPreview: OrderSubmissionPreview | null) => void;
 };
 
 const defaultShippingMethod: CheckoutShippingMethod = {
@@ -105,6 +107,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [information, setInformation] = useState<CheckoutInformation>(initialInformation);
   const [shippingMethod, setShippingMethod] = useState<CheckoutShippingMethod | null>(null);
   const [hasVisitedConfirmation, setHasVisitedConfirmation] = useState(false);
+  const [submissionPreview, setSubmissionPreview] = useState<OrderSubmissionPreview | null>(null);
 
   useEffect(() => {
     try {
@@ -211,6 +214,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     canAccessReview,
     canAccessConfirmation,
     orderDraft,
+    submissionPreview,
     updateInformation(field, value) {
       setInformation((current) => ({
         ...current,
@@ -235,11 +239,12 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
       router.push(stepPathMap.review as Route);
     },
-    continueFromReview() {
+    continueFromReview(nextSubmissionPreview) {
       if (!canAccessReview) {
         return;
       }
 
+      setSubmissionPreview(nextSubmissionPreview);
       setHasVisitedConfirmation(true);
       router.push(stepPathMap.confirmation as Route);
     },
