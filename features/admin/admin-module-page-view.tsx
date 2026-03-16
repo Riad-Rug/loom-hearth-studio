@@ -1,5 +1,5 @@
 import { adminModules, type AdminModuleKey } from "@/features/admin/admin-data";
-import { authConfig } from "@/lib/auth";
+import { adminGuardTodo, authConfig, getAdminAccessDecision } from "@/lib/auth";
 
 import styles from "./admin.module.css";
 
@@ -9,6 +9,14 @@ type AdminModulePageViewProps = {
 
 export function AdminModulePageView({ moduleKey }: AdminModulePageViewProps) {
   const module = adminModules[moduleKey];
+  const accessDecision = getAdminAccessDecision({
+    user: {
+      id: "admin-session-placeholder",
+      email: "admin@example.com",
+      role: "admin",
+    },
+    moduleKey,
+  });
 
   return (
     <section className={styles.moduleShell}>
@@ -25,16 +33,30 @@ export function AdminModulePageView({ moduleKey }: AdminModulePageViewProps) {
           presentation only, without auth or route protection.
         </span>
         <span>Supported boundary roles: {authConfig.admin.roles.join(", ")}</span>
+        <span>Current role: {accessDecision.currentRole ?? "none"}</span>
+        <span>Route access state: {accessDecision.status}</span>
+        <span>Allowed on this route: {accessDecision.allowedRoles.join(", ")}</span>
+        <span>{adminGuardTodo}</span>
       </div>
 
-      <div className={styles.cardGrid}>
-        {module.cards.map((card) => (
-          <article key={card.title} className={styles.card}>
-            <h3>{card.title}</h3>
-            <p>{card.body}</p>
-          </article>
-        ))}
-      </div>
+      {accessDecision.status === "allowed" ? (
+        <div className={styles.cardGrid}>
+          {module.cards.map((card) => (
+            <article key={card.title} className={styles.card}>
+              <h3>{card.title}</h3>
+              <p>{card.body}</p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className={styles.gatePanel}>
+          <strong>Route gate placeholder</strong>
+          <p>
+            This admin route is reserved for authenticated back-office users whose role is
+            allowed by the boundary configuration.
+          </p>
+        </div>
+      )}
     </section>
   );
 }

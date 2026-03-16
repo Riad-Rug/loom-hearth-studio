@@ -3,7 +3,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { adminNav } from "@/features/admin/admin-data";
-import { createAuthSessionState, createSessionSummary } from "@/lib/auth";
+import { adminGuardTodo, getAdminAccessDecision } from "@/lib/auth";
 
 import styles from "./admin.module.css";
 
@@ -12,16 +12,14 @@ type AdminShellProps = {
 };
 
 export function AdminShell({ children }: AdminShellProps) {
-  const sessionSummary = createSessionSummary(
-    createAuthSessionState(
-      {
-        id: "admin-session-placeholder",
-        email: "admin@example.com",
-        role: "admin",
-      },
-      "admin",
-    ),
-  );
+  const accessDecision = getAdminAccessDecision({
+    user: {
+      id: "admin-session-placeholder",
+      email: "admin@example.com",
+      role: "admin",
+    },
+    moduleKey: "dashboard",
+  });
 
   return (
     <div className={styles.page}>
@@ -36,9 +34,11 @@ export function AdminShell({ children }: AdminShellProps) {
         </div>
         <div className={styles.sessionPanel}>
           <strong>Session boundary</strong>
-          <span>Status: {sessionSummary.status}</span>
-          <span>Role: {sessionSummary.roleLabel}</span>
-          <span>{sessionSummary.todo}</span>
+          <span>Status: {accessDecision.sessionSummary.status}</span>
+          <span>Role: {accessDecision.sessionSummary.roleLabel}</span>
+          <span>Access: {accessDecision.status}</span>
+          <span>{accessDecision.sessionSummary.todo}</span>
+          <span>{adminGuardTodo}</span>
         </div>
         <nav className={styles.nav} aria-label="Admin navigation">
           {adminNav.map((item) => (
@@ -48,7 +48,19 @@ export function AdminShell({ children }: AdminShellProps) {
           ))}
         </nav>
       </aside>
-      <div className={styles.content}>{children}</div>
+      <div className={styles.content}>
+        {accessDecision.status === "allowed" ? (
+          children
+        ) : (
+          <section className={styles.gatePanel}>
+            <strong>Admin access placeholder gate</strong>
+            <p>
+              Admin routes require a placeholder-authenticated admin surface session with a
+              supported PRD role.
+            </p>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
