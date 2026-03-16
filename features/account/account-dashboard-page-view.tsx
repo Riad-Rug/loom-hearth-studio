@@ -17,6 +17,7 @@ import {
   createAccountProfileSummaryView,
   getPlaceholderAccountDashboardData,
 } from "@/lib/account/dashboard";
+import { createAccountDashboardRouteViewModel } from "@/lib/account/dashboard-route";
 import {
   accountProfileUpdateTodo,
   createAccountProfileUpdatePayload,
@@ -45,6 +46,17 @@ export function AccountDashboardPageView() {
   const [profileUpdateState, setProfileUpdateState] = useState(
     createInitialAccountProfileUpdateState(),
   );
+  const routeViewModel = createAccountDashboardRouteViewModel({
+    accessDecision,
+    dashboardData,
+    profileSummaryView,
+    signOutState,
+    profileUpdateState,
+    accountGuardTodo,
+    accountDashboardDataTodo,
+    signOutRequestTodo,
+    accountProfileUpdateTodo,
+  });
 
   function handleSignOutRequest() {
     setSignOutState({
@@ -100,76 +112,51 @@ export function AccountDashboardPageView() {
       <section className={styles.dashboardHero}>
         <div>
           <p className={styles.eyebrow}>Account</p>
-          <h1>Customer dashboard shell</h1>
-          <p className={styles.lede}>
-            This dashboard is placeholder-only. It preserves the account area required by the
-            PRD without implementing authentication, order retrieval, or profile management.
-          </p>
+          <h1>{routeViewModel.hero.title}</h1>
+          <p className={styles.lede}>{routeViewModel.hero.body}</p>
         </div>
         <div className={styles.dashboardEmptyState}>
-          {dashboardData ? (
-            <>
-              <strong>{dashboardData.overview.greeting}</strong>
-              <p>{dashboardData.overview.statusLabel}</p>
-              <p>{dashboardData.overview.accountEmail}</p>
-            </>
-          ) : (
-            <>
-              <strong>No live account data yet</strong>
-              <p>
-                Empty-state presentation only. Real customer data, order history, and account
-                actions are not implemented in this slice.
-              </p>
-            </>
-          )}
+          <strong>{routeViewModel.hero.emptyStateTitle}</strong>
+          {routeViewModel.hero.emptyStateLines.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
         </div>
       </section>
 
       <section className={styles.sessionCard}>
         <p className={styles.eyebrow}>Session boundary</p>
-        <h2>Account auth/session placeholder</h2>
-        <p>
-          Status: {accessDecision.sessionSummary.status}. Authenticated:{" "}
-          {accessDecision.sessionSummary.isAuthenticated ? "yes" : "no"}.
-        </p>
-        <p>Access: {accessDecision.status}</p>
-        <p>Redirect target: {accessDecision.redirectTarget}</p>
-        <p>Mode: {accessDecision.sessionSummary.roleLabel}</p>
-        <p>{accessDecision.sessionSummary.todo}</p>
-        <p>{accountGuardTodo}</p>
-        <p>{accountDashboardDataTodo}</p>
+        <h2>{routeViewModel.session.title}</h2>
+        <p>{routeViewModel.session.statusLine}</p>
+        <p>{routeViewModel.session.accessLine}</p>
+        <p>{routeViewModel.session.redirectTargetLine}</p>
+        <p>{routeViewModel.session.modeLine}</p>
+        {routeViewModel.session.todoLines.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
         <button className={styles.primaryAction} type="button" onClick={handleSignOutRequest}>
-          Sign out UI placeholder
+          {routeViewModel.signOut.actionLabel}
         </button>
-        <p>Sign-out request state: {signOutState.status}</p>
-        {signOutState.message ? <p>{signOutState.message}</p> : null}
-        {signOutState.redirectTarget ? <p>Sign-out redirect target: {signOutState.redirectTarget}</p> : null}
+        <p>{routeViewModel.signOut.stateLine}</p>
+        {routeViewModel.signOut.message ? <p>{routeViewModel.signOut.message}</p> : null}
+        {routeViewModel.signOut.redirectTargetLine ? (
+          <p>{routeViewModel.signOut.redirectTargetLine}</p>
+        ) : null}
         <p>{signOutRequestTodo}</p>
       </section>
 
       {accessDecision.status === "allowed" ? (
         <section className={styles.dashboardGrid}>
           {accountDashboardSections.map((section) => {
-            const summaryBody =
-              section.id === "overview"
-                ? dashboardData?.overview.statusLabel
-                : section.id === "orders"
-                  ? dashboardData?.orders.orderCountLabel
-                  : dashboardData?.profile.email;
-
-            const summaryMeta =
-              section.id === "overview"
-                ? dashboardData?.overview.accountEmail
-                : section.id === "orders"
-                  ? dashboardData?.orders.latestOrderLabel
-                  : undefined;
+            const sectionView = routeViewModel.sections.find(
+              (candidate) => candidate.id === section.id,
+            );
 
             return (
               <article key={section.id} className={styles.dashboardCard}>
                 <h2>{section.title}</h2>
                 <p>{section.body}</p>
-                {summaryBody ? <strong>{summaryBody}</strong> : null}
-                {summaryMeta ? <span>{summaryMeta}</span> : null}
+                {sectionView?.summaryBody ? <strong>{sectionView.summaryBody}</strong> : null}
+                {sectionView?.summaryMeta ? <span>{sectionView.summaryMeta}</span> : null}
                 {section.id === "orders" ? (
                   <div className={styles.orderHistoryList}>
                     {dashboardData?.orders.items.map((order) => (
@@ -184,10 +171,10 @@ export function AccountDashboardPageView() {
                 ) : null}
                 {section.id === "profile" ? (
                   <div className={styles.formStack}>
-                    {profileSummaryView ? (
+                    {routeViewModel.profileSummaryView ? (
                       <div className={styles.profileSummaryList}>
-                        <strong>{profileSummaryView.fullNameLabel}</strong>
-                        {profileSummaryView.contactRows.map((row) => (
+                        <strong>{routeViewModel.profileSummaryView.fullNameLabel}</strong>
+                        {routeViewModel.profileSummaryView.contactRows.map((row) => (
                           <div key={row.id} className={styles.profileSummaryItem}>
                             <span>{row.label}</span>
                             <strong
@@ -236,19 +223,13 @@ export function AccountDashboardPageView() {
                       Save profile UI placeholder
                     </button>
                     <div className={styles.sessionNote}>
-                      <strong>Profile update boundary</strong>
-                      <span>Request state: {profileUpdateState.status}</span>
-                      {profileUpdateState.message ? (
-                        <span>{profileUpdateState.message}</span>
+                      <strong>{routeViewModel.profileUpdate.title}</strong>
+                      <span>{routeViewModel.profileUpdate.stateLine}</span>
+                      {routeViewModel.profileUpdate.message ? (
+                        <span>{routeViewModel.profileUpdate.message}</span>
                       ) : null}
-                      {profileUpdateState.payload ? (
-                        <span>
-                          Payload ready: {profileUpdateState.payload.fullName},{" "}
-                          {profileUpdateState.payload.email}
-                          {profileUpdateState.payload.phone
-                            ? `, ${profileUpdateState.payload.phone}`
-                            : ""}
-                        </span>
+                      {routeViewModel.profileUpdate.payloadLine ? (
+                        <span>{routeViewModel.profileUpdate.payloadLine}</span>
                       ) : null}
                       <span>{accountProfileUpdateTodo}</span>
                     </div>
@@ -260,9 +241,9 @@ export function AccountDashboardPageView() {
         </section>
       ) : (
         <section className={styles.sessionCard}>
-          <h2>Account gate placeholder</h2>
-          <p>This route is reserved for placeholder signed-in customer sessions only.</p>
-          <p>Boundary redirect target: {accessDecision.redirectTarget}</p>
+          <h2>{routeViewModel.gate.title}</h2>
+          <p>{routeViewModel.gate.body}</p>
+          <p>{routeViewModel.gate.redirectTargetLine}</p>
         </section>
       )}
 
