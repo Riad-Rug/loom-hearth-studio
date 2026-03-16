@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { AdminModulePageView } from "@/features/admin/admin-module-page-view";
 
 export default function AdminBlogPage() {
-  return (
-    <PlaceholderPanel
-      title="Admin blog placeholder"
-      body="Content editing will be built after the internal CMS data model is wired to persistence."
-    />
-  );
+  return <AdminModulePageView moduleKey="blog" />;
 }

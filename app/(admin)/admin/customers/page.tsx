@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { AdminModulePageView } from "@/features/admin/admin-module-page-view";
 
 export default function AdminCustomersPage() {
-  return (
-    <PlaceholderPanel
-      title="Admin customers placeholder"
-      body="Customer management requires validated auth, email, and persistence decisions before implementation."
-    />
-  );
+  return <AdminModulePageView moduleKey="customers" />;
 }

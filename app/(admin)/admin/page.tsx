@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { AdminModulePageView } from "@/features/admin/admin-module-page-view";
 
 export default function AdminPage() {
-  return (
-    <PlaceholderPanel
-      title="Admin placeholder"
-      body="The custom admin area is part of launch scope, but only the route shell exists at this stage."
-    />
-  );
+  return <AdminModulePageView moduleKey="dashboard" />;
 }

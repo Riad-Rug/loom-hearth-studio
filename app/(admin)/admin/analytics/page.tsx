@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { AdminModulePageView } from "@/features/admin/admin-module-page-view";
 
 export default function AdminAnalyticsPage() {
-  return (
-    <PlaceholderPanel
-      title="Admin analytics placeholder"
-      body="Analytics requirements exist, but the implementation and event pipeline are still pending."
-    />
-  );
+  return <AdminModulePageView moduleKey="analytics" />;
 }
