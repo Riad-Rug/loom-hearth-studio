@@ -16,6 +16,11 @@ import {
   accountDashboardDataTodo,
   getPlaceholderAccountDashboardData,
 } from "@/lib/account/dashboard";
+import {
+  accountProfileUpdateTodo,
+  createAccountProfileUpdatePayload,
+  createInitialAccountProfileUpdateState,
+} from "@/lib/account/profile-update";
 
 import styles from "./account.module.css";
 
@@ -30,6 +35,14 @@ export function AccountDashboardPageView() {
   });
   const dashboardData = getPlaceholderAccountDashboardData(placeholderUser);
   const [signOutState, setSignOutState] = useState(createInitialSignOutRequestState());
+  const [profileFullName, setProfileFullName] = useState(
+    dashboardData?.profile.fullName ?? "",
+  );
+  const [profileEmail, setProfileEmail] = useState(dashboardData?.profile.email ?? "");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [profileUpdateState, setProfileUpdateState] = useState(
+    createInitialAccountProfileUpdateState(),
+  );
 
   function handleSignOutRequest() {
     setSignOutState({
@@ -44,6 +57,39 @@ export function AccountDashboardPageView() {
           isAuthenticated: accessDecision.sessionSummary.isAuthenticated,
         }),
       );
+    }, 350);
+  }
+
+  function handleProfileUpdateRequest() {
+    const payload = createAccountProfileUpdatePayload({
+      fullName: profileFullName,
+      email: profileEmail,
+      phone: profilePhone,
+    });
+
+    setProfileUpdateState({
+      status: "submitting",
+      payload,
+      message: null,
+    });
+
+    window.setTimeout(() => {
+      if (!payload) {
+        setProfileUpdateState({
+          status: "failure",
+          payload: null,
+          message:
+            "Enter a full name and valid email address to create the placeholder profile update request.",
+        });
+        return;
+      }
+
+      setProfileUpdateState({
+        status: "success",
+        payload,
+        message:
+          "Placeholder profile update request created. Real authenticated profile persistence is not implemented.",
+      });
     }, 350);
   }
 
@@ -122,6 +168,61 @@ export function AccountDashboardPageView() {
                 <p>{section.body}</p>
                 {summaryBody ? <strong>{summaryBody}</strong> : null}
                 {summaryMeta ? <span>{summaryMeta}</span> : null}
+                {section.id === "profile" ? (
+                  <div className={styles.formStack}>
+                    <label className={styles.field}>
+                      <span>Full name</span>
+                      <input
+                        placeholder="Customer name placeholder"
+                        type="text"
+                        value={profileFullName}
+                        onChange={(event) => setProfileFullName(event.target.value)}
+                      />
+                    </label>
+                    <label className={styles.field}>
+                      <span>Email address</span>
+                      <input
+                        placeholder="name@example.com"
+                        type="email"
+                        value={profileEmail}
+                        onChange={(event) => setProfileEmail(event.target.value)}
+                      />
+                    </label>
+                    <label className={styles.field}>
+                      <span>Phone</span>
+                      <input
+                        placeholder="Optional phone placeholder"
+                        type="tel"
+                        value={profilePhone}
+                        onChange={(event) => setProfilePhone(event.target.value)}
+                      />
+                    </label>
+                    <button
+                      className={styles.primaryAction}
+                      type="button"
+                      onClick={handleProfileUpdateRequest}
+                    >
+                      Save profile UI placeholder
+                    </button>
+                    <div className={styles.sessionNote}>
+                      <strong>Profile update boundary</strong>
+                      <span>Request state: {profileUpdateState.status}</span>
+                      {profileUpdateState.message ? (
+                        <span>{profileUpdateState.message}</span>
+                      ) : null}
+                      {profileUpdateState.payload ? (
+                        <span>
+                          Payload ready: {profileUpdateState.payload.fullName},{" "}
+                          {profileUpdateState.payload.email}
+                          {profileUpdateState.payload.phone
+                            ? `, ${profileUpdateState.payload.phone}`
+                            : ""}
+                        </span>
+                      ) : null}
+                      <span>{accountProfileUpdateTodo}</span>
+                    </div>
+                  </div>
+                ) : null}
               </article>
             );
           })}
