@@ -1,0 +1,244 @@
+.page {
+  display: grid;
+  gap: var(--space-7);
+  width: min(100% - 2rem, var(--container-width-wide));
+  margin: 0 auto;
+}
+
+.hero,
+.card,
+.faqItem,
+.lookbookTile,
+.testimonialCard,
+.policyShell {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-soft);
+}
+
+.hero {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-7);
+  background:
+    radial-gradient(circle at top right, rgba(184, 94, 59, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 228, 0.96));
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--color-clay-terracotta);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hero h1,
+.sectionHeader h2,
+.card h2,
+.faqItem h2,
+.testimonialCard blockquote,
+.policyShell h1 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.04em;
+}
+
+.hero h1,
+.policyShell h1 {
+  font-size: clamp(2.6rem, 4vw, 4rem);
+  line-height: 0.97;
+}
+
+.lede,
+.body,
+.card p,
+.faqAnswer,
+.lookbookTile p,
+.testimonialMeta,
+.policyBody p {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.78);
+  line-height: 1.8;
+}
+
+.twoColumn,
+.contactGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.contactPanel {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.contactActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.primaryAction,
+.secondaryAction,
+.contactLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 1.25rem;
+  border-radius: 999px;
+}
+
+.primaryAction {
+  border: 1px solid var(--color-clay-terracotta);
+  background: var(--color-clay-terracotta);
+  color: var(--color-white);
+}
+
+.secondaryAction,
+.contactLink {
+  border: 1px solid var(--color-border-strong);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-charcoal-ink);
+}
+
+.contactMeta {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.metaRow {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.metaLabel {
+  color: rgba(34, 33, 38, 0.54);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.faqList,
+.testimonialsGrid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.faqItem {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.faqItem h2 {
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.lookbookGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.lookbookTile {
+  overflow: hidden;
+}
+
+.lookbookMedia {
+  display: flex;
+  min-height: 18rem;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(135deg, rgba(34, 33, 38, 0.08), rgba(184, 94, 59, 0.16)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(245, 239, 228, 0.4));
+}
+
+.lookbookMedia span {
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(34, 33, 38, 0.8);
+}
+
+.lookbookBody {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.lookbookBody h2 {
+  margin: 0;
+  font-size: 1.55rem;
+  letter-spacing: -0.03em;
+}
+
+.testimonialCard {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.testimonialCard blockquote {
+  font-size: 1.8rem;
+  line-height: 1.2;
+}
+
+.policyShell {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-7);
+}
+
+.policyBody {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 52rem;
+}
+
+.sectionHeader {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 42rem;
+}
+
+.sectionHeader h2 {
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  line-height: 1;
+}
+
+@media (max-width: 1100px) {
+  .twoColumn,
+  .contactGrid,
+  .lookbookGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    width: min(100% - 1rem, var(--container-width-wide));
+  }
+
+  .hero,
+  .card,
+  .policyShell,
+  .testimonialCard {
+    padding: var(--space-5);
+  }
+
+  .contactActions {
+    flex-direction: column;
+  }
+}

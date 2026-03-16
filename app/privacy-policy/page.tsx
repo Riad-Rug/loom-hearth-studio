@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { PolicyPageView } from "@/features/content-pages/policy-page-view";
 
 export default function PrivacyPolicyPage() {
-  return (
-    <PlaceholderPanel
-      title="Privacy policy placeholder"
-      body="Privacy policy content is not authored yet. Cookie consent implementation is also pending."
-    />
-  );
+  return <PolicyPageView slug="privacy-policy" />;
 }

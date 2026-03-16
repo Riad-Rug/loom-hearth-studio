@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { ContactPageView } from "@/features/content-pages/contact-page-view";
 
 export default function ContactPage() {
-  return (
-    <PlaceholderPanel
-      title="Contact placeholder"
-      body="Public form handling, CAPTCHA, and email delivery remain pending implementation."
-    />
-  );
+  return <ContactPageView />;
 }

@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { PolicyPageView } from "@/features/content-pages/policy-page-view";
 
 export default function ShippingPolicyPage() {
-  return (
-    <PlaceholderPanel
-      title="Shipping policy placeholder"
-      body="Policy pages are scaffolded only. Launch shipping is US-only with free shipping."
-    />
-  );
+  return <PolicyPageView slug="shipping-policy" />;
 }

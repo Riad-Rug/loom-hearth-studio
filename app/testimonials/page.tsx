@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { TestimonialsPageView } from "@/features/content-pages/testimonials-page-view";
 
 export default function TestimonialsPage() {
-  return (
-    <PlaceholderPanel
-      title="Testimonials placeholder"
-      body="Testimonials are modeled in shared types and will be surfaced here once content management is wired."
-    />
-  );
+  return <TestimonialsPageView />;
 }
