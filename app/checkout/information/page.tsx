@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { CheckoutPageView } from "@/features/checkout/checkout-page-view";
 
 export default function CheckoutInformationPage() {
-  return (
-    <PlaceholderPanel
-      title="Checkout information placeholder"
-      body="US-only shipping fields and form validation will be added during checkout implementation."
-    />
-  );
+  return <CheckoutPageView step="information" />;
 }

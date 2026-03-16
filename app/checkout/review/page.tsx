@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { CheckoutPageView } from "@/features/checkout/checkout-page-view";
 
 export default function CheckoutReviewPage() {
-  return (
-    <PlaceholderPanel
-      title="Checkout review placeholder"
-      body="Order review and placement remain unimplemented. This route reserves the PRD checkout shape."
-    />
-  );
+  return <CheckoutPageView step="review" />;
 }

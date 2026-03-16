@@ -1,10 +1,5 @@
-import { PlaceholderPanel } from "@/components/ui/placeholder-panel";
+import { CheckoutPageView } from "@/features/checkout/checkout-page-view";
 
 export default function CheckoutSuccessPage() {
-  return (
-    <PlaceholderPanel
-      title="Checkout success placeholder"
-      body="Order confirmation and email dispatch will be implemented after payment and email providers are wired."
-    />
-  );
+  return <CheckoutPageView step="confirmation" />;
 }
