@@ -4,6 +4,7 @@ import { getStripeCheckoutConfirmationConfig, getStripeCheckoutWebhookConfig } f
 import type {
   StripeCheckoutPaymentConfirmation,
   StripeCheckoutPaymentConfirmationResult,
+  StripeCheckoutWebhookReceipt,
   StripeCheckoutWebhookBoundary,
   StripeCheckoutWebhookEvent,
   StripeCheckoutWebhookEventType,
@@ -53,6 +54,50 @@ export function getStripeWebhookSignatureHeader(input: {
   headers: Headers;
 }) {
   return input.headers.get("stripe-signature");
+}
+
+export function parseStripeCheckoutWebhookEvent(
+  payload: string,
+):
+  | {
+      status: "parsed";
+      event: StripeCheckoutWebhookEvent;
+      message: string;
+    }
+  | {
+      status: "invalid-payload";
+      event: null;
+      message: string;
+    } {
+  try {
+    const parsedPayload = JSON.parse(payload) as Partial<StripeCheckoutWebhookEvent>;
+
+    if (
+      typeof parsedPayload.id !== "string" ||
+      typeof parsedPayload.type !== "string" ||
+      !parsedPayload.data ||
+      typeof parsedPayload.data !== "object" ||
+      !("object" in parsedPayload.data)
+    ) {
+      return {
+        status: "invalid-payload",
+        event: null,
+        message: "Stripe webhook payload is missing the expected Checkout event fields.",
+      };
+    }
+
+    return {
+      status: "parsed",
+      event: parsedPayload as StripeCheckoutWebhookEvent,
+      message: "Stripe webhook payload parsed.",
+    };
+  } catch {
+    return {
+      status: "invalid-payload",
+      event: null,
+      message: "Stripe webhook payload could not be parsed as JSON.",
+    };
+  }
 }
 
 export function deriveStripeCheckoutConfirmationStatus(
@@ -115,9 +160,65 @@ export function createStripeCheckoutPaymentConfirmation(
   };
 }
 
+export function createStripeCheckoutWebhookReceipt(input: {
+  payload: string;
+  signatureHeader: string | null;
+}): StripeCheckoutWebhookReceipt {
+  const webhookBoundary = createStripeCheckoutWebhookBoundary();
+  const confirmationBoundary = createStripeCheckoutConfirmationBoundary();
+  const parsedEvent = parseStripeCheckoutWebhookEvent(input.payload);
+
+  if (
+    webhookBoundary.status !== "ready" ||
+    confirmationBoundary.status !== "ready"
+  ) {
+    return {
+      status: "configuration-error",
+      message:
+        "Stripe Checkout webhook boundary is not ready. Configure the webhook secret before enabling webhook processing.",
+      signaturePresent: Boolean(input.signatureHeader),
+      eventType: null,
+      eventId: null,
+      confirmationResult: {
+        status: "configuration-error",
+        confirmation: null,
+        message:
+          "Stripe Checkout confirmation boundary is not ready because webhook configuration is incomplete.",
+      },
+    };
+  }
+
+  if (parsedEvent.status === "invalid-payload") {
+    return {
+      status: "invalid-payload",
+      message: parsedEvent.message,
+      signaturePresent: Boolean(input.signatureHeader),
+      eventType: null,
+      eventId: null,
+      confirmationResult: null,
+    };
+  }
+
+  const confirmationResult = createStripeCheckoutPaymentConfirmation(parsedEvent.event);
+
+  return {
+    status: confirmationResult.status === "confirmed" ? "accepted" : "ignored",
+    message:
+      confirmationResult.status === "confirmed"
+        ? "Stripe Checkout webhook event parsed and mapped to a confirmation status."
+        : confirmationResult.message,
+    signaturePresent: Boolean(input.signatureHeader),
+    eventType: parsedEvent.event.type,
+    eventId: parsedEvent.event.id,
+    confirmationResult,
+  };
+}
+
 export const stripeConfirmationTodo = {
   webhook:
     "TODO: Verify Stripe webhook signatures against the Checkout webhook config before trusting incoming event payloads.",
   confirmation:
     "TODO: Hand confirmed Checkout payment status into the later order and email boundaries without implementing those side effects in this slice.",
+  route:
+    "TODO: Keep the webhook route scaffold side-effect free until order creation, email, and fulfillment boundaries are implemented.",
 } as const;

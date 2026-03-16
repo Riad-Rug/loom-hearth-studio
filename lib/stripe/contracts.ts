@@ -159,6 +159,15 @@ export type StripeCheckoutPaymentConfirmationResult = {
   message: string;
 };
 
+export type StripeCheckoutWebhookReceipt = {
+  status: "accepted" | "ignored" | "configuration-error" | "invalid-payload";
+  message: string;
+  signaturePresent: boolean;
+  eventType: StripeCheckoutWebhookEventType | null;
+  eventId: string | null;
+  confirmationResult: StripeCheckoutPaymentConfirmationResult | null;
+};
+
 export type StripeCheckoutPaymentDraft = {
   provider: "stripe";
   method: StripePaymentMethod;
@@ -191,6 +200,8 @@ export const stripeContractsTodo = {
     "TODO: Verify and parse real Stripe Checkout webhook payloads at a dedicated webhook route before any order or email side effects are added.",
   confirmation:
     "TODO: Map supported Checkout webhook events into confirmation status only. Leave order creation, fulfillment, and email side effects for later slices.",
+  webhookRoute:
+    "TODO: Keep the webhook route scaffold limited to payload parsing and confirmation mapping until real signature verification and downstream side effects are implemented.",
   refund:
     "TODO: Keep refund references typed only; do not implement refund execution until order operations are defined.",
 } as const;
