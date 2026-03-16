@@ -82,6 +82,12 @@ export type StripeCheckoutSessionCreationResult = {
   message: string;
 };
 
+export type StripeCheckoutExecutionAttemptState = {
+  status: "idle" | "submitting" | "success" | "failure";
+  result: StripeCheckoutSessionCreationResult | null;
+  message: string | null;
+};
+
 export type StripeCheckoutPaymentDraft = {
   provider: "stripe";
   method: StripePaymentMethod;

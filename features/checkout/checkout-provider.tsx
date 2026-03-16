@@ -18,6 +18,9 @@ import type { OrderSubmissionAttemptState, OrderSubmissionFailure, OrderSubmissi
 import {
   createStripeCheckoutPaymentDraft,
   createStripeOrderPaymentInput,
+  initialStripeCheckoutExecutionAttemptState,
+  requestStripeCheckoutSessionCreation,
+  type StripeCheckoutExecutionAttemptState,
   type StripeCheckoutPaymentDraft,
   type StripeOrderPaymentInput,
   type StripePaymentMethod,
@@ -69,6 +72,7 @@ type CheckoutContextValue = {
   orderDraft: OrderDraft;
   stripeOrderPaymentInput: StripeOrderPaymentInput;
   stripePaymentDraft: StripeCheckoutPaymentDraft;
+  checkoutExecutionAttempt: StripeCheckoutExecutionAttemptState;
   submissionAttempt: OrderSubmissionAttemptState;
   submissionPreview: OrderSubmissionPreview | null;
   updateInformation: (
@@ -77,6 +81,7 @@ type CheckoutContextValue = {
   ) => void;
   continueFromInformation: () => void;
   continueFromShipping: () => void;
+  executeCheckoutSession: () => Promise<void>;
   continueFromPayment: () => void;
   continueFromReview: (input: {
     submissionPreview: OrderSubmissionPreview | null;
@@ -125,6 +130,10 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [information, setInformation] = useState<CheckoutInformation>(initialInformation);
   const [shippingMethod, setShippingMethod] = useState<CheckoutShippingMethod | null>(null);
   const [hasVisitedConfirmation, setHasVisitedConfirmation] = useState(false);
+  const [checkoutExecutionAttempt, setCheckoutExecutionAttempt] =
+    useState<StripeCheckoutExecutionAttemptState>(
+      initialStripeCheckoutExecutionAttemptState,
+    );
   const [submissionPreview, setSubmissionPreview] = useState<OrderSubmissionPreview | null>(null);
   const [submissionAttempt, setSubmissionAttempt] =
     useState<OrderSubmissionAttemptState>(initialSubmissionAttempt);
@@ -212,12 +221,32 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     [orderDraft],
   );
   const stripePaymentDraft = useMemo<StripeCheckoutPaymentDraft>(
-    () => createStripeCheckoutPaymentDraft(stripeOrderPaymentInput),
-    [stripeOrderPaymentInput],
+    () => {
+      const draft = createStripeCheckoutPaymentDraft(stripeOrderPaymentInput);
+      const createdSession = checkoutExecutionAttempt.result?.session;
+
+      if (!createdSession) {
+        return draft;
+      }
+
+      return {
+        ...draft,
+        checkoutExecution: {
+          ...draft.checkoutExecution,
+          redirectTarget: checkoutExecutionAttempt.result?.redirectTarget ?? null,
+        },
+        checkoutSessionResponse: createdSession,
+      };
+    },
+    [checkoutExecutionAttempt.result, stripeOrderPaymentInput],
   );
   const canAccessReview =
-    canAccessPayment && canContinueToCheckoutReview(stripePaymentDraft);
+    canAccessPayment && canContinueToCheckoutReview(checkoutExecutionAttempt);
   const canAccessConfirmation = canAccessReview && hasVisitedConfirmation;
+
+  useEffect(() => {
+    setCheckoutExecutionAttempt(initialStripeCheckoutExecutionAttemptState);
+  }, [stripeOrderPaymentInput]);
 
   useEffect(() => {
     if (currentStep === "start" || currentStep === "information" || currentStep === "confirmation") {
@@ -260,6 +289,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     orderDraft,
     stripeOrderPaymentInput,
     stripePaymentDraft,
+    checkoutExecutionAttempt,
     submissionAttempt,
     submissionPreview,
     updateInformation(field, value) {
@@ -278,6 +308,43 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     continueFromShipping() {
       setShippingMethod(defaultShippingMethod);
       router.push(stepPathMap.payment as Route);
+    },
+    async executeCheckoutSession() {
+      if (!stripePaymentDraft.checkoutSessionRequest) {
+        setCheckoutExecutionAttempt({
+          status: "failure",
+          result: null,
+          message:
+            "Checkout session request is incomplete. Review the guest checkout details before trying again.",
+        });
+        return;
+      }
+
+      setCheckoutExecutionAttempt({
+        status: "submitting",
+        result: null,
+        message: null,
+      });
+
+      try {
+        const result = await requestStripeCheckoutSessionCreation({
+          endpointPath: stripePaymentDraft.checkoutExecution.endpointPath,
+          request: stripePaymentDraft.checkoutSessionRequest,
+        });
+
+        setCheckoutExecutionAttempt({
+          status: result.status === "created" ? "success" : "failure",
+          result,
+          message: result.message,
+        });
+      } catch {
+        setCheckoutExecutionAttempt({
+          status: "failure",
+          result: null,
+          message:
+            "Stripe Checkout session creation failed before a response was returned.",
+        });
+      }
     },
     continueFromPayment() {
       if (!canAccessReview) {
@@ -372,14 +439,11 @@ export const checkoutFoundationTodos = {
 } as const;
 
 function canContinueToCheckoutReview(
-  stripePaymentDraft: Pick<
-    StripeCheckoutPaymentDraft,
-    "isReadyForPlaceholderFlow" | "checkoutSessionRequest" | "checkoutSessionResponse"
-  >,
+  checkoutExecutionAttempt: Pick<StripeCheckoutExecutionAttemptState, "status" | "result">,
 ) {
   return Boolean(
-    stripePaymentDraft.isReadyForPlaceholderFlow &&
-      stripePaymentDraft.checkoutSessionRequest &&
-      stripePaymentDraft.checkoutSessionResponse,
+    checkoutExecutionAttempt.status === "success" &&
+      checkoutExecutionAttempt.result?.session &&
+      checkoutExecutionAttempt.result.redirectTarget,
   );
 }

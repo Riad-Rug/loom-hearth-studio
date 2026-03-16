@@ -43,9 +43,11 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     canAccessReview,
     canAccessShipping,
     continueFromInformation,
+    executeCheckoutSession,
     continueFromPayment,
     continueFromReview,
     continueFromShipping,
+    checkoutExecutionAttempt,
     information,
     orderDraft,
     stripeOrderPaymentInput,
@@ -114,6 +116,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     checkoutSteps,
     canAccessShipping,
     canAccessReview,
+    checkoutExecutionAttempt,
     stripePaymentDraft,
   });
 
@@ -159,9 +162,11 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               canAccessReview,
               canAccessShipping,
               continueFromInformation,
+              executeCheckoutSession,
               continueFromPayment,
               continueFromReview,
               continueFromShipping,
+              checkoutExecutionAttempt,
               information,
               orderDraft,
               orderConfirmationEmailPayload,
@@ -229,6 +234,7 @@ type CheckoutStepRenderProps = {
   canAccessReview: boolean;
   canAccessShipping: boolean;
   continueFromInformation: () => void;
+  executeCheckoutSession: () => Promise<void>;
   continueFromPayment: () => void;
   continueFromReview: (input: {
     submissionPreview: {
@@ -244,6 +250,22 @@ type CheckoutStepRenderProps = {
     } | null;
   }) => void;
   continueFromShipping: () => void;
+  checkoutExecutionAttempt: {
+    status: "idle" | "submitting" | "success" | "failure";
+    result: {
+      status: "created" | "configuration-error" | "api-error";
+      session: {
+        id: string;
+        mode: "checkout";
+        url?: string;
+        expiresAt?: string;
+        status: "placeholder" | "created";
+      } | null;
+      redirectTarget: string | null;
+      message: string;
+    } | null;
+    message: string | null;
+  };
   information: {
     email: string;
     fullName: string;
@@ -342,6 +364,12 @@ type CheckoutStepRenderProps = {
         endpointLabel: string;
         redirectTargetLabel: string | null;
         missingServerConfigLabel: string | null;
+      };
+      executionAttempt: {
+        stateLabel: string;
+        messageLabel: string | null;
+        redirectTargetLabel: string | null;
+        actionLabel: string;
       };
       checkoutSessionRequest: {
         customerEmailLabel: string | null;
@@ -692,6 +720,22 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
               ) : null}
             </div>
             <div className={styles.reviewCard}>
+              <h3>Checkout execution attempt</h3>
+              <p>{props.nonConfirmationRouteViewModel.payment.executionAttempt.stateLabel}</p>
+              {props.nonConfirmationRouteViewModel.payment.executionAttempt.messageLabel ? (
+                <p>{props.nonConfirmationRouteViewModel.payment.executionAttempt.messageLabel}</p>
+              ) : null}
+              {props.nonConfirmationRouteViewModel.payment.executionAttempt
+                .redirectTargetLabel ? (
+                <p>
+                  {
+                    props.nonConfirmationRouteViewModel.payment.executionAttempt
+                      .redirectTargetLabel
+                  }
+                </p>
+              ) : null}
+            </div>
+            <div className={styles.reviewCard}>
               <h3>Checkout session request</h3>
               {props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest.emptyLabel ? (
                 <p>{props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest.emptyLabel}</p>
@@ -744,6 +788,19 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           </div>
           <p className={styles.summaryNote}>{checkoutFoundationTodos.payment}</p>
           <p className={styles.summaryNote}>{stripeHelpersTodo.checkoutState}</p>
+          <button
+            className={styles.secondaryAction}
+            disabled={
+              !props.canAccessPayment ||
+              props.checkoutExecutionAttempt.status === "submitting"
+            }
+            type="button"
+            onClick={() => {
+              void props.executeCheckoutSession();
+            }}
+          >
+            {props.nonConfirmationRouteViewModel.payment.executionAttempt.actionLabel}
+          </button>
           <button
             className={styles.primaryAction}
             disabled={!props.canAccessReview}

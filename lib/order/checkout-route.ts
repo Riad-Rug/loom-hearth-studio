@@ -1,5 +1,8 @@
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
-import type { StripeCheckoutPaymentDraft } from "@/lib/stripe";
+import type {
+  StripeCheckoutExecutionAttemptState,
+  StripeCheckoutPaymentDraft,
+} from "@/lib/stripe";
 
 export type CheckoutStepIndicatorView = {
   key: Exclude<CheckoutStepKey, "start">;
@@ -60,6 +63,12 @@ export type CheckoutNonConfirmationRouteViewModel = {
       redirectTargetLabel: string | null;
       missingServerConfigLabel: string | null;
     };
+    executionAttempt: {
+      stateLabel: string;
+      messageLabel: string | null;
+      redirectTargetLabel: string | null;
+      actionLabel: string;
+    };
     checkoutSessionRequest: {
       customerEmailLabel: string | null;
       lineItemsLabel: string | null;
@@ -78,6 +87,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
   }>;
   canAccessShipping: boolean;
   canAccessReview: boolean;
+  checkoutExecutionAttempt: StripeCheckoutExecutionAttemptState;
   stripePaymentDraft: Pick<
     StripeCheckoutPaymentDraft,
     | "mode"
@@ -189,6 +199,19 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
           .length
           ? `Missing server config: ${input.stripePaymentDraft.checkoutExecution.missingServerConfig.join(", ")}`
           : null,
+      },
+      executionAttempt: {
+        stateLabel: `Execution attempt: ${input.checkoutExecutionAttempt.status}`,
+        messageLabel: input.checkoutExecutionAttempt.message,
+        redirectTargetLabel: input.checkoutExecutionAttempt.result?.redirectTarget
+          ? `Redirect target handoff: ${input.checkoutExecutionAttempt.result.redirectTarget}`
+          : null,
+        actionLabel:
+          input.checkoutExecutionAttempt.status === "submitting"
+            ? "Creating Checkout session..."
+            : input.checkoutExecutionAttempt.status === "success"
+              ? "Checkout session created"
+              : "Create Checkout session",
       },
       checkoutSessionRequest: input.stripePaymentDraft.checkoutSessionRequest
         ? {

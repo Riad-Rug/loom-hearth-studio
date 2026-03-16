@@ -4,7 +4,9 @@ import {
   stripeConfigTodo,
 } from "@/lib/stripe/config";
 import type {
+  StripeCheckoutExecutionAttemptState,
   StripeCheckoutPaymentDraft,
+  StripeCheckoutSessionCreationResult,
   StripeCheckoutSessionRequest,
   StripeCheckoutSessionResponse,
   StripeOrderPaymentInput,
@@ -131,6 +133,27 @@ export function createStripeCheckoutSessionPlaceholder(
     status: "placeholder",
   };
 }
+
+export async function requestStripeCheckoutSessionCreation(input: {
+  endpointPath: string;
+  request: StripeCheckoutSessionRequest;
+}): Promise<StripeCheckoutSessionCreationResult> {
+  const response = await fetch(input.endpointPath, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input.request),
+  });
+
+  return (await response.json()) as StripeCheckoutSessionCreationResult;
+}
+
+export const initialStripeCheckoutExecutionAttemptState: StripeCheckoutExecutionAttemptState = {
+  status: "idle",
+  result: null,
+  message: null,
+};
 
 export const stripeHelpersTodo = {
   checkoutState:
