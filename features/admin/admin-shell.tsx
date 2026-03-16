@@ -1,9 +1,16 @@
+"use client";
+
 import type { ReactNode } from "react";
 import type { Route } from "next";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { adminNav } from "@/features/admin/admin-data";
-import { adminGuardTodo, getAdminAccessDecision } from "@/lib/auth";
+import {
+  adminGuardTodo,
+  createAdminShellRouteViewModel,
+  getAdminAccessDecision,
+} from "@/lib/auth";
 
 import styles from "./admin.module.css";
 
@@ -12,6 +19,7 @@ type AdminShellProps = {
 };
 
 export function AdminShell({ children }: AdminShellProps) {
+  const pathname = usePathname();
   const accessDecision = getAdminAccessDecision({
     user: {
       id: "admin-session-placeholder",
@@ -20,30 +28,34 @@ export function AdminShell({ children }: AdminShellProps) {
     },
     moduleKey: "dashboard",
   });
+  const routeViewModel = createAdminShellRouteViewModel({
+    pathname,
+    accessDecision,
+    adminGuardTodo,
+    adminNav,
+  });
 
   return (
     <div className={styles.page}>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarIntro}>
-          <p className={styles.eyebrow}>Admin</p>
-          <h1>Back office shell</h1>
-          <p>
-            Placeholder-only admin shell. Route protection and role enforcement are not
-            implemented.
-          </p>
+          <p className={styles.eyebrow}>{routeViewModel.intro.eyebrow}</p>
+          <h1>{routeViewModel.intro.title}</h1>
+          <p>{routeViewModel.intro.body}</p>
         </div>
         <div className={styles.sessionPanel}>
-          <strong>Session boundary</strong>
-          <span>Status: {accessDecision.sessionSummary.status}</span>
-          <span>Role: {accessDecision.sessionSummary.roleLabel}</span>
-          <span>Access: {accessDecision.status}</span>
-          <span>Redirect target: {accessDecision.redirectTarget}</span>
-          <span>{accessDecision.sessionSummary.todo}</span>
-          <span>{adminGuardTodo}</span>
+          <strong>{routeViewModel.session.title}</strong>
+          {routeViewModel.session.lines.map((line) => (
+            <span key={line}>{line}</span>
+          ))}
         </div>
-        <nav className={styles.nav} aria-label="Admin navigation">
-          {adminNav.map((item) => (
-            <Link key={item.href} className={styles.navLink} href={item.href as Route}>
+        <nav className={styles.nav} aria-label={routeViewModel.navigation.ariaLabel}>
+          {routeViewModel.navigation.items.map((item) => (
+            <Link
+              key={item.href}
+              className={`${styles.navLink} ${item.isActive ? styles.navLinkActive : ""}`}
+              href={item.href as Route}
+            >
               {item.label}
             </Link>
           ))}
@@ -54,12 +66,9 @@ export function AdminShell({ children }: AdminShellProps) {
           children
         ) : (
           <section className={styles.gatePanel}>
-            <strong>Admin access placeholder gate</strong>
-            <p>
-              Admin routes require a placeholder-authenticated admin surface session with a
-              supported PRD role.
-            </p>
-            <p>Boundary redirect target: {accessDecision.redirectTarget}</p>
+            <strong>{routeViewModel.gate.title}</strong>
+            <p>{routeViewModel.gate.body}</p>
+            <p>{routeViewModel.gate.redirectTargetLine}</p>
           </section>
         )}
       </div>

@@ -1,5 +1,6 @@
 export * from "@/lib/auth/admin-gate";
 export * from "@/lib/auth/admin-module-route";
+export * from "@/lib/auth/admin-shell-route";
 export * from "@/lib/auth/config";
 export * from "@/lib/auth/guards";
 export * from "@/lib/auth/helpers";
