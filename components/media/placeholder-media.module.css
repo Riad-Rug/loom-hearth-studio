@@ -1,0 +1,25 @@
+.frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.label {
+  position: absolute;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(34, 33, 38, 0.8);
+  font-size: 0.9rem;
+  text-align: center;
+  backdrop-filter: blur(6px);
+}

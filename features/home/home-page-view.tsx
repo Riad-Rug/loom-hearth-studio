@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import {
@@ -89,7 +90,12 @@ export function HomePageView() {
             {homeFeaturedProducts.map((product) => (
               <article key={product.name} className={styles.productCard}>
                 <div className={styles.productImagePlaceholder}>
-                  <span>{product.type}</span>
+                  <PlaceholderMedia
+                    alt={product.name}
+                    aspectRatio="4 / 3"
+                    label={product.type}
+                    sizes="(max-width: 1100px) 100vw, 33vw"
+                  />
                 </div>
                 <div className={styles.productMeta}>
                   <h3>{product.name}</h3>

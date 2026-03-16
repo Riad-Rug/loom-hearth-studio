@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { blogPosts } from "@/features/blog/blog-post-data";
 import type { BlogPost } from "@/types/domain";
 
@@ -33,7 +34,13 @@ export function BlogPostPageView({ post }: BlogPostPageViewProps) {
         </header>
 
         <div className={styles.articleMedia}>
-          <span>Featured image placeholder</span>
+          <PlaceholderMedia
+            alt={post.title}
+            aspectRatio="16 / 9"
+            label="Featured image placeholder"
+            priority
+            sizes="(max-width: 1100px) 100vw, 80vw"
+          />
         </div>
 
         <div className={styles.articleBody}>

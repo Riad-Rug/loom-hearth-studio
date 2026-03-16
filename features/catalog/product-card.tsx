@@ -1,3 +1,4 @@
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import type { CatalogPlaceholderProduct } from "@/features/catalog/catalog-data";
 
 import styles from "./catalog-page.module.css";
@@ -10,7 +11,12 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <article className={styles.productCard}>
       <div className={styles.productMedia}>
-        <span className={styles.productBadge}>{product.badge}</span>
+        <PlaceholderMedia
+          alt={product.name}
+          aspectRatio="4 / 5"
+          label={product.badge}
+          sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 33vw"
+        />
       </div>
       <div className={styles.productContent}>
         <div className={styles.productTopline}>

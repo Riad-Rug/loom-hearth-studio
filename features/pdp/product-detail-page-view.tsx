@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
 import type {
   MultiUnitPlaceholderProduct,
@@ -20,12 +21,23 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         <div className={styles.layout}>
           <div className={styles.galleryColumn}>
             <div className={styles.primaryMedia}>
-              <span>{product.type === "rug" ? "Rug gallery" : "Product gallery"}</span>
+              <PlaceholderMedia
+                alt={product.name}
+                aspectRatio="4 / 3"
+                label={product.type === "rug" ? "Rug gallery" : "Product gallery"}
+                priority
+                sizes="(max-width: 1100px) 100vw, 55vw"
+              />
             </div>
             <div className={styles.thumbnailGrid}>
               {product.gallery.map((item) => (
                 <div key={item.id} className={styles.thumbnailCard}>
-                  {item.label}
+                  <PlaceholderMedia
+                    alt={`${product.name} ${item.label}`}
+                    aspectRatio="1 / 1"
+                    label={item.label}
+                    sizes="(max-width: 1100px) 50vw, 14vw"
+                  />
                 </div>
               ))}
             </div>

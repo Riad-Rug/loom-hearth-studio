@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { blogCategories, blogPosts } from "@/features/blog/blog-post-data";
 
 import styles from "./blog.module.css";
@@ -35,7 +36,12 @@ export function BlogIndexPageView() {
             href={`/blog/${post.categorySlug}/${post.slug}` as Route}
           >
             <div className={styles.postMedia}>
-              <span>Featured image placeholder</span>
+              <PlaceholderMedia
+                alt={post.title}
+                aspectRatio="4 / 3"
+                label="Featured image placeholder"
+                sizes="(max-width: 1100px) 100vw, 33vw"
+              />
             </div>
             <div className={styles.postBody}>
               <div className={styles.postMeta}>

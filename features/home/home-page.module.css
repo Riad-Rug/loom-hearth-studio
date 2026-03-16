@@ -242,22 +242,11 @@
 }
 
 .productImagePlaceholder {
-  display: flex;
   min-height: 18rem;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-5);
   background:
     linear-gradient(135deg, rgba(34, 33, 38, 0.08), rgba(184, 94, 59, 0.16)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(245, 239, 228, 0.4));
-}
-
-.productImagePlaceholder span {
-  padding: 0.7rem 1rem;
-  border: 1px solid rgba(34, 33, 38, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  color: rgba(34, 33, 38, 0.78);
+  overflow: hidden;
 }
 
 .productMeta {

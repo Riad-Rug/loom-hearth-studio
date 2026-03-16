@@ -1,3 +1,4 @@
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { lookbookItems } from "@/features/content-pages/content-pages-data";
 
 import styles from "./content-pages.module.css";
@@ -14,7 +15,12 @@ export function LookbookPageView() {
         {lookbookItems.map((item) => (
           <article key={item.id} className={styles.lookbookTile}>
             <div className={styles.lookbookMedia}>
-              <span>Lookbook media placeholder</span>
+              <PlaceholderMedia
+                alt={item.title}
+                aspectRatio="4 / 3"
+                label="Lookbook media placeholder"
+                sizes="(max-width: 1100px) 100vw, 50vw"
+              />
             </div>
             <div className={styles.lookbookBody}>
               <h2>{item.title}</h2>

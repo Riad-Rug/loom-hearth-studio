@@ -25,22 +25,12 @@
 }
 
 .primaryMedia {
-  display: flex;
   min-height: 31rem;
-  align-items: center;
-  justify-content: center;
   border-radius: var(--radius-lg);
   background:
     linear-gradient(135deg, rgba(34, 33, 38, 0.08), rgba(184, 94, 59, 0.18)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(245, 239, 228, 0.42));
-}
-
-.primaryMedia span {
-  padding: 0.8rem 1.1rem;
-  border: 1px solid rgba(34, 33, 38, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  color: rgba(34, 33, 38, 0.8);
+  overflow: hidden;
 }
 
 .thumbnailGrid {
@@ -51,16 +41,11 @@
 }
 
 .thumbnailCard {
-  display: flex;
   min-height: 6rem;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: rgba(245, 239, 228, 0.7);
-  color: rgba(34, 33, 38, 0.72);
-  text-align: center;
+  overflow: hidden;
 }
 
 .infoColumn {
