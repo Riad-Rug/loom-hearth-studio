@@ -20,6 +20,7 @@ import {
   orderConfirmationEmailTodo,
 } from "@/lib/email";
 import {
+  createCheckoutNonConfirmationRouteViewModel,
   createCheckoutConfirmationViewModel,
   createCheckoutReviewViewModel,
   createOrderSubmissionFailure,
@@ -131,19 +132,23 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     submissionState: submissionAttempt.status,
     stripePaymentDraft,
   });
+  const nonConfirmationRouteViewModel = createCheckoutNonConfirmationRouteViewModel({
+    step,
+    checkoutSteps,
+    canAccessShipping,
+    canAccessReview,
+    paymentState,
+    stripePaymentDraft,
+  });
 
   return (
     <div className={styles.page}>
       <section className={styles.shell}>
         <div className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>Checkout</p>
-            <h1>Guest checkout UI shell</h1>
-            <p className={styles.lede}>
-              This slice implements the PRD checkout structure only. Payment, order
-              creation, cart wiring, tax handling, email, and provider integrations remain
-              unresolved.
-            </p>
+            <p className={styles.eyebrow}>{nonConfirmationRouteViewModel.shell.eyebrow}</p>
+            <h1>{nonConfirmationRouteViewModel.shell.title}</h1>
+            <p className={styles.lede}>{nonConfirmationRouteViewModel.shell.body}</p>
           </div>
           <div className={styles.badges}>
             <span>{summary.guestLabel}</span>
@@ -153,23 +158,18 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
         </div>
 
         <ol className={styles.steps} aria-label="Checkout steps">
-          {checkoutSteps.map((item, index) => {
-            const isActive = item.key === step;
-            const isComplete =
-              step !== "start" &&
-              checkoutSteps.findIndex((candidate) => candidate.key === step) > index;
-
+          {nonConfirmationRouteViewModel.stepIndicators.map((item, index) => {
             return (
               <li
                 key={item.key}
-                className={`${styles.stepItem} ${isActive ? styles.stepActive : ""} ${
-                  isComplete ? styles.stepComplete : ""
+                className={`${styles.stepItem} ${item.isActive ? styles.stepActive : ""} ${
+                  item.isComplete ? styles.stepComplete : ""
                 }`}
               >
                 <span className={styles.stepNumber}>{index + 1}</span>
                 <div className={styles.stepCopy}>
                   <strong>{item.label}</strong>
-                  <span>{isComplete ? "Complete preview" : "Placeholder step"}</span>
+                  <span>{item.stateLabel}</span>
                 </div>
               </li>
             );
@@ -191,6 +191,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               orderConfirmationEmailPayload,
               orderConfirmationEmailPreview,
               orderSubmissionPayload,
+              nonConfirmationRouteViewModel,
               paymentState,
               confirmationViewModel,
               reviewViewModel,
@@ -323,6 +324,41 @@ type CheckoutStepRenderProps = {
     paymentMethod: "stripe-placeholder";
     paymentStatus: "pending";
   } | null;
+  nonConfirmationRouteViewModel: {
+    start: {
+      title: string;
+      body: string;
+      actionLabel: string;
+    };
+    information: {
+      note: string;
+      actionLabel: string;
+    };
+    shipping: {
+      optionTitle: string;
+      optionBody: string;
+      optionPriceLabel: string;
+      body: string;
+      actionLabel: string;
+    };
+    payment: {
+      body: string;
+      modeButtons: {
+        checkoutLabel: string;
+        elementsLabel: string;
+      };
+      boundary: {
+        modeLabel: string;
+        statusLabel: string;
+        publishableKeyLabel: string;
+        missingConfigLabel: string | null;
+        sessionLabel: string;
+        paymentStatusLabel: string;
+        readinessLabel: string;
+      };
+      actionLabel: string;
+    };
+  };
   paymentState: {
     selectedMode: "checkout" | "elements" | null;
   };
@@ -435,15 +471,11 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
         <div className={styles.panelStack}>
           <div className={styles.panelHeader}>
             <p className={styles.eyebrow}>Start</p>
-            <h2>Checkout route shell</h2>
+            <h2>{props.nonConfirmationRouteViewModel.start.title}</h2>
           </div>
-          <p className={styles.panelBody}>
-            Guest checkout is the only supported mode in the PRD. Use the step links below
-            to move through the existing 5-step flow using the current client-side
-            checkout state.
-          </p>
+          <p className={styles.panelBody}>{props.nonConfirmationRouteViewModel.start.body}</p>
           <Link className={styles.primaryAction} href="/checkout/information">
-            Start guest checkout
+            {props.nonConfirmationRouteViewModel.start.actionLabel}
           </Link>
         </div>
       );
@@ -530,17 +562,14 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
               <input readOnly value="United States" />
             </label>
           </div>
-          <p className={styles.summaryNote}>
-            Guest email and US shipping address are stored in local client state only for
-            this slice.
-          </p>
+          <p className={styles.summaryNote}>{props.nonConfirmationRouteViewModel.information.note}</p>
           <button
             className={styles.primaryAction}
             disabled={!props.canAccessShipping}
             type="button"
             onClick={props.continueFromInformation}
           >
-            Continue to shipping
+            {props.nonConfirmationRouteViewModel.information.actionLabel}
           </button>
         </div>
       );
@@ -553,21 +582,18 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           </div>
           <div className={styles.optionCard}>
             <div>
-              <strong>Standard shipping</strong>
-              <p>United States only</p>
+              <strong>{props.nonConfirmationRouteViewModel.shipping.optionTitle}</strong>
+              <p>{props.nonConfirmationRouteViewModel.shipping.optionBody}</p>
             </div>
-            <strong>$0.00</strong>
+            <strong>{props.nonConfirmationRouteViewModel.shipping.optionPriceLabel}</strong>
           </div>
-          <p className={styles.panelBody}>
-            Shipping is fixed at $0.00 for launch in the PRD. No shipping provider or rate
-            calculation logic is implemented in this slice.
-          </p>
+          <p className={styles.panelBody}>{props.nonConfirmationRouteViewModel.shipping.body}</p>
           <button
             className={styles.primaryAction}
             type="button"
             onClick={props.continueFromShipping}
           >
-            Continue to payment
+            {props.nonConfirmationRouteViewModel.shipping.actionLabel}
           </button>
         </div>
       );
@@ -592,18 +618,14 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
                   type="button"
                   onClick={() => props.updatePaymentMode("checkout")}
                 >
-                  {props.paymentState.selectedMode === "checkout"
-                    ? "Stripe Checkout selected"
-                    : "Select Stripe Checkout"}
+                  {props.nonConfirmationRouteViewModel.payment.modeButtons.checkoutLabel}
                 </button>
                 <button
                   className={styles.secondaryAction}
                   type="button"
                   onClick={() => props.updatePaymentMode("elements")}
                 >
-                  {props.paymentState.selectedMode === "elements"
-                    ? "Stripe Elements selected"
-                    : "Select Stripe Elements"}
+                  {props.nonConfirmationRouteViewModel.payment.modeButtons.elementsLabel}
                 </button>
               </div>
             </div>
@@ -618,36 +640,18 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
               </label>
             </div>
           </div>
-          <p className={styles.panelBody}>
-            Stripe is confirmed, but this page is UI only. No payment capture, webhook
-            handling, or order creation is implemented yet.
-          </p>
+          <p className={styles.panelBody}>{props.nonConfirmationRouteViewModel.payment.body}</p>
           <div className={styles.reviewCard}>
             <h3>Stripe boundary state</h3>
-            <p>Mode: {props.stripePaymentDraft.mode ?? "Undecided placeholder"}</p>
-            <p>Status: {props.stripePaymentDraft.paymentStepStatus}</p>
-            <p>
-              Publishable key:{" "}
-              {props.stripePaymentDraft.publishableKeyReady
-                ? "Configured"
-                : "Missing placeholder env"}
-            </p>
-            {props.stripePaymentDraft.missingConfig.length ? (
-              <p>Missing config: {props.stripePaymentDraft.missingConfig.join(", ")}</p>
+            <p>{props.nonConfirmationRouteViewModel.payment.boundary.modeLabel}</p>
+            <p>{props.nonConfirmationRouteViewModel.payment.boundary.statusLabel}</p>
+            <p>{props.nonConfirmationRouteViewModel.payment.boundary.publishableKeyLabel}</p>
+            {props.nonConfirmationRouteViewModel.payment.boundary.missingConfigLabel ? (
+              <p>{props.nonConfirmationRouteViewModel.payment.boundary.missingConfigLabel}</p>
             ) : null}
-            <p>
-              Session:{" "}
-              {props.stripePaymentDraft.session
-                ? props.stripePaymentDraft.session.id
-                : "Not created"}
-            </p>
-            <p>Payment status: {props.stripePaymentDraft.paymentStatus}</p>
-            <p>
-              Review readiness:{" "}
-              {props.stripePaymentDraft.isReadyForPlaceholderFlow
-                ? "Mode selected"
-                : "Select a Stripe mode to continue"}
-            </p>
+            <p>{props.nonConfirmationRouteViewModel.payment.boundary.sessionLabel}</p>
+            <p>{props.nonConfirmationRouteViewModel.payment.boundary.paymentStatusLabel}</p>
+            <p>{props.nonConfirmationRouteViewModel.payment.boundary.readinessLabel}</p>
           </div>
           <p className={styles.summaryNote}>{checkoutFoundationTodos.payment}</p>
           <p className={styles.summaryNote}>{stripeHelpersTodo.checkoutState}</p>
@@ -657,7 +661,7 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             type="button"
             onClick={props.continueFromPayment}
           >
-            Continue to review
+            {props.nonConfirmationRouteViewModel.payment.actionLabel}
           </button>
         </div>
       );
