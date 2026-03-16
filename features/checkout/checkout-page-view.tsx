@@ -21,6 +21,7 @@ import {
 } from "@/lib/email";
 import {
   createCheckoutConfirmationViewModel,
+  createCheckoutReviewViewModel,
   createOrderSubmissionFailure,
   createOrderSubmissionPayload,
   createOrderSubmissionPreview,
@@ -122,6 +123,14 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     hasPayload: Boolean(orderSubmissionPayload),
     hasPaymentConfig: stripePaymentDraft.publishableKeyReady,
   });
+  const reviewViewModel = createCheckoutReviewViewModel({
+    orderDraft,
+    orderSubmissionPayload,
+    submissionFailure,
+    submissionPreview: resolvedSubmissionPreview,
+    submissionState: submissionAttempt.status,
+    stripePaymentDraft,
+  });
 
   return (
     <div className={styles.page}>
@@ -184,6 +193,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               orderSubmissionPayload,
               paymentState,
               confirmationViewModel,
+              reviewViewModel,
               submissionAttempt,
               submissionFailure,
               submissionPreview: resolvedSubmissionPreview,
@@ -332,6 +342,28 @@ type CheckoutStepRenderProps = {
       subject: string | null;
       itemCountLabel: string | null;
       totalLabel: string | null;
+    };
+  };
+  reviewViewModel: {
+    shippingAddressLines: string[] | null;
+    shippingMethodLabel: string;
+    paymentLabel: string;
+    submissionBoundary: {
+      emailLabel: string | null;
+      itemCountLabel: string | null;
+      paymentMethodLabel: string | null;
+      paymentStatusLabel: string | null;
+      emptyLabel: string | null;
+    };
+    submissionAttempt: {
+      stateLabel: string;
+      failureMessage: string | null;
+      previewReference: string | null;
+    };
+    placeOrderLabel: string;
+    stripeBoundary: {
+      modeLabel: string;
+      statusLabel: string;
     };
   };
   submissionAttempt: {
@@ -637,19 +669,11 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           </div>
           <div className={styles.reviewCard}>
             <h3>Shipping address</h3>
-            {props.orderDraft.shippingAddress ? (
+            {props.reviewViewModel.shippingAddressLines ? (
               <>
-                <p>{props.orderDraft.shippingAddress.fullName}</p>
-                <p>{props.orderDraft.shippingAddress.address1}</p>
-                {props.orderDraft.shippingAddress.address2 ? (
-                  <p>{props.orderDraft.shippingAddress.address2}</p>
-                ) : null}
-                <p>
-                  {props.orderDraft.shippingAddress.city}, {props.orderDraft.shippingAddress.state}{" "}
-                  {props.orderDraft.shippingAddress.postalCode}
-                </p>
-                <p>United States</p>
-                <p>{props.orderDraft.shippingAddress.email}</p>
+                {props.reviewViewModel.shippingAddressLines.map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
               </>
             ) : (
               <p>Guest information must be completed before review.</p>
@@ -657,33 +681,31 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           </div>
           <div className={styles.reviewCard}>
             <h3>Shipping method</h3>
-            <p>
-              {props.orderDraft.shippingMethod
-                ? `${props.orderDraft.shippingMethod.label} (${formatUsd(
-                    props.orderDraft.shippingMethod.priceUsd,
-                  )})`
-                : "Standard shipping will be set in the shipping step."}
-            </p>
+            <p>{props.reviewViewModel.shippingMethodLabel}</p>
           </div>
           <div className={styles.reviewCard}>
             <h3>Payment</h3>
-            <p>
-              {props.orderDraft.paymentMethod === "stripe-placeholder"
-                ? "Stripe placeholder boundary preserved for a future payment slice."
-                : ""}
-            </p>
+            <p>{props.reviewViewModel.paymentLabel}</p>
           </div>
           <div className={styles.reviewCard}>
             <h3>Order submission boundary</h3>
-            {props.orderSubmissionPayload ? (
-              <>
-                <p>Email: {props.orderSubmissionPayload.email}</p>
-                <p>Items: {props.orderSubmissionPayload.items.length}</p>
-                <p>Payment method: {props.orderSubmissionPayload.paymentMethod}</p>
-                <p>Status: {props.orderSubmissionPayload.paymentStatus}</p>
-              </>
+            {props.reviewViewModel.submissionBoundary.emptyLabel ? (
+              <p>{props.reviewViewModel.submissionBoundary.emptyLabel}</p>
             ) : (
-              <p>Submission payload requires completed guest shipping details.</p>
+              <>
+                {props.reviewViewModel.submissionBoundary.emailLabel ? (
+                  <p>{props.reviewViewModel.submissionBoundary.emailLabel}</p>
+                ) : null}
+                {props.reviewViewModel.submissionBoundary.itemCountLabel ? (
+                  <p>{props.reviewViewModel.submissionBoundary.itemCountLabel}</p>
+                ) : null}
+                {props.reviewViewModel.submissionBoundary.paymentMethodLabel ? (
+                  <p>{props.reviewViewModel.submissionBoundary.paymentMethodLabel}</p>
+                ) : null}
+                {props.reviewViewModel.submissionBoundary.paymentStatusLabel ? (
+                  <p>{props.reviewViewModel.submissionBoundary.paymentStatusLabel}</p>
+                ) : null}
+              </>
             )}
           </div>
           <p className={styles.panelBody}>
@@ -694,8 +716,13 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           <p className={styles.summaryNote}>{orderSubmissionTodo}</p>
           <div className={styles.reviewCard}>
             <h3>Submission attempt state</h3>
-            <p>Current state: {props.submissionAttempt.status}</p>
-            {props.submissionFailure ? <p>{props.submissionFailure.message}</p> : null}
+            <p>Current state: {props.reviewViewModel.submissionAttempt.stateLabel}</p>
+            {props.reviewViewModel.submissionAttempt.failureMessage ? (
+              <p>{props.reviewViewModel.submissionAttempt.failureMessage}</p>
+            ) : null}
+            {props.reviewViewModel.submissionAttempt.previewReference ? (
+              <p>{props.reviewViewModel.submissionAttempt.previewReference}</p>
+            ) : null}
           </div>
           <button
             className={styles.primaryAction}
@@ -707,9 +734,7 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
               })
             }
           >
-            {props.submissionAttempt.status === "submitting"
-              ? "Submitting placeholder..."
-              : "Place order UI placeholder"}
+            {props.reviewViewModel.placeOrderLabel}
           </button>
         </div>
       );
