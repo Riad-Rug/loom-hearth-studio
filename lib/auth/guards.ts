@@ -1,4 +1,5 @@
 import type { AdminModuleKey } from "@/features/admin/admin-data";
+import type { AccountAuthMode } from "@/features/account/account-data";
 import { supportedAdminRoles } from "@/lib/auth/config";
 import { createAuthSessionState, createSessionSummary } from "@/lib/auth/helpers";
 import type { AuthenticatedUser } from "@/lib/auth/types";
@@ -8,6 +9,12 @@ export type AdminAccessDecision = {
   status: "allowed" | "requires-auth" | "requires-role";
   allowedRoles: readonly AdminRole[];
   currentRole?: AdminRole;
+  sessionSummary: ReturnType<typeof createSessionSummary>;
+};
+
+export type AccountAccessDecision = {
+  status: "allowed" | "requires-auth" | "guest-only";
+  routeKind: "dashboard" | AccountAuthMode;
   sessionSummary: ReturnType<typeof createSessionSummary>;
 };
 
@@ -57,3 +64,27 @@ export function getAdminAccessDecision(input: {
 
 export const adminGuardTodo =
   "TODO: Replace placeholder admin access decisions with real session checks and route protection when auth is implemented.";
+
+export function getAccountAccessDecision(input: {
+  user: AuthenticatedUser | null;
+  routeKind: "dashboard" | AccountAuthMode;
+}): AccountAccessDecision {
+  const sessionSummary = createSessionSummary(createAuthSessionState(input.user, "account"));
+
+  if (input.routeKind === "dashboard") {
+    return {
+      status: input.user ? "allowed" : "requires-auth",
+      routeKind: input.routeKind,
+      sessionSummary,
+    };
+  }
+
+  return {
+    status: input.user ? "guest-only" : "allowed",
+    routeKind: input.routeKind,
+    sessionSummary,
+  };
+}
+
+export const accountGuardTodo =
+  "TODO: Replace placeholder account access decisions with real customer session checks and route redirects when auth is implemented.";

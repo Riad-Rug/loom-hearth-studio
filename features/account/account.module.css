@@ -97,6 +97,11 @@
   letter-spacing: -0.04em;
 }
 
+.sessionCard h2 {
+  font-size: 1.8rem;
+  line-height: 1.05;
+}
+
 .sessionCard p,
 .sessionNote span {
   margin: 0;

@@ -5,7 +5,7 @@ import {
   accountAuthContent,
   type AccountAuthMode,
 } from "@/features/account/account-data";
-import { createAuthSessionState, createSessionSummary } from "@/lib/auth";
+import { accountGuardTodo, getAccountAccessDecision } from "@/lib/auth";
 
 import styles from "./account.module.css";
 
@@ -15,7 +15,10 @@ type AccountAuthPageViewProps = {
 
 export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
   const content = accountAuthContent[mode];
-  const sessionSummary = createSessionSummary(createAuthSessionState(null, "account"));
+  const accessDecision = getAccountAccessDecision({
+    user: null,
+    routeKind: mode,
+  });
 
   return (
     <div className={styles.page}>
@@ -27,7 +30,11 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
           <div className={styles.sessionNote}>
             <strong>Auth boundary</strong>
             <span>
-              {sessionSummary.status} on the account surface. {sessionSummary.todo}
+              {accessDecision.sessionSummary.status} on the account surface. Access:{" "}
+              {accessDecision.status}.
+            </span>
+            <span>
+              {accessDecision.sessionSummary.todo} {accountGuardTodo}
             </span>
           </div>
           <div className={styles.authLinks}>
@@ -38,6 +45,14 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
         </div>
 
         <div className={styles.formCard}>
+          <div className={styles.sessionNote}>
+            <strong>Guest-only route</strong>
+            <span>
+              These auth routes remain available to signed-out customers only at the
+              boundary level. Placeholder signed-in customers would be redirected to
+              `/account` once real auth exists.
+            </span>
+          </div>
           <div className={styles.formStack}>
             {mode === "register" ? (
               <>

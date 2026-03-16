@@ -2,12 +2,18 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { accountDashboardSections } from "@/features/account/account-data";
-import { createAuthSessionState, createSessionSummary } from "@/lib/auth";
+import { accountGuardTodo, getAccountAccessDecision } from "@/lib/auth";
 
 import styles from "./account.module.css";
 
 export function AccountDashboardPageView() {
-  const sessionSummary = createSessionSummary(createAuthSessionState(null, "account"));
+  const accessDecision = getAccountAccessDecision({
+    user: {
+      id: "account-session-placeholder",
+      email: "customer@example.com",
+    },
+    routeKind: "dashboard",
+  });
 
   return (
     <div className={styles.page}>
@@ -33,21 +39,30 @@ export function AccountDashboardPageView() {
         <p className={styles.eyebrow}>Session boundary</p>
         <h2>Account auth/session placeholder</h2>
         <p>
-          Status: {sessionSummary.status}. Authenticated:{" "}
-          {sessionSummary.isAuthenticated ? "yes" : "no"}.
+          Status: {accessDecision.sessionSummary.status}. Authenticated:{" "}
+          {accessDecision.sessionSummary.isAuthenticated ? "yes" : "no"}.
         </p>
-        <p>Mode: {sessionSummary.roleLabel}</p>
-        <p>{sessionSummary.todo}</p>
+        <p>Access: {accessDecision.status}</p>
+        <p>Mode: {accessDecision.sessionSummary.roleLabel}</p>
+        <p>{accessDecision.sessionSummary.todo}</p>
+        <p>{accountGuardTodo}</p>
       </section>
 
-      <section className={styles.dashboardGrid}>
-        {accountDashboardSections.map((section) => (
-          <article key={section.id} className={styles.dashboardCard}>
-            <h2>{section.title}</h2>
-            <p>{section.body}</p>
-          </article>
-        ))}
-      </section>
+      {accessDecision.status === "allowed" ? (
+        <section className={styles.dashboardGrid}>
+          {accountDashboardSections.map((section) => (
+            <article key={section.id} className={styles.dashboardCard}>
+              <h2>{section.title}</h2>
+              <p>{section.body}</p>
+            </article>
+          ))}
+        </section>
+      ) : (
+        <section className={styles.sessionCard}>
+          <h2>Account gate placeholder</h2>
+          <p>This route is reserved for placeholder signed-in customer sessions only.</p>
+        </section>
+      )}
 
       <section className={styles.dashboardLinks}>
         <Link className={styles.secondaryAction} href={"/account/login" as Route}>
