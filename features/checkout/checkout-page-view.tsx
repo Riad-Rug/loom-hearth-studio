@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 
 import {
@@ -7,6 +9,7 @@ import {
   usStates,
   type CheckoutStepKey,
 } from "@/features/checkout/checkout-data";
+import { formatUsd, getCartItemLabel, useCart } from "@/features/cart/cart-provider";
 
 import styles from "./checkout-page.module.css";
 
@@ -15,6 +18,27 @@ type CheckoutPageViewProps = {
 };
 
 export function CheckoutPageView({ step }: CheckoutPageViewProps) {
+  const { items, shippingUsd, subtotalUsd, totalUsd } = useCart();
+  const lineItems =
+    items.length > 0
+      ? items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          quantityLabel: `Qty ${item.quantity}`,
+          typeLabel: getCartItemLabel(item),
+          priceUsdLabel: formatUsd(item.priceUsd),
+        }))
+      : checkoutLineItems;
+  const summary = {
+    subtotalUsdLabel: items.length > 0 ? formatUsd(subtotalUsd) : checkoutSummary.subtotalUsdLabel,
+    shippingUsdLabel: items.length > 0 ? formatUsd(shippingUsd) : checkoutSummary.shippingUsdLabel,
+    taxUsdLabel: checkoutSummary.taxUsdLabel,
+    totalUsdLabel: items.length > 0 ? formatUsd(totalUsd) : checkoutSummary.totalUsdLabel,
+    guestLabel: checkoutSummary.guestLabel,
+    marketLabel: checkoutSummary.marketLabel,
+    currencyLabel: checkoutSummary.currencyLabel,
+  };
+
   return (
     <div className={styles.page}>
       <section className={styles.shell}>
@@ -29,9 +53,9 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
             </p>
           </div>
           <div className={styles.badges}>
-            <span>{checkoutSummary.guestLabel}</span>
-            <span>{checkoutSummary.marketLabel}</span>
-            <span>{checkoutSummary.currencyLabel}</span>
+            <span>{summary.guestLabel}</span>
+            <span>{summary.marketLabel}</span>
+            <span>{summary.currencyLabel}</span>
           </div>
         </div>
 
@@ -68,7 +92,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
             </div>
 
             <div className={styles.itemList}>
-              {checkoutLineItems.map((item) => (
+              {lineItems.map((item) => (
                 <article key={item.id} className={styles.itemRow}>
                   <div>
                     <p className={styles.itemType}>{item.typeLabel}</p>
@@ -83,20 +107,20 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
             <div className={styles.summaryRows}>
               <div className={styles.summaryRow}>
                 <span>Subtotal</span>
-                <strong>{checkoutSummary.subtotalUsdLabel}</strong>
+                <strong>{summary.subtotalUsdLabel}</strong>
               </div>
               <div className={styles.summaryRow}>
                 <span>Shipping</span>
-                <strong>{checkoutSummary.shippingUsdLabel}</strong>
+                <strong>{summary.shippingUsdLabel}</strong>
               </div>
               <div className={styles.freeShippingLine}>Shipping fixed at $0.00</div>
               <div className={styles.summaryRow}>
                 <span>Estimated tax</span>
-                <strong>{checkoutSummary.taxUsdLabel}</strong>
+                <strong>{summary.taxUsdLabel}</strong>
               </div>
               <div className={styles.summaryTotal}>
                 <span>Total</span>
-                <strong>{checkoutSummary.totalUsdLabel}</strong>
+                <strong>{summary.totalUsdLabel}</strong>
               </div>
             </div>
           </aside>

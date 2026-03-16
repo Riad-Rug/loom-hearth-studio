@@ -61,34 +61,21 @@
 }
 
 .closeButton,
-.previewTab,
-.previewTabActive,
 .applyButton,
 .checkoutButton,
-.quantityButton {
+.quantityButton,
+.removeButton {
   font: inherit;
 }
 
 .closeButton,
-.previewTab,
-.previewTabActive,
-.applyButton {
+.applyButton,
+.removeButton {
   padding: 0.7rem 0.95rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   background: rgba(245, 239, 228, 0.72);
   color: rgba(34, 33, 38, 0.82);
-}
-
-.previewToggle {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.previewTabActive {
-  border-color: rgba(34, 33, 38, 0.16);
-  background: rgba(184, 94, 59, 0.12);
-  color: var(--color-charcoal-ink);
 }
 
 .emptyState {
@@ -152,15 +139,22 @@
 .itemCategory,
 .itemPrice,
 .promoLabel,
-.quantityRule {
+.quantityRule,
+.itemVariant {
   margin: 0;
   font-size: 0.82rem;
 }
 
 .itemCategory,
 .promoLabel,
-.quantityRule {
+.quantityRule,
+.itemVariant {
   color: rgba(34, 33, 38, 0.58);
+}
+
+.itemLink {
+  color: inherit;
+  text-decoration: none;
 }
 
 .itemPrice {
@@ -179,6 +173,12 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+.itemActions {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-2);
 }
 
 .lockedQuantity {
@@ -211,6 +211,13 @@
   border: 1px solid var(--color-border);
   border-radius: 999px;
   background: rgba(245, 239, 228, 0.72);
+}
+
+.removeButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-clay-terracotta);
 }
 
 .promoCard,
@@ -263,6 +270,14 @@
   border-radius: 999px;
   background: var(--color-clay-terracotta);
   color: var(--color-white);
+  text-decoration: none;
+}
+
+.summaryTodo {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.58);
+  font-size: 0.82rem;
+  line-height: 1.6;
 }
 
 @media (max-width: 640px) {
@@ -277,17 +292,14 @@
 
   .itemTopline,
   .itemFooter,
-  .promoControls,
-  .previewToggle {
+  .promoControls {
     flex-direction: column;
     align-items: flex-start;
   }
 
   .promoInput,
   .applyButton,
-  .checkoutButton,
-  .previewTab,
-  .previewTabActive {
+  .checkoutButton {
     width: 100%;
   }
 }

@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { siteConfig } from "@/config/site";
+import { CartProvider } from "@/features/cart/cart-provider";
 import { organizationSchema, websiteSchema } from "@/lib/seo/schema";
 
 import "./globals.css";
@@ -47,12 +48,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body>
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />
-        <div className="site-shell">
-          <SiteHeader />
-          <main className="site-main">{children}</main>
-          <SiteFooter />
-          <CookieConsentBanner />
-        </div>
+        <CartProvider>
+          <div className="site-shell">
+            <SiteHeader />
+            <main className="site-main">{children}</main>
+            <SiteFooter />
+            <CookieConsentBanner />
+          </div>
+        </CartProvider>
       </body>
     </html>
   );

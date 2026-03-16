@@ -1,5 +1,8 @@
+"use client";
+
 import type { Route } from "next";
 import Link from "next/link";
+import { useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
@@ -7,6 +10,7 @@ import type {
   MultiUnitPlaceholderProduct,
   PlaceholderProduct,
 } from "@/features/pdp/pdp-data";
+import { useCart } from "@/features/cart/cart-provider";
 
 import styles from "./product-detail-page.module.css";
 
@@ -77,7 +81,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             </div>
 
             {product.type === "rug" ? (
-              <RugPurchaseShell quantityLabel={product.quantityLabel} />
+              <RugPurchaseShell product={product} quantityLabel={product.quantityLabel} />
             ) : (
               <MultiUnitPurchaseShell product={product} />
             )}
@@ -152,7 +156,16 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   );
 }
 
-function RugPurchaseShell({ quantityLabel }: { quantityLabel: "1" }) {
+function RugPurchaseShell({
+  product,
+  quantityLabel,
+}: {
+  product: Extract<PlaceholderProduct, { type: "rug" }>;
+  quantityLabel: "1";
+}) {
+  const { addProduct } = useCart();
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+
   return (
     <div className={styles.purchaseCard}>
       <div className={styles.purchaseRow}>
@@ -163,9 +176,17 @@ function RugPurchaseShell({ quantityLabel }: { quantityLabel: "1" }) {
         This Type A rug is a unique item. Quantity is locked to 1 and no variants are
         available.
       </p>
-      <button className={styles.primaryAction} type="button">
-        Add to cart UI placeholder
+      <button
+        className={styles.primaryAction}
+        type="button"
+        onClick={() => {
+          addProduct({ product, quantity: 1 });
+          setFeedbackMessage("Added to cart.");
+        }}
+      >
+        Add to cart
       </button>
+      {feedbackMessage ? <p className={styles.feedbackMessage}>{feedbackMessage}</p> : null}
     </div>
   );
 }
@@ -190,6 +211,10 @@ function MultiUnitPurchaseShell({
 }: {
   product: MultiUnitPlaceholderProduct;
 }) {
+  const { addProduct } = useCart();
+  const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0]);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const isOutOfStock = product.inventoryState === "outOfStock";
 
   return (
@@ -199,7 +224,14 @@ function MultiUnitPurchaseShell({
           <span className={styles.metaLabel}>{product.variantLabel ?? "Variant"}</span>
           <div className={styles.variantList}>
             {product.variants.map((variant) => (
-              <button key={variant} className={styles.variantButton} type="button">
+              <button
+                key={variant}
+                className={`${styles.variantButton} ${
+                  selectedVariant === variant ? styles.variantButtonActive : ""
+                }`}
+                type="button"
+                onClick={() => setSelectedVariant(variant)}
+              >
                 {variant}
               </button>
             ))}
@@ -210,11 +242,23 @@ function MultiUnitPurchaseShell({
       <div className={styles.purchaseGroup}>
         <span className={styles.metaLabel}>Quantity</span>
         <div className={styles.quantityShell}>
-          <button className={styles.quantityButton} type="button">
+          <button
+            className={styles.quantityButton}
+            type="button"
+            onClick={() =>
+              setQuantity((currentQuantity) =>
+                Math.max(product.quantityMin, currentQuantity - 1),
+              )
+            }
+          >
             -
           </button>
-          <span>1</span>
-          <button className={styles.quantityButton} type="button">
+          <span>{quantity}</span>
+          <button
+            className={styles.quantityButton}
+            type="button"
+            onClick={() => setQuantity((currentQuantity) => currentQuantity + 1)}
+          >
             +
           </button>
         </div>
@@ -244,10 +288,22 @@ function MultiUnitPurchaseShell({
           {product.notifyMeLabel ?? "Notify me"}
         </button>
       ) : (
-        <button className={styles.primaryAction} type="button">
-          Add to cart UI placeholder
+        <button
+          className={styles.primaryAction}
+          type="button"
+          onClick={() => {
+            addProduct({
+              product,
+              quantity,
+              variantName: selectedVariant,
+            });
+            setFeedbackMessage("Added to cart.");
+          }}
+        >
+          Add to cart
         </button>
       )}
+      {feedbackMessage ? <p className={styles.feedbackMessage}>{feedbackMessage}</p> : null}
     </div>
   );
 }

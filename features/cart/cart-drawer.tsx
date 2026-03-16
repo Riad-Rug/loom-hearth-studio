@@ -1,20 +1,25 @@
 "use client";
 
+import type { Route } from "next";
+import Link from "next/link";
 import { useState } from "react";
 
-import { cartPlaceholderItems, cartSummary } from "@/features/cart/cart-data";
+import { cartSummary } from "@/features/cart/cart-data";
+import {
+  cartFoundationTodos,
+  formatUsd,
+  getCartItemLabel,
+  getCartItemQuantityRule,
+  useCart,
+} from "@/features/cart/cart-provider";
 
 import styles from "./cart-drawer.module.css";
 
-type CartDrawerProps = {
-  itemCount?: number;
-};
-
-export function CartDrawer({ itemCount = cartPlaceholderItems.length }: CartDrawerProps) {
+export function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
-  const [previewMode, setPreviewMode] = useState<"filled" | "empty">("filled");
-
-  const isEmpty = previewMode === "empty";
+  const { itemCount, items, removeItem, shippingUsd, subtotalUsd, totalUsd, updateQuantity } =
+    useCart();
+  const isEmpty = items.length === 0;
 
   return (
     <>
@@ -40,27 +45,10 @@ export function CartDrawer({ itemCount = cartPlaceholderItems.length }: CartDraw
             <div className={styles.header}>
               <div>
                 <p className={styles.eyebrow}>Cart</p>
-                <h2>Cart drawer UI shell</h2>
+                <h2>Storefront cart</h2>
               </div>
               <button className={styles.closeButton} type="button" onClick={() => setIsOpen(false)}>
                 Close
-              </button>
-            </div>
-
-            <div className={styles.previewToggle}>
-              <button
-                className={previewMode === "filled" ? styles.previewTabActive : styles.previewTab}
-                type="button"
-                onClick={() => setPreviewMode("filled")}
-              >
-                Filled preview
-              </button>
-              <button
-                className={previewMode === "empty" ? styles.previewTabActive : styles.previewTab}
-                type="button"
-                onClick={() => setPreviewMode("empty")}
-              >
-                Empty preview
               </button>
             </div>
 
@@ -68,44 +56,72 @@ export function CartDrawer({ itemCount = cartPlaceholderItems.length }: CartDraw
               <div className={styles.emptyState}>
                 <p className={styles.emptyTitle}>Your cart is currently empty.</p>
                 <p className={styles.emptyBody}>
-                  Empty cart state placeholder only. This slice does not implement real cart
-                  state or add-to-cart behavior.
+                  Client-side cart state is active in this slice, but checkout, promo codes,
+                  and order submission remain placeholder-only.
                 </p>
               </div>
             ) : (
               <>
                 <div className={styles.itemList}>
-                  {cartPlaceholderItems.map((item) => (
+                  {items.map((item) => (
                     <article key={item.id} className={styles.itemRow}>
                       <div className={styles.itemMedia}>
-                        <span>{item.categoryLabel}</span>
+                        <span>{getCartItemLabel(item)}</span>
                       </div>
                       <div className={styles.itemContent}>
                         <div className={styles.itemTopline}>
                           <div>
-                            <p className={styles.itemCategory}>{item.categoryLabel}</p>
-                            <h3>{item.name}</h3>
+                            <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
+                            <h3>
+                              <Link
+                                className={styles.itemLink}
+                                href={item.href as Route}
+                                onClick={() => setIsOpen(false)}
+                              >
+                                {item.name}
+                              </Link>
+                            </h3>
+                            {item.variantName ? (
+                              <p className={styles.itemVariant}>{item.variantName}</p>
+                            ) : null}
                           </div>
-                          <p className={styles.itemPrice}>{item.priceUsdLabel}</p>
+                          <p className={styles.itemPrice}>{formatUsd(item.priceUsd)}</p>
                         </div>
                         <div className={styles.itemFooter}>
-                          {item.type === "rug" ? (
+                          {item.productType === "rug" ? (
                             <div className={styles.lockedQuantity}>
                               <span>Quantity</span>
                               <strong>1</strong>
                             </div>
                           ) : (
                             <div className={styles.quantityShell}>
-                              <button className={styles.quantityButton} type="button">
+                              <button
+                                className={styles.quantityButton}
+                                type="button"
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              >
                                 -
                               </button>
                               <span>{item.quantity}</span>
-                              <button className={styles.quantityButton} type="button">
+                              <button
+                                className={styles.quantityButton}
+                                type="button"
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              >
                                 +
                               </button>
                             </div>
                           )}
-                          <p className={styles.quantityRule}>{item.quantityRule}</p>
+                          <div className={styles.itemActions}>
+                            <p className={styles.quantityRule}>{getCartItemQuantityRule(item)}</p>
+                            <button
+                              className={styles.removeButton}
+                              type="button"
+                              onClick={() => removeItem(item.id)}
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </article>
@@ -128,25 +144,31 @@ export function CartDrawer({ itemCount = cartPlaceholderItems.length }: CartDraw
                       Apply
                     </button>
                   </div>
+                  <p className={styles.summaryTodo}>{cartFoundationTodos.promoCodes}</p>
                 </div>
 
                 <div className={styles.summaryCard}>
                   <div className={styles.summaryRow}>
                     <span>Subtotal</span>
-                    <strong>{cartSummary.subtotalUsdLabel}</strong>
+                    <strong>{formatUsd(subtotalUsd)}</strong>
                   </div>
                   <div className={styles.summaryRow}>
                     <span>Shipping</span>
-                    <strong>{cartSummary.shippingUsdLabel}</strong>
+                    <strong>{formatUsd(shippingUsd)}</strong>
                   </div>
                   <div className={styles.freeShippingLine}>Free shipping at launch</div>
                   <div className={styles.summaryTotal}>
                     <span>Total</span>
-                    <strong>{cartSummary.totalUsdLabel}</strong>
+                    <strong>{formatUsd(totalUsd)}</strong>
                   </div>
-                  <button className={styles.checkoutButton} type="button">
-                    Checkout UI placeholder
-                  </button>
+                  <p className={styles.summaryTodo}>{cartFoundationTodos.checkout}</p>
+                  <Link
+                    className={styles.checkoutButton}
+                    href="/checkout"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Continue to checkout
+                  </Link>
                 </div>
               </>
             )}
