@@ -168,6 +168,18 @@ export function AccountDashboardPageView() {
                 <p>{section.body}</p>
                 {summaryBody ? <strong>{summaryBody}</strong> : null}
                 {summaryMeta ? <span>{summaryMeta}</span> : null}
+                {section.id === "orders" ? (
+                  <div className={styles.orderHistoryList}>
+                    {dashboardData?.orders.items.map((order) => (
+                      <div key={order.id} className={styles.orderHistoryItem}>
+                        <strong>{order.orderNumber}</strong>
+                        <span>{order.statusLabel}</span>
+                        <span>{order.placedAtLabel}</span>
+                        <span>{order.totalLabel}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
                 {section.id === "profile" ? (
                   <div className={styles.formStack}>
                     <label className={styles.field}>

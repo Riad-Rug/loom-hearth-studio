@@ -169,6 +169,25 @@
   padding: var(--space-6);
 }
 
+.orderHistoryList {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.orderHistoryItem {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.orderHistoryItem span {
+  color: rgba(34, 33, 38, 0.72);
+  line-height: 1.6;
+}
+
 .dashboardCard h2 {
   font-size: 1.8rem;
   line-height: 1.05;
