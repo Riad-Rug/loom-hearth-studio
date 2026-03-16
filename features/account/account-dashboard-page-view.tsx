@@ -43,6 +43,7 @@ export function AccountDashboardPageView() {
           {accessDecision.sessionSummary.isAuthenticated ? "yes" : "no"}.
         </p>
         <p>Access: {accessDecision.status}</p>
+        <p>Redirect target: {accessDecision.redirectTarget}</p>
         <p>Mode: {accessDecision.sessionSummary.roleLabel}</p>
         <p>{accessDecision.sessionSummary.todo}</p>
         <p>{accountGuardTodo}</p>
@@ -61,6 +62,7 @@ export function AccountDashboardPageView() {
         <section className={styles.sessionCard}>
           <h2>Account gate placeholder</h2>
           <p>This route is reserved for placeholder signed-in customer sessions only.</p>
+          <p>Boundary redirect target: {accessDecision.redirectTarget}</p>
         </section>
       )}
 

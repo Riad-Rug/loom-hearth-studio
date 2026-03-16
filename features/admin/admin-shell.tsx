@@ -37,6 +37,7 @@ export function AdminShell({ children }: AdminShellProps) {
           <span>Status: {accessDecision.sessionSummary.status}</span>
           <span>Role: {accessDecision.sessionSummary.roleLabel}</span>
           <span>Access: {accessDecision.status}</span>
+          <span>Redirect target: {accessDecision.redirectTarget}</span>
           <span>{accessDecision.sessionSummary.todo}</span>
           <span>{adminGuardTodo}</span>
         </div>
@@ -58,6 +59,7 @@ export function AdminShell({ children }: AdminShellProps) {
               Admin routes require a placeholder-authenticated admin surface session with a
               supported PRD role.
             </p>
+            <p>Boundary redirect target: {accessDecision.redirectTarget}</p>
           </section>
         )}
       </div>

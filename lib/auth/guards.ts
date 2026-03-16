@@ -9,12 +9,14 @@ export type AdminAccessDecision = {
   status: "allowed" | "requires-auth" | "requires-role";
   allowedRoles: readonly AdminRole[];
   currentRole?: AdminRole;
+  redirectTarget: "/admin" | "/admin/login" | "/";
   sessionSummary: ReturnType<typeof createSessionSummary>;
 };
 
 export type AccountAccessDecision = {
   status: "allowed" | "requires-auth" | "guest-only";
   routeKind: "dashboard" | AccountAuthMode;
+  redirectTarget: "/account" | "/account/login";
   sessionSummary: ReturnType<typeof createSessionSummary>;
 };
 
@@ -41,6 +43,7 @@ export function getAdminAccessDecision(input: {
     return {
       status: "requires-auth",
       allowedRoles,
+      redirectTarget: "/admin/login",
       sessionSummary,
     };
   }
@@ -50,6 +53,7 @@ export function getAdminAccessDecision(input: {
       status: "requires-role",
       allowedRoles,
       currentRole: input.user.role,
+      redirectTarget: "/",
       sessionSummary,
     };
   }
@@ -58,6 +62,7 @@ export function getAdminAccessDecision(input: {
     status: "allowed",
     allowedRoles,
     currentRole: input.user.role,
+    redirectTarget: "/admin",
     sessionSummary,
   };
 }
@@ -75,6 +80,7 @@ export function getAccountAccessDecision(input: {
     return {
       status: input.user ? "allowed" : "requires-auth",
       routeKind: input.routeKind,
+      redirectTarget: input.user ? "/account" : "/account/login",
       sessionSummary,
     };
   }
@@ -82,6 +88,7 @@ export function getAccountAccessDecision(input: {
   return {
     status: input.user ? "guest-only" : "allowed",
     routeKind: input.routeKind,
+    redirectTarget: input.user ? "/account" : "/account/login",
     sessionSummary,
   };
 }

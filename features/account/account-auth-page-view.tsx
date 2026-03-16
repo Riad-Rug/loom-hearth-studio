@@ -33,6 +33,7 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
               {accessDecision.sessionSummary.status} on the account surface. Access:{" "}
               {accessDecision.status}.
             </span>
+            <span>Boundary redirect target: {accessDecision.redirectTarget}</span>
             <span>
               {accessDecision.sessionSummary.todo} {accountGuardTodo}
             </span>
@@ -52,6 +53,7 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
               boundary level. Placeholder signed-in customers would be redirected to
               `/account` once real auth exists.
             </span>
+            <span>Boundary redirect target: {accessDecision.redirectTarget}</span>
           </div>
           <div className={styles.formStack}>
             {mode === "register" ? (

@@ -36,6 +36,7 @@ export function AdminModulePageView({ moduleKey }: AdminModulePageViewProps) {
         <span>Current role: {accessDecision.currentRole ?? "none"}</span>
         <span>Route access state: {accessDecision.status}</span>
         <span>Allowed on this route: {accessDecision.allowedRoles.join(", ")}</span>
+        <span>Boundary redirect target: {accessDecision.redirectTarget}</span>
         <span>{adminGuardTodo}</span>
       </div>
 
@@ -55,6 +56,7 @@ export function AdminModulePageView({ moduleKey }: AdminModulePageViewProps) {
             This admin route is reserved for authenticated back-office users whose role is
             allowed by the boundary configuration.
           </p>
+          <p>Boundary redirect target: {accessDecision.redirectTarget}</p>
         </div>
       )}
     </section>
