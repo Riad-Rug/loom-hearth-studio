@@ -8,6 +8,9 @@ import type {
   OrderCreationBoundary,
   OrderCreationRequest,
   OrderCreationResult,
+  OrderPersistenceBoundary,
+  OrderPersistenceRequest,
+  OrderPersistenceResult,
   OrderSubmissionFailure,
   OrderSubmissionPayload,
   OrderSubmissionPreview,
@@ -141,5 +144,55 @@ export function createOrderCreationRequestFromStripeConfirmation(
     request,
     message:
       "Stripe Checkout payment confirmation is ready to hand off into backend order creation.",
+  };
+}
+
+export function createOrderPersistenceBoundary(): OrderPersistenceBoundary {
+  return {
+    source: "order-creation",
+    repository: "OrderRepository",
+    status: "ready-placeholder",
+    acceptedOrderStatuses: ["paid"],
+  };
+}
+
+export function createOrderPersistenceRequestFromOrderCreation(
+  orderCreationRequest: OrderCreationRequest | null,
+): OrderPersistenceResult {
+  const boundary = createOrderPersistenceBoundary();
+
+  if (!orderCreationRequest) {
+    return {
+      status: "ignored",
+      request: null,
+      persistedOrder: null,
+      message: "Order creation request is required before order persistence can be prepared.",
+    };
+  }
+
+  const request: OrderPersistenceRequest = {
+    source: "order-creation",
+    paymentProvider: "stripe",
+    checkoutMode: orderCreationRequest.checkoutMode,
+    checkoutSessionId: orderCreationRequest.checkoutSessionId,
+    paymentIntentId: orderCreationRequest.paymentIntentId,
+    orderReference: orderCreationRequest.orderReference,
+    customerEmail: orderCreationRequest.customerEmail,
+    status: boundary.acceptedOrderStatuses[0],
+    paymentStatus: orderCreationRequest.paymentStatus,
+    lineItems: orderCreationRequest.lineItems,
+    subtotalUsd: null,
+    shippingUsd: null,
+    taxUsd: null,
+    totalUsd: null,
+    currency: "USD",
+    metadata: orderCreationRequest.metadata,
+  };
+
+  return {
+    status: "ready",
+    request,
+    persistedOrder: null,
+    message: "Order creation handoff is ready to pass into backend order persistence.",
   };
 }

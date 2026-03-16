@@ -1,4 +1,4 @@
-import type { PaymentStatus } from "@/types/domain/order";
+import type { OrderStatus, PaymentStatus } from "@/types/domain/order";
 
 import type { OrderDraft } from "@/features/checkout/checkout-provider";
 import type {
@@ -89,6 +89,39 @@ export type OrderCreationBoundary = {
   acceptedPaymentStatuses: ReadonlyArray<Extract<PaymentStatus, "paid">>;
 };
 
+export type OrderPersistenceRequest = {
+  source: "order-creation";
+  paymentProvider: "stripe";
+  checkoutMode: OrderCreationRequest["checkoutMode"];
+  checkoutSessionId: OrderCreationRequest["checkoutSessionId"];
+  paymentIntentId: OrderCreationRequest["paymentIntentId"];
+  orderReference: string | null;
+  customerEmail: string | null;
+  status: Extract<OrderStatus, "paid">;
+  paymentStatus: OrderCreationRequest["paymentStatus"];
+  lineItems: OrderCreationRequest["lineItems"];
+  subtotalUsd: number | null;
+  shippingUsd: 0 | null;
+  taxUsd: number | null;
+  totalUsd: number | null;
+  currency: "USD";
+  metadata: OrderCreationRequest["metadata"];
+};
+
+export type OrderPersistenceResult = {
+  status: "ready" | "ignored" | "configuration-error";
+  request: OrderPersistenceRequest | null;
+  persistedOrder: null;
+  message: string;
+};
+
+export type OrderPersistenceBoundary = {
+  source: "order-creation";
+  repository: "OrderRepository";
+  status: "ready-placeholder";
+  acceptedOrderStatuses: ReadonlyArray<Extract<OrderStatus, "paid">>;
+};
+
 export const orderSubmissionTodo =
   "TODO: Replace the placeholder submission contract with a real backend request once Stripe execution and order persistence are implemented.";
 
@@ -99,4 +132,13 @@ export const orderCreationTodo = {
     "TODO: Hand the order-creation request to a real repository/service only after database persistence is implemented.",
   sideEffects:
     "TODO: Trigger email and fulfillment side effects only after real order persistence exists.",
+} as const;
+
+export const orderPersistenceTodo = {
+  boundary:
+    "TODO: Keep backend order persistence scoped to created paid orders only until database and ORM choices are validated.",
+  repository:
+    "TODO: Hand the persistence request to a real OrderRepository implementation once database writes are implemented.",
+  createdOrder:
+    "TODO: Return a real persisted order shape only after repository-backed order creation exists.",
 } as const;
