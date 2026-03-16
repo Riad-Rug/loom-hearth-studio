@@ -49,7 +49,8 @@ export function AdminModulePageView({ moduleKey }: AdminModulePageViewProps) {
       {routeViewModel.accessStatus === "allowed" ? (
         <div className={styles.cardGrid}>
           {routeViewModel.cards.map((card) => (
-            <article key={card.title} className={styles.card}>
+            <article key={card.id} className={styles.card}>
+              <p className={styles.cardEyebrow}>{card.eyebrow}</p>
               <h3>{card.title}</h3>
               <p>{card.body}</p>
             </article>

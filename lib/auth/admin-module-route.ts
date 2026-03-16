@@ -1,8 +1,11 @@
 import type { AdminModuleKey } from "@/features/admin/admin-data";
+import { createAdminModuleCardViewModels } from "@/features/admin/admin-card-view-model";
 import type { AdminAccessDecision } from "@/lib/auth/guards";
 import type { AdminGatePresentation } from "@/lib/auth/admin-gate";
 
 export type AdminModuleRouteCardView = {
+  id: string;
+  eyebrow: string;
   title: string;
   body: string;
 };
@@ -63,10 +66,10 @@ export function createAdminModuleRouteViewModel(input: {
       body: input.gatePresentation.gateBody,
       redirectLabel: input.gatePresentation.gateRedirectLabel,
     },
-    cards: input.module.cards.map((card) => ({
-      title: card.title,
-      body: card.body,
-    })),
+    cards: createAdminModuleCardViewModels({
+      moduleKey: input.moduleKey,
+      cards: input.module.cards,
+    }),
     accessStatus: input.accessDecision.status,
   };
 }

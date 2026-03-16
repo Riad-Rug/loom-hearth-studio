@@ -150,6 +150,14 @@
   padding: var(--space-5);
 }
 
+.cardEyebrow {
+  margin: 0;
+  color: var(--color-clay-terracotta);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .card h3 {
   font-size: 1.5rem;
   line-height: 1.08;
