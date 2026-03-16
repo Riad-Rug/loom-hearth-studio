@@ -28,11 +28,7 @@ import {
   createOrderSubmissionPreview,
   orderSubmissionTodo,
 } from "@/lib/order";
-import {
-  createStripeCheckoutPaymentDraft,
-  createStripeOrderPaymentInput,
-  stripeHelpersTodo,
-} from "@/lib/stripe";
+import { stripeHelpersTodo } from "@/lib/stripe";
 
 import styles from "./checkout-page.module.css";
 
@@ -52,6 +48,8 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     continueFromShipping,
     information,
     orderDraft,
+    stripeOrderPaymentInput,
+    stripePaymentDraft,
     submissionAttempt,
     submissionPreview,
     shippingMethod,
@@ -76,24 +74,6 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     marketLabel: checkoutSummary.marketLabel,
     currencyLabel: checkoutSummary.currencyLabel,
   };
-  const stripeOrderPaymentInput = createStripeOrderPaymentInput({
-    checkoutMode: orderDraft.checkoutMode,
-    email: orderDraft.shippingAddress?.email,
-    subtotalUsd: orderDraft.subtotalUsd,
-    shippingUsd: orderDraft.shippingUsd,
-    taxUsd: orderDraft.taxUsd,
-    totalUsd: orderDraft.totalUsd,
-    currency: orderDraft.currency,
-    items: orderDraft.items.map((item) => ({
-      id: item.id,
-      name: item.name,
-      quantity: item.quantity,
-      priceUsd: item.priceUsd,
-    })),
-  });
-  const stripePaymentDraft = createStripeCheckoutPaymentDraft(
-    stripeOrderPaymentInput,
-  );
   const orderSubmissionPayload = createOrderSubmissionPayload({
     orderDraft,
     stripePaymentDraft,

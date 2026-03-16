@@ -15,7 +15,13 @@ import type { CartStoreItem } from "@/features/cart/cart-provider";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
 import type { OrderSubmissionAttemptState, OrderSubmissionFailure, OrderSubmissionPreview } from "@/lib/order";
-import type { StripePaymentMethod } from "@/lib/stripe";
+import {
+  createStripeCheckoutPaymentDraft,
+  createStripeOrderPaymentInput,
+  type StripeCheckoutPaymentDraft,
+  type StripeOrderPaymentInput,
+  type StripePaymentMethod,
+} from "@/lib/stripe";
 import type { OrderAddress } from "@/types/domain";
 
 const CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout";
@@ -61,6 +67,8 @@ type CheckoutContextValue = {
   canAccessReview: boolean;
   canAccessConfirmation: boolean;
   orderDraft: OrderDraft;
+  stripeOrderPaymentInput: StripeOrderPaymentInput;
+  stripePaymentDraft: StripeCheckoutPaymentDraft;
   submissionAttempt: OrderSubmissionAttemptState;
   submissionPreview: OrderSubmissionPreview | null;
   updateInformation: (
@@ -163,7 +171,52 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const hasCartItems = items.length > 0;
   const canAccessShipping = hasCartItems && isInformationComplete;
   const canAccessPayment = canAccessShipping && shippingMethod?.id === "standard";
-  const canAccessReview = canAccessPayment;
+
+  const orderDraft = useMemo<OrderDraft>(
+    () => ({
+      checkoutMode: "guest",
+      items,
+      shippingAddress: isInformationComplete
+        ? {
+            ...information,
+            country: "US",
+          }
+        : null,
+      shippingMethod,
+      subtotalUsd,
+      shippingUsd,
+      taxUsd: 0,
+      totalUsd,
+      currency: "USD",
+      paymentMethod: "stripe-placeholder",
+    }),
+    [information, isInformationComplete, items, shippingMethod, shippingUsd, subtotalUsd, totalUsd],
+  );
+  const stripeOrderPaymentInput = useMemo<StripeOrderPaymentInput>(
+    () =>
+      createStripeOrderPaymentInput({
+        checkoutMode: orderDraft.checkoutMode,
+        email: orderDraft.shippingAddress?.email,
+        subtotalUsd: orderDraft.subtotalUsd,
+        shippingUsd: orderDraft.shippingUsd,
+        taxUsd: orderDraft.taxUsd,
+        totalUsd: orderDraft.totalUsd,
+        currency: orderDraft.currency,
+        items: orderDraft.items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          priceUsd: item.priceUsd,
+        })),
+      }),
+    [orderDraft],
+  );
+  const stripePaymentDraft = useMemo<StripeCheckoutPaymentDraft>(
+    () => createStripeCheckoutPaymentDraft(stripeOrderPaymentInput),
+    [stripeOrderPaymentInput],
+  );
+  const canAccessReview =
+    canAccessPayment && canContinueToCheckoutReview(stripePaymentDraft);
   const canAccessConfirmation = canAccessReview && hasVisitedConfirmation;
 
   useEffect(() => {
@@ -196,27 +249,6 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     }
   }, [canAccessConfirmation, canAccessReview, currentStep, router]);
 
-  const orderDraft = useMemo<OrderDraft>(
-    () => ({
-      checkoutMode: "guest",
-      items,
-      shippingAddress: isInformationComplete
-        ? {
-            ...information,
-            country: "US",
-          }
-        : null,
-      shippingMethod,
-      subtotalUsd,
-      shippingUsd,
-      taxUsd: 0,
-      totalUsd,
-      currency: "USD",
-      paymentMethod: "stripe-placeholder",
-    }),
-    [information, isInformationComplete, items, shippingMethod, shippingUsd, subtotalUsd, totalUsd],
-  );
-
   const value: CheckoutContextValue = {
     information,
     shippingMethod,
@@ -226,6 +258,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     canAccessReview,
     canAccessConfirmation,
     orderDraft,
+    stripeOrderPaymentInput,
+    stripePaymentDraft,
     submissionAttempt,
     submissionPreview,
     updateInformation(field, value) {
@@ -246,7 +280,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       router.push(stepPathMap.payment as Route);
     },
     continueFromPayment() {
-      if (!canAccessPayment) {
+      if (!canAccessReview) {
         return;
       }
 
@@ -336,3 +370,16 @@ export const checkoutFoundationTodos = {
     "TODO: Submit the order draft to a real backend only after Stripe, tax, and order creation flows are defined.",
   tax: "TODO: Tax remains fixed at $0.00 until the tax model is validated.",
 } as const;
+
+function canContinueToCheckoutReview(
+  stripePaymentDraft: Pick<
+    StripeCheckoutPaymentDraft,
+    "isReadyForPlaceholderFlow" | "checkoutSessionRequest" | "checkoutSessionResponse"
+  >,
+) {
+  return Boolean(
+    stripePaymentDraft.isReadyForPlaceholderFlow &&
+      stripePaymentDraft.checkoutSessionRequest &&
+      stripePaymentDraft.checkoutSessionResponse,
+  );
+}
