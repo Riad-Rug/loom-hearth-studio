@@ -2,6 +2,7 @@ import { adminModules, type AdminModuleKey } from "@/features/admin/admin-data";
 import {
   adminGuardTodo,
   createAdminGatePresentation,
+  createAdminModuleRouteViewModel,
   getAdminAccessDecision,
 } from "@/lib/auth";
 
@@ -22,29 +23,32 @@ export function AdminModulePageView({ moduleKey }: AdminModulePageViewProps) {
     moduleKey,
   });
   const gatePresentation = createAdminGatePresentation(accessDecision);
+  const routeViewModel = createAdminModuleRouteViewModel({
+    moduleKey,
+    module,
+    accessDecision,
+    gatePresentation,
+    adminGuardTodo,
+  });
 
   return (
     <section className={styles.moduleShell}>
       <header className={styles.moduleHeader}>
-        <p className={styles.eyebrow}>{module.eyebrow}</p>
-        <h2>{module.title}</h2>
-        <p>{module.description}</p>
+        <p className={styles.eyebrow}>{routeViewModel.header.eyebrow}</p>
+        <h2>{routeViewModel.header.title}</h2>
+        <p>{routeViewModel.header.description}</p>
       </header>
 
       <div className={styles.roleNote}>
-        <strong>{gatePresentation.roleNoteTitle}</strong>
-        <span>{gatePresentation.roleNoteBody}</span>
-        <span>{gatePresentation.supportedRolesLabel}</span>
-        <span>{gatePresentation.currentRoleLabel}</span>
-        <span>{gatePresentation.accessStateLabel}</span>
-        <span>{gatePresentation.allowedRolesLabel}</span>
-        <span>{gatePresentation.redirectTargetLabel}</span>
-        <span>{adminGuardTodo}</span>
+        <strong>{routeViewModel.roleNote.title}</strong>
+        {routeViewModel.roleNote.lines.map((line) => (
+          <span key={line}>{line}</span>
+        ))}
       </div>
 
-      {accessDecision.status === "allowed" ? (
+      {routeViewModel.accessStatus === "allowed" ? (
         <div className={styles.cardGrid}>
-          {module.cards.map((card) => (
+          {routeViewModel.cards.map((card) => (
             <article key={card.title} className={styles.card}>
               <h3>{card.title}</h3>
               <p>{card.body}</p>
@@ -53,9 +57,9 @@ export function AdminModulePageView({ moduleKey }: AdminModulePageViewProps) {
         </div>
       ) : (
         <div className={styles.gatePanel}>
-          <strong>{gatePresentation.gateTitle}</strong>
-          <p>{gatePresentation.gateBody}</p>
-          <p>{gatePresentation.gateRedirectLabel}</p>
+          <strong>{routeViewModel.gate.title}</strong>
+          <p>{routeViewModel.gate.body}</p>
+          <p>{routeViewModel.gate.redirectLabel}</p>
         </div>
       )}
     </section>
