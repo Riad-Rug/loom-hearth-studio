@@ -1,8 +1,17 @@
+"use client";
+
 import type { Route } from "next";
 import Link from "next/link";
+import { useState } from "react";
 
 import { accountDashboardSections } from "@/features/account/account-data";
-import { accountGuardTodo, getAccountAccessDecision } from "@/lib/auth";
+import {
+  accountGuardTodo,
+  createInitialSignOutRequestState,
+  createPlaceholderSignOutRequestState,
+  getAccountAccessDecision,
+  signOutRequestTodo,
+} from "@/lib/auth";
 import {
   accountDashboardDataTodo,
   getPlaceholderAccountDashboardData,
@@ -20,6 +29,23 @@ export function AccountDashboardPageView() {
     routeKind: "dashboard",
   });
   const dashboardData = getPlaceholderAccountDashboardData(placeholderUser);
+  const [signOutState, setSignOutState] = useState(createInitialSignOutRequestState());
+
+  function handleSignOutRequest() {
+    setSignOutState({
+      status: "submitting",
+      message: null,
+      redirectTarget: null,
+    });
+
+    window.setTimeout(() => {
+      setSignOutState(
+        createPlaceholderSignOutRequestState({
+          isAuthenticated: accessDecision.sessionSummary.isAuthenticated,
+        }),
+      );
+    }, 350);
+  }
 
   return (
     <div className={styles.page}>
@@ -64,6 +90,13 @@ export function AccountDashboardPageView() {
         <p>{accessDecision.sessionSummary.todo}</p>
         <p>{accountGuardTodo}</p>
         <p>{accountDashboardDataTodo}</p>
+        <button className={styles.primaryAction} type="button" onClick={handleSignOutRequest}>
+          Sign out UI placeholder
+        </button>
+        <p>Sign-out request state: {signOutState.status}</p>
+        {signOutState.message ? <p>{signOutState.message}</p> : null}
+        {signOutState.redirectTarget ? <p>Sign-out redirect target: {signOutState.redirectTarget}</p> : null}
+        <p>{signOutRequestTodo}</p>
       </section>
 
       {accessDecision.status === "allowed" ? (

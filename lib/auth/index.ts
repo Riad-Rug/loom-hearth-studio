@@ -3,4 +3,5 @@ export * from "@/lib/auth/guards";
 export * from "@/lib/auth/helpers";
 export * from "@/lib/auth/password-reset";
 export * from "@/lib/auth/requests";
+export * from "@/lib/auth/sign-out";
 export * from "@/lib/auth/types";
