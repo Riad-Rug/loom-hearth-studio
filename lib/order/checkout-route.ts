@@ -34,10 +34,7 @@ export type CheckoutNonConfirmationRouteViewModel = {
   };
   payment: {
     body: string;
-    modeButtons: {
-      checkoutLabel: string;
-      elementsLabel: string;
-    };
+    launchModeLabel: string;
     boundary: {
       modeLabel: string;
       statusLabel: string;
@@ -59,12 +56,10 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
   }>;
   canAccessShipping: boolean;
   canAccessReview: boolean;
-  paymentState: {
-    selectedMode: "checkout" | "elements" | null;
-  };
   stripePaymentDraft: Pick<
     StripeCheckoutPaymentDraft,
     | "mode"
+    | "launchMode"
     | "paymentStepStatus"
     | "publishableKeyReady"
     | "missingConfig"
@@ -115,19 +110,10 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
     },
     payment: {
       body:
-        "Stripe is confirmed, but this page is UI only. No payment capture, webhook handling, or order creation is implemented yet.",
-      modeButtons: {
-        checkoutLabel:
-          input.paymentState.selectedMode === "checkout"
-            ? "Stripe Checkout selected"
-            : "Select Stripe Checkout",
-        elementsLabel:
-          input.paymentState.selectedMode === "elements"
-            ? "Stripe Elements selected"
-            : "Select Stripe Elements",
-      },
+        "Stripe Checkout is the only supported launch path in this boundary layer. No payment capture, webhook handling, or order creation is implemented yet.",
+      launchModeLabel: `Launch mode: Stripe ${input.stripePaymentDraft.launchMode}`,
       boundary: {
-        modeLabel: `Mode: ${input.stripePaymentDraft.mode ?? "Undecided placeholder"}`,
+        modeLabel: `Mode: ${input.stripePaymentDraft.mode}`,
         statusLabel: `Status: ${input.stripePaymentDraft.paymentStepStatus}`,
         publishableKeyLabel: `Publishable key: ${
           input.stripePaymentDraft.publishableKeyReady
@@ -145,8 +131,8 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
         paymentStatusLabel: `Payment status: ${input.stripePaymentDraft.paymentStatus}`,
         readinessLabel: `Review readiness: ${
           input.stripePaymentDraft.isReadyForPlaceholderFlow
-            ? "Mode selected"
-            : "Select a Stripe mode to continue"
+            ? "Launch mode locked"
+            : "Unavailable"
         }`,
       },
       actionLabel: "Continue to review",

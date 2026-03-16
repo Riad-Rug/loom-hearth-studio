@@ -1,17 +1,18 @@
 import { getEnvSnapshot, getPublicEnv } from "@/lib/validation/env";
 
-export type StripeIntegrationMode = "checkout" | "elements";
+export type StripeIntegrationMode = "checkout";
+export const launchStripeIntegrationMode: StripeIntegrationMode = "checkout";
 
 export type StripePublicConfig = {
   publishableKey?: string;
-  selectedMode: StripeIntegrationMode | null;
+  selectedMode: StripeIntegrationMode;
   walletSupportEnabled: false;
 };
 
 export type StripeServerConfig = {
   secretKey?: string;
   webhookSecret?: string;
-  selectedMode: StripeIntegrationMode | null;
+  selectedMode: StripeIntegrationMode;
 };
 
 export function getStripePublicConfig(): StripePublicConfig {
@@ -19,7 +20,7 @@ export function getStripePublicConfig(): StripePublicConfig {
 
   return {
     publishableKey: env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-    selectedMode: null,
+    selectedMode: launchStripeIntegrationMode,
     walletSupportEnabled: false,
   };
 }
@@ -30,7 +31,7 @@ export function getStripeServerConfig(): StripeServerConfig {
   return {
     secretKey: env.STRIPE_SECRET_KEY,
     webhookSecret: env.STRIPE_WEBHOOK_SECRET,
-    selectedMode: null,
+    selectedMode: launchStripeIntegrationMode,
   };
 }
 
@@ -45,4 +46,4 @@ export function hasStripeServerKeys() {
 }
 
 export const stripeConfigTodo =
-  "TODO: Select Stripe Checkout or Elements before wiring real payment execution, wallets, and webhook handling.";
+  "TODO: Implement the Stripe Checkout execution path, wallets, and webhook handling without widening launch support beyond Stripe Checkout.";

@@ -52,11 +52,9 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     continueFromShipping,
     information,
     orderDraft,
-    paymentState,
     submissionAttempt,
     submissionPreview,
     shippingMethod,
-    updatePaymentMode,
     updateInformation,
   } = useCheckout();
   const lineItems =
@@ -95,7 +93,6 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
   });
   const stripePaymentDraft = createStripeCheckoutPaymentDraft(
     stripeOrderPaymentInput,
-    paymentState.selectedMode,
   );
   const orderSubmissionPayload = createOrderSubmissionPayload({
     orderDraft,
@@ -137,7 +134,6 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     checkoutSteps,
     canAccessShipping,
     canAccessReview,
-    paymentState,
     stripePaymentDraft,
   });
 
@@ -192,7 +188,6 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               orderConfirmationEmailPreview,
               orderSubmissionPayload,
               nonConfirmationRouteViewModel,
-              paymentState,
               confirmationViewModel,
               reviewViewModel,
               submissionAttempt,
@@ -200,7 +195,6 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               submissionPreview: resolvedSubmissionPreview,
               shippingMethod,
               stripePaymentDraft,
-              updatePaymentMode,
               updateInformation,
             })}
           </div>
@@ -343,10 +337,7 @@ type CheckoutStepRenderProps = {
     };
     payment: {
       body: string;
-      modeButtons: {
-        checkoutLabel: string;
-        elementsLabel: string;
-      };
+      launchModeLabel: string;
       boundary: {
         modeLabel: string;
         statusLabel: string;
@@ -358,9 +349,6 @@ type CheckoutStepRenderProps = {
       };
       actionLabel: string;
     };
-  };
-  paymentState: {
-    selectedMode: "checkout" | "elements" | null;
   };
   confirmationViewModel: {
     headline: string;
@@ -435,21 +423,17 @@ type CheckoutStepRenderProps = {
   stripePaymentDraft: {
     provider: "stripe";
     method: "stripe-placeholder";
-    mode: "checkout" | "elements" | null;
+    mode: "checkout";
     publishableKeyReady: boolean;
+    launchMode: "checkout";
     missingConfig: Array<"NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY">;
-    isModeSelected: boolean;
     isReadyForPlaceholderFlow: boolean;
-    paymentStepStatus:
-      | "needs-mode-selection"
-      | "mode-selected-missing-config"
-      | "ready-placeholder";
+    paymentStepStatus: "launch-mode-missing-config" | "ready-placeholder";
     session: {
       id: string;
     } | null;
     paymentStatus: "pending";
   };
-  updatePaymentMode: (mode: "checkout" | "elements") => void;
   updateInformation: (
     field:
       | "email"
@@ -611,23 +595,8 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
               </span>
             </div>
             <div className={styles.reviewCard}>
-              <h3>Stripe mode selection</h3>
-              <div className={styles.badges}>
-                <button
-                  className={styles.secondaryAction}
-                  type="button"
-                  onClick={() => props.updatePaymentMode("checkout")}
-                >
-                  {props.nonConfirmationRouteViewModel.payment.modeButtons.checkoutLabel}
-                </button>
-                <button
-                  className={styles.secondaryAction}
-                  type="button"
-                  onClick={() => props.updatePaymentMode("elements")}
-                >
-                  {props.nonConfirmationRouteViewModel.payment.modeButtons.elementsLabel}
-                </button>
-              </div>
+              <h3>Stripe launch mode</h3>
+              <p>{props.nonConfirmationRouteViewModel.payment.launchModeLabel}</p>
             </div>
             <div className={styles.formGrid}>
               <label className={styles.field}>

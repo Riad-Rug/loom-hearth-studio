@@ -41,29 +41,25 @@ export function createStripeOrderPaymentInput(input: {
 
 export function createStripeCheckoutPaymentDraft(
   paymentInput: StripeOrderPaymentInput,
-  selectedMode: StripeCheckoutPaymentDraft["mode"],
 ): StripeCheckoutPaymentDraft {
   const config = getStripePublicConfig();
-  const mode = selectedMode ?? config.selectedMode;
+  const mode = config.selectedMode;
   const publishableKeyReady = Boolean(config.publishableKey);
   const missingConfig: StripeCheckoutPaymentDraft["missingConfig"] = publishableKeyReady
     ? []
     : ["NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"];
-  const isModeSelected = Boolean(mode);
-  const paymentStepStatus = !isModeSelected
-    ? "needs-mode-selection"
-    : publishableKeyReady
-      ? "ready-placeholder"
-      : "mode-selected-missing-config";
+  const paymentStepStatus = publishableKeyReady
+    ? "ready-placeholder"
+    : "launch-mode-missing-config";
 
   return {
     provider: "stripe",
     method: "stripe-placeholder",
     mode,
+    launchMode: config.selectedMode,
     publishableKeyReady,
     missingConfig,
-    isModeSelected,
-    isReadyForPlaceholderFlow: isModeSelected,
+    isReadyForPlaceholderFlow: true,
     paymentStepStatus,
     session: paymentInput.lineItems.length
       ? {
@@ -78,6 +74,6 @@ export function createStripeCheckoutPaymentDraft(
 
 export const stripeHelpersTodo = {
   checkoutState:
-    "TODO: Replace the placeholder payment draft helper with real session creation once Stripe execution is implemented.",
+    "TODO: Replace the placeholder payment draft helper with real Stripe Checkout session creation once Stripe execution is implemented.",
   config: stripeConfigTodo,
 } as const;

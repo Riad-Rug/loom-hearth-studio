@@ -15,4 +15,4 @@ export interface PaymentService {
 }
 
 export const stripeServiceTodo =
-  "TODO: Validate Stripe Checkout vs Elements, webhook handling, wallet support, and refund workflow before implementation.";
+  "TODO: Implement the Stripe Checkout service boundary, webhook handling, wallet support, and refund workflow.";

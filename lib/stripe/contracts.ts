@@ -4,8 +4,7 @@ import type { StripeIntegrationMode } from "@/lib/stripe/config";
 
 export type StripePaymentMethod = "stripe-placeholder";
 export type StripePaymentStepStatus =
-  | "needs-mode-selection"
-  | "mode-selected-missing-config"
+  | "launch-mode-missing-config"
   | "ready-placeholder";
 
 export type StripeOrderPaymentInput = {
@@ -26,7 +25,7 @@ export type StripeOrderPaymentInput = {
 
 export type StripePaymentSession = {
   id: string;
-  mode: StripeIntegrationMode | null;
+  mode: StripeIntegrationMode;
   clientSecret?: string;
   redirectUrl?: string;
   status: "placeholder";
@@ -35,10 +34,10 @@ export type StripePaymentSession = {
 export type StripeCheckoutPaymentDraft = {
   provider: "stripe";
   method: StripePaymentMethod;
-  mode: StripeIntegrationMode | null;
+  mode: StripeIntegrationMode;
   publishableKeyReady: boolean;
   missingConfig: Array<"NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY">;
-  isModeSelected: boolean;
+  launchMode: StripeIntegrationMode;
   isReadyForPlaceholderFlow: boolean;
   paymentStepStatus: StripePaymentStepStatus;
   session: StripePaymentSession | null;
@@ -52,7 +51,7 @@ export type StripeRefundReference = {
 
 export const stripeContractsTodo = {
   session:
-    "TODO: Replace the placeholder Stripe session shape with the final Checkout or Elements contract once the implementation mode is chosen.",
+    "TODO: Replace the placeholder Stripe session shape with the final Stripe Checkout contract when execution is implemented.",
   refund:
     "TODO: Keep refund references typed only; do not implement refund execution until order operations are defined.",
 } as const;
