@@ -356,6 +356,41 @@ p {
   outline: none;
 }
 
+.cookie-banner {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 40;
+  display: grid;
+  gap: var(--space-3);
+  width: min(100% - 2rem, 24rem);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-panel);
+}
+
+.cookie-banner__copy {
+  color: rgba(34, 33, 38, 0.76);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.cookie-banner__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cookie-banner__button {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  background: rgba(245, 239, 228, 0.8);
+  color: var(--color-charcoal-ink);
+  font: inherit;
+}
+
 @media (max-width: 900px) {
   .content-grid {
     grid-template-columns: 1fr;
@@ -391,5 +426,11 @@ p {
   .site-header__cart-button {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .cookie-banner {
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: calc(100% - 1rem);
   }
 }
