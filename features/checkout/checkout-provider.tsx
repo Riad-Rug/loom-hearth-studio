@@ -18,6 +18,7 @@ import type { OrderSubmissionAttemptState, OrderSubmissionFailure, OrderSubmissi
 import {
   createStripeCheckoutPaymentDraft,
   createStripeOrderPaymentInput,
+  getStripeCheckoutRedirectTarget,
   initialStripeCheckoutExecutionAttemptState,
   requestStripeCheckoutSessionCreation,
   type StripeCheckoutExecutionAttemptState,
@@ -134,6 +135,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     useState<StripeCheckoutExecutionAttemptState>(
       initialStripeCheckoutExecutionAttemptState,
     );
+  const [executedRedirectTarget, setExecutedRedirectTarget] = useState<string | null>(null);
   const [submissionPreview, setSubmissionPreview] = useState<OrderSubmissionPreview | null>(null);
   const [submissionAttempt, setSubmissionAttempt] =
     useState<OrderSubmissionAttemptState>(initialSubmissionAttempt);
@@ -246,7 +248,19 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setCheckoutExecutionAttempt(initialStripeCheckoutExecutionAttemptState);
+    setExecutedRedirectTarget(null);
   }, [stripeOrderPaymentInput]);
+
+  useEffect(() => {
+    const redirectTarget = getStripeCheckoutRedirectTarget(checkoutExecutionAttempt.result);
+
+    if (!redirectTarget || executedRedirectTarget === redirectTarget) {
+      return;
+    }
+
+    setExecutedRedirectTarget(redirectTarget);
+    window.location.assign(redirectTarget);
+  }, [checkoutExecutionAttempt.result, executedRedirectTarget]);
 
   useEffect(() => {
     if (currentStep === "start" || currentStep === "information" || currentStep === "confirmation") {

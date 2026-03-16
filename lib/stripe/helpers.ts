@@ -149,6 +149,16 @@ export async function requestStripeCheckoutSessionCreation(input: {
   return (await response.json()) as StripeCheckoutSessionCreationResult;
 }
 
+export function getStripeCheckoutRedirectTarget(
+  result: StripeCheckoutSessionCreationResult | null,
+) {
+  if (result?.status !== "created") {
+    return null;
+  }
+
+  return result.redirectTarget ?? null;
+}
+
 export const initialStripeCheckoutExecutionAttemptState: StripeCheckoutExecutionAttemptState = {
   status: "idle",
   result: null,
@@ -157,6 +167,6 @@ export const initialStripeCheckoutExecutionAttemptState: StripeCheckoutExecution
 
 export const stripeHelpersTodo = {
   checkoutState:
-    "TODO: Replace the placeholder Checkout session request and placeholder session helper with real Stripe Checkout execution once server wiring is added.",
+    "TODO: Keep the hosted Checkout redirect handoff only. Payment confirmation, webhooks, and order submission remain out of scope for this slice.",
   config: stripeConfigTodo,
 } as const;

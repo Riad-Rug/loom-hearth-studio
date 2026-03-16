@@ -111,11 +111,11 @@ export type StripeRefundReference = {
 
 export const stripeContractsTodo = {
   sessionCreation:
-    "TODO: Replace the placeholder Checkout session request/response shapes with the real Stripe Checkout session-creation contract when server execution is implemented.",
+    "TODO: Keep the Checkout session request/response contract limited to hosted Checkout session creation only for now.",
   checkoutService:
-    "TODO: Wire the Checkout service boundary to real Stripe Checkout session creation after server execution is added.",
+    "TODO: Keep the Checkout service boundary scoped to session creation only. Do not add payment confirmation or webhook handling in this slice.",
   checkoutExecution:
-    "TODO: Invoke the Checkout session-creation execution boundary from the payment flow when redirect execution is implemented.",
+    "TODO: Hosted Checkout redirect execution is wired. Do not extend this boundary into post-payment processing until later slices.",
   refund:
     "TODO: Keep refund references typed only; do not implement refund execution until order operations are defined.",
 } as const;

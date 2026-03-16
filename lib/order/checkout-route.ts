@@ -148,7 +148,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
         "Stripe Checkout is the only supported launch path in this boundary layer. This step now reflects the hosted Checkout handoff state only. No payment capture, webhook handling, or order creation is implemented yet.",
       launchModeLabel: `Launch mode: Stripe ${input.stripePaymentDraft.launchMode}`,
       handoffLabel:
-        "Hosted Stripe Checkout remains placeholder-only in this slice. The current UI consumes the Checkout service boundary and session-request draft without executing Stripe.",
+        "A successful Checkout session-creation result now hands off to hosted Stripe Checkout by redirecting the browser to the returned Checkout URL.",
       boundary: {
         modeLabel: `Mode: ${input.stripePaymentDraft.mode}`,
         statusLabel: `Status: ${input.stripePaymentDraft.paymentStepStatus}`,
@@ -210,7 +210,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
           input.checkoutExecutionAttempt.status === "submitting"
             ? "Creating Checkout session..."
             : input.checkoutExecutionAttempt.status === "success"
-              ? "Checkout session created"
+              ? "Redirecting to Stripe Checkout..."
               : "Create Checkout session",
       },
       checkoutSessionRequest: input.stripePaymentDraft.checkoutSessionRequest
