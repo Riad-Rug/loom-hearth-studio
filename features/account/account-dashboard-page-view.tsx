@@ -3,17 +3,23 @@ import Link from "next/link";
 
 import { accountDashboardSections } from "@/features/account/account-data";
 import { accountGuardTodo, getAccountAccessDecision } from "@/lib/auth";
+import {
+  accountDashboardDataTodo,
+  getPlaceholderAccountDashboardData,
+} from "@/lib/account/dashboard";
 
 import styles from "./account.module.css";
 
 export function AccountDashboardPageView() {
+  const placeholderUser = {
+    id: "account-session-placeholder",
+    email: "customer@example.com",
+  };
   const accessDecision = getAccountAccessDecision({
-    user: {
-      id: "account-session-placeholder",
-      email: "customer@example.com",
-    },
+    user: placeholderUser,
     routeKind: "dashboard",
   });
+  const dashboardData = getPlaceholderAccountDashboardData(placeholderUser);
 
   return (
     <div className={styles.page}>
@@ -27,11 +33,21 @@ export function AccountDashboardPageView() {
           </p>
         </div>
         <div className={styles.dashboardEmptyState}>
-          <strong>No live account data yet</strong>
-          <p>
-            Empty-state presentation only. Real customer data, order history, and account
-            actions are not implemented in this slice.
-          </p>
+          {dashboardData ? (
+            <>
+              <strong>{dashboardData.overview.greeting}</strong>
+              <p>{dashboardData.overview.statusLabel}</p>
+              <p>{dashboardData.overview.accountEmail}</p>
+            </>
+          ) : (
+            <>
+              <strong>No live account data yet</strong>
+              <p>
+                Empty-state presentation only. Real customer data, order history, and account
+                actions are not implemented in this slice.
+              </p>
+            </>
+          )}
         </div>
       </section>
 
@@ -47,16 +63,35 @@ export function AccountDashboardPageView() {
         <p>Mode: {accessDecision.sessionSummary.roleLabel}</p>
         <p>{accessDecision.sessionSummary.todo}</p>
         <p>{accountGuardTodo}</p>
+        <p>{accountDashboardDataTodo}</p>
       </section>
 
       {accessDecision.status === "allowed" ? (
         <section className={styles.dashboardGrid}>
-          {accountDashboardSections.map((section) => (
-            <article key={section.id} className={styles.dashboardCard}>
-              <h2>{section.title}</h2>
-              <p>{section.body}</p>
-            </article>
-          ))}
+          {accountDashboardSections.map((section) => {
+            const summaryBody =
+              section.id === "overview"
+                ? dashboardData?.overview.statusLabel
+                : section.id === "orders"
+                  ? dashboardData?.orders.orderCountLabel
+                  : dashboardData?.profile.email;
+
+            const summaryMeta =
+              section.id === "overview"
+                ? dashboardData?.overview.accountEmail
+                : section.id === "orders"
+                  ? dashboardData?.orders.latestOrderLabel
+                  : dashboardData?.profile.phoneLabel;
+
+            return (
+              <article key={section.id} className={styles.dashboardCard}>
+                <h2>{section.title}</h2>
+                <p>{section.body}</p>
+                {summaryBody ? <strong>{summaryBody}</strong> : null}
+                {summaryMeta ? <span>{summaryMeta}</span> : null}
+              </article>
+            );
+          })}
         </section>
       ) : (
         <section className={styles.sessionCard}>
