@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Container } from "@/components/layout/container";
 import { CartDrawer } from "@/features/cart/cart-drawer";
@@ -20,6 +20,22 @@ type SiteHeaderClientProps = {
 
 export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return;
+    }
+
+    function handleScroll() {
+      setIsMobileMenuOpen(false);
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isMobileMenuOpen]);
 
   return (
     <header className="site-header">
