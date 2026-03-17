@@ -7,6 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ProductCategory {
+  rugs
+  poufs
+  pillows
+  decor
+  vintage
+}
+
 enum AdminRole {
   admin
   editor
@@ -163,4 +171,35 @@ model OrderLineItemRecord {
   order      OrderRecord @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
+}
+
+model CatalogProduct {
+  id               String          @id @default(cuid())
+  type             String
+  slug             String
+  name             String
+  category         ProductCategory
+  description      String          @db.Text
+  priceUsd         Decimal         @db.Decimal(10, 2)
+  origin           String
+  status           String
+  images           Json
+  materials        Json
+  seoTitle         String
+  seoDescription   String          @db.Text
+  rugStyle         String?
+  dimensionsCm     Json?
+  weightKg         Decimal?        @db.Decimal(10, 2)
+  fixedQuantity    Int?
+  inventory        Int?
+  lowStockThreshold Int?
+  variants         Json?
+  notifyMeEnabled  Boolean?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@unique([slug, category])
+  @@index([status])
+  @@index([category, status])
+  @@index([type, status])
 }

@@ -1,5 +1,10 @@
-import { AdminModulePageView } from "@/features/admin/admin-module-page-view";
+import { AdminProductsPageView } from "@/features/admin/admin-products-page-view";
+import { getAdminProductsPageData } from "@/lib/admin/products";
 
-export default function AdminProductsPage() {
-  return <AdminModulePageView moduleKey="products" />;
+export const dynamic = "force-dynamic";
+
+export default async function AdminProductsPage() {
+  const pageData = await getAdminProductsPageData();
+
+  return <AdminProductsPageView {...pageData} />;
 }
