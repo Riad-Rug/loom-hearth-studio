@@ -66,11 +66,11 @@ export const adminModules: Record<
     eyebrow: "Admin orders",
     title: "Orders module shell",
     description:
-      "Reserved for future order management, payment-state visibility, and fulfillment progression.",
+      "Persisted launch orders can now be retrieved here for visibility. Order mutations, fulfillment actions, and broader operations remain out of scope.",
     cards: [
       {
         title: "Order list",
-        body: "Placeholder order operations area only. No order retrieval is implemented.",
+        body: "Persisted orders are retrieved through the admin orders boundary.",
       },
       {
         title: "Status handling",

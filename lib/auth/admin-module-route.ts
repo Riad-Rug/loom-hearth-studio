@@ -8,6 +8,7 @@ export type AdminModuleRouteCardView = {
   eyebrow: string;
   title: string;
   body: string;
+  lines: string[];
 };
 
 export type AdminModuleRouteViewModel = {
@@ -36,7 +37,7 @@ export function createAdminModuleRouteViewModel(input: {
     eyebrow: string;
     title: string;
     description: string;
-    cards: { title: string; body: string }[];
+    cards: { title: string; body: string; lines?: string[] }[];
   };
   accessDecision: AdminAccessDecision;
   gatePresentation: AdminGatePresentation;

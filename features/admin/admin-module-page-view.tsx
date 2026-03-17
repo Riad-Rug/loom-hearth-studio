@@ -10,10 +10,16 @@ import styles from "./admin.module.css";
 
 type AdminModulePageViewProps = {
   moduleKey: AdminModuleKey;
+  moduleOverride?: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    cards: { title: string; body: string; lines?: string[] }[];
+  };
 };
 
-export function AdminModulePageView({ moduleKey }: AdminModulePageViewProps) {
-  const module = adminModules[moduleKey];
+export function AdminModulePageView({ moduleKey, moduleOverride }: AdminModulePageViewProps) {
+  const module = moduleOverride ?? adminModules[moduleKey];
   const accessDecision = getAdminAccessDecision({
     user: {
       id: "admin-session-placeholder",
@@ -53,6 +59,9 @@ export function AdminModulePageView({ moduleKey }: AdminModulePageViewProps) {
               <p className={styles.cardEyebrow}>{card.eyebrow}</p>
               <h3>{card.title}</h3>
               <p>{card.body}</p>
+              {card.lines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
             </article>
           ))}
         </div>

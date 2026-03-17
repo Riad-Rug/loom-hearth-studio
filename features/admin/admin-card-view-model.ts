@@ -5,6 +5,7 @@ export type AdminModuleCardViewModel = {
   eyebrow: string;
   title: string;
   body: string;
+  lines: string[];
 };
 
 export function createAdminModuleCardViewModels(input: {
@@ -12,6 +13,7 @@ export function createAdminModuleCardViewModels(input: {
   cards: ReadonlyArray<{
     title: string;
     body: string;
+    lines?: string[];
   }>;
 }): AdminModuleCardViewModel[] {
   const moduleLabel =
@@ -24,5 +26,6 @@ export function createAdminModuleCardViewModels(input: {
     eyebrow: `${moduleLabel} card ${index + 1}`,
     title: card.title,
     body: card.body,
+    lines: card.lines ?? [],
   }));
 }

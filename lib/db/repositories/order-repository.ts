@@ -14,6 +14,7 @@ export interface OrderRepository {
   getById(orderId: string): Promise<Order | null>;
   getByCheckoutSessionId(checkoutSessionId: string): Promise<Order | null>;
   getByCustomerEmail(customerEmail: string): Promise<Order[]>;
+  listAll(): Promise<Order[]>;
   updateStatus(orderId: string, status: Order["status"]): Promise<Order>;
 }
 
@@ -68,6 +69,19 @@ export class PrismaOrderRepository implements OrderRepository {
       where: {
         customerEmail,
       },
+      include: {
+        lineItems: true,
+      },
+      orderBy: {
+        placedAt: "desc",
+      },
+    });
+
+    return orders.map(mapOrderRecordToDomainOrder);
+  }
+
+  async listAll() {
+    const orders = await this.context.client.orderRecord.findMany({
       include: {
         lineItems: true,
       },
