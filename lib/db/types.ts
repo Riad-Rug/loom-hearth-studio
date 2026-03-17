@@ -1,6 +1,10 @@
-export type DatabaseClient = unknown;
+import type { PrismaClient } from "@prisma/client";
+
+export type DatabaseClient = PrismaClient;
 
 export interface RepositoryContext {
-  // TODO: Validate database and ORM before replacing the placeholder client type.
   client: DatabaseClient;
 }
+
+export const repositoryContextTodo =
+  "TODO: Keep repository implementations behind this Prisma-backed context until concrete repositories are introduced.";

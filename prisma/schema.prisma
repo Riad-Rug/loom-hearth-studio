@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CheckoutMode {
+  guest
+}
+
+enum OrderStatus {
+  pending
+  paid
+  processing
+  shipped
+  delivered
+  cancelled
+  refunded
+}
+
+enum PaymentStatus {
+  pending
+  authorized
+  paid
+  failed
+  refunded
+}
+
+model OrderRecord {
+  id                String              @id @default(cuid())
+  orderNumber       String              @unique
+  checkoutMode      CheckoutMode
+  checkoutSessionId String              @unique
+  paymentIntentId   String?             @unique
+  status            OrderStatus
+  paymentStatus     PaymentStatus
+  customerEmail     String?
+  shippingAddress   Json
+  subtotalUsd       Decimal             @db.Decimal(10, 2)
+  shippingUsd       Decimal             @db.Decimal(10, 2)
+  taxUsd            Decimal             @db.Decimal(10, 2)
+  totalUsd          Decimal             @db.Decimal(10, 2)
+  currency          String              @db.VarChar(3)
+  stripeEventId     String
+  stripeEventType   String
+  placedAt          DateTime            @default(now())
+  lineItems         OrderLineItemRecord[]
+
+  @@index([customerEmail])
+  @@index([placedAt])
+}
+
+model OrderLineItemRecord {
+  id            String      @id @default(cuid())
+  orderId       String
+  name          String
+  quantity      Int
+  unitAmountUsd Decimal?    @db.Decimal(10, 2)
+  order         OrderRecord @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
