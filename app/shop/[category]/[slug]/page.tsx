@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
-import { getMultiUnitPlaceholderByParams } from "@/features/pdp/pdp-data";
+import { getCategoryProductDetailByParams } from "@/lib/catalog/service";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/schema";
@@ -18,10 +18,10 @@ export default async function CategoryProductPage({
   params,
 }: CategoryProductPageProps) {
   const resolvedParams = await params;
-  const product = getMultiUnitPlaceholderByParams(
-    resolvedParams.category,
-    resolvedParams.slug,
-  );
+  const product = await getCategoryProductDetailByParams({
+    category: resolvedParams.category,
+    slug: resolvedParams.slug,
+  });
 
   if (!product) {
     notFound();
@@ -33,7 +33,7 @@ export default async function CategoryProductPage({
         data={[
           productSchema({
             name: product.name,
-            description: product.summary,
+            description: product.description,
             path: `/shop/${product.category}/${product.slug}`,
             priceUsdLabel: product.priceUsdLabel,
             category: product.category,
@@ -58,22 +58,22 @@ export async function generateMetadata({
   params,
 }: CategoryProductPageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const product = getMultiUnitPlaceholderByParams(
-    resolvedParams.category,
-    resolvedParams.slug,
-  );
+  const product = await getCategoryProductDetailByParams({
+    category: resolvedParams.category,
+    slug: resolvedParams.slug,
+  });
 
   if (!product) {
     return buildMetadata({
       title: "Shop",
-      description: "Browse the launch catalog structure for rugs and home decor.",
+      description: "Browse the launch collection for rugs and home decor.",
       path: "/shop",
     });
   }
 
   return buildMetadata({
     title: product.name,
-    description: product.summary,
+    description: product.description,
     path: `/shop/${product.category}/${product.slug}`,
   });
 }

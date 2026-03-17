@@ -6,16 +6,13 @@ import { useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
-import type {
-  MultiUnitPlaceholderProduct,
-  PlaceholderProduct,
-} from "@/features/pdp/pdp-data";
+import type { MultiUnitProductDetailPageViewModel, ProductDetailPageViewModel } from "@/lib/catalog/contracts";
 import { useCart } from "@/features/cart/cart-provider";
 
 import styles from "./product-detail-page.module.css";
 
 type ProductDetailPageViewProps = {
-  product: PlaceholderProduct;
+  product: ProductDetailPageViewModel;
 };
 
 export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
@@ -53,26 +50,26 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             </p>
             <h1>{product.name}</h1>
             <p className={styles.price}>{product.priceUsdLabel}</p>
-            <p className={styles.summary}>{product.summary}</p>
+            <p className={styles.summary}>{product.description}</p>
 
             <div className={styles.metaGrid}>
               <div>
                 <span className={styles.metaLabel}>Materials</span>
-                <p>{product.materials}</p>
+                <p>{product.materialsLabel}</p>
               </div>
               <div>
                 <span className={styles.metaLabel}>Origin</span>
-                <p>{product.origin}</p>
+                <p>{product.originLabel}</p>
               </div>
               {product.type === "rug" ? (
                 <>
                   <div>
                     <span className={styles.metaLabel}>Dimensions</span>
-                    <p>{product.dimensionsCm}</p>
+                    <p>{product.dimensionsLabel}</p>
                   </div>
                   <div>
                     <span className={styles.metaLabel}>Weight</span>
-                    <p>{product.weightKg}</p>
+                    <p>{product.weightLabel}</p>
                   </div>
                 </>
               ) : (
@@ -115,7 +112,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         <div className={styles.relatedSection}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Related</p>
-            <h2>Placeholder related products</h2>
+            <h2>Related products</h2>
           </div>
           <div className={styles.relatedGrid}>
             {product.related.map((item) => (
@@ -136,7 +133,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         <div className={styles.relatedSection}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Recently viewed</p>
-            <h2>Placeholder recently viewed UI</h2>
+            <h2>Recent launch products</h2>
           </div>
           <div className={styles.relatedGrid}>
             {product.recentlyViewed.map((item) => (
@@ -160,7 +157,7 @@ function RugPurchaseShell({
   product,
   quantityLabel,
 }: {
-  product: Extract<PlaceholderProduct, { type: "rug" }>;
+  product: Extract<ProductDetailPageViewModel, { type: "rug" }>;
   quantityLabel: "1";
 }) {
   const { addProduct } = useCart();
@@ -173,14 +170,14 @@ function RugPurchaseShell({
         <p className={styles.lockedQuantity}>{quantityLabel}</p>
       </div>
       <p className={styles.purchaseNote}>
-        This Type A rug is a unique item. Quantity is locked to 1 and no variants are
-        available.
+        This Type A rug is a one-of-one launch item. Quantity is locked to 1 and no
+        variants are available.
       </p>
       <button
         className={styles.primaryAction}
         type="button"
         onClick={() => {
-          addProduct({ product, quantity: 1 });
+          addProduct({ product: product.cartProduct, quantity: 1 });
           setFeedbackMessage("Added to cart.");
         }}
       >
@@ -191,7 +188,7 @@ function RugPurchaseShell({
   );
 }
 
-function MultiUnitMeta({ product }: { product: MultiUnitPlaceholderProduct }) {
+function MultiUnitMeta({ product }: { product: MultiUnitProductDetailPageViewModel }) {
   return (
     <>
       <div>
@@ -209,11 +206,11 @@ function MultiUnitMeta({ product }: { product: MultiUnitPlaceholderProduct }) {
 function MultiUnitPurchaseShell({
   product,
 }: {
-  product: MultiUnitPlaceholderProduct;
+  product: MultiUnitProductDetailPageViewModel;
 }) {
   const { addProduct } = useCart();
   const [quantity, setQuantity] = useState(1);
-  const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0]);
+  const [selectedVariant, setSelectedVariant] = useState(product.variants[0]?.name);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const isOutOfStock = product.inventoryState === "outOfStock";
 
@@ -225,14 +222,14 @@ function MultiUnitPurchaseShell({
           <div className={styles.variantList}>
             {product.variants.map((variant) => (
               <button
-                key={variant}
+                key={variant.id}
                 className={`${styles.variantButton} ${
-                  selectedVariant === variant ? styles.variantButtonActive : ""
+                  selectedVariant === variant.name ? styles.variantButtonActive : ""
                 }`}
                 type="button"
-                onClick={() => setSelectedVariant(variant)}
+                onClick={() => setSelectedVariant(variant.name)}
               >
-                {variant}
+                {variant.name}
               </button>
             ))}
           </div>
@@ -293,7 +290,7 @@ function MultiUnitPurchaseShell({
           type="button"
           onClick={() => {
             addProduct({
-              product,
+              product: product.cartProduct,
               quantity,
               variantName: selectedVariant,
             });

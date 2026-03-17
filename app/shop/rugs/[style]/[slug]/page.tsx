@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
-import { getRugPlaceholderByParams } from "@/features/pdp/pdp-data";
+import { getRugProductDetailByParams } from "@/lib/catalog/service";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/schema";
@@ -16,7 +16,10 @@ type RugProductPageProps = {
 
 export default async function RugProductPage({ params }: RugProductPageProps) {
   const resolvedParams = await params;
-  const product = getRugPlaceholderByParams(resolvedParams.style, resolvedParams.slug);
+  const product = await getRugProductDetailByParams({
+    style: resolvedParams.style,
+    slug: resolvedParams.slug,
+  });
 
   if (!product) {
     notFound();
@@ -28,16 +31,16 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
         data={[
           productSchema({
             name: product.name,
-            description: product.summary,
-            path: `/shop/rugs/${product.style}/${product.slug}`,
+            description: product.description,
+            path: `/shop/rugs/${product.rugStyle}/${product.slug}`,
             priceUsdLabel: product.priceUsdLabel,
-            category: "rugs",
+            category: product.category,
           }),
           breadcrumbSchema([
             { name: "Home", path: "/" },
             { name: "Shop", path: "/shop" },
             { name: "Rugs", path: "/shop/rugs" },
-            { name: product.name, path: `/shop/rugs/${product.style}/${product.slug}` },
+            { name: product.name, path: `/shop/rugs/${product.rugStyle}/${product.slug}` },
           ]),
         ]}
       />
@@ -50,19 +53,22 @@ export async function generateMetadata({
   params,
 }: RugProductPageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const product = getRugPlaceholderByParams(resolvedParams.style, resolvedParams.slug);
+  const product = await getRugProductDetailByParams({
+    style: resolvedParams.style,
+    slug: resolvedParams.slug,
+  });
 
   if (!product) {
     return buildMetadata({
       title: "Rugs",
-      description: "Browse handcrafted rug placeholders.",
+      description: "Browse handcrafted launch rugs.",
       path: "/shop/rugs",
     });
   }
 
   return buildMetadata({
     title: product.name,
-    description: product.summary,
-    path: `/shop/rugs/${product.style}/${product.slug}`,
+    description: product.description,
+    path: `/shop/rugs/${product.rugStyle}/${product.slug}`,
   });
 }

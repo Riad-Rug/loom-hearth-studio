@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
+import { listCatalogProductCards } from "@/lib/catalog/service";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildMetadata({
@@ -9,6 +10,8 @@ export const metadata: Metadata = buildMetadata({
   path: "/shop",
 });
 
-export default function ShopPage() {
-  return <CatalogPageView />;
+export default async function ShopPage() {
+  const products = await listCatalogProductCards();
+
+  return <CatalogPageView products={products} />;
 }

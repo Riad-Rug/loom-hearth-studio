@@ -1,15 +1,18 @@
+import type { Route } from "next";
+import Link from "next/link";
+
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
-import type { CatalogPlaceholderProduct } from "@/features/catalog/catalog-data";
+import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
 import styles from "./catalog-page.module.css";
 
 type ProductCardProps = {
-  product: CatalogPlaceholderProduct;
+  product: CatalogProductCardViewModel;
 };
 
 export function ProductCard({ product }: ProductCardProps) {
   return (
-    <article className={styles.productCard}>
+    <Link className={styles.productCard} href={product.href as Route}>
       <div className={styles.productMedia}>
         <PlaceholderMedia
           alt={product.name}
@@ -24,12 +27,12 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className={styles.productPrice}>{product.priceUsdLabel}</p>
         </div>
         <h3>{product.name}</h3>
-        <p className={styles.productSummary}>{product.summary}</p>
+        <p className={styles.productSummary}>{product.description}</p>
         <div className={styles.productMetaList}>
           <span>{product.merchandisingNote}</span>
           <span>PDP route reserved: {product.routePattern}</span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

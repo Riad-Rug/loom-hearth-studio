@@ -1,0 +1,80 @@
+import type { MultiUnitProduct, Product, ProductCategory, RugProduct } from "@/types/domain";
+
+export type LaunchInventoryState = "inStock" | "lowStock" | "outOfStock";
+
+export function formatProductPriceUsd(priceUsd: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(priceUsd);
+}
+
+export function getProductRoutePath(product: Product) {
+  return product.type === "rug"
+    ? `/shop/rugs/${product.rugStyle}/${product.slug}`
+    : `/shop/${product.category}/${product.slug}`;
+}
+
+export function getProductRoutePattern(product: Product) {
+  return product.type === "rug" ? "/shop/rugs/[style]/[slug]" : "/shop/[category]/[slug]";
+}
+
+export function getProductBadgeLabel(product: Product) {
+  return product.type === "rug" ? "Type A rug" : "Type B multi-unit";
+}
+
+export function getProductMerchandisingNote(product: Product) {
+  if (product.type === "rug") {
+    return "Unique item. Quantity is fixed to 1.";
+  }
+
+  if (product.inventory <= 0) {
+    return "Currently unavailable. Notify-me presentation remains available.";
+  }
+
+  if (product.inventory <= product.lowStockThreshold) {
+    return "Low-stock multi-unit item.";
+  }
+
+  return product.variants.length
+    ? "Multi-unit item with variant selection."
+    : "Multi-unit item with quantity controls.";
+}
+
+export function getCategoryLabel(category: ProductCategory) {
+  return category.charAt(0).toUpperCase() + category.slice(1);
+}
+
+export function getInventoryState(product: MultiUnitProduct): LaunchInventoryState {
+  if (product.inventory <= 0) {
+    return "outOfStock";
+  }
+
+  if (product.inventory <= product.lowStockThreshold) {
+    return "lowStock";
+  }
+
+  return "inStock";
+}
+
+export function getInventoryMessage(product: MultiUnitProduct) {
+  const inventoryState = getInventoryState(product);
+
+  switch (inventoryState) {
+    case "outOfStock":
+      return "This item is currently unavailable for launch orders.";
+    case "lowStock":
+      return `Only ${product.inventory} remaining in the current launch allocation.`;
+    case "inStock":
+      return "Available to ship within the United States launch market.";
+  }
+}
+
+export function formatRugDimensions(product: RugProduct) {
+  return `${product.dimensionsCm.length} x ${product.dimensionsCm.width} cm`;
+}
+
+export function formatRugWeight(product: RugProduct) {
+  return `${product.weightKg.toFixed(1)} kg`;
+}
+

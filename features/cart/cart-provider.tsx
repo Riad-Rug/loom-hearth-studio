@@ -9,7 +9,8 @@ import {
   type ReactNode,
 } from "react";
 
-import type { PlaceholderProduct } from "@/features/pdp/pdp-data";
+import { getProductRoutePath } from "@/lib/catalog/helpers";
+import type { Product } from "@/types/domain";
 
 const CART_STORAGE_KEY = "loom-hearth-studio.cart";
 
@@ -17,7 +18,7 @@ export type CartStoreItem = {
   id: string;
   href: string;
   productId: string;
-  productType: PlaceholderProduct["type"];
+  productType: Product["type"];
   name: string;
   priceUsd: number;
   quantity: number;
@@ -25,7 +26,7 @@ export type CartStoreItem = {
 };
 
 type AddCartProductInput = {
-  product: PlaceholderProduct;
+  product: Product;
   quantity: number;
   variantName?: string;
 };
@@ -171,30 +172,20 @@ function createCartStoreItem({
   variantName,
 }: AddCartProductInput): CartStoreItem {
   const normalizedQuantity = product.type === "rug" ? 1 : Math.max(1, quantity);
-  const href =
-    product.type === "rug"
-      ? `/shop/rugs/${product.style}/${product.slug}`
-      : `/shop/${product.category}/${product.slug}`;
 
   return {
     id:
       product.type === "multiUnit" && variantName
         ? `${product.id}::${variantName}`
         : product.id,
-    href,
+    href: getProductRoutePath(product),
     productId: product.id,
     productType: product.type,
     name: product.name,
-    priceUsd: parsePriceUsdLabel(product.priceUsdLabel),
+    priceUsd: product.priceUsd,
     quantity: normalizedQuantity,
     variantName,
   };
-}
-
-function parsePriceUsdLabel(priceUsdLabel: string) {
-  const normalized = Number(priceUsdLabel.replace("$", "").replace(",", ""));
-
-  return Number.isFinite(normalized) ? normalized : 0;
 }
 
 function isCartStoreItem(value: unknown): value is CartStoreItem {
