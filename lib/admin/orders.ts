@@ -1,4 +1,6 @@
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
+import type { FulfillmentOrchestrationResult } from "@/lib/fulfillment/contracts";
+import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
 import type { Order } from "@/types/domain";
 
 export const adminOrderStatusOptions = [
@@ -43,6 +45,7 @@ export type AdminOrderStatusUpdateRequest = {
 export type AdminOrderStatusUpdateResult = {
   status: "updated" | "ignored" | "invalid-request";
   order: Order | null;
+  fulfillmentResult: FulfillmentOrchestrationResult | null;
   message: string;
 };
 
@@ -81,6 +84,7 @@ export async function updateAdminOrderStatus(
     return {
       status: "invalid-request",
       order: null,
+      fulfillmentResult: null,
       message: "Admin order status update request is invalid.",
     };
   }
@@ -92,6 +96,7 @@ export async function updateAdminOrderStatus(
     return {
       status: "invalid-request",
       order: null,
+      fulfillmentResult: null,
       message: "Persisted order was not found for admin status update.",
     };
   }
@@ -100,16 +105,25 @@ export async function updateAdminOrderStatus(
     return {
       status: "ignored",
       order,
+      fulfillmentResult: null,
       message: "Persisted order already has the requested admin status.",
     };
   }
 
   const updatedOrder = await repository.updateStatus(input.orderId, input.status);
+  const fulfillmentResult = await orchestrateLaunchOrderFulfillment({
+    trigger: "admin-status-update",
+    order: updatedOrder,
+  });
 
   return {
     status: "updated",
     order: updatedOrder,
-    message: "Persisted order status updated through the admin orders boundary.",
+    fulfillmentResult,
+    message:
+      fulfillmentResult.status === "ready"
+        ? "Persisted order status updated through the admin orders boundary and handed off into fulfillment orchestration."
+        : "Persisted order status updated through the admin orders boundary.",
   };
 }
 

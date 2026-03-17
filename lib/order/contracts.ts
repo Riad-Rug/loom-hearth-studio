@@ -2,6 +2,7 @@ import type { Order, OrderStatus, PaymentStatus } from "@/types/domain/order";
 
 import type { OrderDraft } from "@/features/checkout/checkout-provider";
 import type { OrderConfirmationEmailSendResult } from "@/lib/email/contracts";
+import type { FulfillmentOrchestrationResult } from "@/lib/fulfillment/contracts";
 import type {
   StripeCheckoutOrderSnapshot,
   StripeCheckoutPaymentConfirmation,
@@ -134,6 +135,7 @@ export type PersistConfirmedOrderResult = {
   persistenceRequest: OrderPersistenceRequest | null;
   persistedOrder: Order | null;
   emailDeliveryResult: OrderConfirmationEmailSendResult | null;
+  fulfillmentResult: FulfillmentOrchestrationResult | null;
   message: string;
 };
 
