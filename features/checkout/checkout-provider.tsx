@@ -213,11 +213,23 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         taxUsd: orderDraft.taxUsd,
         totalUsd: orderDraft.totalUsd,
         currency: orderDraft.currency,
+        shippingAddress: orderDraft.shippingAddress,
         items: orderDraft.items.map((item) => ({
           id: item.id,
+          productId: item.productId,
+          productType: item.productType,
           name: item.name,
+          slug: getCheckoutItemSlug(item.href),
           quantity: item.quantity,
           priceUsd: item.priceUsd,
+          variant: item.variantName
+            ? {
+                id: item.id,
+                name: item.variantName,
+                sku: item.id,
+                inventory: 0,
+              }
+            : undefined,
         })),
       }),
     [orderDraft],
@@ -443,6 +455,12 @@ function getStepFromPathname(pathname: string): CheckoutStepKey {
 const requiredInformationFields: ReadonlyArray<
   Exclude<keyof CheckoutInformation, "address2" | "country">
 > = ["email", "fullName", "address1", "city", "state", "postalCode"] as const;
+
+function getCheckoutItemSlug(href: string) {
+  const segments = href.split("/").filter(Boolean);
+
+  return segments[segments.length - 1] ?? href;
+}
 
 export const checkoutFoundationTodos = {
   payment:

@@ -20,11 +20,16 @@ export function createStripeOrderPaymentInput(input: {
   taxUsd: number;
   totalUsd: number;
   currency: "USD";
+  shippingAddress: StripeOrderPaymentInput["shippingAddress"];
   items: Array<{
     id: string;
+    productId: string;
+    productType: "rug" | "multiUnit";
     name: string;
+    slug: string;
     quantity: number;
     priceUsd: number;
+    variant?: StripeOrderPaymentInput["lineItems"][number]["variant"];
   }>;
 }): StripeOrderPaymentInput {
   return {
@@ -35,11 +40,16 @@ export function createStripeOrderPaymentInput(input: {
     taxUsd: input.taxUsd,
     totalUsd: input.totalUsd,
     currency: input.currency,
+    shippingAddress: input.shippingAddress,
     lineItems: input.items.map((item) => ({
       id: item.id,
+      productId: item.productId,
+      productType: item.productType,
       name: item.name,
+      slug: item.slug,
       quantity: item.quantity,
       unitAmountUsd: item.priceUsd,
+      variant: item.variant,
     })),
   };
 }
@@ -119,6 +129,7 @@ export function createStripeCheckoutSessionRequest(
     lineItems: paymentInput.lineItems,
     metadata: {
       checkoutMode: paymentInput.checkoutMode,
+      orderSnapshot: createStripeCheckoutOrderSnapshotMetadata(paymentInput),
     },
   };
 }
@@ -170,3 +181,28 @@ export const stripeHelpersTodo = {
     "TODO: Keep the hosted Checkout redirect handoff only. Payment confirmation, webhooks, and order submission remain out of scope for this slice.",
   config: stripeConfigTodo,
 } as const;
+
+function createStripeCheckoutOrderSnapshotMetadata(paymentInput: StripeOrderPaymentInput) {
+  if (!paymentInput.shippingAddress) {
+    return null;
+  }
+
+  return JSON.stringify({
+    shippingAddress: paymentInput.shippingAddress,
+    items: paymentInput.lineItems.map((item) => ({
+      id: item.id,
+      productId: item.productId,
+      productType: item.productType,
+      name: item.name,
+      slug: item.slug,
+      priceUsd: item.unitAmountUsd,
+      quantity: item.quantity,
+      variant: item.variant,
+    })),
+    subtotalUsd: paymentInput.subtotalUsd,
+    shippingUsd: paymentInput.shippingUsd,
+    taxUsd: paymentInput.taxUsd,
+    totalUsd: paymentInput.totalUsd,
+    currency: paymentInput.currency,
+  });
+}

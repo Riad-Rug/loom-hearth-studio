@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { persistConfirmedStripeCheckoutOrder } from "@/lib/order";
 import {
   createStripeCheckoutWebhookReceipt,
   getStripeWebhookSignatureHeader,
@@ -21,15 +22,24 @@ export async function POST(request: Request) {
     signatureHeader,
     signatureVerification,
   });
+  const orderPersistenceResult =
+    receipt.confirmationResult?.status === "confirmed"
+      ? await persistConfirmedStripeCheckoutOrder({
+          confirmation: receipt.confirmationResult.confirmation,
+        })
+      : null;
 
   return NextResponse.json(
     {
       ...receipt,
+      orderPersistenceResult,
       todo: stripeConfirmationTodo.route,
     },
     {
       status:
-        receipt.status === "accepted" || receipt.status === "ignored"
+        orderPersistenceResult?.status === "configuration-error"
+          ? 503
+          : receipt.status === "accepted" || receipt.status === "ignored"
           ? 200
           : receipt.status === "invalid-payload"
             ? 400

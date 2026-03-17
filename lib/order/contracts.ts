@@ -2,6 +2,7 @@ import type { Order, OrderStatus, PaymentStatus } from "@/types/domain/order";
 
 import type { OrderDraft } from "@/features/checkout/checkout-provider";
 import type {
+  StripeCheckoutOrderSnapshot,
   StripeCheckoutPaymentConfirmation,
   StripeCheckoutPaymentDraft,
 } from "@/lib/stripe";
@@ -74,6 +75,7 @@ export type OrderCreationRequest = {
     stripeEventType: StripeCheckoutPaymentConfirmation["eventType"];
     checkoutMode: StripeCheckoutPaymentConfirmation["checkoutMode"];
   };
+  orderSnapshot: StripeCheckoutOrderSnapshot | null;
 };
 
 export type OrderCreationResult = {
@@ -125,6 +127,14 @@ export type OrderPersistenceBoundary = {
   acceptedOrderStatuses: ReadonlyArray<Extract<OrderStatus, "paid">>;
 };
 
+export type PersistConfirmedOrderResult = {
+  status: "created" | "ignored" | "configuration-error" | "already-persisted";
+  orderCreationRequest: OrderCreationRequest | null;
+  persistenceRequest: OrderPersistenceRequest | null;
+  persistedOrder: Order | null;
+  message: string;
+};
+
 export const orderSubmissionTodo =
   "TODO: Replace the placeholder submission contract with a real backend request once Stripe execution and order persistence are implemented.";
 
@@ -141,7 +151,7 @@ export const orderPersistenceTodo = {
   boundary:
     "TODO: Keep backend order persistence scoped to created paid orders only until database and ORM choices are validated.",
   repository:
-    "TODO: Hand the persistence request to a real OrderRepository implementation once database writes are implemented.",
+    "TODO: Extend persistence consumption only for confirmed paid Checkout orders until later order operations are defined.",
   createdOrder:
-    "TODO: Return a real persisted order shape only after repository-backed order creation exists.",
+    "TODO: Add further post-persistence side effects only after the persisted paid order handoff is validated.",
 } as const;

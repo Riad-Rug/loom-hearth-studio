@@ -1,4 +1,6 @@
 import type { PaymentStatus } from "@/types/domain/order";
+import type { OrderAddress } from "@/types/domain/order";
+import type { ProductVariant } from "@/types/domain/product";
 
 import type {
   StripeCheckoutConfirmationStatus,
@@ -33,12 +35,41 @@ export type StripeOrderPaymentInput = {
   taxUsd: number;
   totalUsd: number;
   currency: "USD";
+  shippingAddress: OrderAddress | null;
   lineItems: Array<{
     id: string;
+    productId: string;
+    productType: "rug" | "multiUnit";
     name: string;
+    slug: string;
     quantity: number;
     unitAmountUsd: number;
+    variant?: ProductVariant;
   }>;
+};
+
+export type StripeCheckoutOrderSnapshot = {
+  shippingAddress: OrderAddress;
+  items: Array<{
+    id: string;
+    productId: string;
+    productType: "rug" | "multiUnit";
+    name: string;
+    slug: string;
+    priceUsd: number;
+    quantity: number;
+    variant?: ProductVariant;
+  }>;
+  subtotalUsd: number;
+  shippingUsd: 0;
+  taxUsd: number;
+  totalUsd: number;
+  currency: "USD";
+};
+
+export type StripeCheckoutSessionMetadata = {
+  checkoutMode: StripeOrderPaymentInput["checkoutMode"];
+  orderSnapshot: string | null;
 };
 
 export type StripeCheckoutSessionRequest = {
@@ -52,9 +83,7 @@ export type StripeCheckoutSessionRequest = {
   taxUsd: StripeOrderPaymentInput["taxUsd"];
   totalUsd: StripeOrderPaymentInput["totalUsd"];
   lineItems: StripeOrderPaymentInput["lineItems"];
-  metadata: {
-    checkoutMode: StripeOrderPaymentInput["checkoutMode"];
-  };
+  metadata: StripeCheckoutSessionMetadata;
 };
 
 export type StripeCheckoutSessionResponse = {
@@ -105,9 +134,7 @@ export type StripeCheckoutWebhookSession = {
   customerDetails?: {
     email?: string;
   };
-  metadata: {
-    checkoutMode: StripeOrderPaymentInput["checkoutMode"];
-  };
+  metadata: Record<string, string | undefined>;
 };
 
 export type StripeCheckoutWebhookEvent = {
@@ -151,6 +178,7 @@ export type StripeCheckoutPaymentConfirmation = {
   customerEmail: string | null;
   checkoutMode: StripeOrderPaymentInput["checkoutMode"];
   orderReference: string | null;
+  orderSnapshot: StripeCheckoutOrderSnapshot | null;
 };
 
 export type StripeCheckoutPaymentConfirmationResult = {

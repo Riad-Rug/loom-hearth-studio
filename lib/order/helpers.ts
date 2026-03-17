@@ -3,7 +3,6 @@ import type {
   StripeCheckoutPaymentDraft,
   StripeOrderPaymentInput,
 } from "@/lib/stripe";
-import type { Order } from "@/types/domain";
 
 import type {
   OrderCreationBoundary,
@@ -138,6 +137,7 @@ export function createOrderCreationRequestFromStripeConfirmation(
       stripeEventType: confirmation.eventType,
       checkoutMode: confirmation.checkoutMode,
     },
+    orderSnapshot: confirmation.orderSnapshot,
   };
 
   return {
@@ -158,25 +158,8 @@ export function createOrderPersistenceBoundary(): OrderPersistenceBoundary {
 }
 
 export function createOrderPersistenceRequestFromOrderCreation(
-  input: {
-    orderCreationRequest: OrderCreationRequest | null;
-    orderSnapshot:
-      | Pick<
-          Order,
-          | "orderNumber"
-          | "items"
-          | "shippingAddress"
-          | "subtotalUsd"
-          | "shippingUsd"
-          | "taxUsd"
-          | "totalUsd"
-          | "currency"
-          | "placedAt"
-        >
-      | null;
-  },
+  orderCreationRequest: OrderCreationRequest | null,
 ): OrderPersistenceResult {
-  const { orderCreationRequest, orderSnapshot } = input;
   const boundary = createOrderPersistenceBoundary();
 
   if (!orderCreationRequest) {
@@ -188,7 +171,7 @@ export function createOrderPersistenceRequestFromOrderCreation(
     };
   }
 
-  if (!orderSnapshot) {
+  if (!orderCreationRequest.orderSnapshot) {
     return {
       status: "configuration-error",
       request: null,
@@ -201,22 +184,22 @@ export function createOrderPersistenceRequestFromOrderCreation(
   const request: OrderPersistenceRequest = {
     source: "order-creation",
     paymentProvider: "stripe",
-    orderNumber: orderSnapshot.orderNumber,
+    orderNumber: createLaunchOrderNumber(),
     checkoutMode: orderCreationRequest.checkoutMode,
     checkoutSessionId: orderCreationRequest.checkoutSessionId,
     paymentIntentId: orderCreationRequest.paymentIntentId,
     orderReference: orderCreationRequest.orderReference,
     customerEmail: orderCreationRequest.customerEmail,
-    shippingAddress: orderSnapshot.shippingAddress,
+    shippingAddress: orderCreationRequest.orderSnapshot.shippingAddress,
     status: boundary.acceptedOrderStatuses[0],
     paymentStatus: orderCreationRequest.paymentStatus,
-    items: orderSnapshot.items,
-    subtotalUsd: orderSnapshot.subtotalUsd,
-    shippingUsd: orderSnapshot.shippingUsd,
-    taxUsd: orderSnapshot.taxUsd,
-    totalUsd: orderSnapshot.totalUsd,
-    currency: orderSnapshot.currency,
-    placedAt: orderSnapshot.placedAt,
+    items: orderCreationRequest.orderSnapshot.items,
+    subtotalUsd: orderCreationRequest.orderSnapshot.subtotalUsd,
+    shippingUsd: orderCreationRequest.orderSnapshot.shippingUsd,
+    taxUsd: orderCreationRequest.orderSnapshot.taxUsd,
+    totalUsd: orderCreationRequest.orderSnapshot.totalUsd,
+    currency: orderCreationRequest.orderSnapshot.currency,
+    placedAt: new Date().toISOString(),
     metadata: orderCreationRequest.metadata,
   };
 
@@ -226,4 +209,11 @@ export function createOrderPersistenceRequestFromOrderCreation(
     persistedOrder: null,
     message: "Order creation handoff is ready to pass into backend order persistence.",
   };
+}
+
+function createLaunchOrderNumber() {
+  const timestamp = new Date().toISOString().replace(/\D/g, "").slice(0, 14);
+  const suffix = Math.random().toString(36).slice(2, 8).toUpperCase();
+
+  return `LH-${timestamp}-${suffix}`;
 }

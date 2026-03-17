@@ -148,6 +148,12 @@ function createStripeCheckoutSessionFormBody(input: StripeCheckoutSessionRequest
 
   formBody.set("metadata[checkout_mode]", input.metadata.checkoutMode);
 
+  if (input.metadata.orderSnapshot) {
+    createStripeMetadataChunks(input.metadata.orderSnapshot).forEach((value, index) => {
+      formBody.set(`metadata[order_snapshot_${index}]`, value);
+    });
+  }
+
   input.lineItems.forEach((item, index) => {
     formBody.set(`line_items[${index}][quantity]`, String(item.quantity));
     formBody.set(`line_items[${index}][price_data][currency]`, input.currency.toLowerCase());
@@ -159,6 +165,17 @@ function createStripeCheckoutSessionFormBody(input: StripeCheckoutSessionRequest
   });
 
   return formBody;
+}
+
+function createStripeMetadataChunks(value: string) {
+  const chunkSize = 400;
+  const chunks: string[] = [];
+
+  for (let index = 0; index < value.length; index += chunkSize) {
+    chunks.push(value.slice(index, index + chunkSize));
+  }
+
+  return chunks;
 }
 
 function parseStripeWebhookSignature(value: string): StripeWebhookSignature | null {

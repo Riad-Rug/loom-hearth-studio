@@ -12,6 +12,7 @@ import type { ProductVariant as DomainProductVariant } from "@/types/domain/prod
 export interface OrderRepository {
   create(input: OrderPersistenceRequest): Promise<Order>;
   getById(orderId: string): Promise<Order | null>;
+  getByCheckoutSessionId(checkoutSessionId: string): Promise<Order | null>;
   updateStatus(orderId: string, status: Order["status"]): Promise<Order>;
 }
 
@@ -39,6 +40,19 @@ export class PrismaOrderRepository implements OrderRepository {
     const order = await this.context.client.orderRecord.findUnique({
       where: {
         id: orderId,
+      },
+      include: {
+        lineItems: true,
+      },
+    });
+
+    return order ? mapOrderRecordToDomainOrder(order) : null;
+  }
+
+  async getByCheckoutSessionId(checkoutSessionId: string) {
+    const order = await this.context.client.orderRecord.findUnique({
+      where: {
+        checkoutSessionId,
       },
       include: {
         lineItems: true,

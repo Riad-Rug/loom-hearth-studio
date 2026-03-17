@@ -2,6 +2,7 @@ import type { PaymentStatus } from "@/types/domain/order";
 
 import { getStripeCheckoutConfirmationConfig, getStripeCheckoutWebhookConfig } from "@/lib/stripe/config";
 import type {
+  StripeCheckoutOrderSnapshot,
   StripeCheckoutPaymentConfirmation,
   StripeCheckoutPaymentConfirmationResult,
   StripeCheckoutWebhookReceipt,
@@ -139,6 +140,23 @@ export function createStripeCheckoutPaymentConfirmation(
     };
   }
 
+  const checkoutMode = getStripeCheckoutMetadataValue(
+    event.data.object.metadata,
+    "checkoutMode",
+    "checkout_mode",
+  );
+  const orderSnapshot = parseStripeCheckoutOrderSnapshot(
+    getStripeCheckoutOrderSnapshotMetadataValue(event.data.object.metadata),
+  );
+
+  if (checkoutMode !== "guest") {
+    return {
+      status: "ignored",
+      confirmation: null,
+      message: "Stripe Checkout webhook event did not include a supported launch checkout mode.",
+    };
+  }
+
   const confirmation: StripeCheckoutPaymentConfirmation = {
     provider: "stripe",
     mode: "checkout",
@@ -150,8 +168,9 @@ export function createStripeCheckoutPaymentConfirmation(
     paymentIntentId: event.data.object.paymentIntentId ?? null,
     customerEmail:
       event.data.object.customerDetails?.email ?? event.data.object.customerEmail ?? null,
-    checkoutMode: event.data.object.metadata.checkoutMode,
+    checkoutMode,
     orderReference: null,
+    orderSnapshot,
   };
 
   return {
@@ -244,7 +263,80 @@ export const stripeConfirmationTodo = {
   webhook:
     "TODO: Keep webhook signature verification limited to the Checkout boundary. Timestamp tolerance hardening and replay protections can be refined later.",
   confirmation:
-    "TODO: Hand confirmed Checkout payment status into the later order and email boundaries without implementing those side effects in this slice.",
+    "TODO: Keep confirmed Checkout payment mapping limited to the paid-order persistence and later email boundaries.",
   route:
-    "TODO: Keep the webhook route scaffold side-effect free until order creation, email, and fulfillment boundaries are implemented.",
+    "TODO: Keep the webhook route limited to Checkout confirmation plus paid-order persistence until later email and fulfillment side effects are implemented.",
 } as const;
+
+function getStripeCheckoutMetadataValue(
+  metadata: StripeCheckoutWebhookEvent["data"]["object"]["metadata"],
+  ...keys: string[]
+) {
+  for (const key of keys) {
+    const value = metadata[key];
+
+    if (typeof value === "string" && value.length > 0) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function parseStripeCheckoutOrderSnapshot(value: string | null): StripeCheckoutOrderSnapshot | null {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    const parsedValue = JSON.parse(value) as StripeCheckoutOrderSnapshot;
+
+    if (
+      !parsedValue ||
+      typeof parsedValue !== "object" ||
+      !parsedValue.shippingAddress ||
+      !Array.isArray(parsedValue.items) ||
+      typeof parsedValue.subtotalUsd !== "number" ||
+      typeof parsedValue.shippingUsd !== "number" ||
+      typeof parsedValue.taxUsd !== "number" ||
+      typeof parsedValue.totalUsd !== "number" ||
+      parsedValue.currency !== "USD"
+    ) {
+      return null;
+    }
+
+    return parsedValue;
+  } catch {
+    return null;
+  }
+}
+
+function getStripeCheckoutOrderSnapshotMetadataValue(
+  metadata: StripeCheckoutWebhookEvent["data"]["object"]["metadata"],
+) {
+  const directValue = getStripeCheckoutMetadataValue(
+    metadata,
+    "orderSnapshot",
+    "order_snapshot",
+  );
+
+  if (directValue) {
+    return directValue;
+  }
+
+  const chunkedSnapshot = Object.entries(metadata)
+    .flatMap(([key, value]) => {
+      if (!key.startsWith("order_snapshot_") || typeof value !== "string") {
+        return [];
+      }
+
+      const suffix = Number(key.replace("order_snapshot_", ""));
+
+      return Number.isInteger(suffix) ? [{ suffix, value }] : [];
+    })
+    .sort((left, right) => left.suffix - right.suffix)
+    .map((entry) => entry.value)
+    .join("");
+
+  return chunkedSnapshot.length ? chunkedSnapshot : null;
+}
