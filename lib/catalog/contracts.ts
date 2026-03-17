@@ -75,3 +75,36 @@ export type MultiUnitProductDetailPageViewModel = ProductDetailPageViewModelBase
 export type ProductDetailPageViewModel =
   | RugProductDetailPageViewModel
   | MultiUnitProductDetailPageViewModel;
+
+export type LaunchCheckoutValidationIssue = {
+  code:
+    | "unsupported-checkout-mode"
+    | "unsupported-currency"
+    | "unsupported-market"
+    | "missing-shipping-address"
+    | "empty-cart"
+    | "product-not-found"
+    | "product-type-mismatch"
+    | "slug-mismatch"
+    | "name-mismatch"
+    | "variant-not-found"
+    | "invalid-rug-quantity"
+    | "invalid-quantity"
+    | "insufficient-inventory"
+    | "price-mismatch"
+    | "invalid-shipping"
+    | "invalid-tax"
+    | "subtotal-mismatch"
+    | "total-mismatch"
+    | "customer-email-mismatch";
+  message: string;
+  lineItemId?: string;
+  productId?: string;
+};
+
+export type LaunchCheckoutValidationResult = {
+  status: "ready" | "invalid";
+  validatedRequest: import("@/lib/stripe/contracts").StripeCheckoutSessionRequest | null;
+  issues: LaunchCheckoutValidationIssue[];
+  message: string;
+};

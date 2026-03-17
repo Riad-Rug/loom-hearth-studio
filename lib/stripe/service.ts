@@ -37,6 +37,7 @@ export async function createStripeCheckoutSessionWithResult(
       status: "configuration-error",
       session: null,
       redirectTarget: null,
+      validationIssues: [],
       message: "Stripe secret key is missing for Checkout session creation.",
     };
   }
@@ -63,6 +64,7 @@ export async function createStripeCheckoutSessionWithResult(
       status: "api-error",
       session: null,
       redirectTarget: null,
+      validationIssues: [],
       message:
         data.error?.message ??
         "Stripe Checkout session creation failed at the execution boundary.",
@@ -83,6 +85,7 @@ export async function createStripeCheckoutSessionWithResult(
     status: "created",
     session,
     redirectTarget: session.url ?? null,
+    validationIssues: [],
     message: "Stripe Checkout session created.",
   };
 }

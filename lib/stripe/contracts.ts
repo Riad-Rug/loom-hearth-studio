@@ -1,3 +1,4 @@
+import type { LaunchCheckoutValidationIssue } from "@/lib/catalog/contracts";
 import type { PaymentStatus } from "@/types/domain/order";
 import type { OrderAddress } from "@/types/domain/order";
 import type { ProductVariant } from "@/types/domain/product";
@@ -112,9 +113,10 @@ export type StripeCheckoutExecutionBoundary = {
 };
 
 export type StripeCheckoutSessionCreationResult = {
-  status: "created" | "configuration-error" | "api-error";
+  status: "created" | "configuration-error" | "api-error" | "validation-error";
   session: StripeCheckoutSessionResponse | null;
   redirectTarget: string | null;
+  validationIssues: LaunchCheckoutValidationIssue[];
   message: string;
 };
 

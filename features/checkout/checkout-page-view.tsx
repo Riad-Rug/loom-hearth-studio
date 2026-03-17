@@ -253,7 +253,7 @@ type CheckoutStepRenderProps = {
   checkoutExecutionAttempt: {
     status: "idle" | "submitting" | "success" | "failure";
     result: {
-      status: "created" | "configuration-error" | "api-error";
+      status: "created" | "configuration-error" | "api-error" | "validation-error";
       session: {
         id: string;
         mode: "checkout";
@@ -262,6 +262,10 @@ type CheckoutStepRenderProps = {
         status: "placeholder" | "created";
       } | null;
       redirectTarget: string | null;
+      validationIssues: Array<{
+        code: string;
+        message: string;
+      }>;
       message: string;
     } | null;
     message: string | null;
