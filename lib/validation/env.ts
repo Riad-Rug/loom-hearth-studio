@@ -47,7 +47,12 @@ export const envDefinitions = {
   EMAIL_FROM: {
     scope: "server",
     required: false,
-    description: "Transactional email sender placeholder. Email provider is unresolved.",
+    description: "Transactional email sender address for Postmark delivery.",
+  },
+  POSTMARK_SERVER_TOKEN: {
+    scope: "server",
+    required: false,
+    description: "Postmark server token for transactional email delivery.",
   },
   NEWSLETTER_API_KEY: {
     scope: "server",
@@ -72,7 +77,7 @@ export const envGroups = {
     "CLOUDINARY_API_KEY",
     "CLOUDINARY_API_SECRET",
   ],
-  email: ["EMAIL_FROM"],
+  email: ["EMAIL_FROM", "POSTMARK_SERVER_TOKEN"],
   newsletter: ["NEWSLETTER_API_KEY"],
 } as const satisfies Record<string, readonly EnvKey[]>;
 

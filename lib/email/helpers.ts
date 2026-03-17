@@ -4,6 +4,7 @@ import type {
   OrderConfirmationEmailPayload,
   OrderConfirmationEmailPreview,
   OrderConfirmationEmailRequest,
+  PostmarkEmailPayload,
 } from "@/lib/email/contracts";
 import type {
   OrderCreationRequest,
@@ -58,7 +59,7 @@ export function createOrderConfirmationEmailPreview(
 export function createOrderConfirmationEmailBoundary(): OrderConfirmationEmailBoundary {
   return {
     source: "order-creation",
-    deliveryProvider: "unconfigured",
+    deliveryProvider: "postmark",
     status: "ready-placeholder",
     acceptedPaymentStatuses: ["paid"],
   };
@@ -114,5 +115,19 @@ export function createOrderConfirmationEmailRequestFromCreatedOrder(input: {
     status: "ready",
     request,
     message: "Created order is ready to hand off into confirmation email delivery.",
+  };
+}
+
+export function createPostmarkEmailPayload(input: {
+  fromEmail: string;
+  request: OrderConfirmationEmailRequest;
+}): PostmarkEmailPayload {
+  return {
+    From: input.fromEmail,
+    To: input.request.to,
+    Subject: input.request.message.subject,
+    HtmlBody: input.request.message.html,
+    TextBody: input.request.message.text,
+    MessageStream: "outbound",
   };
 }

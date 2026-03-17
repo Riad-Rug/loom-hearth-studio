@@ -1,5 +1,6 @@
 import type { Order } from "@/types/domain";
 import type { EmailMessage } from "@/lib/email/types";
+import type { EmailMissingConfig } from "@/lib/email/config";
 import type {
   OrderSubmissionPayload,
   OrderSubmissionPreview,
@@ -43,9 +44,27 @@ export type OrderConfirmationEmailDeliveryResult = {
 
 export type OrderConfirmationEmailBoundary = {
   source: "order-creation";
-  deliveryProvider: "unconfigured";
+  deliveryProvider: "postmark";
   status: "ready-placeholder";
   acceptedPaymentStatuses: ReadonlyArray<Extract<Order["paymentStatus"], "paid">>;
+};
+
+export type PostmarkEmailPayload = {
+  From: string;
+  To: string;
+  Subject: string;
+  HtmlBody: string;
+  TextBody?: string;
+  MessageStream: "outbound";
+};
+
+export type OrderConfirmationEmailSendResult = {
+  status: "sent" | "ignored" | "configuration-error" | "api-error";
+  request: OrderConfirmationEmailRequest | null;
+  provider: "postmark";
+  providerMessageId: string | null;
+  missingConfig: EmailMissingConfig[];
+  message: string;
 };
 
 export const orderConfirmationEmailTodo =
@@ -53,9 +72,9 @@ export const orderConfirmationEmailTodo =
 
 export const orderConfirmationEmailHandoffTodo = {
   boundary:
-    "TODO: Keep confirmation email delivery scoped to created paid orders only until provider wiring is implemented.",
+    "TODO: Keep confirmation email delivery scoped to created paid orders only.",
   provider:
-    "TODO: Hand the confirmation email request to a real provider service only after the email provider is selected.",
+    "TODO: Keep Postmark delivery limited to transactional confirmation email only until broader email requirements are validated.",
   sideEffects:
     "TODO: Keep confirmation email delivery separate from fulfillment and other post-order side effects.",
 } as const;
