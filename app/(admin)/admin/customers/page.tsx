@@ -1,5 +1,18 @@
+import { getAdminCustomersModuleData } from "@/lib/admin/customers";
 import { AdminModulePageView } from "@/features/admin/admin-module-page-view";
+import { adminModules } from "@/features/admin/admin-data";
 
-export default function AdminCustomersPage() {
-  return <AdminModulePageView moduleKey="customers" />;
+export default async function AdminCustomersPage() {
+  const customersModuleData = await getAdminCustomersModuleData();
+
+  return (
+    <AdminModulePageView
+      moduleKey="customers"
+      moduleOverride={{
+        ...adminModules.customers,
+        description: customersModuleData.description,
+        cards: customersModuleData.cards,
+      }}
+    />
+  );
 }

@@ -82,11 +82,11 @@ export const adminModules: Record<
     eyebrow: "Admin customers",
     title: "Customers module shell",
     description:
-      "Reserved for future customer management once auth and persistence are validated.",
+      "Persisted customer-related launch data can now be retrieved from order history. Customer mutations and auth-backed profile management remain out of scope.",
     cards: [
       {
         title: "Customer records",
-        body: "Placeholder customer list and profile area only.",
+        body: "Persisted customer summaries are retrieved through the admin customers boundary.",
       },
       {
         title: "Customer communication",
