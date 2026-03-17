@@ -32,6 +32,9 @@ export type OrderConfirmationEmailRequest = {
   totalUsd: Order["totalUsd"];
   currency: Order["currency"];
   itemCount: number;
+  itemSummaryLines: string[];
+  shippingAddressLabel: string;
+  placedAtLabel: string;
   paymentStatus: Extract<Order["paymentStatus"], "paid">;
   message: EmailMessage;
 };
@@ -68,7 +71,7 @@ export type OrderConfirmationEmailSendResult = {
 };
 
 export const orderConfirmationEmailTodo =
-  "TODO: Replace the placeholder order confirmation email payload with a provider-backed template once email delivery is implemented.";
+  "Confirmed paid orders now hand off into the Postmark delivery path with launch-ready confirmation email content. Checkout preview content remains schematic only.";
 
 export const orderConfirmationEmailHandoffTodo = {
   boundary:

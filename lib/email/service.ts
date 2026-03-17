@@ -85,7 +85,14 @@ export async function sendOrderConfirmationEmail(
 export async function sendOrderConfirmationEmailFromCreatedOrder(input: {
   order: Pick<
     Order,
-    "id" | "orderNumber" | "items" | "paymentStatus" | "shippingAddress" | "totalUsd" | "currency"
+    | "id"
+    | "orderNumber"
+    | "items"
+    | "paymentStatus"
+    | "shippingAddress"
+    | "totalUsd"
+    | "currency"
+    | "placedAt"
   >;
   orderCreationRequest: OrderCreationRequest | null;
 }) {

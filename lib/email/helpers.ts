@@ -68,12 +68,29 @@ export function createOrderConfirmationEmailBoundary(): OrderConfirmationEmailBo
 export function createOrderConfirmationEmailRequestFromCreatedOrder(input: {
   order: Pick<
     Order,
-    "id" | "orderNumber" | "items" | "paymentStatus" | "shippingAddress" | "totalUsd" | "currency"
+    | "id"
+    | "orderNumber"
+    | "items"
+    | "paymentStatus"
+    | "shippingAddress"
+    | "totalUsd"
+    | "currency"
+    | "placedAt"
   >;
   orderCreationRequest: OrderCreationRequest | null;
 }): OrderConfirmationEmailDeliveryResult {
   const boundary = createOrderConfirmationEmailBoundary();
   const { order, orderCreationRequest } = input;
+  const itemSummaryLines = order.items.map((item) =>
+    createEmailItemSummaryLine({
+      name: item.name,
+      quantity: item.quantity,
+      totalUsd: item.priceUsd * item.quantity,
+    }),
+  );
+  const shippingAddressLabel = createShippingAddressLabel(order.shippingAddress);
+  const placedAtLabel = formatOrderConfirmationPlacedAt(order.placedAt);
+  const itemCount = order.items.reduce((runningTotal, item) => runningTotal + item.quantity, 0);
 
   if (!orderCreationRequest) {
     return {
@@ -101,14 +118,22 @@ export function createOrderConfirmationEmailRequestFromCreatedOrder(input: {
     shippingLabel: null,
     totalUsd: order.totalUsd,
     currency: order.currency,
-    itemCount: order.items.reduce((runningTotal, item) => runningTotal + item.quantity, 0),
+    itemCount,
+    itemSummaryLines,
+    shippingAddressLabel,
+    placedAtLabel,
     paymentStatus: boundary.acceptedPaymentStatuses[0],
-    message: {
+    message: createLaunchOrderConfirmationMessage({
       to: order.shippingAddress.email,
-      subject: `Order confirmation ${order.orderNumber}`,
-      html: `<p>Placeholder order confirmation for ${order.shippingAddress.fullName}.</p>`,
-      text: `Placeholder order confirmation for ${order.shippingAddress.fullName}.`,
-    },
+      orderNumber: order.orderNumber,
+      customerName: order.shippingAddress.fullName,
+      itemCount,
+      itemSummaryLines,
+      shippingAddressLabel,
+      totalUsd: order.totalUsd,
+      currency: order.currency,
+      placedAtLabel,
+    }),
   };
 
   return {
@@ -130,4 +155,103 @@ export function createPostmarkEmailPayload(input: {
     TextBody: input.request.message.text,
     MessageStream: "outbound",
   };
+}
+
+function createLaunchOrderConfirmationMessage(input: {
+  to: string;
+  orderNumber: string;
+  customerName: string;
+  itemCount: number;
+  itemSummaryLines: string[];
+  shippingAddressLabel: string;
+  totalUsd: number;
+  currency: "USD";
+  placedAtLabel: string;
+}) {
+  const totalLabel = formatEmailMoney(input.totalUsd);
+  const itemListHtml = input.itemSummaryLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("");
+  const itemListText = input.itemSummaryLines.map((line) => `- ${line}`).join("\n");
+
+  return {
+    to: input.to,
+    subject: `Your Loom & Hearth Studio order ${input.orderNumber}`,
+    html: [
+      `<p>Hi ${escapeHtml(input.customerName)},</p>`,
+      `<p>Thank you for your order with Loom & Hearth Studio. We have received your payment and your order is now confirmed.</p>`,
+      `<p><strong>Order number:</strong> ${escapeHtml(input.orderNumber)}<br />`,
+      `<strong>${escapeHtml(input.placedAtLabel)}</strong><br />`,
+      `<strong>Total:</strong> ${escapeHtml(totalLabel)} ${escapeHtml(input.currency)}</p>`,
+      `<p><strong>Items (${input.itemCount})</strong></p>`,
+      `<ul>${itemListHtml}</ul>`,
+      `<p><strong>Shipping address</strong><br />${escapeHtml(input.shippingAddressLabel).replace(/\n/g, "<br />")}</p>`,
+      "<p>Launch shipping is limited to the United States and is fixed at $0.00.</p>",
+      "<p>If you need help with this order, reply to this email and we will assist you.</p>",
+      "<p>Thank you,<br />Loom & Hearth Studio</p>",
+    ].join(""),
+    text: [
+      `Hi ${input.customerName},`,
+      "",
+      "Thank you for your order with Loom & Hearth Studio. We have received your payment and your order is now confirmed.",
+      "",
+      `Order number: ${input.orderNumber}`,
+      input.placedAtLabel,
+      `Total: ${totalLabel} ${input.currency}`,
+      "",
+      `Items (${input.itemCount})`,
+      itemListText,
+      "",
+      "Shipping address",
+      input.shippingAddressLabel,
+      "",
+      "Launch shipping is limited to the United States and is fixed at $0.00.",
+      "If you need help with this order, reply to this email and we will assist you.",
+      "",
+      "Thank you,",
+      "Loom & Hearth Studio",
+    ].join("\n"),
+  };
+}
+
+function createEmailItemSummaryLine(input: {
+  name: string;
+  quantity: number;
+  totalUsd: number;
+}) {
+  return `${input.name} x${input.quantity} - ${formatEmailMoney(input.totalUsd)}`;
+}
+
+function createShippingAddressLabel(address: Order["shippingAddress"]) {
+  return [
+    address.fullName,
+    address.address1,
+    address.address2,
+    `${address.city}, ${address.state} ${address.postalCode}`,
+    address.country,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function formatOrderConfirmationPlacedAt(placedAt: string) {
+  return `Order received ${new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(placedAt))}`;
+}
+
+function formatEmailMoney(amountUsd: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amountUsd);
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
