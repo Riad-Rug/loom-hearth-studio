@@ -54,12 +54,17 @@ model OrderRecord {
 }
 
 model OrderLineItemRecord {
-  id            String      @id @default(cuid())
-  orderId       String
-  name          String
-  quantity      Int
-  unitAmountUsd Decimal?    @db.Decimal(10, 2)
-  order         OrderRecord @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id         String      @id @default(cuid())
+  orderId    String
+  cartItemId String
+  productId  String
+  productType String
+  name       String
+  slug       String
+  priceUsd   Decimal     @db.Decimal(10, 2)
+  quantity   Int
+  variant    Json?
+  order      OrderRecord @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
 }

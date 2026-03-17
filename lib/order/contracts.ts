@@ -1,4 +1,4 @@
-import type { OrderStatus, PaymentStatus } from "@/types/domain/order";
+import type { Order, OrderStatus, PaymentStatus } from "@/types/domain/order";
 
 import type { OrderDraft } from "@/features/checkout/checkout-provider";
 import type {
@@ -92,26 +92,29 @@ export type OrderCreationBoundary = {
 export type OrderPersistenceRequest = {
   source: "order-creation";
   paymentProvider: "stripe";
+  orderNumber: string;
   checkoutMode: OrderCreationRequest["checkoutMode"];
   checkoutSessionId: OrderCreationRequest["checkoutSessionId"];
   paymentIntentId: OrderCreationRequest["paymentIntentId"];
   orderReference: string | null;
   customerEmail: string | null;
+  shippingAddress: Order["shippingAddress"];
   status: Extract<OrderStatus, "paid">;
   paymentStatus: OrderCreationRequest["paymentStatus"];
-  lineItems: OrderCreationRequest["lineItems"];
-  subtotalUsd: number | null;
-  shippingUsd: 0 | null;
-  taxUsd: number | null;
-  totalUsd: number | null;
+  items: Order["items"];
+  subtotalUsd: number;
+  shippingUsd: 0;
+  taxUsd: number;
+  totalUsd: number;
   currency: "USD";
+  placedAt: string;
   metadata: OrderCreationRequest["metadata"];
 };
 
 export type OrderPersistenceResult = {
   status: "ready" | "ignored" | "configuration-error";
   request: OrderPersistenceRequest | null;
-  persistedOrder: null;
+  persistedOrder: Order | null;
   message: string;
 };
 

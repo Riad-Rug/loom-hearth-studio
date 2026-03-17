@@ -42,9 +42,14 @@ CREATE TABLE "OrderRecord" (
 CREATE TABLE "OrderLineItemRecord" (
   "id" TEXT NOT NULL,
   "orderId" TEXT NOT NULL,
+  "cartItemId" TEXT NOT NULL,
+  "productId" TEXT NOT NULL,
+  "productType" TEXT NOT NULL,
   "name" TEXT NOT NULL,
+  "slug" TEXT NOT NULL,
+  "priceUsd" DECIMAL(10,2) NOT NULL,
   "quantity" INTEGER NOT NULL,
-  "unitAmountUsd" DECIMAL(10,2),
+  "variant" JSONB,
 
   CONSTRAINT "OrderLineItemRecord_pkey" PRIMARY KEY ("id")
 );

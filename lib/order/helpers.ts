@@ -3,6 +3,7 @@ import type {
   StripeCheckoutPaymentDraft,
   StripeOrderPaymentInput,
 } from "@/lib/stripe";
+import type { Order } from "@/types/domain";
 
 import type {
   OrderCreationBoundary,
@@ -157,8 +158,25 @@ export function createOrderPersistenceBoundary(): OrderPersistenceBoundary {
 }
 
 export function createOrderPersistenceRequestFromOrderCreation(
-  orderCreationRequest: OrderCreationRequest | null,
+  input: {
+    orderCreationRequest: OrderCreationRequest | null;
+    orderSnapshot:
+      | Pick<
+          Order,
+          | "orderNumber"
+          | "items"
+          | "shippingAddress"
+          | "subtotalUsd"
+          | "shippingUsd"
+          | "taxUsd"
+          | "totalUsd"
+          | "currency"
+          | "placedAt"
+        >
+      | null;
+  },
 ): OrderPersistenceResult {
+  const { orderCreationRequest, orderSnapshot } = input;
   const boundary = createOrderPersistenceBoundary();
 
   if (!orderCreationRequest) {
@@ -170,22 +188,35 @@ export function createOrderPersistenceRequestFromOrderCreation(
     };
   }
 
+  if (!orderSnapshot) {
+    return {
+      status: "configuration-error",
+      request: null,
+      persistedOrder: null,
+      message:
+        "Order persistence requires a launch order snapshot with shipping address, items, and totals.",
+    };
+  }
+
   const request: OrderPersistenceRequest = {
     source: "order-creation",
     paymentProvider: "stripe",
+    orderNumber: orderSnapshot.orderNumber,
     checkoutMode: orderCreationRequest.checkoutMode,
     checkoutSessionId: orderCreationRequest.checkoutSessionId,
     paymentIntentId: orderCreationRequest.paymentIntentId,
     orderReference: orderCreationRequest.orderReference,
     customerEmail: orderCreationRequest.customerEmail,
+    shippingAddress: orderSnapshot.shippingAddress,
     status: boundary.acceptedOrderStatuses[0],
     paymentStatus: orderCreationRequest.paymentStatus,
-    lineItems: orderCreationRequest.lineItems,
-    subtotalUsd: null,
-    shippingUsd: null,
-    taxUsd: null,
-    totalUsd: null,
-    currency: "USD",
+    items: orderSnapshot.items,
+    subtotalUsd: orderSnapshot.subtotalUsd,
+    shippingUsd: orderSnapshot.shippingUsd,
+    taxUsd: orderSnapshot.taxUsd,
+    totalUsd: orderSnapshot.totalUsd,
+    currency: orderSnapshot.currency,
+    placedAt: orderSnapshot.placedAt,
     metadata: orderCreationRequest.metadata,
   };
 
