@@ -491,13 +491,39 @@ p {
   .site-header__mobile-menu {
     display: grid;
     gap: var(--space-3);
-    margin-top: var(--space-3);
-    padding: var(--space-4);
+    margin-top: 0;
+    padding: 0 var(--space-4);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 228, 0.96)),
       linear-gradient(135deg, rgba(184, 94, 59, 0.08), transparent);
+    box-shadow: var(--shadow-soft);
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-0.4rem);
+    pointer-events: none;
+    border-color: transparent;
+    box-shadow: none;
+    transition:
+      max-height 220ms ease,
+      opacity 180ms ease,
+      transform 220ms ease,
+      margin-top 220ms ease,
+      padding 220ms ease,
+      border-color 180ms ease,
+      box-shadow 220ms ease;
+  }
+
+  .site-header__mobile-menu--open {
+    margin-top: var(--space-3);
+    padding: var(--space-4);
+    max-height: 36rem;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    border-color: var(--color-border);
     box-shadow: var(--shadow-soft);
   }
 

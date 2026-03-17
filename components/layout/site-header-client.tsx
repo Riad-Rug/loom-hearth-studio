@@ -91,49 +91,53 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
             <CartDrawer />
           </div>
         </div>
-        {isMobileMenuOpen ? (
-          <div id="site-mobile-menu" className="site-header__mobile-menu">
-            <p className="site-header__mobile-tagline">{props.tagline}</p>
-            <nav aria-label="Mobile primary" className="site-header__mobile-nav">
-              {props.primaryNav.map((item) => (
+        <div
+          id="site-mobile-menu"
+          aria-hidden={!isMobileMenuOpen}
+          className={`site-header__mobile-menu ${
+            isMobileMenuOpen ? "site-header__mobile-menu--open" : ""
+          }`}
+        >
+          <p className="site-header__mobile-tagline">{props.tagline}</p>
+          <nav aria-label="Mobile primary" className="site-header__mobile-nav">
+            {props.primaryNav.map((item) => (
+              <Link
+                key={`mobile-${item.href}`}
+                className="site-header__mobile-link"
+                href={item.href as Route}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+            {props.isAuthenticated ? (
+              <Link
+                className="site-header__mobile-link"
+                href="/account"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Account
+              </Link>
+            ) : (
+              <>
                 <Link
-                  key={`mobile-${item.href}`}
                   className="site-header__mobile-link"
-                  href={item.href as Route}
+                  href="/account/login"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  {item.label}
+                  Login
                 </Link>
-              ))}
-              {props.isAuthenticated ? (
                 <Link
                   className="site-header__mobile-link"
-                  href="/account"
+                  href="/account/register"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Account
+                  Register
                 </Link>
-              ) : (
-                <>
-                  <Link
-                    className="site-header__mobile-link"
-                    href="/account/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    className="site-header__mobile-link"
-                    href="/account/register"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Register
-                  </Link>
-                </>
-              )}
-            </nav>
-          </div>
-        ) : null}
+              </>
+            )}
+          </nav>
+        </div>
       </Container>
     </header>
   );
