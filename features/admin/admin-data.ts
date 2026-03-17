@@ -66,7 +66,7 @@ export const adminModules: Record<
     eyebrow: "Admin orders",
     title: "Orders module shell",
     description:
-      "Persisted launch orders can now be retrieved here for visibility. Order mutations, fulfillment actions, and broader operations remain out of scope.",
+      "Persisted launch orders can now be retrieved here for visibility, and launch-safe status updates are supported. Fulfillment actions and broader operations remain out of scope.",
     cards: [
       {
         title: "Order list",
@@ -74,7 +74,7 @@ export const adminModules: Record<
       },
       {
         title: "Status handling",
-        body: "Reserved for paid, shipped, delivered, cancelled, and refunded state visibility.",
+        body: "Launch-safe persisted order status updates are available without adding broader workflow automation.",
       },
     ],
   },

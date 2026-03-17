@@ -1,15 +1,49 @@
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import type { Order } from "@/types/domain";
 
+export const adminOrderStatusOptions = [
+  "paid",
+  "processing",
+  "shipped",
+  "delivered",
+  "cancelled",
+  "refunded",
+] as const satisfies ReadonlyArray<Order["status"]>;
+
+export type AdminOrderStatusOption = (typeof adminOrderStatusOptions)[number];
+
 export type AdminOrdersModuleCardData = {
   title: string;
   body: string;
   lines?: string[];
 };
 
+export type AdminOrderManagementItem = {
+  id: string;
+  orderNumber: string;
+  customerEmail: string;
+  status: Order["status"];
+  statusLabel: string;
+  totalLabel: string;
+  placedAtLabel: string;
+  allowedStatuses: AdminOrderStatusOption[];
+};
+
 export type AdminOrdersModuleData = {
   description: string;
   cards: AdminOrdersModuleCardData[];
+  items: AdminOrderManagementItem[];
+};
+
+export type AdminOrderStatusUpdateRequest = {
+  orderId: string;
+  status: AdminOrderStatusOption;
+};
+
+export type AdminOrderStatusUpdateResult = {
+  status: "updated" | "ignored" | "invalid-request";
+  order: Order | null;
+  message: string;
 };
 
 export async function getAdminOrdersModuleData(): Promise<AdminOrdersModuleData> {
@@ -17,7 +51,7 @@ export async function getAdminOrdersModuleData(): Promise<AdminOrdersModuleData>
 
   return {
     description:
-      "Persisted launch orders now load into the admin orders surface. Order mutations and fulfillment actions remain out of scope.",
+      "Persisted launch orders now load into the admin orders surface, and launch-safe status updates are available. Fulfillment actions and broader automations remain out of scope.",
     cards: [
       {
         title: "Order list",
@@ -36,6 +70,59 @@ export async function getAdminOrdersModuleData(): Promise<AdminOrdersModuleData>
         lines: createRecentAdminOrderLines(orders),
       },
     ],
+    items: orders.map(createAdminOrderManagementItem),
+  };
+}
+
+export async function updateAdminOrderStatus(
+  input: AdminOrderStatusUpdateRequest,
+): Promise<AdminOrderStatusUpdateResult> {
+  if (!input.orderId || !adminOrderStatusOptions.includes(input.status)) {
+    return {
+      status: "invalid-request",
+      order: null,
+      message: "Admin order status update request is invalid.",
+    };
+  }
+
+  const repository = createOrderRepository();
+  const order = await repository.getById(input.orderId);
+
+  if (!order) {
+    return {
+      status: "invalid-request",
+      order: null,
+      message: "Persisted order was not found for admin status update.",
+    };
+  }
+
+  if (order.status === input.status) {
+    return {
+      status: "ignored",
+      order,
+      message: "Persisted order already has the requested admin status.",
+    };
+  }
+
+  const updatedOrder = await repository.updateStatus(input.orderId, input.status);
+
+  return {
+    status: "updated",
+    order: updatedOrder,
+    message: "Persisted order status updated through the admin orders boundary.",
+  };
+}
+
+function createAdminOrderManagementItem(order: Order): AdminOrderManagementItem {
+  return {
+    id: order.id,
+    orderNumber: order.orderNumber,
+    customerEmail: order.shippingAddress.email,
+    status: order.status,
+    statusLabel: formatOrderStatus(order.status),
+    totalLabel: formatUsd(order.totalUsd),
+    placedAtLabel: formatPlacedAt(order.placedAt),
+    allowedStatuses: [...adminOrderStatusOptions],
   };
 }
 
