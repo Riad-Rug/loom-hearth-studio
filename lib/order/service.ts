@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import type { OrderRepository } from "@/lib/db/repositories/order-repository";
+import { sendOrderConfirmationEmailFromCreatedOrder } from "@/lib/email";
 import type { PersistConfirmedOrderResult } from "@/lib/order/contracts";
 import {
   createOrderCreationRequestFromStripeConfirmation,
@@ -29,6 +30,7 @@ export async function persistConfirmedStripeCheckoutOrder(input: {
       orderCreationRequest: orderCreationResult.request,
       persistenceRequest: null,
       persistedOrder: null,
+      emailDeliveryResult: null,
       message: orderCreationResult.message,
     };
   }
@@ -43,6 +45,7 @@ export async function persistConfirmedStripeCheckoutOrder(input: {
       orderCreationRequest: orderCreationResult.request,
       persistenceRequest: null,
       persistedOrder: existingOrder,
+      emailDeliveryResult: null,
       message: "Stripe Checkout session was already persisted as a launch order.",
     };
   }
@@ -60,19 +63,28 @@ export async function persistConfirmedStripeCheckoutOrder(input: {
       orderCreationRequest: orderCreationResult.request,
       persistenceRequest: persistenceResult.request,
       persistedOrder: persistenceResult.persistedOrder,
+      emailDeliveryResult: null,
       message: persistenceResult.message,
     };
   }
 
   try {
     const persistedOrder = await repository.create(persistenceResult.request);
+    const emailDeliveryResult = await sendOrderConfirmationEmailFromCreatedOrder({
+      order: persistedOrder,
+      orderCreationRequest: orderCreationResult.request,
+    });
 
     return {
       status: "created",
       orderCreationRequest: orderCreationResult.request,
       persistenceRequest: persistenceResult.request,
       persistedOrder,
-      message: "Confirmed paid Stripe Checkout event persisted a real launch order.",
+      emailDeliveryResult,
+      message:
+        emailDeliveryResult.status === "sent"
+          ? "Confirmed paid Stripe Checkout event persisted a real launch order and triggered the confirmation email."
+          : "Confirmed paid Stripe Checkout event persisted a real launch order, but confirmation email delivery did not complete.",
     };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -86,6 +98,7 @@ export async function persistConfirmedStripeCheckoutOrder(input: {
           orderCreationRequest: orderCreationResult.request,
           persistenceRequest: persistenceResult.request,
           persistedOrder: duplicatedOrder,
+          emailDeliveryResult: null,
           message: "Stripe Checkout session was already persisted as a launch order.",
         };
       }
