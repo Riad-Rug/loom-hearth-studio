@@ -5,7 +5,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildMetadata({
   title: "Shipping Policy",
-  description: "Shipping policy placeholder page for Loom & Hearth Studio.",
+  description: "Shipping policy for the Loom & Hearth Studio United States launch.",
   path: "/shipping-policy",
 });
 

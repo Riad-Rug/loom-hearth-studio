@@ -5,7 +5,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildMetadata({
   title: "Privacy Policy",
-  description: "Privacy policy placeholder page for Loom & Hearth Studio.",
+  description: "Privacy policy for the current Loom & Hearth Studio launch stack.",
   path: "/privacy-policy",
 });
 
