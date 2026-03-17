@@ -1,18 +1,16 @@
 import { getAdminOrdersModuleData } from "@/lib/admin/orders";
-import { AdminModulePageView } from "@/features/admin/admin-module-page-view";
-import { adminModules } from "@/features/admin/admin-data";
+import { AdminOrdersModuleView } from "@/features/admin/admin-orders-module-view";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminOrdersPage() {
   const ordersModuleData = await getAdminOrdersModuleData();
 
   return (
-    <AdminModulePageView
-      moduleKey="orders"
-      moduleOverride={{
-        ...adminModules.orders,
-        description: ordersModuleData.description,
-        cards: ordersModuleData.cards,
-      }}
+    <AdminOrdersModuleView
+      description={ordersModuleData.description}
+      cards={ordersModuleData.cards}
+      items={ordersModuleData.items}
     />
   );
 }

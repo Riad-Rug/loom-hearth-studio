@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { persistConfirmedStripeCheckoutOrder } from "@/lib/order";
+import { persistConfirmedStripeCheckoutOrder } from "@/lib/order/service";
 import {
   createStripeCheckoutWebhookReceipt,
   getStripeWebhookSignatureHeader,

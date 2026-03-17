@@ -16,7 +16,7 @@ import {
   accountDashboardDataTodo,
   type AccountDashboardData,
   type AccountProfileSummaryView,
-} from "@/lib/account/dashboard";
+} from "@/lib/account/dashboard-shared";
 import { createAccountDashboardRouteViewModel } from "@/lib/account/dashboard-route";
 import {
   accountProfileUpdateTodo,

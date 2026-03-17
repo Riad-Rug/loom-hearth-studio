@@ -1,82 +1,11 @@
 import type { AuthenticatedUser } from "@/lib/auth";
+import type {
+  AccountDashboardData,
+  AccountOrderHistoryData,
+} from "@/lib/account/dashboard-shared";
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import type { Order } from "@/types/domain";
 import type { OrderStatus } from "@/types/domain/order";
-
-export type AccountDashboardOverview = {
-  greeting: string;
-  statusLabel: string;
-  accountEmail: string;
-};
-
-export type AccountOrderHistorySummary = {
-  statusLabel: string;
-  orderCountLabel: string;
-  latestOrderLabel: string;
-};
-
-export type AccountOrderHistoryItem = {
-  id: string;
-  orderNumber: string;
-  status: OrderStatus;
-  statusLabel: string;
-  placedAtLabel: string;
-  totalLabel: string;
-};
-
-export type AccountOrderHistoryData = AccountOrderHistorySummary & {
-  items: AccountOrderHistoryItem[];
-};
-
-export type AccountProfileSummary = {
-  fullName: string;
-  email: string;
-  phone: string | null;
-};
-
-export type AccountProfileContactRow = {
-  id: "email" | "phone";
-  label: string;
-  value: string;
-  tone: "default" | "muted";
-};
-
-export type AccountProfileSummaryView = {
-  fullNameLabel: string;
-  contactRows: AccountProfileContactRow[];
-};
-
-export type AccountDashboardData = {
-  overview: AccountDashboardOverview;
-  orders: AccountOrderHistoryData;
-  profile: AccountProfileSummary;
-};
-
-export function createAccountProfileSummaryView(
-  profile: AccountProfileSummary | null,
-): AccountProfileSummaryView | null {
-  if (!profile) {
-    return null;
-  }
-
-  return {
-    fullNameLabel: profile.fullName,
-    contactRows: [
-      {
-        id: "email",
-        label: "Email",
-        value: profile.email,
-        tone: "default",
-      },
-      {
-        id: "phone",
-        label: "Phone",
-        value: profile.phone ?? "Phone not available in placeholder data",
-        tone: profile.phone ? "default" : "muted",
-      },
-    ],
-  };
-}
 
 export async function getAccountDashboardData(
   user: AuthenticatedUser | null,
@@ -101,9 +30,6 @@ export async function getAccountDashboardData(
     },
   };
 }
-
-export const accountDashboardDataTodo =
-  "TODO: Keep account order history sourced from persisted orders while authentication, profile persistence, and broader account data remain placeholder-only.";
 
 function createAccountOrderHistoryData(orders: Order[]): AccountOrderHistoryData {
   const items = orders.map((order) => ({

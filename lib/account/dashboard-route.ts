@@ -3,7 +3,7 @@ import type { SignOutRequestState } from "@/lib/auth";
 import type {
   AccountDashboardData,
   AccountProfileSummaryView,
-} from "@/lib/account/dashboard";
+} from "@/lib/account/dashboard-shared";
 import type { AccountProfileUpdateState } from "@/lib/account/profile-update";
 
 export type AccountDashboardSectionView = {

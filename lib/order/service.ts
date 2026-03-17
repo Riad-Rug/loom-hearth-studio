@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import type { OrderRepository } from "@/lib/db/repositories/order-repository";
-import { sendOrderConfirmationEmailFromCreatedOrder } from "@/lib/email";
+import { sendOrderConfirmationEmailFromCreatedOrder } from "@/lib/email/service";
 import type { PersistConfirmedOrderResult } from "@/lib/order/contracts";
 import {
   createOrderCreationRequestFromStripeConfirmation,
