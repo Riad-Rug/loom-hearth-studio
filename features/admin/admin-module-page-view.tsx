@@ -5,6 +5,7 @@ import {
   createAdminModuleRouteViewModel,
   getAdminAccessDecision,
 } from "@/lib/auth";
+import { requireAuthenticatedAdminUser } from "@/lib/auth/service";
 
 import styles from "./admin.module.css";
 
@@ -18,14 +19,14 @@ type AdminModulePageViewProps = {
   };
 };
 
-export function AdminModulePageView({ moduleKey, moduleOverride }: AdminModulePageViewProps) {
+export async function AdminModulePageView({
+  moduleKey,
+  moduleOverride,
+}: AdminModulePageViewProps) {
   const module = moduleOverride ?? adminModules[moduleKey];
+  const authenticatedUser = await requireAuthenticatedAdminUser();
   const accessDecision = getAdminAccessDecision({
-    user: {
-      id: "admin-session-placeholder",
-      email: "admin@example.com",
-      role: "admin",
-    },
+    user: authenticatedUser,
     moduleKey,
   });
   const gatePresentation = createAdminGatePresentation(accessDecision);

@@ -10,7 +10,7 @@ export function createAuthSessionState(
   surface: "account" | "admin",
 ): AuthSessionState {
   return {
-    status: user ? "placeholder-authenticated" : "placeholder-unauthenticated",
+    status: user ? "authenticated" : "unauthenticated",
     user,
     surface,
   };

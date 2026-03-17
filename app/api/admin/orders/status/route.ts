@@ -5,8 +5,33 @@ import {
   type AdminOrderStatusUpdateRequest,
   updateAdminOrderStatus,
 } from "@/lib/admin/orders";
+import { requireAdminRoleForMutation } from "@/lib/auth/service";
 
 export async function POST(request: Request) {
+  const access = await requireAdminRoleForMutation();
+
+  if (access.status === "requires-auth") {
+    return NextResponse.json(
+      {
+        status: "requires-auth",
+        order: null,
+        message: "Admin authentication is required before order status can be updated.",
+      },
+      { status: 401 },
+    );
+  }
+
+  if (access.status === "requires-role") {
+    return NextResponse.json(
+      {
+        status: "requires-role",
+        order: null,
+        message: "An admin role is required before order status can be updated.",
+      },
+      { status: 403 },
+    );
+  }
+
   const payload = (await request.json()) as Partial<AdminOrderStatusUpdateRequest>;
   const requestedStatus = payload.status;
 

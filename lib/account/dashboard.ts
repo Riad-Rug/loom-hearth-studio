@@ -19,7 +19,7 @@ export async function getAccountDashboardData(
   return {
     overview: {
       greeting: "Welcome back",
-      statusLabel: "Placeholder signed-in account with persisted order history",
+      statusLabel: "Signed-in account with persisted order history",
       accountEmail: user.email,
     },
     orders: createAccountOrderHistoryData(orders),

@@ -15,4 +15,4 @@ export const authConfig = {
 } as const;
 
 export const authConfigTodo =
-  "TODO: Select the auth provider before wiring login persistence, session storage, and route protection.";
+  "Launch auth is limited to email/password credentials, guest checkout remains allowed, and protected account/admin routes use server-side session checks.";

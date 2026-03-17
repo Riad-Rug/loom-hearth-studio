@@ -20,18 +20,17 @@ export function createPlaceholderSignOutRequestState(input: {
   if (!input.isAuthenticated) {
     return {
       status: "failure",
-      message: "No placeholder signed-in account session is available to sign out.",
+      message: "No signed-in account session is available to sign out.",
       redirectTarget: "/account/login",
     };
   }
 
   return {
     status: "success",
-    message:
-      "Placeholder sign-out request created. Real session clearing and redirect execution are not implemented.",
+    message: "Signed out.",
     redirectTarget: "/account/login",
   };
 }
 
 export const signOutRequestTodo =
-  "TODO: Connect sign-out requests to the real auth provider and session clearing flow once auth is implemented.";
+  "Launch sign-out clears the current credentials session. Broader account management remains out of scope.";

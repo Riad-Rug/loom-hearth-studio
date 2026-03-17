@@ -7,7 +7,7 @@ export type AuthenticatedUser = {
 };
 
 export type AuthSessionState = {
-  status: "placeholder-authenticated" | "placeholder-unauthenticated";
+  status: "authenticated" | "unauthenticated";
   user: AuthenticatedUser | null;
   surface: "account" | "admin";
 };
@@ -28,4 +28,4 @@ export interface AuthService {
 }
 
 export const authServiceTodo =
-  "TODO: Select and implement the auth provider. Customer auth and admin role handling depend on that decision.";
+  "TODO: Keep launch auth limited to email/password credentials plus protected account and admin sessions until broader auth requirements are validated.";

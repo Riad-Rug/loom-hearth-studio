@@ -3,14 +3,15 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { useState } from "react";
+import { signOut } from "next-auth/react";
 
 import { accountDashboardSections } from "@/features/account/account-data";
 import {
   accountGuardTodo,
   createInitialSignOutRequestState,
-  createPlaceholderSignOutRequestState,
   getAccountAccessDecision,
   signOutRequestTodo,
+  type AuthenticatedUser,
 } from "@/lib/auth";
 import {
   accountDashboardDataTodo,
@@ -27,15 +28,12 @@ import {
 import styles from "./account.module.css";
 
 export function AccountDashboardPageView(props: {
+  authenticatedUser: AuthenticatedUser;
   dashboardData: AccountDashboardData | null;
   profileSummaryView: AccountProfileSummaryView | null;
 }) {
-  const placeholderUser = {
-    id: "account-session-placeholder",
-    email: "customer@example.com",
-  };
   const accessDecision = getAccountAccessDecision({
-    user: placeholderUser,
+    user: props.authenticatedUser,
     routeKind: "dashboard",
   });
   const [signOutState, setSignOutState] = useState(createInitialSignOutRequestState());
@@ -59,20 +57,33 @@ export function AccountDashboardPageView(props: {
     accountProfileUpdateTodo,
   });
 
-  function handleSignOutRequest() {
+  async function handleSignOutRequest() {
     setSignOutState({
       status: "submitting",
       message: null,
       redirectTarget: null,
     });
 
-    window.setTimeout(() => {
-      setSignOutState(
-        createPlaceholderSignOutRequestState({
-          isAuthenticated: accessDecision.sessionSummary.isAuthenticated,
-        }),
-      );
-    }, 350);
+    try {
+      await signOut({
+        redirect: false,
+        callbackUrl: "/account/login",
+      });
+
+      setSignOutState({
+        status: "success",
+        message: "Signed out.",
+        redirectTarget: "/account/login",
+      });
+
+      window.location.assign("/account/login");
+    } catch {
+      setSignOutState({
+        status: "failure",
+        message: "Sign-out failed before the session could be cleared.",
+        redirectTarget: null,
+      });
+    }
   }
 
   function handleProfileUpdateRequest() {

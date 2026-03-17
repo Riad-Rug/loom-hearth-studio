@@ -10,22 +10,20 @@ import {
   adminGuardTodo,
   createAdminShellRouteViewModel,
   getAdminAccessDecision,
+  type AuthenticatedUser,
 } from "@/lib/auth";
 
 import styles from "./admin.module.css";
 
 type AdminShellProps = {
   children: ReactNode;
+  authenticatedUser: AuthenticatedUser;
 };
 
-export function AdminShell({ children }: AdminShellProps) {
+export function AdminShell({ children, authenticatedUser }: AdminShellProps) {
   const pathname = usePathname();
   const accessDecision = getAdminAccessDecision({
-    user: {
-      id: "admin-session-placeholder",
-      email: "admin@example.com",
-      role: "admin",
-    },
+    user: authenticatedUser,
     moduleKey: "dashboard",
   });
   const routeViewModel = createAdminShellRouteViewModel({

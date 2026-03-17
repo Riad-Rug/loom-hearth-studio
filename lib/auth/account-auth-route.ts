@@ -89,7 +89,7 @@ export function createAccountAuthRouteViewModel(input: {
     guestRoute: {
       title: "Guest-only route",
       body:
-        "These auth routes remain available to signed-out customers only at the boundary level. Placeholder signed-in customers would be redirected to `/account` once real auth exists.",
+        "These auth routes remain available to signed-out customers only. Signed-in customers are redirected to `/account`.",
       redirectTargetLine: `Boundary redirect target: ${input.accessDecision.redirectTarget}`,
     },
     requestPresentation,

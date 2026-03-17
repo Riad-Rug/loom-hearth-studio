@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 
 import {
@@ -110,12 +111,28 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
       message: null,
     });
 
-    window.setTimeout(() => {
+    window.setTimeout(async () => {
       if (!payload) {
         setLoginState({
           status: "failure",
           payload: null,
-          message: "Enter a valid email address and password to create the placeholder login request.",
+          message: "Enter a valid email address and password before signing in.",
+        });
+        return;
+      }
+
+      const result = await signIn("credentials", {
+        email: payload.email,
+        password: payload.password,
+        redirect: false,
+        callbackUrl: "/account",
+      });
+
+      if (result?.error) {
+        setLoginState({
+          status: "failure",
+          payload,
+          message: "The email or password was not accepted.",
         });
         return;
       }
@@ -123,9 +140,10 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
       setLoginState({
         status: "success",
         payload,
-        message:
-          "Placeholder login request created. Real session creation and persistence are not implemented.",
+        message: "Signed in.",
       });
+
+      window.location.assign(result?.url ?? "/account");
     }, 350);
   }
 
@@ -143,23 +161,52 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
       message: null,
     });
 
-    window.setTimeout(() => {
+    window.setTimeout(async () => {
       if (!payload) {
         setRegisterState({
           status: "failure",
           payload: null,
           message:
-            "Complete first name, last name, email, and password to create the placeholder registration request.",
+            "Complete first name, last name, email, and password before creating an account.",
         });
         return;
       }
 
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const result = (await response.json()) as {
+        status: "created" | "email-taken" | "invalid-input";
+        message: string;
+      };
+
+      if (!response.ok || result.status !== "created") {
+        setRegisterState({
+          status: "failure",
+          payload,
+          message: result.message,
+        });
+        return;
+      }
+
+      const signInResult = await signIn("credentials", {
+        email: payload.email,
+        password: payload.password,
+        redirect: false,
+        callbackUrl: "/account",
+      });
+
       setRegisterState({
         status: "success",
         payload,
-        message:
-          "Placeholder registration request created. Real account creation is not implemented.",
+        message: "Account created.",
       });
+
+      window.location.assign(signInResult?.url ?? "/account");
     }, 350);
   }
 

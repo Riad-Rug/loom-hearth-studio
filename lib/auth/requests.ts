@@ -65,7 +65,7 @@ export function createRegisterRequestPayload(input: {
 }
 
 export const loginRequestTodo =
-  "TODO: Connect login requests to the real auth provider and session creation flow once auth is implemented.";
+  "Launch login uses Auth.js credentials and server-side session checks.";
 
 export const registerRequestTodo =
-  "TODO: Connect registration requests to the real auth provider once account creation is implemented.";
+  "Launch registration creates a credentials account and signs the customer into the account surface.";

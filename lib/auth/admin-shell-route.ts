@@ -51,7 +51,7 @@ export function createAdminShellRouteViewModel(input: {
       eyebrow: "Admin",
       title: "Back office shell",
       body:
-        "Placeholder-only admin shell. Route protection and role enforcement are not implemented.",
+        "Protected admin shell with server-side session checks and persisted admin roles.",
     },
     session: {
       title: "Session boundary",
@@ -74,7 +74,7 @@ export function createAdminShellRouteViewModel(input: {
     gate: {
       title: "Admin access placeholder gate",
       body:
-        "Admin routes require a placeholder-authenticated admin surface session with a supported PRD role.",
+        "Admin routes require an authenticated admin surface session with a supported persisted role.",
       redirectTargetLine: `Boundary redirect target: ${input.accessDecision.redirectTarget}`,
     },
   };

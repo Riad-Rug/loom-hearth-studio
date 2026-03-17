@@ -63,7 +63,7 @@ export function createAccountDashboardRouteViewModel(input: {
     hero: {
       title: "Customer dashboard shell",
       body:
-        "This dashboard now reads persisted launch order history for the signed-in account email while authentication and profile management remain placeholder-only.",
+        "This dashboard reads persisted launch order history for the signed-in account email while profile persistence remains out of scope.",
       emptyStateTitle: input.dashboardData?.overview.greeting ?? "No live account data yet",
       emptyStateLines: input.dashboardData
         ? [
@@ -75,7 +75,7 @@ export function createAccountDashboardRouteViewModel(input: {
           ],
     },
     session: {
-      title: "Account auth/session placeholder",
+      title: "Account auth/session",
       statusLine: `Status: ${input.accessDecision.sessionSummary.status}. Authenticated: ${
         input.accessDecision.sessionSummary.isAuthenticated ? "yes" : "no"
       }.`,
@@ -89,12 +89,12 @@ export function createAccountDashboardRouteViewModel(input: {
       ],
     },
     gate: {
-      title: "Account gate placeholder",
-      body: "This route is reserved for placeholder signed-in customer sessions only.",
+      title: "Account gate",
+      body: "This route is reserved for authenticated customer sessions only.",
       redirectTargetLine: `Boundary redirect target: ${input.accessDecision.redirectTarget}`,
     },
     signOut: {
-      actionLabel: "Sign out UI placeholder",
+      actionLabel: "Sign out",
       stateLine: `Sign-out request state: ${input.signOutState.status}`,
       message: input.signOutState.message,
       redirectTargetLine: input.signOutState.redirectTarget
