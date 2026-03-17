@@ -3,8 +3,11 @@ import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { siteConfig } from "@/config/site";
 import { CartDrawer } from "@/features/cart/cart-drawer";
+import { getCurrentAuthenticatedUser } from "@/lib/auth/service";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const authenticatedUser = await getCurrentAuthenticatedUser();
+
   return (
     <header className="site-header">
       <div className="site-header__announcement">
@@ -28,6 +31,22 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="site-header__actions">
+            <div className="site-header__account-links">
+              {authenticatedUser ? (
+                <Link className="site-header__link" href="/account">
+                  Account
+                </Link>
+              ) : (
+                <>
+                  <Link className="site-header__link" href="/account/login">
+                    Login
+                  </Link>
+                  <Link className="site-header__link" href="/account/register">
+                    Register
+                  </Link>
+                </>
+              )}
+            </div>
             <CartDrawer />
           </div>
         </div>

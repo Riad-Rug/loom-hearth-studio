@@ -247,6 +247,13 @@ p {
   gap: var(--space-2);
 }
 
+.site-header__account-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .site-header__link,
 .site-footer__link {
   transition:
@@ -415,6 +422,11 @@ p {
   }
 
   .site-header__actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .site-header__account-links {
     width: 100%;
   }
 
