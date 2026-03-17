@@ -20,4 +20,4 @@ export interface EmailService {
 }
 
 export const emailServiceTodo =
-  "TODO: Keep Postmark transactional email delivery scoped to order confirmation only until password reset and other flows are defined.";
+  "Postmark transactional email delivery is implemented for order confirmation and password reset. Broader marketing and lifecycle email flows remain out of scope.";

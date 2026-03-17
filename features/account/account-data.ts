@@ -5,22 +5,22 @@ export const accountAuthContent = {
     eyebrow: "Account login",
     title: "Sign in to your account",
     body:
-      "This is a guest-facing account shell only. Authentication is not implemented yet, and provider selection remains unresolved.",
-    primaryLabel: "Sign in UI placeholder",
+      "Sign in with your Loom & Hearth Studio email and password. Guest checkout remains available if you do not need an account.",
+    primaryLabel: "Sign in",
   },
   register: {
     eyebrow: "Account registration",
     title: "Create an account",
     body:
-      "The PRD includes customer account pages alongside guest checkout. This registration screen is placeholder UI only and does not create a real account.",
-    primaryLabel: "Create account UI placeholder",
+      "Create a Loom & Hearth Studio account to review your order history and manage future sign-ins, while keeping guest checkout available.",
+    primaryLabel: "Create account",
   },
   "forgot-password": {
     eyebrow: "Password reset",
     title: "Reset your password",
     body:
-      "This password reset screen is presentation only. No email delivery, token flow, or auth integration is implemented in this slice.",
-    primaryLabel: "Send reset link UI placeholder",
+      "Request a password reset link or set a new password from a valid reset email, using the existing account auth boundary.",
+    primaryLabel: "Send reset link",
   },
 } as const;
 

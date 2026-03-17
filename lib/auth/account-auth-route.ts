@@ -1,6 +1,10 @@
 import type { AccountAuthMode } from "@/features/account/account-data";
 import type { AccountAccessDecision } from "@/lib/auth/guards";
-import type { ForgotPasswordRequestState } from "@/lib/auth/password-reset";
+import type {
+  ForgotPasswordRequestState,
+  PasswordResetTokenView,
+  ResetPasswordState,
+} from "@/lib/auth/password-reset";
 import type { LoginRequestState, RegisterRequestState } from "@/lib/auth/requests";
 
 export type AccountAuthRequestPresentation = {
@@ -30,6 +34,8 @@ export function createAccountAuthRouteViewModel(input: {
   mode: AccountAuthMode;
   accessDecision: AccountAccessDecision;
   forgotPasswordState: ForgotPasswordRequestState;
+  passwordResetTokenView: PasswordResetTokenView;
+  resetPasswordState: ResetPasswordState;
   loginState: LoginRequestState;
   registerState: RegisterRequestState;
   accountGuardTodo: string;
@@ -41,18 +47,30 @@ export function createAccountAuthRouteViewModel(input: {
   const requestPresentation =
     input.mode === "forgot-password"
       ? {
-          title: "Forgot-password boundary",
-          stateLine: `Request state: ${input.forgotPasswordState.status}`,
-          message: input.forgotPasswordState.message,
+          title:
+            input.passwordResetTokenView.status === "valid"
+              ? "Reset-password boundary"
+              : "Forgot-password boundary",
+          stateLine:
+            input.passwordResetTokenView.status === "valid"
+              ? `Reset request state: ${input.resetPasswordState.status}`
+              : `Request state: ${input.forgotPasswordState.status}`,
+          message:
+            input.passwordResetTokenView.status === "valid"
+              ? input.resetPasswordState.message
+              : input.forgotPasswordState.message,
           payloadLines: [
             ...(input.forgotPasswordState.payload
               ? [`Request email: ${input.forgotPasswordState.payload.email}`]
               : []),
-            ...(input.forgotPasswordState.resetEmailPreview
-              ? [
-                  `Email payload ready for: ${input.forgotPasswordState.resetEmailPreview.to}`,
-                  `Subject: ${input.forgotPasswordState.resetEmailPreview.subject}`,
-                ]
+            ...(input.passwordResetTokenView.email
+              ? [`Reset account: ${input.passwordResetTokenView.email}`]
+              : []),
+            ...(input.passwordResetTokenView.expiresAtLabel
+              ? [`Reset link expires ${input.passwordResetTokenView.expiresAtLabel}`]
+              : []),
+            ...(input.resetPasswordState.payload
+              ? ["New password payload is ready for submission."]
               : []),
           ],
           todoLines: [input.forgotPasswordRequestTodo, input.emailServiceTodo],

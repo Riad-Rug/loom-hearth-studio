@@ -13,15 +13,19 @@ import {
   accountGuardTodo,
   createAccountAuthRouteViewModel,
   createForgotPasswordRequestPayload,
-  createForgotPasswordResetEmailPreview,
+  createInitialForgotPasswordRequestState,
+  createInitialResetPasswordState,
   createLoginRequestPayload,
   createRegisterRequestPayload,
+  createResetPasswordPayload,
   forgotPasswordRequestTodo,
   getAccountAccessDecision,
   loginRequestTodo,
   registerRequestTodo,
+  type PasswordResetTokenView,
   type ForgotPasswordRequestState,
   type LoginRequestState,
+  type ResetPasswordState,
   type RegisterRequestState,
 } from "@/lib/auth";
 import { emailServiceTodo } from "@/lib/email";
@@ -30,9 +34,13 @@ import styles from "./account.module.css";
 
 type AccountAuthPageViewProps = {
   mode: AccountAuthMode;
+  passwordResetTokenView?: PasswordResetTokenView;
 };
 
-export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
+export function AccountAuthPageView({
+  mode,
+  passwordResetTokenView,
+}: AccountAuthPageViewProps) {
   const content = accountAuthContent[mode];
   const accessDecision = getAccountAccessDecision({
     user: null,
@@ -40,14 +48,15 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
   });
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(passwordResetTokenView?.email ?? "");
   const [password, setPassword] = useState("");
-  const [requestState, setRequestState] = useState<ForgotPasswordRequestState>({
-    status: "idle",
-    payload: null,
-    resetEmailPreview: null,
-    message: null,
-  });
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [requestState, setRequestState] = useState<ForgotPasswordRequestState>(
+    createInitialForgotPasswordRequestState(),
+  );
+  const [resetPasswordState, setResetPasswordState] = useState<ResetPasswordState>(
+    createInitialResetPasswordState(),
+  );
   const [loginState, setLoginState] = useState<LoginRequestState>({
     status: "idle",
     payload: null,
@@ -62,6 +71,14 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
     mode,
     accessDecision,
     forgotPasswordState: requestState,
+    passwordResetTokenView:
+      passwordResetTokenView ?? {
+        token: null,
+        status: "request",
+        email: null,
+        expiresAtLabel: null,
+      },
+    resetPasswordState,
     loginState,
     registerState,
     accountGuardTodo,
@@ -77,28 +94,93 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
     setRequestState({
       status: "submitting",
       payload,
-      resetEmailPreview: null,
       message: null,
     });
 
-    window.setTimeout(() => {
+    window.setTimeout(async () => {
       if (!payload) {
         setRequestState({
           status: "failure",
           payload: null,
-          resetEmailPreview: null,
-          message: "Enter a valid email address to create the placeholder password-reset request.",
+          message: "Enter a valid email address before requesting a password reset.",
         });
         return;
       }
 
-      setRequestState({
-        status: "success",
-        payload,
-        resetEmailPreview: createForgotPasswordResetEmailPreview(payload),
-        message:
-          "Placeholder forgot-password request created. Real token generation and email delivery are not implemented.",
+      const response = await fetch("/api/auth/password-reset", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
+      const result = (await response.json()) as {
+        status: "sent" | "invalid-input" | "configuration-error" | "api-error";
+        message: string;
+      };
+
+      setRequestState({
+        status: response.ok && result.status === "sent" ? "success" : "failure",
+        payload,
+        message: result.message,
+      });
+    }, 350);
+  }
+
+  function handleResetPasswordRequest() {
+    const payload = createResetPasswordPayload({
+      token: passwordResetTokenView?.token ?? null,
+      password,
+      confirmPassword,
+    });
+
+    setResetPasswordState({
+      status: "submitting",
+      payload,
+      message: null,
+    });
+
+    window.setTimeout(async () => {
+      if (!payload) {
+        setResetPasswordState({
+          status: "failure",
+          payload: null,
+          message: "Enter matching passwords before resetting your account password.",
+        });
+        return;
+      }
+
+      const response = await fetch("/api/auth/password-reset", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token: payload.token,
+          password: payload.password,
+        }),
+      });
+      const result = (await response.json()) as {
+        status:
+          | "reset"
+          | "invalid-input"
+          | "invalid-token"
+          | "expired-token"
+          | "used-token";
+        message: string;
+      };
+
+      setResetPasswordState({
+        status: response.ok && result.status === "reset" ? "success" : "failure",
+        payload,
+        message: result.message,
+      });
+
+      if (response.ok && result.status === "reset") {
+        window.setTimeout(() => {
+          window.location.assign("/account/login");
+        }, 800);
+      }
     }, 350);
   }
 
@@ -210,6 +292,9 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
     }, 350);
   }
 
+  const isResetMode =
+    mode === "forgot-password" && passwordResetTokenView?.status === "valid";
+
   return (
     <div className={styles.page}>
       <section className={styles.authShell}>
@@ -266,13 +351,14 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
                 placeholder="name@example.com"
                 type="email"
                 value={email}
+                disabled={isResetMode}
                 onChange={(event) => setEmail(event.target.value)}
               />
             </label>
 
-            {mode !== "forgot-password" ? (
+            {mode !== "forgot-password" || isResetMode ? (
               <label className={styles.field}>
-                <span>Password</span>
+                <span>{isResetMode ? "New password" : "Password"}</span>
                 <input
                   placeholder="••••••••"
                   type="password"
@@ -282,19 +368,59 @@ export function AccountAuthPageView({ mode }: AccountAuthPageViewProps) {
               </label>
             ) : null}
 
+            {isResetMode ? (
+              <label className={styles.field}>
+                <span>Confirm new password</span>
+                <input
+                  placeholder="••••••••"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                />
+              </label>
+            ) : null}
+
+            {mode === "forgot-password" &&
+            passwordResetTokenView &&
+            passwordResetTokenView.status !== "request" &&
+            passwordResetTokenView.status !== "valid" ? (
+              <div className={styles.sessionNote}>
+                <strong>Password reset link status</strong>
+                <span>
+                  {passwordResetTokenView.status === "expired"
+                    ? "This password reset link has expired."
+                    : passwordResetTokenView.status === "used"
+                      ? "This password reset link has already been used."
+                      : "This password reset link is invalid."}
+                </span>
+                <span>Request a new reset link below.</span>
+              </div>
+            ) : null}
+
             <button
               className={styles.primaryAction}
               type="button"
               onClick={
                 mode === "forgot-password"
-                  ? handleForgotPasswordRequest
+                  ? isResetMode
+                    ? handleResetPasswordRequest
+                    : handleForgotPasswordRequest
                   : mode === "login"
                     ? handleLoginRequest
                     : handleRegisterRequest
               }
             >
-              {content.primaryLabel}
+              {mode === "forgot-password" && isResetMode
+                ? "Reset password"
+                : content.primaryLabel}
             </button>
+
+            {mode === "forgot-password" && isResetMode ? (
+              <p className={styles.lede}>
+                Set a new password for {passwordResetTokenView?.email}. After a successful reset
+                you will be redirected to sign in.
+              </p>
+            ) : null}
 
             <div className={styles.sessionNote}>
               <strong>{routeViewModel.requestPresentation.title}</strong>
