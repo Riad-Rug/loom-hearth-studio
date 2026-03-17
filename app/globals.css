@@ -411,6 +411,13 @@ p {
     padding-top: var(--space-6);
   }
 
+  .site-header__announcement p {
+    padding: 0.4rem 0;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
   .site-header__bar {
     flex-direction: column;
     align-items: flex-start;

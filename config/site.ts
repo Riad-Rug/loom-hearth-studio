@@ -8,7 +8,7 @@ export const siteConfig = {
   market: "US",
   ogImagePath: "/og/default-placeholder.jpg",
   tagline: "Handcrafted Moroccan rugs and home decor",
-  announcement: "United States launch. USD only.",
+  announcement: "U.S. launch · USD only",
   primaryNav: [
     { href: "/shop", label: "Shop" },
     { href: "/lookbook", label: "Lookbook" },
