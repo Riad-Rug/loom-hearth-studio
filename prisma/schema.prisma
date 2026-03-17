@@ -126,10 +126,27 @@ model OrderRecord {
   stripeEventId     String
   stripeEventType   String
   placedAt          DateTime            @default(now())
+  fulfillmentExecutions FulfillmentExecutionRecord[]
   lineItems         OrderLineItemRecord[]
 
   @@index([customerEmail])
   @@index([placedAt])
+}
+
+model FulfillmentExecutionRecord {
+  id          String      @id @default(cuid())
+  orderId      String
+  trigger      String
+  orderStatus  String
+  actionKey    String
+  actionLabel  String
+  resultLabel  String
+  notes        String
+  createdAt    DateTime   @default(now())
+  order        OrderRecord @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, trigger, orderStatus])
+  @@index([orderId, createdAt])
 }
 
 model OrderLineItemRecord {

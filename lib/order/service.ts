@@ -92,8 +92,12 @@ export async function persistConfirmedStripeCheckoutOrder(input: {
       fulfillmentResult,
       message:
         emailDeliveryResult.status === "sent"
-          ? "Confirmed paid Stripe Checkout event persisted a real launch order, triggered the confirmation email, and prepared the fulfillment handoff."
-          : "Confirmed paid Stripe Checkout event persisted a real launch order, but confirmation email delivery did not complete. Fulfillment handoff remains prepared only.",
+          ? fulfillmentResult.status === "recorded" || fulfillmentResult.status === "already-recorded"
+            ? "Confirmed paid Stripe Checkout event persisted a real launch order, triggered the confirmation email, and recorded the manual fulfillment action."
+            : "Confirmed paid Stripe Checkout event persisted a real launch order and triggered the confirmation email."
+          : fulfillmentResult.status === "recorded" || fulfillmentResult.status === "already-recorded"
+            ? "Confirmed paid Stripe Checkout event persisted a real launch order and recorded the manual fulfillment action, but confirmation email delivery did not complete."
+            : "Confirmed paid Stripe Checkout event persisted a real launch order, but confirmation email delivery did not complete.",
     };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {

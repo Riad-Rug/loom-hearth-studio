@@ -121,8 +121,8 @@ export async function updateAdminOrderStatus(
     order: updatedOrder,
     fulfillmentResult,
     message:
-      fulfillmentResult.status === "ready"
-        ? "Persisted order status updated through the admin orders boundary and handed off into fulfillment orchestration."
+      fulfillmentResult.status === "recorded" || fulfillmentResult.status === "already-recorded"
+        ? "Persisted order status updated through the admin orders boundary and recorded a manual fulfillment action."
         : "Persisted order status updated through the admin orders boundary.",
   };
 }

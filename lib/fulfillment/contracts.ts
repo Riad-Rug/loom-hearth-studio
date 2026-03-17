@@ -13,15 +13,29 @@ export type FulfillmentOrchestrationRequest = {
   customerEmail: Order["shippingAddress"]["email"];
 };
 
+export type ManualFulfillmentExecution = {
+  actionKey:
+    | "manual-review-queue"
+    | "manual-processing-queue"
+    | "manual-shipment-followup"
+    | "manual-closeout"
+    | "manual-stop-work";
+  actionLabel: string;
+  resultLabel: string;
+  notes: string;
+  createdAt?: string;
+};
+
 export type FulfillmentOrchestrationResult = {
-  status: "ready" | "ignored";
+  status: "recorded" | "already-recorded" | "ignored";
   request: FulfillmentOrchestrationRequest | null;
+  execution: ManualFulfillmentExecution | null;
   message: string;
 };
 
 export type FulfillmentOrchestrationBoundary = {
   service: "LaunchFulfillmentOrchestrator";
-  status: "ready-placeholder";
+  status: "manual-ready";
   acceptedTriggers: ReadonlyArray<FulfillmentOrchestrationTrigger>;
   acceptedOrderStatuses: ReadonlyArray<
     Extract<
@@ -33,7 +47,7 @@ export type FulfillmentOrchestrationBoundary = {
 
 export const fulfillmentOrchestrationTodo = {
   boundary:
-    "TODO: Keep fulfillment orchestration limited to typed launch handoffs from persisted paid orders and admin status updates.",
+    "Launch fulfillment orchestration is limited to manual operational execution records from persisted paid orders and admin status updates.",
   sideEffects:
-    "TODO: Add real fulfillment, shipping, and broader post-payment side effects only after launch-safe orchestration requirements are finalized.",
+    "Manual fulfillment remains launch-safe and provider-free. Shipping APIs, tracking sync, labels, and broader post-payment automation remain out of scope.",
 } as const;
