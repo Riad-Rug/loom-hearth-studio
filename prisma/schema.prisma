@@ -99,6 +99,15 @@ model PasswordResetToken {
   @@index([expiresAt])
 }
 
+model LoginRateLimitAttempt {
+  id            String   @id @default(cuid())
+  surface       String
+  identifierHash String
+  attemptedAt   DateTime @default(now())
+
+  @@index([surface, identifierHash, attemptedAt])
+}
+
 model OrderRecord {
   id                String              @id @default(cuid())
   orderNumber       String              @unique

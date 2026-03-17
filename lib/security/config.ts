@@ -29,5 +29,5 @@ export const securityFoundationTodos = {
   cookieConsent:
     "TODO: Add real cookie-consent persistence and category handling before production.",
   rateLimit:
-    "TODO: Implement server-side login rate limiting before enabling real authentication.",
+    "Launch credentials login now uses a server-side rate limit on the Auth.js credentials request path. Broader account security tooling remains out of scope.",
 } as const;

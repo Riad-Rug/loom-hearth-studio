@@ -4,6 +4,11 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 
 import { db } from "@/lib/db/client";
 import { verifyPassword } from "@/lib/auth/password";
+import {
+  checkLoginRateLimit,
+  clearLoginRateLimitAttempts,
+  recordFailedLoginAttempt,
+} from "@/lib/security/rate-limit";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
@@ -21,7 +26,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         const email = typeof credentials?.email === "string" ? credentials.email.trim() : "";
         const password =
           typeof credentials?.password === "string" ? credentials.password : "";
@@ -30,13 +35,27 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const rateLimit = await checkLoginRateLimit({
+          surface: "account-login",
+          email,
+          headers: req.headers ?? {},
+        });
+
+        if (rateLimit.status === "limited") {
+          return null;
+        }
+
         const user = await db.user.findUnique({
           where: {
-            email,
+            email: email.toLowerCase(),
           },
         });
 
         if (!user) {
+          await recordFailedLoginAttempt({
+            surface: "account-login",
+            identifierHash: rateLimit.identifierHash,
+          });
           return null;
         }
 
@@ -46,8 +65,17 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!passwordMatches) {
+          await recordFailedLoginAttempt({
+            surface: "account-login",
+            identifierHash: rateLimit.identifierHash,
+          });
           return null;
         }
+
+        await clearLoginRateLimitAttempts({
+          surface: "account-login",
+          identifierHash: rateLimit.identifierHash,
+        });
 
         return {
           id: user.id,

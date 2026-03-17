@@ -13,7 +13,9 @@ export type CookieConsentState = {
 };
 
 export type LoginRateLimitPolicy = {
-  surface: "account-login" | "admin-login";
+  surface: LoginRateLimitSurface;
   maxAttempts: number;
   windowMinutes: number;
 };
+
+export type LoginRateLimitSurface = "account-login" | "admin-login";
