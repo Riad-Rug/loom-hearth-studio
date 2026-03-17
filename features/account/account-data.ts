@@ -35,7 +35,7 @@ export const accountDashboardSections = [
     id: "orders",
     title: "Order history",
     body:
-      "Placeholder order history shell only. No real order retrieval or account-linked order data is implemented.",
+      "Persisted launch orders now appear here for the signed-in account email. Broader account linking and order operations remain out of scope.",
   },
   {
     id: "profile",

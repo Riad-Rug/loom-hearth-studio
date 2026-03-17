@@ -14,8 +14,8 @@ import {
 } from "@/lib/auth";
 import {
   accountDashboardDataTodo,
-  createAccountProfileSummaryView,
-  getPlaceholderAccountDashboardData,
+  type AccountDashboardData,
+  type AccountProfileSummaryView,
 } from "@/lib/account/dashboard";
 import { createAccountDashboardRouteViewModel } from "@/lib/account/dashboard-route";
 import {
@@ -26,7 +26,10 @@ import {
 
 import styles from "./account.module.css";
 
-export function AccountDashboardPageView() {
+export function AccountDashboardPageView(props: {
+  dashboardData: AccountDashboardData | null;
+  profileSummaryView: AccountProfileSummaryView | null;
+}) {
   const placeholderUser = {
     id: "account-session-placeholder",
     email: "customer@example.com",
@@ -35,21 +38,19 @@ export function AccountDashboardPageView() {
     user: placeholderUser,
     routeKind: "dashboard",
   });
-  const dashboardData = getPlaceholderAccountDashboardData(placeholderUser);
-  const profileSummaryView = createAccountProfileSummaryView(dashboardData?.profile ?? null);
   const [signOutState, setSignOutState] = useState(createInitialSignOutRequestState());
   const [profileFullName, setProfileFullName] = useState(
-    dashboardData?.profile.fullName ?? "",
+    props.dashboardData?.profile.fullName ?? "",
   );
-  const [profileEmail, setProfileEmail] = useState(dashboardData?.profile.email ?? "");
-  const [profilePhone, setProfilePhone] = useState(dashboardData?.profile.phone ?? "");
+  const [profileEmail, setProfileEmail] = useState(props.dashboardData?.profile.email ?? "");
+  const [profilePhone, setProfilePhone] = useState(props.dashboardData?.profile.phone ?? "");
   const [profileUpdateState, setProfileUpdateState] = useState(
     createInitialAccountProfileUpdateState(),
   );
   const routeViewModel = createAccountDashboardRouteViewModel({
     accessDecision,
-    dashboardData,
-    profileSummaryView,
+    dashboardData: props.dashboardData,
+    profileSummaryView: props.profileSummaryView,
     signOutState,
     profileUpdateState,
     accountGuardTodo,
@@ -159,7 +160,7 @@ export function AccountDashboardPageView() {
                 {sectionView?.summaryMeta ? <span>{sectionView.summaryMeta}</span> : null}
                 {section.id === "orders" ? (
                   <div className={styles.orderHistoryList}>
-                    {dashboardData?.orders.items.map((order) => (
+                    {props.dashboardData?.orders.items.map((order) => (
                       <div key={order.id} className={styles.orderHistoryItem}>
                         <strong>{order.orderNumber}</strong>
                         <span>{order.statusLabel}</span>

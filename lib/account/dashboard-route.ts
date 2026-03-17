@@ -63,7 +63,7 @@ export function createAccountDashboardRouteViewModel(input: {
     hero: {
       title: "Customer dashboard shell",
       body:
-        "This dashboard is placeholder-only. It preserves the account area required by the PRD without implementing authentication, order retrieval, or profile management.",
+        "This dashboard now reads persisted launch order history for the signed-in account email while authentication and profile management remain placeholder-only.",
       emptyStateTitle: input.dashboardData?.overview.greeting ?? "No live account data yet",
       emptyStateLines: input.dashboardData
         ? [
@@ -71,7 +71,7 @@ export function createAccountDashboardRouteViewModel(input: {
             input.dashboardData.overview.accountEmail,
           ]
         : [
-            "Empty-state presentation only. Real customer data, order history, and account actions are not implemented in this slice.",
+            "Empty-state presentation only. No persisted orders were found for the current placeholder account email.",
           ],
     },
     session: {

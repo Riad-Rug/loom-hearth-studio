@@ -13,6 +13,7 @@ export interface OrderRepository {
   create(input: OrderPersistenceRequest): Promise<Order>;
   getById(orderId: string): Promise<Order | null>;
   getByCheckoutSessionId(checkoutSessionId: string): Promise<Order | null>;
+  getByCustomerEmail(customerEmail: string): Promise<Order[]>;
   updateStatus(orderId: string, status: Order["status"]): Promise<Order>;
 }
 
@@ -60,6 +61,22 @@ export class PrismaOrderRepository implements OrderRepository {
     });
 
     return order ? mapOrderRecordToDomainOrder(order) : null;
+  }
+
+  async getByCustomerEmail(customerEmail: string) {
+    const orders = await this.context.client.orderRecord.findMany({
+      where: {
+        customerEmail,
+      },
+      include: {
+        lineItems: true,
+      },
+      orderBy: {
+        placedAt: "desc",
+      },
+    });
+
+    return orders.map(mapOrderRecordToDomainOrder);
   }
 
   async updateStatus(orderId: string, status: Order["status"]) {

@@ -1,4 +1,6 @@
 import type { AuthenticatedUser } from "@/lib/auth";
+import { createOrderRepository } from "@/lib/db/repositories/order-repository";
+import type { Order } from "@/types/domain";
 import type { OrderStatus } from "@/types/domain/order";
 
 export type AccountDashboardOverview = {
@@ -76,64 +78,75 @@ export function createAccountProfileSummaryView(
   };
 }
 
-function formatPlaceholderOrderTotal(totalUsd: number) {
+export async function getAccountDashboardData(
+  user: AuthenticatedUser | null,
+): Promise<AccountDashboardData | null> {
+  if (!user) {
+    return null;
+  }
+
+  const orders = await createOrderRepository().getByCustomerEmail(user.email);
+
+  return {
+    overview: {
+      greeting: "Welcome back",
+      statusLabel: "Placeholder signed-in account with persisted order history",
+      accountEmail: user.email,
+    },
+    orders: createAccountOrderHistoryData(orders),
+    profile: {
+      fullName: orders[0]?.shippingAddress.fullName ?? "Customer name placeholder",
+      email: user.email,
+      phone: orders[0]?.shippingAddress.phone ?? null,
+    },
+  };
+}
+
+export const accountDashboardDataTodo =
+  "TODO: Keep account order history sourced from persisted orders while authentication, profile persistence, and broader account data remain placeholder-only.";
+
+function createAccountOrderHistoryData(orders: Order[]): AccountOrderHistoryData {
+  const items = orders.map((order) => ({
+    id: order.id,
+    orderNumber: order.orderNumber,
+    status: order.status,
+    statusLabel: formatOrderStatusLabel(order.status),
+    placedAtLabel: `Placed ${formatOrderPlacedAtLabel(order.placedAt)}`,
+    totalLabel: formatOrderTotal(order.totalUsd),
+  }));
+
+  if (!items.length) {
+    return {
+      statusLabel: "No persisted orders found for this account email",
+      orderCountLabel: "0 persisted orders",
+      latestOrderLabel: "No persisted orders",
+      items,
+    };
+  }
+
+  return {
+    statusLabel: "Persisted order history loaded",
+    orderCountLabel: `${items.length} persisted order${items.length === 1 ? "" : "s"}`,
+    latestOrderLabel: items[0].orderNumber,
+    items,
+  };
+}
+
+function formatOrderPlacedAtLabel(placedAt: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(placedAt));
+}
+
+function formatOrderTotal(totalUsd: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
   }).format(totalUsd);
 }
 
-function getPlaceholderAccountOrderHistoryData(
-  user: AuthenticatedUser,
-): AccountOrderHistoryData {
-  const items: AccountOrderHistoryItem[] = [
-    {
-      id: `${user.id}-order-1001`,
-      orderNumber: "LH-1001",
-      status: "delivered",
-      statusLabel: "Delivered",
-      placedAtLabel: "Placed February 18, 2026",
-      totalLabel: formatPlaceholderOrderTotal(248),
-    },
-    {
-      id: `${user.id}-order-1002`,
-      orderNumber: "LH-1002",
-      status: "processing",
-      statusLabel: "Processing",
-      placedAtLabel: "Placed March 2, 2026",
-      totalLabel: formatPlaceholderOrderTotal(132),
-    },
-  ];
-
-  return {
-    statusLabel: "Placeholder order history loaded",
-    orderCountLabel: `${items.length} placeholder orders`,
-    latestOrderLabel: items[items.length - 1]?.orderNumber ?? "No placeholder orders",
-    items,
-  };
+function formatOrderStatusLabel(status: OrderStatus) {
+  return status.charAt(0).toUpperCase() + status.slice(1);
 }
-
-export function getPlaceholderAccountDashboardData(
-  user: AuthenticatedUser | null,
-): AccountDashboardData | null {
-  if (!user) {
-    return null;
-  }
-
-  return {
-    overview: {
-      greeting: "Welcome back",
-      statusLabel: "Placeholder signed-in account",
-      accountEmail: user.email,
-    },
-    orders: getPlaceholderAccountOrderHistoryData(user),
-    profile: {
-      fullName: "Customer name placeholder",
-      email: user.email,
-      phone: null,
-    },
-  };
-}
-
-export const accountDashboardDataTodo =
-  "TODO: Replace placeholder dashboard retrieval with real authenticated account data and order history once persistence is implemented.";
