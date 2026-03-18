@@ -4,9 +4,13 @@ export const homeHero = {
   eyebrow: "Loom & Hearth Studio",
   title: "Shop handcrafted Moroccan rugs, poufs, pillows, and home decor.",
   description:
-    "Discover Moroccan rugs, vintage rugs, leather poufs, cactus silk pillows, and handcrafted decor selected for warmth, texture, and collected character. From plush Beni Ourain-inspired pieces to one-of-one vintage finds, each piece is chosen to bring artisanal depth into everyday interiors.",
+    "Discover Moroccan rugs, vintage rugs, rug-made poufs, cactus silk pillows, and handcrafted decor selected for warmth, texture, and collected character. From plush Beni Ourain-inspired pieces to one-of-one vintage finds, each piece is chosen to bring artisanal depth into everyday interiors.",
+  imageSrc:
+    "https://images.pexels.com/photos/30673750/pexels-photo-30673750.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+  imageAlt:
+    "A luxurious Moroccan seating area with ornate textiles, carved details, and plush handmade cushions",
   primaryCta: {
-    href: "/shop",
+    href: "/shop/rugs",
     label: "Shop Moroccan rugs",
   },
   secondaryCta: {
@@ -16,34 +20,16 @@ export const homeHero = {
 } as const;
 
 export const homeTrustBanner = [
-  "Direct checkout",
-  "United States shipping",
-  "USD pricing only",
-  "Free shipping at launch",
-] as const;
-
-export const homeStats = [
-  {
-    value: "5",
-    label: "core categories",
-    supportingText: "Moroccan rugs, poufs, pillows, decor, and vintage pieces.",
-  },
-  {
-    value: "2",
-    label: "signature rug directions",
-    supportingText: "Beni Ourain neutrals and vintage Moroccan character.",
-  },
-  {
-    value: "US",
-    label: "launch market only",
-    supportingText: "USD pricing and domestic shipping for the first release.",
-  },
+  "Direct from Morocco",
+  "United States delivery",
+  "Duties included",
+  "Curated launch selection",
 ] as const;
 
 export const homeTrustBadges = [
   "Handcrafted in Morocco",
   "Beni Ourain & vintage rugs",
-  "Leather poufs & cactus silk pillows",
+  "Rug-made poufs & pillows",
   "Curated for layered interiors",
 ] as const;
 
@@ -52,19 +38,18 @@ export const homeCategories = [
     title: "Moroccan Rugs",
     href: "/shop/rugs",
     description:
-      "Handcrafted area rugs with texture, warmth, and visual depth for living rooms, bedrooms, and layered interiors.",
+      "Handcrafted Moroccan rugs chosen for texture, material depth, and lasting presence in the room.",
   },
   {
     title: "Poufs",
     href: "/shop/poufs",
     description:
-      "Moroccan leather poufs for flexible seating, casual styling, and soft sculptural contrast.",
+      "Rug-made and leather poufs that bring flexible function and a softer, more collected look.",
   },
   {
     title: "Pillows",
     href: "/shop/pillows",
-    description:
-      "Cactus silk and woven accent pillows that add softness, color, and artisanal detail.",
+    description: "Cactus silk and rug-based pillows for color, contrast, and layered texture.",
   },
   {
     title: "Decor",
@@ -79,43 +64,49 @@ export const homeCategories = [
   },
 ] as const;
 
-export const homeFeaturedProducts = [
+export const homeFeaturedDirections = [
   {
-    name: "Moroccan rug preview",
-    type: "Rug placeholder",
-    price: "$0.00",
-    note: "Preview placeholder for a handcrafted Moroccan rug. Final size, fiber details, and pricing will appear once the live catalog is connected.",
+    name: "Moroccan rugs",
+    note: "Handwoven Moroccan rugs selected for warmth, texture, and a stronger sense of home.",
     href: "/shop/rugs",
+    imageSrc:
+      "https://images.pexels.com/photos/7880322/pexels-photo-7880322.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+    imageAlt:
+      "A soft cream wool rug styled in a warm interior with wooden furniture and natural light",
   },
   {
-    name: "Leather pouf preview",
-    type: "Multi-unit placeholder",
-    price: "$0.00",
-    note: "Preview placeholder for a Moroccan leather pouf. Final color, finish, and availability will appear once the live catalog is connected.",
+    name: "Poufs",
+    note: "Leather and rug-made poufs selected for texture, function, and character.",
     href: "/shop/poufs",
+    imageSrc:
+      "https://images.pexels.com/photos/6368796/pexels-photo-6368796.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+    imageAlt:
+      "A brown leather pouf styled in a light, tactile interior with soft linen textures",
   },
   {
-    name: "Cactus silk pillow preview",
-    type: "Multi-unit placeholder",
-    price: "$0.00",
-    note: "Preview placeholder for a cactus silk pillow. Final dimensions, textile details, and pricing will appear once the live catalog is connected.",
+    name: "Cactus silk pillows",
+    note: "Handcrafted pillows that add softness, color, and a more layered finish to the room.",
     href: "/shop/pillows",
+    imageSrc:
+      "https://images.pexels.com/photos/30664540/pexels-photo-30664540.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+    imageAlt:
+      "Moroccan cushions and layered textiles arranged in a warm interior with visible woven detail",
   },
 ] as const;
 
 export const homeNarrativeSections = [
   {
     eyebrow: "Brand story",
-    title: "Rooted in Moroccan craft, material character, and pieces meant to last.",
+    title: "Rooted in Moroccan craft, material character, and pieces chosen in person.",
     body:
-      "Loom & Hearth Studio curates handcrafted Moroccan rugs and decor with an emphasis on texture, usability, and collected presence — pieces that feel lived with, not mass produced.",
+      "Loom & Hearth Studio builds its collection through direct sourcing in Morocco and a clear eye for rugs, rug-made poufs, pillows, and decor with real presence.",
     href: "/about",
   },
   {
     eyebrow: "Design direction",
-    title: "Created for layered interiors with warmth, softness, and quiet contrast.",
+    title: "Created for interiors that feel layered, warm, and collected.",
     body:
-      "The collection brings together tactile rugs, character-rich vintage pieces, and relaxed accents that help a room feel more grounded, personal, and complete.",
+      "The collection brings together tactile rugs, quiet contrast, and handcrafted accents that help a room feel more grounded and individual.",
     href: "/lookbook",
   },
 ] as const;
@@ -123,8 +114,7 @@ export const homeNarrativeSections = [
 export const homeTestimonials: Testimonial[] = [
   {
     id: "testimonial-1",
-    quote:
-      "The rug completely changed the room. The texture feels incredible in person, and it looks even better than the photos.",
+    quote: "The rug completely changed the room. The texture feels even better in person.",
     customerName: "Sophie L.",
     location: "New York, NY",
     avatarUrl: "https://i.pravatar.cc/100?img=32",
@@ -133,7 +123,7 @@ export const homeTestimonials: Testimonial[] = [
   {
     id: "testimonial-2",
     quote:
-      "The pouf and pillows added exactly the warmth we were missing. Everything feels very considered and well made.",
+      "The pillows added warmth immediately. Everything felt considered and well made.",
     customerName: "Daniel R.",
     location: "Los Angeles, CA",
     avatarUrl: "https://i.pravatar.cc/100?img=12",
@@ -145,12 +135,12 @@ export const homeNewsletter = {
   eyebrow: "Newsletter",
   title: "Get first access to new Moroccan rugs, vintage finds, and studio releases.",
   description:
-    "Join the list for new arrivals, lookbook updates, and early access to handcrafted pieces before broader release.",
+    "Join the list for new arrivals, lookbook updates, and early access to handcrafted pieces before wider release.",
 } as const;
 
 export const homeSeoSection = {
   eyebrow: "Moroccan rugs guide",
   title: "What makes Moroccan rugs unique?",
   body:
-    "Moroccan rugs are valued for their handwoven texture, individual character, and ability to warm a room without feeling generic. Some styles, like Beni Ourain rugs, are known for plush wool and quieter patterning, while vintage Moroccan rugs often bring faded color, movement, and a stronger sense of history. Together, they offer a more collected alternative to mass-market floor coverings.",
+    "Moroccan rugs are valued for their handwoven texture, individual character, and the way they bring warmth into a room without feeling generic. Some styles, like Beni Ourain rugs, are known for plush wool and quieter patterning, while vintage Moroccan rugs often bring faded color, movement, and a stronger sense of history. Together, they offer a more collected alternative to mass-market floor coverings.",
 } as const;
