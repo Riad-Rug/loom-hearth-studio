@@ -4,6 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useState } from "react";
 
+import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
 import type { MultiUnitProductDetailPageViewModel, ProductDetailPageViewModel } from "@/lib/catalog/contracts";
@@ -16,28 +17,37 @@ type ProductDetailPageViewProps = {
 };
 
 export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
+  const primaryImage = product.gallery[0];
+
   return (
     <div className={styles.page}>
       <Section width="wide">
         <div className={styles.layout}>
           <div className={styles.galleryColumn}>
             <div className={styles.primaryMedia}>
-              <PlaceholderMedia
-                alt={product.name}
-                aspectRatio="4 / 3"
-                label={product.type === "rug" ? "Rug gallery" : "Product gallery"}
-                priority
-                sizes="(max-width: 1100px) 100vw, 55vw"
-              />
+              {primaryImage ? (
+                <img
+                  alt={primaryImage.altText || product.name}
+                  src={buildCloudinaryUrl(primaryImage.publicId)}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                />
+              ) : (
+                <PlaceholderMedia
+                  alt={product.name}
+                  aspectRatio="4 / 3"
+                  label={product.type === "rug" ? "Rug gallery" : "Product gallery"}
+                  priority
+                  sizes="(max-width: 1100px) 100vw, 55vw"
+                />
+              )}
             </div>
             <div className={styles.thumbnailGrid}>
               {product.gallery.map((item) => (
                 <div key={item.id} className={styles.thumbnailCard}>
-                  <PlaceholderMedia
-                    alt={`${product.name} ${item.label}`}
-                    aspectRatio="1 / 1"
-                    label={item.label}
-                    sizes="(max-width: 1100px) 50vw, 14vw"
+                  <img
+                    alt={item.altText || `${product.name} ${item.label}`}
+                    src={buildCloudinaryUrl(item.publicId)}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
                 </div>
               ))}

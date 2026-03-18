@@ -52,20 +52,22 @@ export function mapProductMutationInputToCreateInput(
     priceUsd: createPrismaDecimal(input.priceUsd),
     origin: input.origin,
     status: input.status,
-    images: input.images as Prisma.InputJsonValue,
-    materials: input.materials as Prisma.InputJsonValue,
+    images: sanitizeJsonValue(input.images) as Prisma.InputJsonValue,
+    materials: sanitizeJsonValue(input.materials) as Prisma.InputJsonValue,
     seoTitle: input.seoTitle,
     seoDescription: input.seoDescription,
     rugStyle: input.type === "rug" ? input.rugStyle : null,
     dimensionsCm:
-      input.type === "rug" ? (input.dimensionsCm as Prisma.InputJsonValue) : Prisma.JsonNull,
+      input.type === "rug"
+        ? (sanitizeJsonValue(input.dimensionsCm) as Prisma.InputJsonValue)
+        : Prisma.JsonNull,
     weightKg: input.type === "rug" ? createPrismaDecimal(input.weightKg) : null,
     fixedQuantity: input.type === "rug" ? input.fixedQuantity : null,
     inventory: input.type === "multiUnit" ? input.inventory : null,
     lowStockThreshold: input.type === "multiUnit" ? input.lowStockThreshold : null,
     variants:
       input.type === "multiUnit"
-        ? (input.variants as Prisma.InputJsonValue)
+        ? (sanitizeJsonValue(input.variants) as Prisma.InputJsonValue)
         : Prisma.JsonNull,
     notifyMeEnabled: input.type === "multiUnit" ? input.notifyMeEnabled : null,
   };
@@ -90,20 +92,22 @@ export function mapProductMutationInputToUpdateInput(
     priceUsd: createPrismaDecimal(input.priceUsd),
     origin: input.origin,
     status: input.status,
-    images: input.images as Prisma.InputJsonValue,
-    materials: input.materials as Prisma.InputJsonValue,
+    images: sanitizeJsonValue(input.images) as Prisma.InputJsonValue,
+    materials: sanitizeJsonValue(input.materials) as Prisma.InputJsonValue,
     seoTitle: input.seoTitle,
     seoDescription: input.seoDescription,
     rugStyle: input.type === "rug" ? input.rugStyle : null,
     dimensionsCm:
-      input.type === "rug" ? (input.dimensionsCm as Prisma.InputJsonValue) : Prisma.JsonNull,
+      input.type === "rug"
+        ? (sanitizeJsonValue(input.dimensionsCm) as Prisma.InputJsonValue)
+        : Prisma.JsonNull,
     weightKg: input.type === "rug" ? createPrismaDecimal(input.weightKg) : null,
     fixedQuantity: input.type === "rug" ? input.fixedQuantity : null,
     inventory: input.type === "multiUnit" ? input.inventory : null,
     lowStockThreshold: input.type === "multiUnit" ? input.lowStockThreshold : null,
     variants:
       input.type === "multiUnit"
-        ? (input.variants as Prisma.InputJsonValue)
+        ? (sanitizeJsonValue(input.variants) as Prisma.InputJsonValue)
         : Prisma.JsonNull,
     notifyMeEnabled: input.type === "multiUnit" ? input.notifyMeEnabled : null,
   };
@@ -130,6 +134,22 @@ export function mapPrismaProductCategoryToDomain(category: PrismaProductCategory
 
 function createPrismaDecimal(value: number) {
   return new Prisma.Decimal(value);
+}
+
+function sanitizeJsonValue<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeJsonValue(item)) as T;
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([, nestedValue]) => nestedValue !== undefined)
+        .map(([key, nestedValue]) => [key, sanitizeJsonValue(nestedValue)]),
+    ) as T;
+  }
+
+  return value;
 }
 
 function mapStatus(status: string): Product["status"] {

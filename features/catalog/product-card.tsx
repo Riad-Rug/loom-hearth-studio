@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 
+import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
@@ -14,12 +15,20 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link className={styles.productCard} href={product.href as Route}>
       <div className={styles.productMedia}>
-        <PlaceholderMedia
-          alt={product.name}
-          aspectRatio="4 / 5"
-          label={product.badge}
-          sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 33vw"
-        />
+        {product.primaryImage ? (
+          <img
+            alt={product.primaryImage.altText || product.name}
+            src={buildCloudinaryUrl(product.primaryImage.publicId)}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+        ) : (
+          <PlaceholderMedia
+            alt={product.name}
+            aspectRatio="4 / 5"
+            label={product.badge}
+            sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 33vw"
+          />
+        )}
       </div>
       <div className={styles.productContent}>
         <div className={styles.productTopline}>

@@ -32,6 +32,26 @@ export type CloudinaryImageAsset = MediaAsset & {
   folder?: CloudinaryFolder;
 };
 
+export type CloudinarySignedUploadRequest = {
+  productType: "rug" | "multiUnit";
+};
+
+export type CloudinarySignedUploadPayload = {
+  cloudName: string;
+  apiKey: string;
+  timestamp: number;
+  folder: CloudinaryFolder;
+  signature: string;
+  uploadUrl: string;
+};
+
+export type CloudinaryBrowserUploadResult = {
+  public_id: string;
+  width?: number;
+  height?: number;
+  resource_type: "image";
+};
+
 export interface MediaService {
   upload(fileName: string, folder: CloudinaryFolder): Promise<MediaAsset>;
   delete(publicId: string): Promise<void>;

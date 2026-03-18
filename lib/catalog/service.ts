@@ -15,6 +15,7 @@ import type {
   ProductLinkViewModel,
   RugProductDetailPageViewModel,
 } from "@/lib/catalog/contracts";
+import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
 import type { Product, ProductCategory } from "@/types/domain";
 
@@ -38,7 +39,11 @@ export async function getRugProductDetailByParams(input: {
   const repository = input.repository ?? createProductRepository();
   const product = await repository.getBySlug(input.slug);
 
-  if (!product || product.type !== "rug" || product.rugStyle !== input.style) {
+  if (!product || product.type !== "rug") {
+    return null;
+  }
+
+  if (normalizeSlug(product.rugStyle) !== input.style) {
     return null;
   }
 
@@ -72,6 +77,8 @@ export async function getCategoryProductDetailByParams(input: {
 }
 
 function createCatalogProductCardViewModel(product: Product): CatalogProductCardViewModel {
+  const primaryImage = getPrimaryImage(product);
+
   return {
     id: product.id,
     href: getProductRoutePath(product),
@@ -83,6 +90,12 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     merchandisingNote: getProductMerchandisingNote(product),
     routePattern: getProductRoutePattern(product),
     badge: getProductBadgeLabel(product),
+    primaryImage: primaryImage
+      ? {
+          publicId: primaryImage.publicId,
+          altText: primaryImage.altText,
+        }
+      : undefined,
   };
 }
 
@@ -118,6 +131,8 @@ function createProductDetailPageViewModel(
       .map((image, index) => ({
         id: image.id,
         label: `Gallery image ${String(index + 1).padStart(2, "0")}`,
+        publicId: image.publicId,
+        altText: image.altText,
       })),
     materialsLabel: product.materials.join(", "),
     originLabel: product.origin,
@@ -150,6 +165,12 @@ function createProductDetailPageViewModel(
     notifyMeLabel: product.notifyMeEnabled ? "Notify me when available" : undefined,
     cartProduct: product,
   };
+}
+
+function getPrimaryImage(product: Product) {
+  const heroImage = product.images.find((image) => image.role === "hero");
+
+  return heroImage ?? product.images[0] ?? null;
 }
 
 function createProductLinks(products: Product[], count: number): ProductLinkViewModel[] {

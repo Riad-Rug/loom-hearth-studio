@@ -1,5 +1,6 @@
 "use client";
 
+import type { ChangeEvent } from "react";
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -17,6 +18,10 @@ import {
   mediaTypeOptions,
   normalizeSlug,
 } from "@/lib/catalog/product-validation";
+import type {
+  CloudinaryBrowserUploadResult,
+  CloudinarySignedUploadPayload,
+} from "@/lib/cloudinary/types";
 
 import styles from "./admin.module.css";
 
@@ -35,30 +40,36 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [state, formAction] = useActionState(props.action, initialAdminProductActionState);
   const [type, setType] = useState(props.product.type);
   const [slug, setSlug] = useState(props.product.slug);
+  const [name, setName] = useState(props.product.name);
   const [category, setCategory] = useState(props.product.category);
+  const [description, setDescription] = useState(props.product.description);
+  const [priceUsd, setPriceUsd] = useState(props.product.priceUsd);
+  const [origin, setOrigin] = useState(props.product.origin);
   const [rugStyle, setRugStyle] = useState(props.product.rugStyle);
+  const [dimensionsCmLength, setDimensionsCmLength] = useState(props.product.dimensionsCmLength);
+  const [dimensionsCmWidth, setDimensionsCmWidth] = useState(props.product.dimensionsCmWidth);
+  const [weightKg, setWeightKg] = useState(props.product.weightKg);
   const [materials, setMaterials] = useState(
     props.product.materials.length ? props.product.materials : [""],
   );
   const [images, setImages] = useState(
     props.product.images.length
-      ? props.product.images
-      : [
-          {
-            id: "image-1",
-            publicId: "",
-            altText: "",
-            sortOrder: 1,
-            role: "hero" as const,
-            mediaType: "image" as const,
-            width: 1600,
-            height: 1200,
-          },
-        ],
+      ? props.product.images.map((image) => ({
+          ...image,
+          id: image.id || createImageRowId(),
+        }))
+      : [createEmptyImageRow({ sortOrder: 1, role: "hero" })],
   );
   const [variants, setVariants] = useState(props.product.variants);
   const [notifyMeEnabled, setNotifyMeEnabled] = useState(props.product.notifyMeEnabled);
   const [confirmUrlChange, setConfirmUrlChange] = useState(false);
+  const [uploadState, setUploadState] = useState<{
+    status: "idle" | "uploading" | "success" | "error";
+    message: string | null;
+  }>({
+    status: "idle",
+    message: null,
+  });
   const routePreview = useMemo(
     () =>
       getProductRoutePreview({
@@ -87,6 +98,105 @@ export function AdminProductForm(props: AdminProductFormProps) {
         variantIndex === index ? { ...variant, ...patch } : variant,
       ),
     );
+  }
+
+  async function handleImageFileSelection(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setUploadState({
+      status: "uploading",
+      message: `Uploading ${file.name}...`,
+    });
+
+    try {
+      const signatureResponse = await fetch("/api/admin/cloudinary/upload-signature", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productType: type,
+        }),
+      });
+
+      const signatureResult = (await signatureResponse.json()) as
+        | {
+            status: "ready";
+            payload: CloudinarySignedUploadPayload;
+          }
+        | {
+            status: "forbidden" | "invalid-input" | "configuration-error";
+            message: string;
+          };
+
+      if (!signatureResponse.ok || signatureResult.status !== "ready") {
+        throw new Error(
+          "message" in signatureResult
+            ? signatureResult.message
+            : "Upload signing failed before a Cloudinary payload was returned.",
+        );
+      }
+
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+      uploadFormData.append("api_key", signatureResult.payload.apiKey);
+      uploadFormData.append("timestamp", String(signatureResult.payload.timestamp));
+      uploadFormData.append("folder", signatureResult.payload.folder);
+      uploadFormData.append("signature", signatureResult.payload.signature);
+
+      const uploadResponse = await fetch(signatureResult.payload.uploadUrl, {
+        method: "POST",
+        body: uploadFormData,
+      });
+
+      if (!uploadResponse.ok) {
+        const uploadErrorText = await readUploadErrorMessage(uploadResponse);
+
+        throw new Error(
+          uploadErrorText || "Cloudinary upload failed before media metadata was returned.",
+        );
+      }
+
+      const uploadResult = (await uploadResponse.json()) as CloudinaryBrowserUploadResult;
+
+      setImages((current) => {
+        const blankImageIndex = current.findIndex(isBlankImageRow);
+        const nextSortOrder =
+          blankImageIndex >= 0 ? current[blankImageIndex]?.sortOrder ?? 1 : current.length + 1;
+        const nextImage = {
+          id: blankImageIndex >= 0 ? current[blankImageIndex].id : createImageRowId(),
+          publicId: uploadResult.public_id,
+          altText: createDefaultImageAltText(file.name, name, nextSortOrder),
+          sortOrder: nextSortOrder,
+          role: blankImageIndex >= 0 ? current[blankImageIndex].role : ("gallery" as const),
+          mediaType: "image" as const,
+          width: uploadResult.width,
+          height: uploadResult.height,
+        };
+
+        if (blankImageIndex >= 0) {
+          return current.map((image, index) => (index === blankImageIndex ? nextImage : image));
+        }
+
+        return [...current, nextImage];
+      });
+
+      setUploadState({
+        status: "success",
+        message: `${file.name} uploaded and appended to product images.`,
+      });
+    } catch (error) {
+      setUploadState({
+        status: "error",
+        message: error instanceof Error ? error.message : "Image upload failed.",
+      });
+    } finally {
+      event.target.value = "";
+    }
   }
 
   return (
@@ -136,7 +246,12 @@ export function AdminProductForm(props: AdminProductFormProps) {
           </label>
           <label className={styles.formField}>
             <span>Name</span>
-            <input defaultValue={props.product.name} name="name" type="text" />
+            <input
+              name="name"
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
             <em>{state.fieldErrors.name}</em>
           </label>
           <label className={styles.formField}>
@@ -166,17 +281,33 @@ export function AdminProductForm(props: AdminProductFormProps) {
           </label>
           <label className={styles.formField}>
             <span>Description</span>
-            <textarea defaultValue={props.product.description} name="description" rows={5} />
+            <textarea
+              name="description"
+              rows={5}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+            />
             <em>{state.fieldErrors.description}</em>
           </label>
           <label className={styles.formField}>
             <span>Price (USD)</span>
-            <input defaultValue={props.product.priceUsd} name="priceUsd" step="0.01" type="number" />
+            <input
+              name="priceUsd"
+              step="0.01"
+              type="number"
+              value={priceUsd}
+              onChange={(event) => setPriceUsd(event.target.value)}
+            />
             <em>{state.fieldErrors.priceUsd}</em>
           </label>
           <label className={styles.formField}>
             <span>Origin</span>
-            <input defaultValue={props.product.origin} name="origin" type="text" />
+            <input
+              name="origin"
+              type="text"
+              value={origin}
+              onChange={(event) => setOrigin(event.target.value)}
+            />
             <em>{state.fieldErrors.origin}</em>
           </label>
         </section>
@@ -275,6 +406,27 @@ export function AdminProductForm(props: AdminProductFormProps) {
         <section className={styles.card}>
           <p className={styles.cardEyebrow}>Media</p>
           <div className={styles.stack}>
+            <div className={styles.sessionPanel}>
+              <strong>Cloudinary upload</strong>
+              <span>
+                Upload an image directly to Cloudinary, then fine-tune its metadata below.
+              </span>
+              <label className={styles.navLink}>
+                <span>
+                  {uploadState.status === "uploading" ? "Uploading image..." : "Upload image"}
+                </span>
+                <input
+                  accept="image/*"
+                  disabled={uploadState.status === "uploading"}
+                  hidden
+                  type="file"
+                  onChange={(event) => {
+                    void handleImageFileSelection(event);
+                  }}
+                />
+              </label>
+              {uploadState.message ? <span>{uploadState.message}</span> : null}
+            </div>
             {images.map((image, index) => (
               <div key={image.id} className={styles.groupPanel}>
                 <label className={styles.formField}>
@@ -384,14 +536,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
               onClick={() =>
                 setImages((current) => [
                   ...current,
-                  {
-                    id: `image-${current.length + 1}`,
-                    publicId: "",
-                    altText: "",
-                    sortOrder: current.length + 1,
-                    role: "gallery",
-                    mediaType: "image",
-                  },
+                  createEmptyImageRow({ sortOrder: current.length + 1, role: "gallery" }),
                 ])
               }
             >
@@ -417,18 +562,34 @@ export function AdminProductForm(props: AdminProductFormProps) {
             <div className={styles.inlineGroup}>
               <label className={styles.formField}>
                 <span>Length (cm)</span>
-                <input defaultValue={props.product.dimensionsCmLength} name="dimensionsCmLength" type="number" />
+                <input
+                  name="dimensionsCmLength"
+                  type="number"
+                  value={dimensionsCmLength}
+                  onChange={(event) => setDimensionsCmLength(event.target.value)}
+                />
                 <em>{state.fieldErrors.dimensionsCmLength}</em>
               </label>
               <label className={styles.formField}>
                 <span>Width (cm)</span>
-                <input defaultValue={props.product.dimensionsCmWidth} name="dimensionsCmWidth" type="number" />
+                <input
+                  name="dimensionsCmWidth"
+                  type="number"
+                  value={dimensionsCmWidth}
+                  onChange={(event) => setDimensionsCmWidth(event.target.value)}
+                />
                 <em>{state.fieldErrors.dimensionsCmWidth}</em>
               </label>
             </div>
             <label className={styles.formField}>
               <span>Weight (kg)</span>
-              <input defaultValue={props.product.weightKg} name="weightKg" step="0.01" type="number" />
+              <input
+                name="weightKg"
+                step="0.01"
+                type="number"
+                value={weightKg}
+                onChange={(event) => setWeightKg(event.target.value)}
+              />
               <em>{state.fieldErrors.weightKg}</em>
             </label>
             <label className={styles.formField}>
@@ -556,6 +717,65 @@ export function AdminProductForm(props: AdminProductFormProps) {
       </div>
     </form>
   );
+}
+
+function createDefaultImageAltText(fileName: string, productName: string, imageNumber: number) {
+  const cleanedFileName = fileName.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
+
+  if (productName.trim()) {
+    return `${productName.trim()} image ${imageNumber}`;
+  }
+
+  return cleanedFileName || `Product image ${imageNumber}`;
+}
+
+function createEmptyImageRow(input: {
+  sortOrder: number;
+  role: "hero" | "gallery";
+}) {
+  return {
+    id: createImageRowId(),
+    publicId: "",
+    altText: "",
+    sortOrder: input.sortOrder,
+    role: input.role,
+    mediaType: "image" as const,
+    width: input.role === "hero" ? 1600 : undefined,
+    height: input.role === "hero" ? 1200 : undefined,
+  };
+}
+
+function createImageRowId() {
+  return `image-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function isBlankImageRow(image: {
+  publicId: string;
+  altText: string;
+}) {
+  return !image.publicId.trim() && !image.altText.trim();
+}
+
+async function readUploadErrorMessage(response: Response) {
+  const responseText = await response.text();
+
+  if (!responseText) {
+    return "";
+  }
+
+  try {
+    const parsed = JSON.parse(responseText) as
+      | {
+          error?: {
+            message?: string;
+          };
+        }
+      | undefined;
+
+    return parsed?.error?.message ?? responseText;
+  } catch {
+    return responseText;
+  }
 }
 
 function SubmitButton(props: { mode: "create" | "edit" }) {

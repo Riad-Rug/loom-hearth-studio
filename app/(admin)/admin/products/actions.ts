@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import type { Route } from "next";
 
 import type { AdminProductActionState } from "@/lib/admin/product-actions-shared";
@@ -23,7 +24,26 @@ export async function createAdminProductAction(
     };
   }
 
+  console.log("ADMIN_CREATE_PERMISSION_ALLOWED");
+
+  console.log("ADMIN_CREATE_FORMDATA", {
+    name: formData.get("name"),
+    description: formData.get("description"),
+    origin: formData.get("origin"),
+    seoTitle: formData.get("seoTitle"),
+    seoDescription: formData.get("seoDescription"),
+    dimensionsCmLength: formData.get("dimensionsCmLength"),
+    dimensionsCmWidth: formData.get("dimensionsCmWidth"),
+    weightKg: formData.get("weightKg"),
+    fixedQuantity: formData.get("fixedQuantity"),
+    imagesJson: formData.get("imagesJson"),
+  });
+
   const validation = validateProductMutationInput(parseProductFormData(formData));
+
+  console.log("ADMIN_CREATE_VALIDATION_RESULT", {
+    status: validation.status,
+  });
 
   if (validation.status === "invalid") {
     return {
@@ -35,18 +55,36 @@ export async function createAdminProductAction(
 
   const repository = createProductRepository();
 
+  console.log("ADMIN_CREATE_BEFORE_SLUG_EXISTS", {
+    slug: validation.value.slug,
+  });
+
   if (await repository.slugExists({ slug: validation.value.slug })) {
+    console.log("ADMIN_CREATE_SLUG_EXISTS_TRUE", {
+      slug: validation.value.slug,
+    });
+
     return {
       status: "error",
       message: "A persisted product already uses that slug. Slugs must remain globally unique in v1.",
       fieldErrors: {
-        slug: "Choose a different slug.",
+          slug: "Choose a different slug.",
       },
     };
   }
 
   try {
+    console.log("ADMIN_CREATE_BEFORE_REPOSITORY_CREATE", {
+      slug: validation.value.slug,
+      type: validation.value.type,
+      category: validation.value.category,
+    });
+
     const createdProduct = await repository.create(validation.value);
+
+    console.log("ADMIN_CREATE_AFTER_REPOSITORY_CREATE", {
+      id: createdProduct.id,
+    });
 
     revalidateCatalogPaths({
       productId: createdProduct.id,
@@ -57,6 +95,10 @@ export async function createAdminProductAction(
 
     redirect(`/admin/products/${createdProduct.id}` as Route);
   } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+
     if (isUniqueConstraintError(error)) {
       return {
         status: "error",
@@ -66,6 +108,8 @@ export async function createAdminProductAction(
         },
       };
     }
+
+    console.error("ADMIN_CREATE_CATCH_ERROR", error);
 
     return {
       status: "error",

@@ -1,3 +1,4 @@
+import { normalizeSlug } from "@/lib/catalog/product-validation";
 import type { MultiUnitProduct, Product, ProductCategory, RugProduct } from "@/types/domain";
 
 export type LaunchInventoryState = "inStock" | "lowStock" | "outOfStock";
@@ -11,7 +12,7 @@ export function formatProductPriceUsd(priceUsd: number) {
 
 export function getProductRoutePath(product: Product) {
   return product.type === "rug"
-    ? `/shop/rugs/${product.rugStyle}/${product.slug}`
+    ? `/shop/rugs/${normalizeSlug(product.rugStyle)}/${product.slug}`
     : `/shop/${product.category}/${product.slug}`;
 }
 
@@ -77,4 +78,3 @@ export function formatRugDimensions(product: RugProduct) {
 export function formatRugWeight(product: RugProduct) {
   return `${product.weightKg.toFixed(1)} kg`;
 }
-

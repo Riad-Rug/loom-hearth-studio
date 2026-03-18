@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { inspect } from "node:util";
 
 import { mapCatalogProductRecordToDomainProduct, mapProductMutationInputToCreateInput, mapProductMutationInputToUpdateInput } from "@/lib/catalog/product-mappers";
 import type { ProductMutationInput } from "@/lib/catalog/product-validation";
@@ -78,11 +79,21 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async create(input: ProductMutationInput) {
-    const createdProduct = await this.context.client.catalogProduct.create({
-      data: mapProductMutationInputToCreateInput(input),
-    });
+    const data = mapProductMutationInputToCreateInput(input);
 
-    return mapCatalogProductRecordToDomainProduct(createdProduct);
+    try {
+      const createdProduct = await this.context.client.catalogProduct.create({
+        data,
+      });
+
+      return mapCatalogProductRecordToDomainProduct(createdProduct);
+    } catch (error) {
+      console.error("PRODUCT_REPOSITORY_CREATE_FAILED", {
+        error,
+        data: inspect(data, { depth: null }),
+      });
+      throw error;
+    }
   }
 
   async update(input: ProductMutationInput & { id: string }) {
