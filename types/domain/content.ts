@@ -24,6 +24,7 @@ export type Testimonial = {
   quote: string;
   customerName: string;
   location?: string;
+  avatarUrl?: string;
   sortOrder: number;
 };
 

@@ -14,7 +14,7 @@ export function SiteFooter() {
               Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor.
             </p>
             <p className="site-footer__meta">
-              Editorial selection for a United States launch in USD.
+              Curated for a United States launch in USD.
             </p>
           </div>
           <div className="site-footer__nav-group">

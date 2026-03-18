@@ -67,10 +67,9 @@ export function HomePageView() {
           <p className={styles.eyebrow}>Categories</p>
           <h2>Shop Moroccan rugs, poufs, pillows, and decor by category.</h2>
           <p className={styles.sectionBody}>
-            Explore the launch collection through the pieces shoppers look for most: Moroccan
+            Shop the launch collection through the pieces customers search for most: Moroccan
             rugs, vintage rugs, leather poufs, cactus silk pillows, and handcrafted home decor.
-            The structure stays simple so customers can move quickly from inspiration to product
-            discovery.
+            Each category is designed to make discovery faster and selection easier.
           </p>
         </div>
         <div className={styles.categoryGrid}>
@@ -88,16 +87,16 @@ export function HomePageView() {
         <div className={styles.featuredLayout}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Featured products</p>
-            <h2>A curated edit of Moroccan rugs, poufs, and pillows.</h2>
+            <h2>Start with the signature pieces of the collection.</h2>
             <p className={styles.sectionBody}>
-              Start with the pieces that define the collection: Moroccan rugs for grounding a
-              room, leather poufs for flexible seating, and cactus silk pillows for a softer
-              finishing touch.
+              These featured previews reflect the product directions at the center of the launch:
+              Moroccan rugs for grounding a room, leather poufs for flexible function, and cactus
+              silk pillows for layered finishing detail.
             </p>
           </div>
           <div className={styles.featuredGrid}>
             {homeFeaturedProducts.map((product) => (
-              <article key={product.name} className={styles.productCard}>
+              <Link key={product.name} className={styles.productCard} href={product.href ?? "/shop"}>
                 <div className={styles.productImagePlaceholder}>
                   <PlaceholderMedia
                     alt={product.name}
@@ -111,7 +110,7 @@ export function HomePageView() {
                   <p className={styles.productPrice}>{product.price}</p>
                   <p>{product.note}</p>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </div>
@@ -120,11 +119,15 @@ export function HomePageView() {
       <Section width="wide">
         <div className={styles.narrativeGrid}>
           {homeNarrativeSections.map((section) => (
-            <article key={section.title} className={styles.narrativeCard}>
+            <Link
+              key={section.title}
+              className={styles.narrativeCard}
+              href={section.href ?? "/shop"}
+            >
               <p className={styles.eyebrow}>{section.eyebrow}</p>
               <h2>{section.title}</h2>
               <p>{section.body}</p>
-            </article>
+            </Link>
           ))}
         </div>
       </Section>
@@ -133,7 +136,7 @@ export function HomePageView() {
         <div className={styles.badgesSection}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Launch essentials</p>
-            <h2>Handcrafted signals that define the collection.</h2>
+            <h2>Why these pieces stand out.</h2>
           </div>
           <div className={styles.badgesGrid}>
             {homeTrustBadges.map((badge) => (
@@ -156,14 +159,25 @@ export function HomePageView() {
       <Section width="wide">
         <div className={styles.testimonialsLayout}>
           <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>Testimonials</p>
-            <h2>A testimonial layer ready for real post-launch feedback.</h2>
+            <p className={styles.eyebrow}>Customer feedback</p>
+            <h2>Early impressions from first clients and private buyers.</h2>
           </div>
           <div className={styles.testimonialsGrid}>
             {homeTestimonials.map((testimonial) => (
               <blockquote key={testimonial.id} className={styles.testimonialCard}>
                 <p>{testimonial.quote}</p>
                 <footer>
+                  {testimonial.avatarUrl ? (
+                    <img
+                      alt={testimonial.customerName}
+                      className={styles.testimonialAvatar}
+                      decoding="async"
+                      height="56"
+                      loading="lazy"
+                      src={testimonial.avatarUrl}
+                      width="56"
+                    />
+                  ) : null}
                   <strong>{testimonial.customerName}</strong>
                   {testimonial.location ? <span>{testimonial.location}</span> : null}
                 </footer>
