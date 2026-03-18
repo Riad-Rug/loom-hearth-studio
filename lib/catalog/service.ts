@@ -16,6 +16,7 @@ import type {
   RugProductDetailPageViewModel,
 } from "@/lib/catalog/contracts";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
+import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
 import type { Product, ProductCategory } from "@/types/domain";
 
@@ -92,6 +93,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     badge: getProductBadgeLabel(product),
     primaryImage: primaryImage
       ? {
+          src: buildCloudinaryUrl(primaryImage.publicId),
           publicId: primaryImage.publicId,
           altText: primaryImage.altText,
         }
@@ -131,6 +133,7 @@ function createProductDetailPageViewModel(
       .map((image, index) => ({
         id: image.id,
         label: `Gallery image ${String(index + 1).padStart(2, "0")}`,
+        src: buildCloudinaryUrl(image.publicId),
         publicId: image.publicId,
         altText: image.altText,
       })),

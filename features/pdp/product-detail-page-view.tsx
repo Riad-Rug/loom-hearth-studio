@@ -4,7 +4,6 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useState } from "react";
 
-import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
 import type { MultiUnitProductDetailPageViewModel, ProductDetailPageViewModel } from "@/lib/catalog/contracts";
@@ -28,7 +27,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               {primaryImage ? (
                 <img
                   alt={primaryImage.altText || product.name}
-                  src={buildCloudinaryUrl(primaryImage.publicId)}
+                  src={primaryImage.src}
                   style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 />
               ) : (
@@ -46,7 +45,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                 <div key={item.id} className={styles.thumbnailCard}>
                   <img
                     alt={item.altText || `${product.name} ${item.label}`}
-                    src={buildCloudinaryUrl(item.publicId)}
+                    src={item.src}
                     style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
                 </div>

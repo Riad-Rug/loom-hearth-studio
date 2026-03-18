@@ -19,6 +19,7 @@ export type CatalogProductCardViewModel = {
   routePattern: string;
   badge: string;
   primaryImage?: {
+    src: string;
     publicId: string;
     altText: string;
   };
@@ -47,6 +48,7 @@ type ProductDetailPageViewModelBase = {
   gallery: Array<{
     id: string;
     label: string;
+    src: string;
     publicId: string;
     altText: string;
   }>;

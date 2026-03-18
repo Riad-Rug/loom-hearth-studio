@@ -1,7 +1,6 @@
 import type { Route } from "next";
 import Link from "next/link";
 
-import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
@@ -18,7 +17,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {product.primaryImage ? (
           <img
             alt={product.primaryImage.altText || product.name}
-            src={buildCloudinaryUrl(product.primaryImage.publicId)}
+            src={product.primaryImage.src}
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
         ) : (
