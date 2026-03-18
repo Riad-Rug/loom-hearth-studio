@@ -2,12 +2,12 @@ import type { Testimonial } from "@/types/domain";
 
 export const homeHero = {
   eyebrow: "Loom & Hearth Studio",
-  title: "A premium editorial storefront for handcrafted Moroccan rugs and home decor.",
+  title: "Handcrafted Moroccan rugs and home decor for collected, design-led interiors.",
   description:
-    "The homepage is implemented with static placeholder content only. It preserves the PRD structure for hero storytelling, category browsing, featured products, testimonials, and newsletter capture without introducing live commerce or CMS behavior.",
+    "Discover Moroccan rugs, vintage rugs, leather poufs, cactus silk pillows, and handcrafted decor selected for texture, warmth, and everyday beauty. From plush Beni Ourain rugs to storied one-of-one finds, each piece brings artisanal character home.",
   primaryCta: {
     href: "/shop",
-    label: "Explore the collection",
+    label: "Shop Moroccan rugs",
   },
   secondaryCta: {
     href: "/lookbook",
@@ -16,7 +16,7 @@ export const homeHero = {
 } as const;
 
 export const homeTrustBanner = [
-  "Guest checkout",
+  "Direct checkout",
   "United States shipping",
   "USD pricing only",
   "Free shipping at launch",
@@ -25,111 +25,123 @@ export const homeTrustBanner = [
 export const homeStats = [
   {
     value: "5",
-    label: "launch shop categories",
+    label: "launch categories",
+    supportingText: "Moroccan rugs, poufs, pillows, decor, and vintage pieces.",
   },
   {
     value: "2",
-    label: "product page templates",
+    label: "signature directions",
+    supportingText: "Beni Ourain neutrals and vintage character-led rugs.",
   },
   {
     value: "US",
     label: "launch market only",
+    supportingText: "USD checkout and domestic shipping for the first release.",
   },
 ] as const;
 
 export const homeTrustBadges = [
-  "Handcrafted pieces",
-  "Editorial storytelling",
-  "SEO-focused storefront",
-  "Cloudinary-ready media model",
+  "Handcrafted in Morocco",
+  "Beni Ourain & vintage rugs",
+  "Leather poufs & pillows",
+  "Curated home decor",
 ] as const;
 
 export const homeCategories = [
   {
-    title: "Rugs",
+    title: "Moroccan Rugs",
     href: "/shop/rugs",
-    description: "Unique handcrafted rugs with their own dedicated product template.",
+    description:
+      "Handcrafted area rugs including Beni Ourain-inspired neutrals, textured wool pieces, and statement designs for living spaces and bedrooms.",
   },
   {
     title: "Poufs",
     href: "/shop/poufs",
-    description: "Multi-unit decor products reserved for inventory-aware merchandising.",
+    description:
+      "Moroccan leather poufs and relaxed floor seating that add warmth, texture, and flexible function.",
   },
   {
     title: "Pillows",
     href: "/shop/pillows",
-    description: "Soft furnishings placeholder category for the launch catalog structure.",
+    description:
+      "Cactus silk and woven accent pillows designed to layer color, softness, and artisanal detail.",
   },
   {
     title: "Decor",
     href: "/shop/decor",
-    description: "Home accents showcased through the same premium editorial system.",
+    description:
+      "Handcrafted Moroccan decor chosen for shelves, tables, and finishing touches with soul.",
   },
   {
-    title: "Vintage",
+    title: "Vintage Rugs",
     href: "/shop/vintage",
-    description: "A preserved launch category route for curated one-off and collectible pieces.",
+    description: "One-of-one vintage Moroccan rugs with patina, character, and collected appeal.",
   },
 ] as const;
 
 export const homeFeaturedProducts = [
   {
-    name: "Atlas Loom Rug",
+    name: "Moroccan rug preview",
     type: "Rug placeholder",
     price: "$0.00",
-    note: "Static placeholder card for the unique-item rug PDP flow.",
+    note: "Launch preview placeholder. Final size, materials, and pricing will appear once the live catalog is connected.",
   },
   {
-    name: "Clay Weave Pouf",
+    name: "Leather pouf preview",
     type: "Multi-unit placeholder",
     price: "$0.00",
-    note: "Static placeholder card for inventory-based merchandising.",
+    note: "Launch preview placeholder. Final size, color, and availability will appear once the live catalog is connected.",
   },
   {
-    name: "Hearth Stripe Pillow",
+    name: "Cactus silk pillow preview",
     type: "Multi-unit placeholder",
     price: "$0.00",
-    note: "Static placeholder card only. No real catalog retrieval is implemented.",
+    note: "Launch preview placeholder. Final fabric, dimensions, and pricing will appear once the live catalog is connected.",
   },
 ] as const;
 
 export const homeNarrativeSections = [
   {
     eyebrow: "Brand story",
-    title: "An editorial tone built around craft, material, and provenance.",
+    title: "Moroccan craft, material depth, and a more thoughtful pace of home.",
     body:
-      "The PRD calls for homepage narrative sections and a premium storefront voice. This slice implements that structure with static copy only, so the final content can be managed later without changing the page architecture.",
+      "Loom & Hearth Studio brings together handcrafted Moroccan rugs and decor selected for texture, utility, and lasting presence — pieces that feel collected rather than mass produced.",
   },
   {
     eyebrow: "Media direction",
-    title: "Designed for large-format imagery, layered storytelling, and curated highlights.",
+    title: "Designed for layered rooms, quiet color, and tactile living.",
     body:
-      "Homepage hero media, category tiles, lookbook imagery, testimonials, and trust elements all have reserved presentation patterns here. Live assets, CMS wiring, and merchandising rules remain out of scope for this slice.",
+      "The collection pairs sculptural rugs, vintage character, and soft-textured accents to help build interiors that feel warm, grounded, and individual.",
   },
 ] as const;
 
 export const homeTestimonials: Testimonial[] = [
   {
     id: "testimonial-1",
-    quote:
-      "Placeholder testimonial preview for the homepage. Final customer stories will be entered through the future content workflow.",
-    customerName: "Studio Client",
-    location: "United States",
+    quote: "Customer testimonials will appear here once post-launch reviews are available.",
+    customerName: "Future client stories",
+    location: "Launch phase",
     sortOrder: 1,
   },
   {
     id: "testimonial-2",
     quote:
-      "This section is intentionally static for now, but the PRD-supported testimonial surface is now represented in the homepage structure.",
-    customerName: "Editorial Buyer",
-    location: "United States",
+      "Until then, this section should support trust without manufacturing proof that does not yet exist.",
+    customerName: "Editorial note",
+    location: "Placeholder copy",
     sortOrder: 2,
   },
 ] as const;
 
 export const homeNewsletter = {
   eyebrow: "Newsletter",
-  title: "Stay close to new arrivals, lookbook updates, and studio notes.",
-  description:
-    "This is UI only. Newsletter platform selection and subscription handling remain unresolved and are intentionally not implemented in this slice.",
+  title: "Be first to see new Moroccan rugs, vintage finds, and studio updates.",
+  description: "Join for new arrivals, lookbook releases, and behind-the-scenes notes from Loom & Hearth Studio.",
+} as const;
+
+export const homeSeoSection = {
+  eyebrow: "Moroccan rugs guide",
+  title: "What makes Moroccan rugs unique?",
+  body:
+    "Moroccan rugs stand out for their texture, handwoven character, and sense of individuality. Some styles feel plush and minimal, like Beni Ourain rugs, while vintage flatweaves and color-rich pieces add movement and history. The result is a rug that warms a room visually and physically while still feeling collected and personal.",
 } as const;

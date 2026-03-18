@@ -9,6 +9,7 @@ import {
   homeHero,
   homeNarrativeSections,
   homeNewsletter,
+  homeSeoSection,
   homeStats,
   homeTestimonials,
   homeTrustBadges,
@@ -38,12 +39,13 @@ export function HomePageView() {
 
           <div className={styles.heroAside}>
             <div className={styles.statsPanel}>
-              <p className={styles.panelLabel}>Launch shape</p>
+              <p className={styles.panelLabel}>Launch signals</p>
               <div className={styles.statsGrid}>
                 {homeStats.map((stat) => (
                   <article key={stat.label} className={styles.statCard}>
                     <strong>{stat.value}</strong>
                     <span>{stat.label}</span>
+                    <span>{stat.supportingText}</span>
                   </article>
                 ))}
               </div>
@@ -63,7 +65,13 @@ export function HomePageView() {
       <Section width="wide">
         <div className={styles.sectionIntro}>
           <p className={styles.eyebrow}>Categories</p>
-          <h2>Browse the launch collection through a curated category structure.</h2>
+          <h2>Shop Moroccan rugs, poufs, pillows, and decor by category.</h2>
+          <p className={styles.sectionBody}>
+            Explore the launch collection through the pieces shoppers look for most: Moroccan
+            rugs, vintage rugs, leather poufs, cactus silk pillows, and handcrafted home decor.
+            The structure stays simple so customers can move quickly from inspiration to product
+            discovery.
+          </p>
         </div>
         <div className={styles.categoryGrid}>
           {homeCategories.map((category, index) => (
@@ -80,10 +88,11 @@ export function HomePageView() {
         <div className={styles.featuredLayout}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Featured products</p>
-            <h2>Static product placeholders reserved for future merchandising.</h2>
+            <h2>A curated edit of Moroccan rugs, poufs, and pillows.</h2>
             <p className={styles.sectionBody}>
-              No product retrieval is implemented in this slice. These cards exist only to
-              reserve the homepage section shape described in the PRD.
+              Start with the pieces that define the collection: Moroccan rugs for grounding a
+              room, leather poufs for flexible seating, and cactus silk pillows for a softer
+              finishing touch.
             </p>
           </div>
           <div className={styles.featuredGrid}>
@@ -123,8 +132,8 @@ export function HomePageView() {
       <Section tone="muted" width="wide">
         <div className={styles.badgesSection}>
           <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>Trust markers</p>
-            <h2>Homepage support elements reserved for badges and merchandising signals.</h2>
+            <p className={styles.eyebrow}>Launch essentials</p>
+            <h2>Handcrafted signals that define the collection.</h2>
           </div>
           <div className={styles.badgesGrid}>
             {homeTrustBadges.map((badge) => (
@@ -137,10 +146,18 @@ export function HomePageView() {
       </Section>
 
       <Section width="wide">
+        <div className={styles.sectionIntro}>
+          <p className={styles.eyebrow}>{homeSeoSection.eyebrow}</p>
+          <h2>{homeSeoSection.title}</h2>
+          <p className={styles.sectionBody}>{homeSeoSection.body}</p>
+        </div>
+      </Section>
+
+      <Section width="wide">
         <div className={styles.testimonialsLayout}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Testimonials</p>
-            <h2>A preview of the PRD-supported testimonial layer.</h2>
+            <h2>A testimonial layer ready for real post-launch feedback.</h2>
           </div>
           <div className={styles.testimonialsGrid}>
             {homeTestimonials.map((testimonial) => (

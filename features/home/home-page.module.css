@@ -1,6 +1,6 @@
 .page {
   display: grid;
-  gap: var(--space-7);
+  gap: var(--space-5);
 }
 
 .hero {
@@ -64,9 +64,11 @@
   justify-content: center;
   padding: 0.95rem 1.3rem;
   border-radius: 999px;
+  box-shadow: none;
   transition:
     background-color 150ms ease,
     border-color 150ms ease,
+    box-shadow 150ms ease,
     color 150ms ease,
     transform 150ms ease;
 }
@@ -76,12 +78,13 @@
   border: 1px solid var(--color-clay-terracotta);
   background: var(--color-clay-terracotta);
   color: var(--color-white);
+  box-shadow: 0 0.75rem 1.5rem rgba(184, 94, 59, 0.18);
 }
 
 .secondaryAction {
   border: 1px solid var(--color-border-strong);
-  background: rgba(255, 255, 255, 0.55);
-  color: var(--color-charcoal-ink);
+  background: rgba(255, 255, 255, 0.48);
+  color: rgba(34, 33, 38, 0.86);
 }
 
 .primaryAction:hover,
@@ -94,6 +97,19 @@
   outline: none;
 }
 
+.primaryAction:hover,
+.primaryAction:focus-visible,
+.newsletterButton:hover,
+.newsletterButton:focus-visible {
+  box-shadow: 0 1rem 1.8rem rgba(184, 94, 59, 0.22);
+}
+
+.secondaryAction:hover,
+.secondaryAction:focus-visible {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(34, 33, 38, 0.18);
+}
+
 .heroAside {
   display: flex;
   align-items: stretch;
@@ -103,10 +119,10 @@
   display: grid;
   width: 100%;
   gap: var(--space-4);
-  padding: var(--space-5);
+  padding: calc(var(--space-4) + 0.15rem);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(34, 33, 38, 0.94);
+  background: rgba(34, 33, 38, 0.82);
   color: var(--color-wool-cream);
 }
 
@@ -162,7 +178,7 @@
   display: grid;
   gap: var(--space-3);
   max-width: 42rem;
-  margin-bottom: var(--space-5);
+  margin-bottom: calc(var(--space-4) - 0.25rem);
 }
 
 .sectionIntro h2 {
@@ -198,9 +214,29 @@
   gap: var(--space-3);
   min-height: 15rem;
   padding: var(--space-5);
+  color: inherit;
+  text-decoration: none;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(245, 239, 228, 0.94)),
     linear-gradient(135deg, rgba(184, 94, 59, 0.08), transparent);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.categoryCard:hover,
+.categoryCard:focus-visible {
+  border-color: rgba(34, 33, 38, 0.16);
+  box-shadow: var(--shadow-panel);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.categoryCard:hover .categoryIndex,
+.categoryCard:focus-visible .categoryIndex {
+  color: var(--color-clay-terracotta);
 }
 
 .categoryIndex {
@@ -228,17 +264,21 @@
 .testimonialsLayout,
 .badgesSection {
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 .featuredGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 .productCard {
   overflow: hidden;
+  border-color: rgba(34, 33, 38, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(245, 239, 228, 0.94));
+  box-shadow: 0 1rem 2rem rgba(34, 33, 38, 0.1);
 }
 
 .productImagePlaceholder {
@@ -251,8 +291,8 @@
 
 .productMeta {
   display: grid;
-  gap: var(--space-2);
-  padding: var(--space-5);
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-5) calc(var(--space-5) + 0.15rem);
 }
 
 .productPrice {
@@ -271,7 +311,9 @@
 .narrativeCard {
   display: grid;
   gap: var(--space-4);
-  padding: var(--space-6);
+  padding: var(--space-5);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: none;
 }
 
 .narrativeCard h2 {
@@ -287,6 +329,7 @@
 
 .badgeCard {
   font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.54);
 }
 
 .testimonialsGrid {
@@ -298,7 +341,9 @@
 .testimonialCard {
   display: grid;
   gap: var(--space-4);
-  padding: var(--space-6);
+  padding: var(--space-5);
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: none;
 }
 
 .testimonialCard footer {
@@ -318,10 +363,11 @@
 .newsletterCard {
   display: grid;
   gap: var(--space-5);
-  padding: var(--space-6);
+  padding: var(--space-5);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(245, 239, 228, 0.95)),
-    radial-gradient(circle at top right, rgba(184, 94, 59, 0.12), transparent 38%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(245, 239, 228, 0.9)),
+    radial-gradient(circle at top right, rgba(184, 94, 59, 0.08), transparent 38%);
+  box-shadow: none;
 }
 
 .newsletterForm {

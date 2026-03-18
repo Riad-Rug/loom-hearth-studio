@@ -17,6 +17,10 @@ export function CatalogPageView({ category, products }: CatalogPageViewProps) {
   const categoryMeta = category
     ? catalogCategories.find((item) => item.key === category) ?? null
     : null;
+  const heroTitle = categoryMeta ? categoryMeta.label : "Shop the collection";
+  const heroCopy = categoryMeta
+    ? categoryMeta.description
+    : "A curated edit of rugs, pillows, poufs, vintage textiles, and decor designed to bring warmth and texture home.";
 
   return (
     <div className={styles.page}>
@@ -24,23 +28,17 @@ export function CatalogPageView({ category, products }: CatalogPageViewProps) {
         <div className={styles.hero}>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>
-              {categoryMeta ? categoryMeta.label : "Shop"}
+              {categoryMeta ? "Collection" : "Storefront"}
             </p>
-            <h1>
-              {categoryMeta ? `${categoryMeta.label} launch collection` : "Browse the launch collection"}
-            </h1>
-            <p className={styles.lede}>
-              {categoryMeta
-                ? categoryMeta.description
-                : "Shop and PDP routes now read from the committed launch catalog source of truth while cart validation, filtering behavior, and broader inventory workflows remain out of scope."}
-            </p>
+            <h1>{heroTitle}</h1>
+            <p className={styles.lede}>{heroCopy}</p>
           </div>
           <div className={styles.heroPanel}>
-            <p className={styles.heroPanelLabel}>Catalog scope</p>
+            <p className={styles.heroPanelLabel}>In this collection</p>
             <ul className={styles.heroPanelList}>
-              <li>Repository-backed launch products</li>
-              <li>Type A and Type B product models</li>
-              <li>Category and PDP routes wired to real retrieval</li>
+              <li>Artisan-made textures and earthy palettes</li>
+              <li>Collected pieces for layering, gifting, and everyday living</li>
+              <li>Ready to browse by category or sort by what suits your space</li>
             </ul>
           </div>
         </div>
@@ -72,28 +70,20 @@ export function CatalogPageView({ category, products }: CatalogPageViewProps) {
 
       <Section width="wide">
         <div className={styles.catalogShell}>
-          <aside className={styles.sidebar}>
-            <div className={styles.sidebarCard}>
-              <p className={styles.sidebarHeading}>Filters</p>
-              <p className={styles.sidebarCopy}>
-                The PRD supports filtered catalog states, but filtering behavior remains a UI
-                shell in this slice.
-              </p>
-              <div className={styles.filterList}>
-                {catalogFilterLabels.map((label) => (
-                  <button key={label} className={styles.filterChip} type="button">
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </aside>
-
           <div className={styles.catalogContent}>
             <div className={styles.catalogToolbar}>
-              <p className={styles.toolbarCount}>
-                {products.length} launch {products.length === 1 ? "item" : "items"}
-              </p>
+              <div className={styles.toolbarIntro}>
+                <p className={styles.toolbarCount}>
+                  {products.length} {products.length === 1 ? "piece" : "pieces"}
+                </p>
+                <div className={styles.filterList} aria-label="Collection highlights">
+                  {catalogFilterLabels.map((label) => (
+                    <span key={label} className={styles.filterChip}>
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
               <div className={styles.sortShell}>
                 <label htmlFor="catalog-sort">Sort</label>
                 <select id="catalog-sort" className={styles.sortSelect} defaultValue="Featured">

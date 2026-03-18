@@ -5,31 +5,31 @@ export const catalogCategories = [
     key: "rugs",
     label: "Rugs",
     href: "/shop/rugs",
-    description: "Unique, single-quantity handcrafted rugs with their own PDP template.",
+    description: "Handwoven statement rugs chosen for warmth, texture, and one-of-a-kind character.",
   },
   {
     key: "poufs",
     label: "Poufs",
     href: "/shop/poufs",
-    description: "Multi-unit home decor pieces with quantity-aware launch inventory.",
+    description: "Soft, sculptural poufs that add relaxed seating and layered texture to a room.",
   },
   {
     key: "pillows",
     label: "Pillows",
     href: "/shop/pillows",
-    description: "Soft furnishings with launch-ready size or variant presentation.",
+    description: "Collected pillows in earthy tones and artisan weaves for an inviting finishing touch.",
   },
   {
     key: "decor",
     label: "Decor",
     href: "/shop/decor",
-    description: "Accessory pieces selected for tabletop, shelf, and styling layers.",
+    description: "Decor accents selected to bring shape, depth, and lived-in detail to every surface.",
   },
   {
     key: "vintage",
     label: "Vintage",
     href: "/shop/vintage",
-    description: "One-of-one vintage textile pieces surfaced through the Type A product model.",
+    description: "Vintage finds with patina, provenance, and a collected feel that cannot be repeated.",
   },
 ] as const satisfies ReadonlyArray<{
   key: ProductCategory;
@@ -46,8 +46,8 @@ export const catalogSortOptions = [
 ] as const;
 
 export const catalogFilterLabels = [
-  "Rugs",
-  "Multi-unit",
-  "Handcrafted",
-  "New arrivals",
+  "Handwoven",
+  "One of a kind",
+  "Layering pieces",
+  "Fresh arrivals",
 ] as const;

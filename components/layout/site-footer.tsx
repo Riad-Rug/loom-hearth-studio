@@ -10,9 +10,11 @@ export function SiteFooter() {
         <div className="site-footer__grid">
           <div className="site-footer__intro">
             <p className="site-footer__eyebrow">{siteConfig.name}</p>
-            <p className="site-footer__brand">{siteConfig.tagline}</p>
+            <p className="site-footer__brand">
+              Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor.
+            </p>
             <p className="site-footer__meta">
-              Editorial storefront foundation for a United States launch in USD.
+              Editorial selection for a United States launch in USD.
             </p>
           </div>
           <div className="site-footer__nav-group">
@@ -33,6 +35,26 @@ export function SiteFooter() {
                   {item.label}
                 </Link>
               ))}
+            </nav>
+          </div>
+          <div className="site-footer__nav-group">
+            <p className="site-footer__heading">Collections</p>
+            <nav aria-label="Footer collections" className="site-footer__nav">
+              <Link className="site-footer__link" href="/shop/rugs">
+                Moroccan rugs
+              </Link>
+              <Link className="site-footer__link" href="/shop/vintage">
+                Vintage rugs
+              </Link>
+              <Link className="site-footer__link" href="/shop/poufs">
+                Poufs
+              </Link>
+              <Link className="site-footer__link" href="/shop/pillows">
+                Pillows
+              </Link>
+              <Link className="site-footer__link" href="/shop/decor">
+                Home decor
+              </Link>
             </nav>
           </div>
         </div>

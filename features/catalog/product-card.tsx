@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -11,36 +14,52 @@ type ProductCardProps = {
 };
 
 export function ProductCard({ product }: ProductCardProps) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const descriptor = getDescriptor(product.description, product.merchandisingNote);
+  const primaryImage = product.primaryImage;
+  const showImage = primaryImage !== undefined && !imageFailed;
+
   return (
     <Link className={styles.productCard} href={product.href as Route}>
       <div className={styles.productMedia}>
-        {product.primaryImage ? (
+        {showImage ? (
           <img
-            alt={product.primaryImage.altText || product.name}
-            src={product.primaryImage.src}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            alt={primaryImage.altText || product.name}
+            className={styles.productImage}
+            loading="lazy"
+            onError={() => setImageFailed(true)}
+            src={primaryImage.src}
           />
         ) : (
-          <PlaceholderMedia
-            alt={product.name}
-            aspectRatio="4 / 5"
-            label={product.badge}
-            sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 33vw"
-          />
+          <div className={styles.productFallback}>
+            <PlaceholderMedia
+              alt={product.name}
+              aspectRatio="4 / 5"
+              label="Loom & Hearth"
+              sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 33vw"
+            />
+            <span className={styles.productFallbackNote}>Collection preview coming soon</span>
+          </div>
         )}
       </div>
       <div className={styles.productContent}>
-        <div className={styles.productTopline}>
-          <p className={styles.productCategory}>{product.category}</p>
-          <p className={styles.productPrice}>{product.priceUsdLabel}</p>
-        </div>
+        <p className={styles.productCategory}>{formatCategory(product.category)}</p>
         <h3>{product.name}</h3>
-        <p className={styles.productSummary}>{product.description}</p>
-        <div className={styles.productMetaList}>
-          <span>{product.merchandisingNote}</span>
-          <span>PDP route reserved: {product.routePattern}</span>
-        </div>
+        <p className={styles.productPrice}>{product.priceUsdLabel}</p>
+        <p className={styles.productSummary}>{descriptor}</p>
       </div>
     </Link>
   );
+}
+
+function formatCategory(category: string) {
+  return category.charAt(0).toUpperCase() + category.slice(1);
+}
+
+function getDescriptor(description: string, merchandisingNote: string) {
+  const candidate = description.trim() || merchandisingNote.trim();
+  const normalized = candidate.replace(/\s+/g, " ");
+  const firstSentence = normalized.match(/.+?[.!?](?:\s|$)/)?.[0] ?? normalized;
+
+  return firstSentence.length > 110 ? `${firstSentence.slice(0, 107).trimEnd()}...` : firstSentence;
 }
