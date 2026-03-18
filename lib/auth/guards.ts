@@ -9,7 +9,7 @@ export type AdminAccessDecision = {
   status: "allowed" | "requires-auth" | "requires-role";
   allowedRoles: readonly AdminRole[];
   currentRole?: AdminRole;
-  redirectTarget: "/admin" | "/account/login" | "/";
+  redirectTarget: "/admin" | "/admin/login" | "/";
   sessionSummary: ReturnType<typeof createSessionSummary>;
 };
 
@@ -43,7 +43,7 @@ export function getAdminAccessDecision(input: {
     return {
       status: "requires-auth",
       allowedRoles,
-      redirectTarget: "/account/login",
+      redirectTarget: "/admin/login",
       sessionSummary,
     };
   }

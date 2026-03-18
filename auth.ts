@@ -25,18 +25,21 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        surface: { label: "Surface", type: "text" },
       },
       async authorize(credentials, req) {
         const email = typeof credentials?.email === "string" ? credentials.email.trim() : "";
         const password =
           typeof credentials?.password === "string" ? credentials.password : "";
+        const loginSurface =
+          credentials?.surface === "admin-login" ? "admin-login" : "account-login";
 
         if (!email || !password) {
           return null;
         }
 
         const rateLimit = await checkLoginRateLimit({
-          surface: "account-login",
+          surface: loginSurface,
           email,
           headers: req.headers ?? {},
         });
@@ -53,7 +56,7 @@ export const authOptions: NextAuthOptions = {
 
         if (!user) {
           await recordFailedLoginAttempt({
-            surface: "account-login",
+            surface: loginSurface,
             identifierHash: rateLimit.identifierHash,
           });
           return null;
@@ -66,14 +69,25 @@ export const authOptions: NextAuthOptions = {
 
         if (!passwordMatches) {
           await recordFailedLoginAttempt({
-            surface: "account-login",
+            surface: loginSurface,
+            identifierHash: rateLimit.identifierHash,
+          });
+          return null;
+        }
+
+        if (
+          loginSurface === "admin-login" &&
+          (!user.role || !["admin", "editor", "viewer"].includes(user.role))
+        ) {
+          await recordFailedLoginAttempt({
+            surface: loginSurface,
             identifierHash: rateLimit.identifierHash,
           });
           return null;
         }
 
         await clearLoginRateLimitAttempts({
-          surface: "account-login",
+          surface: loginSurface,
           identifierHash: rateLimit.identifierHash,
         });
 

@@ -32,6 +32,8 @@ export type AccountAuthRouteViewModel = {
 
 export function createAccountAuthRouteViewModel(input: {
   mode: AccountAuthMode;
+  surface?: "account" | "admin";
+  redirectTargetOverride?: "/account/login" | "/admin/login";
   accessDecision: AccountAccessDecision;
   forgotPasswordState: ForgotPasswordRequestState;
   passwordResetTokenView: PasswordResetTokenView;
@@ -44,6 +46,12 @@ export function createAccountAuthRouteViewModel(input: {
   registerRequestTodo: string;
   emailServiceTodo: string;
 }): AccountAuthRouteViewModel {
+  const surface = input.surface ?? "account";
+  const surfaceLabel = surface === "admin" ? "admin" : "account";
+  const guestAudience = surface === "admin" ? "back-office users" : "customers";
+  const guestRedirectTarget = surface === "admin" ? "/admin" : "/account";
+  const boundaryRedirectTarget =
+    input.redirectTargetOverride ?? input.accessDecision.redirectTarget;
   const requestPresentation =
     input.mode === "forgot-password"
       ? {
@@ -100,15 +108,15 @@ export function createAccountAuthRouteViewModel(input: {
   return {
     authBoundary: {
       title: "Auth boundary",
-      statusLine: `${input.accessDecision.sessionSummary.status} on the account surface. Access: ${input.accessDecision.status}.`,
-      redirectTargetLine: `Boundary redirect target: ${input.accessDecision.redirectTarget}`,
+      statusLine: `${input.accessDecision.sessionSummary.status} on the ${surfaceLabel} surface. Access: ${input.accessDecision.status}.`,
+      redirectTargetLine: `Boundary redirect target: ${boundaryRedirectTarget}`,
       todoLine: `${input.accessDecision.sessionSummary.todo} ${input.accountGuardTodo}`,
     },
     guestRoute: {
       title: "Guest-only route",
       body:
-        "These auth routes remain available to signed-out customers only. Signed-in customers are redirected to `/account`.",
-      redirectTargetLine: `Boundary redirect target: ${input.accessDecision.redirectTarget}`,
+        `These auth routes remain available to signed-out ${guestAudience} only. Signed-in users are redirected to \`${guestRedirectTarget}\`.`,
+      redirectTargetLine: `Boundary redirect target: ${boundaryRedirectTarget}`,
     },
     requestPresentation,
   };

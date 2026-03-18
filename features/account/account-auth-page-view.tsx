@@ -35,13 +35,24 @@ import styles from "./account.module.css";
 type AccountAuthPageViewProps = {
   mode: AccountAuthMode;
   passwordResetTokenView?: PasswordResetTokenView;
+  surface?: "account" | "admin";
 };
 
 export function AccountAuthPageView({
   mode,
   passwordResetTokenView,
+  surface = "account",
 }: AccountAuthPageViewProps) {
-  const content = accountAuthContent[mode];
+  const isAdminSurface = surface === "admin";
+  const content = isAdminSurface
+    ? {
+        eyebrow: "Admin login",
+        title: "Sign in to the admin area",
+        body:
+          "Use an admin-enabled Loom & Hearth Studio account to access the back-office at `/admin`.",
+        primaryLabel: "Sign in to admin",
+      }
+    : accountAuthContent[mode];
   const accessDecision = getAccountAccessDecision({
     user: null,
     routeKind: mode,
@@ -69,6 +80,8 @@ export function AccountAuthPageView({
   });
   const routeViewModel = createAccountAuthRouteViewModel({
     mode,
+    surface,
+    redirectTargetOverride: isAdminSurface ? "/admin/login" : undefined,
     accessDecision,
     forgotPasswordState: requestState,
     passwordResetTokenView:
@@ -207,7 +220,8 @@ export function AccountAuthPageView({
         email: payload.email,
         password: payload.password,
         redirect: false,
-        callbackUrl: "/account",
+        callbackUrl: isAdminSurface ? "/admin" : "/account",
+        surface: isAdminSurface ? "admin-login" : "account-login",
       });
 
       if (result?.error) {
@@ -225,7 +239,7 @@ export function AccountAuthPageView({
         message: "Signed in.",
       });
 
-      window.location.assign(result?.url ?? "/account");
+      window.location.assign(result?.url ?? (isAdminSurface ? "/admin" : "/account"));
     }, 350);
   }
 
@@ -309,9 +323,19 @@ export function AccountAuthPageView({
             <span>{routeViewModel.authBoundary.todoLine}</span>
           </div>
           <div className={styles.authLinks}>
-            <Link href={"/account/login" as Route}>Login</Link>
-            <Link href={"/account/register" as Route}>Register</Link>
-            <Link href={"/account/forgot-password" as Route}>Forgot password</Link>
+            {isAdminSurface ? (
+              <>
+                <Link href={"/admin/login" as Route}>Admin login</Link>
+                <Link href={"/account/login" as Route}>Customer login</Link>
+                <Link href={"/account/forgot-password" as Route}>Forgot password</Link>
+              </>
+            ) : (
+              <>
+                <Link href={"/account/login" as Route}>Login</Link>
+                <Link href={"/account/register" as Route}>Register</Link>
+                <Link href={"/account/forgot-password" as Route}>Forgot password</Link>
+              </>
+            )}
           </div>
         </div>
 

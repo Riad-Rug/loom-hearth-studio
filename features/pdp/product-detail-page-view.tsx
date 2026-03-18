@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
@@ -16,39 +16,113 @@ type ProductDetailPageViewProps = {
 };
 
 export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
-  const primaryImage = product.gallery[0];
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+    setIsLightboxOpen(false);
+  }, [product.id]);
+
+  useEffect(() => {
+    if (!isLightboxOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsLightboxOpen(false);
+      }
+
+      if (event.key === "ArrowRight") {
+        setActiveImageIndex((currentIndex) =>
+          product.gallery.length ? (currentIndex + 1) % product.gallery.length : 0,
+        );
+      }
+
+      if (event.key === "ArrowLeft") {
+        setActiveImageIndex((currentIndex) =>
+          product.gallery.length
+            ? (currentIndex - 1 + product.gallery.length) % product.gallery.length
+            : 0,
+        );
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isLightboxOpen, product.gallery.length]);
+
+  const activeImage = product.gallery[activeImageIndex] ?? product.gallery[0] ?? null;
+  const valueLine = createProductValueLine(product);
+
+  function selectImage(index: number) {
+    setActiveImageIndex(index);
+  }
+
+  function showPreviousImage() {
+    setActiveImageIndex((currentIndex) =>
+      product.gallery.length
+        ? (currentIndex - 1 + product.gallery.length) % product.gallery.length
+        : 0,
+    );
+  }
+
+  function showNextImage() {
+    setActiveImageIndex((currentIndex) =>
+      product.gallery.length ? (currentIndex + 1) % product.gallery.length : 0,
+    );
+  }
 
   return (
     <div className={styles.page}>
       <Section width="wide">
         <div className={styles.layout}>
           <div className={styles.galleryColumn}>
-            <div className={styles.primaryMedia}>
-              {primaryImage ? (
-                <img
-                  alt={primaryImage.altText || product.name}
-                  src={primaryImage.src}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                />
-              ) : (
-                <PlaceholderMedia
-                  alt={product.name}
-                  aspectRatio="4 / 3"
-                  label={product.type === "rug" ? "Rug gallery" : "Product gallery"}
-                  priority
-                  sizes="(max-width: 1100px) 100vw, 55vw"
-                />
-              )}
-            </div>
-            <div className={styles.thumbnailGrid}>
-              {product.gallery.map((item) => (
-                <div key={item.id} className={styles.thumbnailCard}>
+            <button
+              className={styles.primaryMediaButton}
+              type="button"
+              onClick={() => setIsLightboxOpen(true)}
+            >
+              <div className={styles.primaryMedia}>
+                {activeImage ? (
                   <img
-                    alt={item.altText || `${product.name} ${item.label}`}
-                    src={item.src}
+                    key={activeImage.id}
+                    alt={activeImage.altText || product.name}
+                    src={activeImage.src}
                     style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
-                </div>
+                ) : (
+                  <PlaceholderMedia
+                    alt={product.name}
+                    aspectRatio="4 / 3"
+                    label={product.type === "rug" ? "Rug gallery" : "Product gallery"}
+                    priority
+                    sizes="(max-width: 1100px) 100vw, 55vw"
+                  />
+                )}
+              </div>
+            </button>
+            <div className={styles.thumbnailGrid}>
+              {product.gallery.map((item, index) => (
+                <button
+                  key={item.id}
+                  className={`${styles.thumbnailCard} ${
+                    activeImageIndex === index ? styles.thumbnailCardActive : ""
+                  }`}
+                  type="button"
+                  aria-pressed={activeImageIndex === index}
+                  onClick={() => selectImage(index)}
+                >
+                  <img
+                    className={styles.thumbnailImage}
+                    alt={item.altText || `${product.name} ${item.label}`}
+                    src={item.src}
+                  />
+                </button>
               ))}
             </div>
           </div>
@@ -57,40 +131,44 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             <p className={styles.eyebrow}>
               {product.type === "rug" ? "Type A rug" : "Type B multi-unit"}
             </p>
-            <h1>{product.name}</h1>
-            <p className={styles.price}>{product.priceUsdLabel}</p>
-            <p className={styles.summary}>{product.description}</p>
-
-            <div className={styles.metaGrid}>
-              <div>
-                <span className={styles.metaLabel}>Materials</span>
-                <p>{product.materialsLabel}</p>
-              </div>
-              <div>
-                <span className={styles.metaLabel}>Origin</span>
-                <p>{product.originLabel}</p>
-              </div>
-              {product.type === "rug" ? (
-                <>
-                  <div>
-                    <span className={styles.metaLabel}>Dimensions</span>
-                    <p>{product.dimensionsLabel}</p>
-                  </div>
-                  <div>
-                    <span className={styles.metaLabel}>Weight</span>
-                    <p>{product.weightLabel}</p>
-                  </div>
-                </>
-              ) : (
-                <MultiUnitMeta product={product} />
-              )}
+            <div className={styles.titleBlock}>
+              <h1>{product.name}</h1>
+              <p className={styles.valueLine}>{valueLine}</p>
             </div>
+            <p className={styles.price}>{product.priceUsdLabel}</p>
 
             {product.type === "rug" ? (
               <RugPurchaseShell product={product} quantityLabel={product.quantityLabel} />
             ) : (
               <MultiUnitPurchaseShell product={product} />
             )}
+
+            <p className={styles.summary}>{product.description}</p>
+
+            <div className={styles.metaGrid}>
+              <div className={styles.metaItem}>
+                <span className={styles.metaLabel}>Materials</span>
+                <p className={styles.metaValue}>{product.materialsLabel}</p>
+              </div>
+              <div className={styles.metaItem}>
+                <span className={styles.metaLabel}>Origin</span>
+                <p className={styles.metaValue}>{product.originLabel}</p>
+              </div>
+              {product.type === "rug" ? (
+                <>
+                  <div className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Dimensions</span>
+                    <p className={styles.metaValue}>{product.dimensionsLabel}</p>
+                  </div>
+                  <div className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Weight</span>
+                    <p className={styles.metaValue}>{product.weightLabel}</p>
+                  </div>
+                </>
+              ) : (
+                <MultiUnitMeta product={product} />
+              )}
+            </div>
 
             <div className={styles.shareBlock}>
               <span className={styles.metaLabel}>Share</span>
@@ -105,6 +183,86 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           </div>
         </div>
       </Section>
+
+      {isLightboxOpen && activeImage ? (
+        <div
+          className={styles.lightbox}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${product.name} image viewer`}
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          <div className={styles.lightboxPanel} onClick={(event) => event.stopPropagation()}>
+            <div className={styles.lightboxToolbar}>
+              <p className={styles.lightboxCaption}>
+                {activeImage.altText || `${product.name} image ${activeImageIndex + 1}`}
+              </p>
+              <button
+                className={styles.lightboxClose}
+                type="button"
+                onClick={() => setIsLightboxOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className={styles.lightboxStage}>
+              {product.gallery.length > 1 ? (
+                <button
+                  className={styles.lightboxNav}
+                  type="button"
+                  aria-label="Show previous image"
+                  onClick={showPreviousImage}
+                >
+                  Prev
+                </button>
+              ) : null}
+
+              <div className={styles.lightboxMedia}>
+                <img
+                  key={`${activeImage.id}-lightbox`}
+                  alt={activeImage.altText || product.name}
+                  src={activeImage.src}
+                  style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                />
+              </div>
+
+              {product.gallery.length > 1 ? (
+                <button
+                  className={styles.lightboxNav}
+                  type="button"
+                  aria-label="Show next image"
+                  onClick={showNextImage}
+                >
+                  Next
+                </button>
+              ) : null}
+            </div>
+
+            {product.gallery.length > 1 ? (
+              <div className={styles.lightboxThumbnails}>
+                {product.gallery.map((item, index) => (
+                  <button
+                    key={`${item.id}-lightbox-thumb`}
+                    className={`${styles.thumbnailCard} ${
+                      activeImageIndex === index ? styles.thumbnailCardActive : ""
+                    }`}
+                    type="button"
+                    aria-pressed={activeImageIndex === index}
+                    onClick={() => selectImage(index)}
+                  >
+                    <img
+                      className={styles.thumbnailImage}
+                      alt={item.altText || `${product.name} ${item.label}`}
+                      src={item.src}
+                    />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <Section width="wide">
         <div className={styles.detailsGrid}>
@@ -162,6 +320,16 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   );
 }
 
+function createProductValueLine(product: ProductDetailPageViewModel) {
+  if (product.type === "rug") {
+    return `${product.materialsLabel} · ${product.originLabel} · One-of-one piece`;
+  }
+
+  return `${product.materialsLabel} · ${product.originLabel} · ${
+    product.inventoryState === "outOfStock" ? "Currently unavailable" : "Multi-unit piece"
+  }`;
+}
+
 function RugPurchaseShell({
   product,
   quantityLabel,
@@ -200,13 +368,13 @@ function RugPurchaseShell({
 function MultiUnitMeta({ product }: { product: MultiUnitProductDetailPageViewModel }) {
   return (
     <>
-      <div>
+      <div className={styles.metaItem}>
         <span className={styles.metaLabel}>Inventory state</span>
-        <p>{product.inventoryState}</p>
+        <p className={styles.metaValue}>{product.inventoryState}</p>
       </div>
-      <div>
+      <div className={styles.metaItem}>
         <span className={styles.metaLabel}>Quantity</span>
-        <p>{product.quantityMin}+ allowed</p>
+        <p className={styles.metaValue}>{product.quantityMin}+ allowed</p>
       </div>
     </>
   );

@@ -44,7 +44,7 @@ export async function requireAuthenticatedAdminUser() {
   const user = await getCurrentAuthenticatedUser();
 
   if (!user) {
-    redirect("/account/login");
+    redirect("/admin/login");
   }
 
   if (!user.role || !["admin", "editor", "viewer"].includes(user.role)) {
@@ -52,6 +52,20 @@ export async function requireAuthenticatedAdminUser() {
   }
 
   return user;
+}
+
+export async function requireAdminLoginEntryAccess() {
+  const user = await getCurrentAuthenticatedUser();
+
+  if (!user) {
+    return;
+  }
+
+  if (user.role && ["admin", "editor", "viewer"].includes(user.role)) {
+    redirect("/admin");
+  }
+
+  redirect("/account");
 }
 
 export async function requireAdminRoleForMutation() {
