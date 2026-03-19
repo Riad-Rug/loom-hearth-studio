@@ -2,11 +2,9 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { cartSummary } from "@/features/cart/cart-data";
 import {
-  cartFoundationTodos,
   formatUsd,
   getCartItemLabel,
   getCartItemQuantityRule,
@@ -20,6 +18,27 @@ export function CartDrawer() {
   const { itemCount, items, removeItem, shippingUsd, subtotalUsd, totalUsd, updateQuantity } =
     useCart();
   const isEmpty = items.length === 0;
+  const itemCountLabel = `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
+
+  useEffect(() => {
+    function handleOpenCart() {
+      setIsOpen(true);
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+
+    window.addEventListener("loom-hearth:open-cart", handleOpenCart);
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("loom-hearth:open-cart", handleOpenCart);
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   return (
     <>
@@ -38,27 +57,39 @@ export function CartDrawer() {
         <div className={styles.overlay} role="presentation" onClick={() => setIsOpen(false)}>
           <aside
             id="cart-drawer"
-            aria-label="Cart drawer"
+            aria-label="Shopping cart"
             className={styles.drawer}
             onClick={(event) => event.stopPropagation()}
           >
             <div className={styles.header}>
               <div>
-                <p className={styles.eyebrow}>Cart</p>
-                <h2>Storefront cart</h2>
+                <h2>Cart</h2>
+                <p className={styles.headerMeta}>
+                  {isEmpty ? "Your latest picks appear here." : `${itemCountLabel} ready for checkout`}
+                </p>
               </div>
-              <button className={styles.closeButton} type="button" onClick={() => setIsOpen(false)}>
-                Close
+              <button
+                aria-label="Close cart"
+                className={styles.closeButton}
+                type="button"
+                onClick={() => setIsOpen(false)}
+              >
+                <span aria-hidden="true" className={styles.closeButtonIcon}>
+                  x
+                </span>
+                <span>Close cart</span>
               </button>
             </div>
 
             {isEmpty ? (
               <div className={styles.emptyState}>
-                <p className={styles.emptyTitle}>Your cart is currently empty.</p>
+                <p className={styles.emptyTitle}>Your cart is empty.</p>
                 <p className={styles.emptyBody}>
-                  Client-side cart state is active in this slice, but checkout, promo codes,
-                  and order submission remain placeholder-only.
+                  Add a launch piece to review it here, then move straight into checkout.
                 </p>
+                <Link className={styles.secondaryButton} href="/shop" onClick={() => setIsOpen(false)}>
+                  Continue shopping
+                </Link>
               </div>
             ) : (
               <>
@@ -128,26 +159,13 @@ export function CartDrawer() {
                   ))}
                 </div>
 
-                <div className={styles.promoCard}>
-                  <label className={styles.promoLabel} htmlFor="promo-code">
-                    Promo code
-                  </label>
-                  <div className={styles.promoControls}>
-                    <input
-                      id="promo-code"
-                      className={styles.promoInput}
-                      name="promoCode"
-                      placeholder={cartSummary.promoPlaceholder}
-                      type="text"
-                    />
-                    <button className={styles.applyButton} type="button">
-                      Apply
-                    </button>
-                  </div>
-                  <p className={styles.summaryTodo}>{cartFoundationTodos.promoCodes}</p>
-                </div>
-
                 <div className={styles.summaryCard}>
+                  <div className={styles.summaryHeader}>
+                    <p className={styles.summaryEyebrow}>Ready when you are</p>
+                    <p className={styles.summaryLead}>
+                      Secure your order with free U.S. launch shipping.
+                    </p>
+                  </div>
                   <div className={styles.summaryRow}>
                     <span>Subtotal</span>
                     <strong>{formatUsd(subtotalUsd)}</strong>
@@ -161,14 +179,22 @@ export function CartDrawer() {
                     <span>Total</span>
                     <strong>{formatUsd(totalUsd)}</strong>
                   </div>
-                  <p className={styles.summaryTodo}>{cartFoundationTodos.checkout}</p>
-                  <Link
-                    className={styles.checkoutButton}
-                    href="/checkout"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Continue to checkout
-                  </Link>
+                  <div className={styles.actionGroup}>
+                    <Link
+                      className={styles.checkoutButton}
+                      href="/checkout/information"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Checkout
+                    </Link>
+                    <button
+                      className={styles.secondaryButton}
+                      type="button"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Keep shopping
+                    </button>
+                  </div>
                 </div>
               </>
             )}
