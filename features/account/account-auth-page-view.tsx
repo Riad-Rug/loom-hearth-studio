@@ -50,6 +50,12 @@ type AuthSurfaceContent = {
   reassurance: string;
 };
 
+type CustomerAuthSwitchContent = {
+  prompt: string;
+  label: string;
+  href: Route;
+};
+
 const adminLoginContent: AuthSurfaceContent = {
   eyebrow: "Admin login",
   title: "Sign in to the admin area",
@@ -377,6 +383,25 @@ export function AccountAuthPageView({
     mode === "forgot-password" && isResetMode
       ? `Create a new password for ${passwordResetTokenView?.email}. After a successful reset you will be redirected back to sign in.`
       : content.formBody;
+  const customerAuthSwitchContent: CustomerAuthSwitchContent | null = isAdminSurface
+    ? null
+    : mode === "login"
+      ? {
+          prompt: "Don't have an account?",
+          label: "Create one",
+          href: "/account/register",
+        }
+      : mode === "register"
+        ? {
+            prompt: "Already have an account?",
+            label: "Sign in",
+            href: "/account/login",
+          }
+        : {
+            prompt: "Remembered your password?",
+            label: "Back to sign in",
+            href: "/account/login",
+          };
 
   return (
     <div className={styles.page}>
@@ -400,21 +425,13 @@ export function AccountAuthPageView({
             </div>
           )}
 
-          <div className={styles.authLinks}>
-            {isAdminSurface ? (
-              <>
-                <Link href={"/admin/login" as Route}>Admin login</Link>
-                <Link href={"/account/login" as Route}>Customer login</Link>
-                <Link href={"/account/forgot-password" as Route}>Forgot password</Link>
-              </>
-            ) : (
-              <>
-                <Link href={"/account/login" as Route}>Login</Link>
-                <Link href={"/account/register" as Route}>Register</Link>
-                <Link href={"/account/forgot-password" as Route}>Forgot password</Link>
-              </>
-            )}
-          </div>
+          {isAdminSurface ? (
+            <div className={styles.authLinks}>
+              <Link href={"/admin/login" as Route}>Admin login</Link>
+              <Link href={"/account/login" as Route}>Customer login</Link>
+              <Link href={"/account/forgot-password" as Route}>Forgot password</Link>
+            </div>
+          ) : null}
         </div>
 
         <div className={styles.formCard}>
@@ -517,30 +534,42 @@ export function AccountAuthPageView({
             {showCuratedSurface ? (
               <div className={styles.formMeta}>
                 <p className={styles.formReassurance}>{content.reassurance}</p>
-                <div className={styles.formSupportLinks}>
-                  {mode === "login" && !isAdminSurface ? (
-                    <>
-                      <Link href={"/account/register" as Route}>Create an account</Link>
-                      <Link href={"/account/forgot-password" as Route}>Forgot password?</Link>
-                      <Link href={"/admin/login" as Route}>Admin login</Link>
-                    </>
-                  ) : mode === "register" ? (
-                    <>
-                      <Link href={"/account/login" as Route}>Already have an account?</Link>
-                      <Link href={"/account/forgot-password" as Route}>Need password help?</Link>
-                    </>
-                  ) : mode === "forgot-password" ? (
-                    <>
-                      <Link href={"/account/login" as Route}>Back to login</Link>
-                      <Link href={"/account/register" as Route}>Create an account</Link>
-                    </>
-                  ) : (
-                    <>
-                      <Link href={"/account/login" as Route}>Customer login</Link>
-                      <Link href={"/account/forgot-password" as Route}>Password help</Link>
-                    </>
-                  )}
-                </div>
+                {customerAuthSwitchContent ? (
+                  <div className={styles.formMetaLinks}>
+                    {mode === "login" ? (
+                      <div className={styles.loginSecondaryGrid}>
+                        <span>{customerAuthSwitchContent.prompt}</span>
+                        <Link href={customerAuthSwitchContent.href}>
+                          {customerAuthSwitchContent.label}
+                        </Link>
+                        <Link
+                          className={styles.inlineSecondaryLink}
+                          href={"/account/forgot-password" as Route}
+                        >
+                          Forgot password?
+                        </Link>
+                        <Link
+                          className={styles.inlineSecondaryLink}
+                          href={"/admin/login" as Route}
+                        >
+                          Admin login
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className={styles.inlineSwitch}>
+                        <span>{customerAuthSwitchContent.prompt}</span>
+                        <Link href={customerAuthSwitchContent.href}>
+                          {customerAuthSwitchContent.label}
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className={styles.formSupportLinks}>
+                    <Link href={"/account/login" as Route}>Customer login</Link>
+                    <Link href={"/account/forgot-password" as Route}>Password help</Link>
+                  </div>
+                )}
               </div>
             ) : null}
 

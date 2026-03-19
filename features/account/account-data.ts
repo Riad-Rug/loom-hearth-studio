@@ -29,7 +29,7 @@ export const accountAuthContent = {
     supportBody:
       "Create an account to track your orders and saved pieces, access future curated drops, and save your preferences for faster checkout.",
     reassurance:
-      "Already have an account? Sign in instead of creating a second login.",
+      "Keep your orders, saved pieces, and future checkout details tied to one account email.",
   },
   "forgot-password": {
     eyebrow: "Password reset",
@@ -44,7 +44,7 @@ export const accountAuthContent = {
     supportBody:
       "Use password reset when you already have an account but cannot sign in. That keeps your existing account access tied to the same email instead of starting over with a new login.",
     reassurance:
-      "If you remember your password, return to sign in instead of requesting a new reset email.",
+      "Use password reset only to recover an existing account, not to start a second login.",
   },
 } as const;
 

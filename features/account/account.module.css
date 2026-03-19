@@ -159,7 +159,8 @@
 }
 
 .formIntro,
-.formMeta {
+.formMeta,
+.formMetaLinks {
   display: grid;
   gap: var(--space-3);
 }
@@ -243,6 +244,60 @@
   transform: translateY(-1px);
   box-shadow: 0 1rem 1.8rem rgba(184, 94, 59, 0.22);
   outline: none;
+}
+
+.formMetaLinks {
+  gap: var(--space-2);
+}
+
+.loginSecondaryGrid,
+.inlineSwitch {
+  color: rgba(34, 33, 38, 0.76);
+  line-height: 1.7;
+}
+
+.loginSecondaryGrid {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  column-gap: 1.25rem;
+  row-gap: 0.35rem;
+  align-items: center;
+  width: fit-content;
+}
+
+.inlineSwitch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.loginSecondaryGrid span,
+.inlineSwitch span {
+  margin: 0;
+}
+
+.loginSecondaryGrid a,
+.inlineSwitch a,
+.inlineSecondaryLink {
+  color: var(--color-clay-terracotta);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.loginSecondaryGrid a:hover,
+.loginSecondaryGrid a:focus-visible,
+.inlineSwitch a:hover,
+.inlineSwitch a:focus-visible,
+.inlineSecondaryLink:hover,
+.inlineSecondaryLink:focus-visible {
+  color: rgba(184, 94, 59, 0.82);
+  text-decoration: underline;
+  outline: none;
+}
+
+.inlineSecondaryLink {
+  width: fit-content;
 }
 
 .formSupportLinks a {
