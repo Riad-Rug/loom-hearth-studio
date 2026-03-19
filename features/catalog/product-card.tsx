@@ -23,13 +23,16 @@ export function ProductCard({ product }: ProductCardProps) {
     <Link className={styles.productCard} href={product.href as Route}>
       <div className={styles.productMedia}>
         {showImage ? (
-          <img
-            alt={primaryImage.altText || product.name}
-            className={styles.productImage}
-            loading="lazy"
-            onError={() => setImageFailed(true)}
-            src={primaryImage.src}
-          />
+          <>
+            <img
+              alt={primaryImage.altText || product.name}
+              className={styles.productImage}
+              loading="lazy"
+              onError={() => setImageFailed(true)}
+              src={primaryImage.src}
+            />
+            <div className={styles.productMediaOverlay} aria-hidden="true" />
+          </>
         ) : (
           <div className={styles.productFallback}>
             <PlaceholderMedia
@@ -38,7 +41,11 @@ export function ProductCard({ product }: ProductCardProps) {
               label="Loom & Hearth"
               sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 33vw"
             />
-            <span className={styles.productFallbackNote}>Collection preview coming soon</span>
+            <div className={styles.productFallbackCopy}>
+              <span className={styles.productFallbackEyebrow}>{formatCategory(product.category)}</span>
+              <strong className={styles.productFallbackTitle}>{product.name}</strong>
+              <span className={styles.productFallbackNote}>Studio image coming soon</span>
+            </div>
           </div>
         )}
       </div>

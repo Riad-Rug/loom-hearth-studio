@@ -1,4 +1,7 @@
-import { PlaceholderMedia } from "@/components/media/placeholder-media";
+import type { Route } from "next";
+import Image from "next/image";
+import Link from "next/link";
+
 import { lookbookItems } from "@/features/content-pages/content-pages-data";
 
 import styles from "./content-pages.module.css";
@@ -8,25 +11,38 @@ export function LookbookPageView() {
     <div className={styles.page}>
       <section className={styles.sectionHeader}>
         <p className={styles.eyebrow}>Lookbook</p>
-        <h2>Gallery-style lookbook placeholder</h2>
+        <h1>Curated Moroccan interiors that turn inspiration into product discovery.</h1>
+        <p className={styles.body}>
+          Explore curated Moroccan interiors and discover how handcrafted rugs transform
+          living spaces. Each look connects directly to the pieces used.
+        </p>
       </section>
 
-      <section className={styles.lookbookGrid}>
+      <section className={styles.lookbookGrid} aria-label="Editorial Moroccan lookbook">
         {lookbookItems.map((item) => (
-          <article key={item.id} className={styles.lookbookTile}>
+          <Link
+            key={item.id}
+            className={styles.lookbookTile}
+            href={item.href as Route}
+          >
             <div className={styles.lookbookMedia}>
-              <PlaceholderMedia
-                alt={item.title}
-                aspectRatio="4 / 3"
-                label="Lookbook media placeholder"
+              <Image
+                alt={item.imageAlt}
+                className={styles.lookbookImage}
+                fill
                 sizes="(max-width: 1100px) 100vw, 50vw"
+                src={item.imageSrc}
               />
+              <div className={styles.lookbookOverlay}>
+                <span className={styles.lookbookOverlayCta}>{item.ctaLabel}</span>
+              </div>
             </div>
             <div className={styles.lookbookBody}>
               <h2>{item.title}</h2>
               <p>{item.description}</p>
+              <span className={styles.lookbookCta}>{item.ctaLabel}</span>
             </div>
-          </article>
+          </Link>
         ))}
       </section>
     </div>
