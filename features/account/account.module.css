@@ -11,7 +11,9 @@
 .dashboardEmptyState,
 .formCard,
 .sessionCard,
-.sessionNote {
+.sessionNote,
+.authSupportNote,
+.requestFeedback {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   background: rgba(255, 255, 255, 0.82);
@@ -39,7 +41,8 @@
 
 .authIntro h1,
 .dashboardHero h1,
-.dashboardCard h2 {
+.dashboardCard h2,
+.formIntro h2 {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
   letter-spacing: -0.04em;
@@ -51,23 +54,33 @@
   line-height: 0.97;
 }
 
+.formIntro h2,
+.dashboardCard h2 {
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  line-height: 1.02;
+}
+
 .lede,
 .dashboardEmptyState p,
-.dashboardCard p {
+.dashboardCard p,
+.formIntro p,
+.formReassurance {
   margin: 0;
   color: rgba(34, 33, 38, 0.78);
   line-height: 1.8;
 }
 
 .authLinks,
-.dashboardLinks {
+.dashboardLinks,
+.formSupportLinks {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
 }
 
 .authLinks a,
-.secondaryAction {
+.secondaryAction,
+.formSupportLinks a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -76,41 +89,79 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   color: var(--color-charcoal-ink);
+  font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  text-decoration: none;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    color 150ms ease;
+}
+
+.authLinks a:hover,
+.authLinks a:focus-visible,
+.secondaryAction:hover,
+.secondaryAction:focus-visible,
+.formSupportLinks a:hover,
+.formSupportLinks a:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(34, 33, 38, 0.18);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow-soft);
+  outline: none;
 }
 
 .authIntro {
   display: grid;
   gap: var(--space-4);
+  align-content: start;
 }
 
 .sessionCard,
-.sessionNote {
+.sessionNote,
+.authSupportNote,
+.requestFeedback {
   display: grid;
   gap: var(--space-2);
   padding: var(--space-5);
 }
 
 .sessionCard h2,
-.sessionNote strong {
+.sessionNote strong,
+.authSupportNote strong,
+.requestFeedback strong {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
   letter-spacing: -0.04em;
 }
 
-.sessionCard h2 {
+.sessionCard h2,
+.authSupportNote strong,
+.requestFeedback strong {
   font-size: 1.8rem;
   line-height: 1.05;
 }
 
 .sessionCard p,
-.sessionNote span {
+.sessionNote span,
+.authSupportNote span,
+.requestFeedback span {
   margin: 0;
   color: rgba(34, 33, 38, 0.78);
   line-height: 1.7;
 }
 
 .formCard {
+  display: grid;
+  gap: var(--space-5);
   padding: var(--space-6);
+}
+
+.formIntro,
+.formMeta {
+  display: grid;
+  gap: var(--space-3);
 }
 
 .formStack {
@@ -118,36 +169,98 @@
   gap: var(--space-4);
 }
 
+.nameGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
 .field {
   display: grid;
-  gap: var(--space-2);
+  gap: 0.65rem;
 }
 
 .field span {
   color: rgba(34, 33, 38, 0.72);
-  font-size: 0.92rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .field input {
-  min-height: 3.25rem;
+  width: 100%;
+  min-height: 3.35rem;
   padding: 0 1rem;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.86);
   color: var(--color-charcoal-ink);
   font: inherit;
+  font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease;
+}
+
+.field input::placeholder {
+  color: rgba(34, 33, 38, 0.44);
+}
+
+.field input:hover {
+  border-color: rgba(34, 33, 38, 0.28);
+}
+
+.field input:focus-visible {
+  border-color: rgba(184, 94, 59, 0.5);
+  box-shadow: 0 0 0 4px rgba(184, 94, 59, 0.12);
+  background: rgba(255, 255, 255, 0.94);
+  outline: none;
 }
 
 .primaryAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   padding: 0.95rem 1.25rem;
   border: 1px solid var(--color-clay-terracotta);
   border-radius: 999px;
   background: var(--color-clay-terracotta);
   color: var(--color-white);
+  cursor: pointer;
   font: inherit;
+  font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.primaryAction:hover,
+.primaryAction:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 1rem 1.8rem rgba(184, 94, 59, 0.22);
+  outline: none;
+}
+
+.formSupportLinks a {
+  font-size: 0.95rem;
+}
+
+.requestFeedback {
+  border-color: rgba(34, 33, 38, 0.12);
+}
+
+.requestFeedbackFailure {
+  border-color: rgba(184, 94, 59, 0.24);
+  background: rgba(255, 248, 246, 0.96);
+}
+
+.requestFeedbackSuccess {
+  border-color: rgba(109, 113, 88, 0.24);
+  background: rgba(247, 250, 244, 0.96);
 }
 
 .dashboardEmptyState {
@@ -209,15 +322,11 @@
   color: rgba(34, 33, 38, 0.58);
 }
 
-.dashboardCard h2 {
-  font-size: 1.8rem;
-  line-height: 1.05;
-}
-
 @media (max-width: 1100px) {
   .authShell,
   .dashboardHero,
-  .dashboardGrid {
+  .dashboardGrid,
+  .nameGrid {
     grid-template-columns: 1fr;
   }
 }
@@ -232,12 +341,15 @@
   .formCard,
   .dashboardCard,
   .sessionCard,
-  .sessionNote {
+  .sessionNote,
+  .authSupportNote,
+  .requestFeedback {
     padding: var(--space-5);
   }
 
   .authLinks,
-  .dashboardLinks {
+  .dashboardLinks,
+  .formSupportLinks {
     flex-direction: column;
   }
 }

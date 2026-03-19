@@ -10,13 +10,17 @@ type LookbookItem = {
   id: string;
   title: string;
   description: string;
+  ctaLabel: string;
+  href: string;
+  imageSrc: string;
+  imageAlt: string;
 };
 
 export const aboutHero = {
   eyebrow: "About",
   title: "A direct source for handcrafted Moroccan rugs, poufs, pillows, and home decor.",
   body:
-    "Loom & Hearth Studio is built on real roots in Marrakech, where our family has worked in the bazaar trade for decades. Our grandfather’s shop in the Semmarine souk, steps from Jemaa el-Fnaa, was known for handcrafted pieces sourced across Morocco.\n\nToday, we continue that work with a more focused approach — selecting Moroccan rugs, transforming some into one-of-one poufs and pillows, and curating decor with a clear point of view.\n\nEvery piece is chosen in person, not mass-produced, and not sourced from generic export catalogs. The goal is simple: bring objects with real material depth and character into homes that value design.\n\nAll orders ship directly from Morocco within 5–7 business days, with shipping and customs already included in the final price — no surprises at delivery.",
+    "Loom & Hearth Studio is built on real roots in Marrakech, where our family has worked in the bazaar trade for decades. Our grandfatherÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s shop in the Semmarine souk, steps from Jemaa el-Fnaa, was known for handcrafted pieces sourced across Morocco.\n\nToday, we continue that work with a more focused approach ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â selecting Moroccan rugs, transforming some into one-of-one poufs and pillows, and curating decor with a clear point of view.\n\nEvery piece is chosen in person, not mass-produced, and not sourced from generic export catalogs. The goal is simple: bring objects with real material depth and character into homes that value design.\n\nAll orders ship directly from Morocco within 5ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ7 business days, with shipping and customs already included in the final price ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no surprises at delivery.",
 } as const;
 
 export const aboutSections: AboutSection[] = [
@@ -24,13 +28,13 @@ export const aboutSections: AboutSection[] = [
     eyebrow: "Craft",
     title: "Rooted in Moroccan sourcing, material knowledge, and direct selection.",
     body:
-      "We work directly with artisans, souks, and trusted suppliers across Morocco, selecting pieces based on texture, construction, and presence — not trends. Many items are one-of-one, and even repeatable designs remain handmade, which means no two pieces are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug materials, giving them the same depth, irregularity, and character as the originals they come from.",
+      "We work directly with artisans, souks, and trusted suppliers across Morocco, selecting pieces based on texture, construction, and presence ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â not trends. Many items are one-of-one, and even repeatable designs remain handmade, which means no two pieces are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug materials, giving them the same depth, irregularity, and character as the originals they come from.",
   },
   {
     eyebrow: "Direction",
     title: "Built for interiors that value texture, warmth, and individuality.",
     body:
-      "Loom & Hearth Studio is not a marketplace and not a mass-production brand. The collection is intentionally focused on Moroccan rugs, rug-based poufs, pillows, and supporting decor — pieces that work together and build a coherent interior.\n\nThe direction is simple: fewer, better objects with real presence. Pieces that feel collected over time, not selected from a catalog.",
+      "Loom & Hearth Studio is not a marketplace and not a mass-production brand. The collection is intentionally focused on Moroccan rugs, rug-based poufs, pillows, and supporting decor ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â pieces that work together and build a coherent interior.\n\nThe direction is simple: fewer, better objects with real presence. Pieces that feel collected over time, not selected from a catalog.",
   },
 ] as const;
 
@@ -43,12 +47,23 @@ export const aboutBridge = {
 
 export const contactData = {
   eyebrow: "Contact",
-  title: "WhatsApp-first contact presentation",
+  title: "Contact Loom & Hearth Studio",
   body:
-    "This contact page is presentation only. It preserves the PRD contact surface and a WhatsApp-first communication direction without implementing real messaging, forms, or provider wiring.",
-  whatsappLabel: "WhatsApp link placeholder",
-  emailLabel: "studio@example.com placeholder",
-  hoursLabel: "Monday to Friday, 9am to 5pm placeholder",
+    "Contact Loom & Hearth Studio for inquiries about handmade Moroccan rugs, custom sourcing, vintage textiles, and curated home decor.",
+  formTitle: "Send a customer inquiry",
+  formBody:
+    "Use this form shell to outline product questions, sourcing requests, order-related notes, or general support needs. Submission handling is not wired yet, but the layout is structured for a low-friction contact experience.",
+  ctaLabel: "Send message",
+  supportTitle: "Studio support",
+  supportBody:
+    "If you are reaching out about Moroccan rugs, handmade decor, or sourcing context, include the product name and any room details that matter. That keeps the conversation clear and helps the studio respond with more useful guidance.",
+  reassuranceLabel: "Support note",
+  reassuranceText: "Messages are reviewed with a studio-first, customer-support tone while contact operations remain in setup.",
+  responseTimeLabel: "Response timing",
+  responseTimeText: "We usually respond within 24 hours.",
+  emailLabel: "Email contact placeholder",
+  hoursLabel: "Business-hours placeholder",
+  locationLabel: "Morocco sourcing studio - U.S. launch market",
 } as const;
 
 export const faqItems: FaqItem[] = [
@@ -78,27 +93,51 @@ export const faqItems: FaqItem[] = [
 export const lookbookItems: LookbookItem[] = [
   {
     id: "lookbook-1",
-    title: "Living room composition placeholder",
+    title: "Modern Moroccan Living Room with Beni Ourain Rug",
     description:
-      "Gallery-style placeholder panel reserved for future Cloudinary-backed lookbook media.",
+      "A refined living room featuring a handwoven Beni Ourain rug paired with warm wood tones and natural light. Designed for a calm, textured, and grounded interior.",
+    ctaLabel: "Shop Beni Ourain Rugs",
+    href: "/shop/rugs",
+    imageSrc:
+      "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+    imageAlt:
+      "A warm Moroccan living room with layered seating, natural light, and a visible handcrafted rug anchoring the space.",
   },
   {
     id: "lookbook-2",
-    title: "Textile detail placeholder",
+    title: "Handwoven Moroccan Rug Texture Detail",
     description:
-      "Static placeholder tile preserving the lookbook browsing rhythm from the PRD.",
+      "Close-up view of traditional Moroccan weaving techniques, highlighting natural wool fibers, texture depth, and artisanal craftsmanship.",
+    ctaLabel: "Explore Handmade Rugs",
+    href: "/shop/rugs",
+    imageSrc:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+    imageAlt:
+      "A close, textural view of a handmade Moroccan rug in a softly lit interior setting.",
   },
   {
     id: "lookbook-3",
-    title: "Editorial scene placeholder",
+    title: "Layered Moroccan Interior with Vintage Textiles",
     description:
-      "Placeholder composition card only. No media CMS or content retrieval is implemented yet.",
+      "A curated interior blending vintage Moroccan rugs, soft textiles, and earthy tones to create a rich, layered living environment.",
+    ctaLabel: "Shop Vintage Rugs",
+    href: "/shop/vintage",
+    imageSrc:
+      "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+    imageAlt:
+      "A layered interior scene with Moroccan textiles, a pouf, and warm earthy materials styled together.",
   },
   {
     id: "lookbook-4",
-    title: "Home styling vignette placeholder",
+    title: "Minimal Moroccan Styling with Neutral Decor",
     description:
-      "Reserved for future curated imagery and narrative copy associated with the lookbook layer.",
+      "A minimalist approach to Moroccan decor using neutral palettes, soft textures, and subtle handcrafted elements for a modern aesthetic.",
+    ctaLabel: "Discover Home Styling",
+    href: "/shop/decor",
+    imageSrc:
+      "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    imageAlt:
+      "A minimal Moroccan decor vignette with neutral textiles and handcrafted accents in warm sunlight.",
   },
 ] as const;
 
@@ -149,7 +188,7 @@ export const policyPages: PolicyPage[] = [
       "Loom & Hearth Studio publishes this page to explain the launch returns surface, but detailed operational return rules remain conservative until broader fulfillment and support workflows are finalized.",
       "Customers who need help with an order should reply to their order confirmation email and include the order number and a summary of the issue. Loom & Hearth Studio will review the request and respond using the email address associated with the order.",
       "Because launch operations are intentionally narrow, this policy does not commit to automatic return labels, exchange workflows, or carrier-specific processes. Any approved return or refund handling will be communicated directly with the customer based on the order details and current launch operating constraints.",
-      "Nothing on this page changes a customer’s non-waivable legal rights where those rights apply. More detailed return windows, exchange terms, and exception rules remain intentionally generic here because those operational decisions are not yet committed elsewhere in the repo state.",
+      "Nothing on this page changes a customerÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s non-waivable legal rights where those rights apply. More detailed return windows, exchange terms, and exception rules remain intentionally generic here because those operational decisions are not yet committed elsewhere in the repo state.",
     ].join("\n\n"),
     seoTitle: "Returns policy | Loom & Hearth Studio",
     seoDescription: "Returns policy information for the Loom & Hearth Studio launch.",
@@ -159,7 +198,7 @@ export const policyPages: PolicyPage[] = [
     title: "Privacy policy",
     body: [
       "Loom & Hearth Studio collects the information required to operate the current launch storefront and order flow. That may include customer contact details, shipping details, cart and checkout information, and payment-related order references needed to process and support a purchase.",
-      "The current launch stack includes Stripe Checkout for payment processing, Postmark for transactional order confirmation email delivery, and PostgreSQL with Prisma for persisted order data. Payment card details are handled by Stripe Checkout rather than being stored directly by Loom & Hearth Studio in this repo’s current implementation.",
+      "The current launch stack includes Stripe Checkout for payment processing, Postmark for transactional order confirmation email delivery, and PostgreSQL with Prisma for persisted order data. Payment card details are handled by Stripe Checkout rather than being stored directly by Loom & Hearth Studio in this repoÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s current implementation.",
       "Customer information may be used to create and manage orders, send transactional confirmation messages, review order status, and support customer service requests connected to an existing purchase. The current repo state does not implement newsletter signup workflows, broader marketing automation, or real customer account authentication.",
       "Cookie consent tooling, expanded privacy controls, retention scheduling, and jurisdiction-specific privacy workflows remain intentionally generic on this page because those implementation decisions are not yet finalized in the committed launch stack.",
     ].join("\n\n"),

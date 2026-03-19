@@ -41,18 +41,21 @@
 }
 
 .hero h1,
+.sectionHeader h1,
 .sectionHeader h2,
 .card h2,
 .faqItem h2,
 .testimonialCard blockquote,
-.policyShell h1 {
+.policyShell h1,
+.lookbookBody h2 {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
   letter-spacing: -0.04em;
 }
 
 .hero h1,
-.policyShell h1 {
+.policyShell h1,
+.sectionHeader h1 {
   font-size: clamp(2.6rem, 4vw, 4rem);
   line-height: 0.97;
 }
@@ -111,6 +114,9 @@
   justify-content: center;
   padding: 0.95rem 1.25rem;
   border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
   transition:
     transform 150ms ease,
     box-shadow 150ms ease,
@@ -172,6 +178,79 @@
   text-transform: uppercase;
 }
 
+
+.contactForm {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.contactFieldGroup {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.contactLabel {
+  color: rgba(34, 33, 38, 0.72);
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.contactInput,
+.contactTextarea {
+  width: 100%;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--color-charcoal-ink);
+  font: inherit;
+  font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease;
+}
+
+.contactInput {
+  min-height: 3.2rem;
+  padding: 0 1rem;
+}
+
+.contactTextarea {
+  padding: 1rem;
+  resize: vertical;
+  min-height: 11rem;
+}
+
+.contactInput::placeholder,
+.contactTextarea::placeholder {
+  color: rgba(34, 33, 38, 0.44);
+}
+
+.contactInput:hover,
+.contactTextarea:hover {
+  border-color: rgba(34, 33, 38, 0.28);
+}
+
+.contactInput:focus-visible,
+.contactTextarea:focus-visible {
+  border-color: rgba(184, 94, 59, 0.5);
+  box-shadow: 0 0 0 4px rgba(184, 94, 59, 0.12);
+  background: rgba(255, 255, 255, 0.94);
+  outline: none;
+}
+
+.contactFormFooter {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.contactFormNote {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.58);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
 .faqList,
 .testimonialsGrid {
   display: grid;
@@ -196,7 +275,23 @@
 }
 
 .lookbookTile {
+  display: grid;
   overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.lookbookTile:hover,
+.lookbookTile:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-panel);
+  border-color: rgba(34, 33, 38, 0.16);
+  outline: none;
 }
 
 .proofBlock {
@@ -239,11 +334,50 @@
 }
 
 .lookbookMedia {
-  min-height: 18rem;
+  position: relative;
+  min-height: 20rem;
   background:
     linear-gradient(135deg, rgba(34, 33, 38, 0.08), rgba(184, 94, 59, 0.16)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(245, 239, 228, 0.4));
   overflow: hidden;
+}
+
+.lookbookImage {
+  object-fit: cover;
+  transition: transform 220ms ease;
+}
+
+.lookbookOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--space-4);
+  background: linear-gradient(180deg, rgba(34, 33, 38, 0.02) 24%, rgba(34, 33, 38, 0.72) 100%);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.lookbookOverlayCta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.05rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-charcoal-ink);
+  font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.lookbookTile:hover .lookbookOverlay,
+.lookbookTile:focus-visible .lookbookOverlay {
+  opacity: 1;
+}
+
+.lookbookTile:hover .lookbookImage,
+.lookbookTile:focus-visible .lookbookImage {
+  transform: scale(1.02);
 }
 
 .lookbookBody {
@@ -253,9 +387,23 @@
 }
 
 .lookbookBody h2 {
-  margin: 0;
-  font-size: 1.55rem;
+  font-size: 1.7rem;
   letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.lookbookBody p {
+  font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.lookbookCta {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  color: var(--color-clay-terracotta);
+  font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .testimonialCard {
@@ -283,8 +431,8 @@
 
 .sectionHeader {
   display: grid;
-  gap: var(--space-2);
-  max-width: 42rem;
+  gap: var(--space-3);
+  max-width: 46rem;
 }
 
 .sectionHeader h2 {
@@ -333,11 +481,24 @@
     flex-direction: column;
   }
 
+  .contactFormFooter {
+    grid-template-columns: 1fr;
+  }
+
   .trustHighlight {
     justify-self: stretch;
   }
 
-  .proofMedia {
+  .proofMedia,
+  .lookbookMedia {
     min-height: 18rem;
+  }
+
+  .lookbookBody {
+    padding: var(--space-4);
+  }
+
+  .lookbookBody h2 {
+    font-size: 1.45rem;
   }
 }

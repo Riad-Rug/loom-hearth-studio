@@ -22,11 +22,11 @@ import {
   getAccountAccessDecision,
   loginRequestTodo,
   registerRequestTodo,
-  type PasswordResetTokenView,
   type ForgotPasswordRequestState,
   type LoginRequestState,
-  type ResetPasswordState,
+  type PasswordResetTokenView,
   type RegisterRequestState,
+  type ResetPasswordState,
 } from "@/lib/auth";
 import { emailServiceTodo } from "@/lib/email";
 
@@ -38,27 +38,69 @@ type AccountAuthPageViewProps = {
   surface?: "account" | "admin";
 };
 
+type AuthSurfaceContent = {
+  eyebrow: string;
+  title: string;
+  body: string;
+  primaryLabel: string;
+  formTitle: string;
+  formBody: string;
+  supportTitle: string;
+  supportBody: string;
+  reassurance: string;
+};
+
+const adminLoginContent: AuthSurfaceContent = {
+  eyebrow: "Admin login",
+  title: "Sign in to the admin area",
+  body:
+    "Use an approved Loom & Hearth Studio admin account to access the back-office and continue into `/admin`.",
+  primaryLabel: "Sign in to admin",
+  formTitle: "Back-office sign-in",
+  formBody:
+    "Enter the admin-enabled email and password associated with your back-office access.",
+  supportTitle: "Separate from the customer account surface",
+  supportBody:
+    "This login is reserved for approved back-office access. Customer sign-in and account recovery continue on the storefront account routes.",
+  reassurance:
+    "If you need customer account access instead, return to the customer login page.",
+};
+
+function splitFullName(fullName: string) {
+  const cleaned = fullName.trim().replace(/\s+/g, " ");
+
+  if (!cleaned) {
+    return { firstName: "", lastName: "" };
+  }
+
+  const nameParts = cleaned.split(" ");
+
+  if (nameParts.length === 1) {
+    return { firstName: nameParts[0], lastName: nameParts[0] };
+  }
+
+  return {
+    firstName: nameParts[0],
+    lastName: nameParts.slice(1).join(" "),
+  };
+}
+
 export function AccountAuthPageView({
   mode,
   passwordResetTokenView,
   surface = "account",
 }: AccountAuthPageViewProps) {
   const isAdminSurface = surface === "admin";
-  const content = isAdminSurface
-    ? {
-        eyebrow: "Admin login",
-        title: "Sign in to the admin area",
-        body:
-          "Use an admin-enabled Loom & Hearth Studio account to access the back-office at `/admin`.",
-        primaryLabel: "Sign in to admin",
-      }
+  const isResetMode =
+    mode === "forgot-password" && passwordResetTokenView?.status === "valid";
+  const content: AuthSurfaceContent = isAdminSurface
+    ? adminLoginContent
     : accountAuthContent[mode];
   const accessDecision = getAccountAccessDecision({
     user: null,
     routeKind: mode,
   });
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState(passwordResetTokenView?.email ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -244,9 +286,10 @@ export function AccountAuthPageView({
   }
 
   function handleRegisterRequest() {
+    const names = splitFullName(fullName);
     const payload = createRegisterRequestPayload({
-      firstName,
-      lastName,
+      firstName: names.firstName,
+      lastName: names.lastName,
       email,
       password,
     });
@@ -263,7 +306,7 @@ export function AccountAuthPageView({
           status: "failure",
           payload: null,
           message:
-            "Complete first name, last name, email, and password before creating an account.",
+            "Complete your full name, email, and password before creating an account.",
         });
         return;
       }
@@ -306,8 +349,34 @@ export function AccountAuthPageView({
     }, 350);
   }
 
-  const isResetMode =
-    mode === "forgot-password" && passwordResetTokenView?.status === "valid";
+  const isCustomerSurface = !isAdminSurface;
+  const showCuratedSurface = isCustomerSurface || isAdminSurface;
+  const currentFeedbackState =
+    mode === "login"
+      ? loginState
+      : mode === "register"
+        ? registerState
+        : isResetMode
+          ? resetPasswordState
+          : requestState;
+  const currentFeedbackMessage =
+    currentFeedbackState.status === "submitting"
+      ? mode === "login"
+        ? isAdminSurface
+          ? "Signing you into admin..."
+          : "Signing you in..."
+        : mode === "register"
+          ? "Creating your account..."
+          : isResetMode
+            ? "Updating your password..."
+            : "Sending reset email..."
+      : currentFeedbackState.message;
+  const formTitle =
+    mode === "forgot-password" && isResetMode ? "Set a new password" : content.formTitle;
+  const formBody =
+    mode === "forgot-password" && isResetMode
+      ? `Create a new password for ${passwordResetTokenView?.email}. After a successful reset you will be redirected back to sign in.`
+      : content.formBody;
 
   return (
     <div className={styles.page}>
@@ -316,12 +385,21 @@ export function AccountAuthPageView({
           <p className={styles.eyebrow}>{content.eyebrow}</p>
           <h1>{content.title}</h1>
           <p className={styles.lede}>{content.body}</p>
-          <div className={styles.sessionNote}>
-            <strong>{routeViewModel.authBoundary.title}</strong>
-            <span>{routeViewModel.authBoundary.statusLine}</span>
-            <span>{routeViewModel.authBoundary.redirectTargetLine}</span>
-            <span>{routeViewModel.authBoundary.todoLine}</span>
-          </div>
+
+          {showCuratedSurface ? (
+            <div className={styles.authSupportNote}>
+              <strong>{content.supportTitle}</strong>
+              <span>{content.supportBody}</span>
+            </div>
+          ) : (
+            <div className={styles.sessionNote}>
+              <strong>{routeViewModel.authBoundary.title}</strong>
+              <span>{routeViewModel.authBoundary.statusLine}</span>
+              <span>{routeViewModel.authBoundary.redirectTargetLine}</span>
+              <span>{routeViewModel.authBoundary.todoLine}</span>
+            </div>
+          )}
+
           <div className={styles.authLinks}>
             {isAdminSurface ? (
               <>
@@ -340,33 +418,30 @@ export function AccountAuthPageView({
         </div>
 
         <div className={styles.formCard}>
-          <div className={styles.sessionNote}>
-            <strong>{routeViewModel.guestRoute.title}</strong>
-            <span>{routeViewModel.guestRoute.body}</span>
-            <span>{routeViewModel.guestRoute.redirectTargetLine}</span>
-          </div>
+          {showCuratedSurface ? (
+            <div className={styles.formIntro}>
+              <h2>{formTitle}</h2>
+              <p>{formBody}</p>
+            </div>
+          ) : (
+            <div className={styles.sessionNote}>
+              <strong>{routeViewModel.guestRoute.title}</strong>
+              <span>{routeViewModel.guestRoute.body}</span>
+              <span>{routeViewModel.guestRoute.redirectTargetLine}</span>
+            </div>
+          )}
+
           <div className={styles.formStack}>
             {mode === "register" ? (
-              <>
-                <label className={styles.field}>
-                  <span>First name</span>
-                  <input
-                    placeholder="Jordan"
-                    type="text"
-                    value={firstName}
-                    onChange={(event) => setFirstName(event.target.value)}
-                  />
-                </label>
-                <label className={styles.field}>
-                  <span>Last name</span>
-                  <input
-                    placeholder="Smith"
-                    type="text"
-                    value={lastName}
-                    onChange={(event) => setLastName(event.target.value)}
-                  />
-                </label>
-              </>
+              <label className={styles.field}>
+                <span>Full name</span>
+                <input
+                  placeholder="Jordan Smith"
+                  type="text"
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
+                />
+              </label>
             ) : null}
 
             <label className={styles.field}>
@@ -384,7 +459,7 @@ export function AccountAuthPageView({
               <label className={styles.field}>
                 <span>{isResetMode ? "New password" : "Password"}</span>
                 <input
-                  placeholder="••••••••"
+                  placeholder="********"
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
@@ -396,7 +471,7 @@ export function AccountAuthPageView({
               <label className={styles.field}>
                 <span>Confirm new password</span>
                 <input
-                  placeholder="••••••••"
+                  placeholder="********"
                   type="password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
@@ -408,7 +483,7 @@ export function AccountAuthPageView({
             passwordResetTokenView &&
             passwordResetTokenView.status !== "request" &&
             passwordResetTokenView.status !== "valid" ? (
-              <div className={styles.sessionNote}>
+              <div className={`${styles.requestFeedback} ${styles.requestFeedbackFailure}`}>
                 <strong>Password reset link status</strong>
                 <span>
                   {passwordResetTokenView.status === "expired"
@@ -439,26 +514,72 @@ export function AccountAuthPageView({
                 : content.primaryLabel}
             </button>
 
-            {mode === "forgot-password" && isResetMode ? (
-              <p className={styles.lede}>
-                Set a new password for {passwordResetTokenView?.email}. After a successful reset
-                you will be redirected to sign in.
-              </p>
+            {showCuratedSurface ? (
+              <div className={styles.formMeta}>
+                <p className={styles.formReassurance}>{content.reassurance}</p>
+                <div className={styles.formSupportLinks}>
+                  {mode === "login" && !isAdminSurface ? (
+                    <>
+                      <Link href={"/account/register" as Route}>Create an account</Link>
+                      <Link href={"/account/forgot-password" as Route}>Forgot password?</Link>
+                      <Link href={"/admin/login" as Route}>Admin login</Link>
+                    </>
+                  ) : mode === "register" ? (
+                    <>
+                      <Link href={"/account/login" as Route}>Already have an account?</Link>
+                      <Link href={"/account/forgot-password" as Route}>Need password help?</Link>
+                    </>
+                  ) : mode === "forgot-password" ? (
+                    <>
+                      <Link href={"/account/login" as Route}>Back to login</Link>
+                      <Link href={"/account/register" as Route}>Create an account</Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link href={"/account/login" as Route}>Customer login</Link>
+                      <Link href={"/account/forgot-password" as Route}>Password help</Link>
+                    </>
+                  )}
+                </div>
+              </div>
             ) : null}
 
-            <div className={styles.sessionNote}>
-              <strong>{routeViewModel.requestPresentation.title}</strong>
-              <span>{routeViewModel.requestPresentation.stateLine}</span>
-              {routeViewModel.requestPresentation.message ? (
-                <span>{routeViewModel.requestPresentation.message}</span>
-              ) : null}
-              {routeViewModel.requestPresentation.payloadLines.map((line) => (
-                <span key={line}>{line}</span>
-              ))}
-              {routeViewModel.requestPresentation.todoLines.map((line) => (
-                <span key={line}>{line}</span>
-              ))}
-            </div>
+            {showCuratedSurface ? (
+              currentFeedbackState.status !== "idle" ? (
+                <div
+                  className={`${styles.requestFeedback} ${
+                    currentFeedbackState.status === "failure"
+                      ? styles.requestFeedbackFailure
+                      : currentFeedbackState.status === "success"
+                        ? styles.requestFeedbackSuccess
+                        : ""
+                  }`}
+                >
+                  <strong>
+                    {currentFeedbackState.status === "failure"
+                      ? "There was a problem"
+                      : currentFeedbackState.status === "success"
+                        ? "You are all set"
+                        : "Processing"}
+                  </strong>
+                  {currentFeedbackMessage ? <span>{currentFeedbackMessage}</span> : null}
+                </div>
+              ) : null
+            ) : (
+              <div className={styles.sessionNote}>
+                <strong>{routeViewModel.requestPresentation.title}</strong>
+                <span>{routeViewModel.requestPresentation.stateLine}</span>
+                {routeViewModel.requestPresentation.message ? (
+                  <span>{routeViewModel.requestPresentation.message}</span>
+                ) : null}
+                {routeViewModel.requestPresentation.payloadLines.map((line) => (
+                  <span key={line}>{line}</span>
+                ))}
+                {routeViewModel.requestPresentation.todoLines.map((line) => (
+                  <span key={line}>{line}</span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
