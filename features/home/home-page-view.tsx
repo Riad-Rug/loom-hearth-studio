@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import {
   homeCategories,
@@ -10,7 +9,6 @@ import {
   homeNarrativeSections,
   homeNewsletter,
   homeSeoSection,
-  homeTrustBadges,
   homeTrustBanner,
 } from "@/features/home/home-page-data";
 
@@ -81,6 +79,22 @@ export function HomePageView() {
       </Section>
 
       <Section width="wide">
+        <div className={styles.narrativeGrid}>
+          {homeNarrativeSections.map((section) => (
+            <Link
+              key={section.title}
+              className={styles.narrativeCard}
+              href={section.href ?? "/shop"}
+            >
+              <p className={styles.eyebrow}>{section.eyebrow}</p>
+              <h2>{section.title}</h2>
+              <p>{section.body}</p>
+            </Link>
+          ))}
+        </div>
+      </Section>
+
+      <Section width="wide">
         <div className={styles.featuredLayout}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Featured directions</p>
@@ -112,48 +126,16 @@ export function HomePageView() {
         </div>
       </Section>
 
-      <Section width="wide">
-        <div className={styles.narrativeGrid}>
-          {homeNarrativeSections.map((section) => (
-            <Link
-              key={section.title}
-              className={styles.narrativeCard}
-              href={section.href ?? "/shop"}
-            >
-              <p className={styles.eyebrow}>{section.eyebrow}</p>
-              <h2>{section.title}</h2>
-              <p>{section.body}</p>
-            </Link>
-          ))}
-        </div>
-      </Section>
 
-      <Section tone="muted" width="wide">
-        <div className={styles.badgesSection}>
-          <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>Launch essentials</p>
-            <h2>Why these pieces stand out.</h2>
+      <Section width="wide">
+        <div className={styles.editorialPair}>
+          <div className={styles.seoCard}>
+            <div className={styles.sectionIntro}>
+              <p className={styles.eyebrow}>{homeSeoSection.eyebrow}</p>
+              <h2>{homeSeoSection.title}</h2>
+              <p className={styles.sectionBody}>{homeSeoSection.body}</p>
+            </div>
           </div>
-          <div className={styles.badgesGrid}>
-            {homeTrustBadges.map((badge) => (
-              <div key={badge} className={styles.badgeCard}>
-                {badge}
-              </div>
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      <Section width="wide">
-        <div className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>{homeSeoSection.eyebrow}</p>
-          <h2>{homeSeoSection.title}</h2>
-          <p className={styles.sectionBody}>{homeSeoSection.body}</p>
-        </div>
-      </Section>
-
-      <Section width="wide">
-        <Container width="narrow">
           <div className={styles.newsletterCard}>
             <div className={styles.sectionIntro}>
               <p className={styles.eyebrow}>{homeNewsletter.eyebrow}</p>
@@ -178,7 +160,7 @@ export function HomePageView() {
               </div>
             </form>
           </div>
-        </Container>
+        </div>
       </Section>
     </div>
   );

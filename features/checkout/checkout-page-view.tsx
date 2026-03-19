@@ -1,9 +1,9 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 
 import {
-  checkoutLineItems,
   checkoutSteps,
   checkoutSummary,
   usStates,
@@ -66,7 +66,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
           typeLabel: getCartItemLabel(item),
           priceUsdLabel: formatUsd(item.priceUsd),
         }))
-      : checkoutLineItems;
+      : [];
   const summary = {
     subtotalUsdLabel: items.length > 0 ? formatUsd(subtotalUsd) : checkoutSummary.subtotalUsdLabel,
     shippingUsdLabel: items.length > 0 ? formatUsd(shippingUsd) : checkoutSummary.shippingUsdLabel,
@@ -114,6 +114,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
   const nonConfirmationRouteViewModel = createCheckoutNonConfirmationRouteViewModel({
     step,
     checkoutSteps,
+    hasCartItems: items.length > 0,
     canAccessShipping,
     canAccessReview,
     checkoutExecutionAttempt,
@@ -190,16 +191,26 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
             </div>
 
             <div className={styles.itemList}>
-              {lineItems.map((item) => (
-                <article key={item.id} className={styles.itemRow}>
-                  <div>
-                    <p className={styles.itemType}>{item.typeLabel}</p>
-                    <h3>{item.name}</h3>
-                    <p className={styles.itemQty}>{item.quantityLabel}</p>
-                  </div>
-                  <strong>{item.priceUsdLabel}</strong>
-                </article>
-              ))}
+              {lineItems.length > 0 ? (
+                lineItems.map((item) => (
+                  <article key={item.id} className={styles.itemRow}>
+                    <div>
+                      <p className={styles.itemType}>{item.typeLabel}</p>
+                      <h3>{item.name}</h3>
+                      <p className={styles.itemQty}>{item.quantityLabel}</p>
+                    </div>
+                    <strong>{item.priceUsdLabel}</strong>
+                  </article>
+                ))
+              ) : (
+                <div className={styles.emptySummaryState}>
+                  <strong>Your cart is empty.</strong>
+                  <p>Add a product to see a real checkout summary.</p>
+                  <Link className={styles.secondaryAction} href="/shop">
+                    Continue shopping
+                  </Link>
+                </div>
+              )}
             </div>
 
             <div className={styles.summaryRows}>
@@ -329,6 +340,7 @@ type CheckoutStepRenderProps = {
       title: string;
       body: string;
       actionLabel: string;
+      actionHref: string;
     };
     information: {
       note: string;
@@ -531,7 +543,10 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             <h2>{props.nonConfirmationRouteViewModel.start.title}</h2>
           </div>
           <p className={styles.panelBody}>{props.nonConfirmationRouteViewModel.start.body}</p>
-          <Link className={styles.primaryAction} href="/checkout/information">
+          <Link
+            className={styles.primaryAction}
+            href={props.nonConfirmationRouteViewModel.start.actionHref as Route}
+          >
             {props.nonConfirmationRouteViewModel.start.actionLabel}
           </Link>
         </div>

@@ -355,7 +355,7 @@ p {
 
 .site-footer__grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
   gap: var(--space-6);
   padding: var(--space-6);
   border: 1px solid var(--color-border);

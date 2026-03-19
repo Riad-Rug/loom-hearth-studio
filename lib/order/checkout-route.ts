@@ -23,6 +23,7 @@ export type CheckoutNonConfirmationRouteViewModel = {
     title: string;
     body: string;
     actionLabel: string;
+    actionHref: string;
   };
   information: {
     note: string;
@@ -85,6 +86,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
     key: Exclude<CheckoutStepKey, "start">;
     label: string;
   }>;
+  hasCartItems: boolean;
   canAccessShipping: boolean;
   canAccessReview: boolean;
   checkoutExecutionAttempt: StripeCheckoutExecutionAttemptState;
@@ -125,10 +127,12 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
       isComplete: input.step !== "start" && currentStepIndex > index,
     })),
     start: {
-      title: "Checkout route shell",
-      body:
-        "Guest checkout is the only supported mode in the PRD. Use the step links below to move through the existing 5-step flow using the current client-side checkout state.",
-      actionLabel: "Start guest checkout",
+      title: input.hasCartItems ? "Checkout route shell" : "Your cart is empty",
+      body: input.hasCartItems
+        ? "Guest checkout is the only supported mode in the PRD. Use the step links below to move through the existing 5-step flow using the current client-side checkout state."
+        : "Add at least one product before starting checkout. The checkout shell is available, but there is no active cart to submit.",
+      actionLabel: input.hasCartItems ? "Start guest checkout" : "Return to shop",
+      actionHref: input.hasCartItems ? "/checkout/information" : "/shop",
     },
     information: {
       note:
