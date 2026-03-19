@@ -39,28 +39,43 @@ export const homeCategories = [
     href: "/shop/rugs",
     description:
       "Handcrafted Moroccan rugs chosen for texture, material depth, and lasting presence in the room.",
+    imageSrc:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Handmade Moroccan rug in a warm neutral living room with soft natural light",
   },
   {
     title: "Poufs",
     href: "/shop/poufs",
     description:
       "Rug-made and leather poufs that bring flexible function and a softer, more collected look.",
+    imageSrc:
+      "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+    imageAlt: "Moroccan leather pouf styled in a tactile interior with warm linen textures",
   },
   {
     title: "Pillows",
     href: "/shop/pillows",
     description: "Cactus silk and rug-based pillows for color, contrast, and layered texture.",
+    imageSrc:
+      "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    imageAlt: "Cactus silk pillows layered in warm Moroccan sunlight with woven textiles",
   },
   {
     title: "Decor",
     href: "/shop/decor",
     description:
       "Handcrafted Moroccan decor selected to finish shelves, consoles, tables, and quiet corners.",
+    imageSrc:
+      "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+    imageAlt: "Moroccan decor in a warm interior with carved wood, ceramics, and layered styling",
   },
   {
     title: "Vintage Rugs",
     href: "/shop/vintage",
     description: "One-of-one vintage Moroccan rugs chosen for patina, history, and collected appeal.",
+    imageSrc:
+      "https://images.pexels.com/photos/28582589/pexels-photo-28582589.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1600",
+    imageAlt: "Vintage Moroccan rugs displayed in a warm showroom with visible patina and texture",
   },
 ] as const;
 

@@ -70,8 +70,19 @@ export function HomePageView() {
           <div className={styles.categoryGrid}>
             {homeCategories.map((category) => (
               <Link key={category.href} className={styles.categoryCard} href={category.href}>
-                <h3>{category.title}</h3>
-                <p>{category.description}</p>
+                <div className={styles.categoryImageWrap}>
+                  <Image
+                    alt={category.imageAlt}
+                    className={styles.categoryImage}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 20vw"
+                    src={category.imageSrc}
+                  />
+                </div>
+                <div className={styles.categoryCardContent}>
+                  <h3>{category.title}</h3>
+                  <p>{category.description}</p>
+                </div>
               </Link>
             ))}
           </div>
@@ -125,7 +136,6 @@ export function HomePageView() {
           </div>
         </div>
       </Section>
-
 
       <Section width="wide">
         <div className={styles.editorialPair}>
