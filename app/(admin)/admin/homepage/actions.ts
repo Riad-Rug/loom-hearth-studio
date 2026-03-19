@@ -46,6 +46,16 @@ export async function updateAdminHomepageAction(
 }
 
 function parseHomepageContentFormData(formData: FormData) {
+  const jsonValue = formData.get("contentJson");
+
+  if (typeof jsonValue === "string" && jsonValue.trim()) {
+    try {
+      return JSON.parse(jsonValue) as unknown;
+    } catch {
+      return {};
+    }
+  }
+
   const result: Record<string, unknown> = {};
 
   for (const [key, rawValue] of formData.entries()) {

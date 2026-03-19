@@ -7,6 +7,10 @@ import { getHomepageContent } from "@/lib/homepage/content";
 export async function SiteFooter() {
   const content = await getHomepageContent();
 
+  if (!content.footer.visible) {
+    return null;
+  }
+
   return (
     <footer className="site-footer">
       <Container width="wide">

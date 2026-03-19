@@ -507,3 +507,10 @@
     width: 100%;
   }
 }
+
+.narrativeLinkLabel {
+  display: inline-flex;
+  margin-top: auto;
+  color: var(--color-clay-terracotta);
+  font-size: 0.92rem;
+}

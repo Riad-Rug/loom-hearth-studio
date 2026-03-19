@@ -5,8 +5,8 @@ import { getCloudinaryConfig } from "@/lib/cloudinary/config";
 import { signCloudinaryUploadParams } from "@/lib/cloudinary/server";
 import type { CloudinarySignedUploadRequest } from "@/lib/cloudinary/types";
 
-function isProductType(value: string): value is CloudinarySignedUploadRequest["productType"] {
-  return value === "rug" || value === "multiUnit";
+function isUploadTarget(value: string): value is CloudinarySignedUploadRequest["target"] {
+  return value === "homepage" || value === "rug" || value === "multiUnit";
 }
 
 export async function POST(request: Request) {
@@ -22,14 +22,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const payload = (await request.json()) as Partial<CloudinarySignedUploadRequest>;
-  const productType = typeof payload.productType === "string" ? payload.productType : "";
+  const payload = (await request.json()) as Partial<CloudinarySignedUploadRequest> & {
+    productType?: string;
+  };
+  const target = typeof payload.target === "string"
+    ? payload.target
+    : typeof payload.productType === "string"
+      ? payload.productType
+      : "";
 
-  if (!isProductType(productType)) {
+  if (!isUploadTarget(target)) {
     return NextResponse.json(
       {
         status: "invalid-input",
-        message: "A supported product type is required before media uploads can be signed.",
+        message: "A supported upload target is required before media uploads can be signed.",
       },
       { status: 400 },
     );
@@ -48,7 +54,11 @@ export async function POST(request: Request) {
   }
 
   const folder =
-    productType === "rug" ? config.folders.productsRugs : config.folders.productsMultiUnit;
+    target === "homepage"
+      ? config.folders.homepage
+      : target === "rug"
+        ? config.folders.productsRugs
+        : config.folders.productsMultiUnit;
   const timestamp = Math.floor(Date.now() / 1000);
   const signature = signCloudinaryUploadParams(
     {

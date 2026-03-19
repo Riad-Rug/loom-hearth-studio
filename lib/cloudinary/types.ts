@@ -32,8 +32,10 @@ export type CloudinaryImageAsset = MediaAsset & {
   folder?: CloudinaryFolder;
 };
 
+export type CloudinaryUploadTarget = "homepage" | "rug" | "multiUnit";
+
 export type CloudinarySignedUploadRequest = {
-  productType: "rug" | "multiUnit";
+  target: CloudinaryUploadTarget;
 };
 
 export type CloudinarySignedUploadPayload = {
