@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { CookieConsentBanner } from "@/components/compliance/cookie-consent-banner";
+import { AppShell } from "@/components/layout/app-shell";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -49,12 +50,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />
         <CartProvider>
-          <div className="site-shell">
-            <SiteHeader />
-            <main className="site-main">{children}</main>
-            <SiteFooter />
-            <CookieConsentBanner />
-          </div>
+          <AppShell
+            header={<SiteHeader />}
+            footer={<SiteFooter />}
+            consentBanner={<CookieConsentBanner />}
+          >
+            {children}
+          </AppShell>
         </CartProvider>
       </body>
     </html>
