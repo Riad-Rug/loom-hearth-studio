@@ -14,25 +14,32 @@ type LookbookItem = {
 
 export const aboutHero = {
   eyebrow: "About",
-  title: "An editorial home for handcrafted Moroccan rugs and home decor.",
+  title: "A direct source for handcrafted Moroccan rugs, poufs, pillows, and home decor.",
   body:
-    "This page is implemented with static placeholder content only. It preserves the PRD-supported About surface and premium brand tone without introducing CMS wiring or finalized editorial copy.",
+    "Loom & Hearth Studio is built on real roots in Marrakech, where our family has worked in the bazaar trade for decades. Our grandfather’s shop in the Semmarine souk, steps from Jemaa el-Fnaa, was known for handcrafted pieces sourced across Morocco.\n\nToday, we continue that work with a more focused approach — selecting Moroccan rugs, transforming some into one-of-one poufs and pillows, and curating decor with a clear point of view.\n\nEvery piece is chosen in person, not mass-produced, and not sourced from generic export catalogs. The goal is simple: bring objects with real material depth and character into homes that value design.\n\nAll orders ship directly from Morocco within 5–7 business days, with shipping and customs already included in the final price — no surprises at delivery.",
 } as const;
 
 export const aboutSections: AboutSection[] = [
   {
     eyebrow: "Craft",
-    title: "A storefront shaped around material, texture, and provenance.",
+    title: "Rooted in Moroccan sourcing, material knowledge, and direct selection.",
     body:
-      "The PRD calls for editorial storytelling across the storefront. This placeholder section preserves that narrative layout so final brand copy can be introduced later without changing the page structure.",
+      "We work directly with artisans, souks, and trusted suppliers across Morocco, selecting pieces based on texture, construction, and presence — not trends. Many items are one-of-one, and even repeatable designs remain handmade, which means no two pieces are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug materials, giving them the same depth, irregularity, and character as the originals they come from.",
   },
   {
     eyebrow: "Direction",
-    title: "Built to balance commerce with trust, story, and visual pace.",
+    title: "Built for interiors that value texture, warmth, and individuality.",
     body:
-      "The current implementation focuses on shell and structure only. Product operations, CMS-driven storytelling, and media publishing workflows remain intentionally out of scope for this slice.",
+      "Loom & Hearth Studio is not a marketplace and not a mass-production brand. The collection is intentionally focused on Moroccan rugs, rug-based poufs, pillows, and supporting decor — pieces that work together and build a coherent interior.\n\nThe direction is simple: fewer, better objects with real presence. Pieces that feel collected over time, not selected from a catalog.",
   },
 ] as const;
+
+export const aboutBridge = {
+  eyebrow: "How we source",
+  title: "Selected in person, not pulled from a catalog.",
+  body:
+    "We work directly across Morocco to source handcrafted rugs, rug-based poufs and pillows, and supporting decor with real texture, construction, and presence. The process is hands-on by design, so the collection stays focused, distinctive, and materially honest.",
+} as const;
 
 export const contactData = {
   eyebrow: "Contact",

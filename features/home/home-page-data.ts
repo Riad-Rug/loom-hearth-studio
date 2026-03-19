@@ -6,9 +6,9 @@ export const homeHero = {
   description:
     "Discover Moroccan rugs, vintage rugs, rug-made poufs, cactus silk pillows, and handcrafted decor selected for warmth, texture, and collected character. From plush Beni Ourain-inspired pieces to one-of-one vintage finds, each piece is chosen to bring artisanal depth into everyday interiors.",
   imageSrc:
-    "https://images.pexels.com/photos/30673750/pexels-photo-30673750.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+    "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
   imageAlt:
-    "A luxurious Moroccan seating area with ornate textiles, carved details, and plush handmade cushions",
+    "A refined Moroccan sitting room with warm textiles, carved wood, and a quiet artisanal feel",
   primaryCta: {
     href: "/shop/rugs",
     label: "Shop Moroccan rugs",
@@ -70,16 +70,16 @@ export const homeFeaturedDirections = [
     note: "Handwoven Moroccan rugs selected for warmth, texture, and a stronger sense of home.",
     href: "/shop/rugs",
     imageSrc:
-      "https://images.pexels.com/photos/7880322/pexels-photo-7880322.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
     imageAlt:
-      "A soft cream wool rug styled in a warm interior with wooden furniture and natural light",
+      "A plush cream rug with black Beni Ourain style patterning in a calm neutral interior",
   },
   {
     name: "Poufs",
     note: "Leather and rug-made poufs selected for texture, function, and character.",
     href: "/shop/poufs",
     imageSrc:
-      "https://images.pexels.com/photos/6368796/pexels-photo-6368796.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+      "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
     imageAlt:
       "A brown leather pouf styled in a light, tactile interior with soft linen textures",
   },
@@ -88,9 +88,9 @@ export const homeFeaturedDirections = [
     note: "Handcrafted pillows that add softness, color, and a more layered finish to the room.",
     href: "/shop/pillows",
     imageSrc:
-      "https://images.pexels.com/photos/30664540/pexels-photo-30664540.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+      "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
     imageAlt:
-      "Moroccan cushions and layered textiles arranged in a warm interior with visible woven detail",
+      "Handmade Moroccan cushions in warm sunlight with layered woven textiles and soft neutral tones",
   },
 ] as const;
 

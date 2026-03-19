@@ -1,17 +1,15 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import {
   homeCategories,
-  homeFeaturedProducts,
+  homeFeaturedDirections,
   homeHero,
   homeNarrativeSections,
   homeNewsletter,
   homeSeoSection,
-  homeStats,
-  homeTestimonials,
   homeTrustBadges,
   homeTrustBanner,
 } from "@/features/home/home-page-data";
@@ -38,17 +36,15 @@ export function HomePageView() {
           </div>
 
           <div className={styles.heroAside}>
-            <div className={styles.statsPanel}>
-              <p className={styles.panelLabel}>Launch signals</p>
-              <div className={styles.statsGrid}>
-                {homeStats.map((stat) => (
-                  <article key={stat.label} className={styles.statCard}>
-                    <strong>{stat.value}</strong>
-                    <span>{stat.label}</span>
-                    <span>{stat.supportingText}</span>
-                  </article>
-                ))}
-              </div>
+            <div className={styles.heroMedia}>
+              <Image
+                alt={homeHero.imageAlt}
+                className={styles.heroImage}
+                fill
+                priority
+                sizes="(max-width: 1100px) 100vw, 38vw"
+                src={homeHero.imageSrc}
+              />
             </div>
           </div>
         </div>
@@ -63,51 +59,51 @@ export function HomePageView() {
       </Section>
 
       <Section width="wide">
-        <div className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>Categories</p>
-          <h2>Shop Moroccan rugs, poufs, pillows, and decor by category.</h2>
-          <p className={styles.sectionBody}>
-            Shop the launch collection through the pieces customers search for most: Moroccan
-            rugs, vintage rugs, leather poufs, cactus silk pillows, and handcrafted home decor.
-            Each category is designed to make discovery faster and selection easier.
-          </p>
-        </div>
-        <div className={styles.categoryGrid}>
-          {homeCategories.map((category, index) => (
-            <Link key={category.href} className={styles.categoryCard} href={category.href}>
-              <span className={styles.categoryIndex}>0{index + 1}</span>
-              <h3>{category.title}</h3>
-              <p>{category.description}</p>
-            </Link>
-          ))}
+        <div className={styles.categorySection}>
+          <div className={styles.sectionIntro}>
+            <p className={styles.eyebrow}>Categories</p>
+            <h2>Shop Moroccan rugs, poufs, pillows, and decor by category.</h2>
+            <p className={styles.sectionBody}>
+              Start with the pieces at the center of the collection: handcrafted Moroccan rugs,
+              one-of-one vintage rugs, rug-made poufs, cactus silk pillows, and decor selected for
+              warmth, texture, and character.
+            </p>
+          </div>
+          <div className={styles.categoryGrid}>
+            {homeCategories.map((category) => (
+              <Link key={category.href} className={styles.categoryCard} href={category.href}>
+                <h3>{category.title}</h3>
+                <p>{category.description}</p>
+              </Link>
+            ))}
+          </div>
         </div>
       </Section>
 
       <Section width="wide">
         <div className={styles.featuredLayout}>
           <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>Featured products</p>
+            <p className={styles.eyebrow}>Featured directions</p>
             <h2>Start with the signature pieces of the collection.</h2>
             <p className={styles.sectionBody}>
-              These featured previews reflect the product directions at the center of the launch:
-              Moroccan rugs for grounding a room, leather poufs for flexible function, and cactus
-              silk pillows for layered finishing detail.
+              Explore the three directions that define the launch: Moroccan rugs, rug-made poufs,
+              and cactus silk pillows.
             </p>
           </div>
           <div className={styles.featuredGrid}>
-            {homeFeaturedProducts.map((product) => (
+            {homeFeaturedDirections.map((product) => (
               <Link key={product.name} className={styles.productCard} href={product.href ?? "/shop"}>
                 <div className={styles.productImagePlaceholder}>
-                  <PlaceholderMedia
-                    alt={product.name}
-                    aspectRatio="4 / 3"
-                    label={product.type}
+                  <Image
+                    alt={product.imageAlt}
+                    className={styles.productImage}
+                    fill
                     sizes="(max-width: 1100px) 100vw, 33vw"
+                    src={product.imageSrc}
                   />
                 </div>
                 <div className={styles.productMeta}>
                   <h3>{product.name}</h3>
-                  <p className={styles.productPrice}>{product.price}</p>
                   <p>{product.note}</p>
                 </div>
               </Link>
@@ -153,37 +149,6 @@ export function HomePageView() {
           <p className={styles.eyebrow}>{homeSeoSection.eyebrow}</p>
           <h2>{homeSeoSection.title}</h2>
           <p className={styles.sectionBody}>{homeSeoSection.body}</p>
-        </div>
-      </Section>
-
-      <Section width="wide">
-        <div className={styles.testimonialsLayout}>
-          <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>Customer feedback</p>
-            <h2>Early impressions from first clients and private buyers.</h2>
-          </div>
-          <div className={styles.testimonialsGrid}>
-            {homeTestimonials.map((testimonial) => (
-              <blockquote key={testimonial.id} className={styles.testimonialCard}>
-                <p>{testimonial.quote}</p>
-                <footer>
-                  {testimonial.avatarUrl ? (
-                    <img
-                      alt={testimonial.customerName}
-                      className={styles.testimonialAvatar}
-                      decoding="async"
-                      height="56"
-                      loading="lazy"
-                      src={testimonial.avatarUrl}
-                      width="56"
-                    />
-                  ) : null}
-                  <strong>{testimonial.customerName}</strong>
-                  {testimonial.location ? <span>{testimonial.location}</span> : null}
-                </footer>
-              </blockquote>
-            ))}
-          </div>
         </div>
       </Section>
 

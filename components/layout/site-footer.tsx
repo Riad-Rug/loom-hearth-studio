@@ -11,7 +11,7 @@ export function SiteFooter() {
           <div className="site-footer__intro">
             <p className="site-footer__eyebrow">{siteConfig.name}</p>
             <p className="site-footer__brand">
-              Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor.
+              Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and curated home decor.
             </p>
             <p className="site-footer__meta">
               Curated for a United States launch in USD.
