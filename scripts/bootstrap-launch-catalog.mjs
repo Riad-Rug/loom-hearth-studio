@@ -10,23 +10,8 @@ const prisma = new PrismaClient();
 
 async function main() {
   const existingCatalogCount = await prisma.catalogProduct.count();
-
-  if (existingCatalogCount > 0) {
-    console.log(
-      JSON.stringify(
-        {
-          status: "skipped",
-          reason: "catalog-already-populated",
-          totalCatalogProducts: existingCatalogCount,
-        },
-        null,
-        2,
-      ),
-    );
-    return;
-  }
-
   const launchProducts = await loadLaunchProducts();
+  let syncedProducts = 0;
 
   for (const product of launchProducts) {
     await prisma.catalogProduct.upsert({
@@ -42,6 +27,7 @@ async function main() {
         ...mapLaunchProductToCatalogProduct(product),
       },
     });
+    syncedProducts += 1;
   }
 
   const totalCatalogProducts = await prisma.catalogProduct.count();
@@ -49,8 +35,9 @@ async function main() {
   console.log(
     JSON.stringify(
       {
-        status: "seeded",
-        importedProducts: launchProducts.length,
+        status: "synced",
+        existingCatalogProductsBeforeSync: existingCatalogCount,
+        syncedProducts,
         totalCatalogProducts,
       },
       null,
