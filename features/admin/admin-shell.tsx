@@ -41,12 +41,6 @@ export function AdminShell({ children, authenticatedUser }: AdminShellProps) {
           <h1>{routeViewModel.intro.title}</h1>
           <p>{routeViewModel.intro.body}</p>
         </div>
-        <div className={styles.sessionPanel}>
-          <strong>{routeViewModel.session.title}</strong>
-          {routeViewModel.session.lines.map((line) => (
-            <span key={line}>{line}</span>
-          ))}
-        </div>
         <nav className={styles.nav} aria-label={routeViewModel.navigation.ariaLabel}>
           {routeViewModel.navigation.items.map((item) => (
             <Link

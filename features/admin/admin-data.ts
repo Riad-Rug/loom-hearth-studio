@@ -32,17 +32,16 @@ export const adminModules: Record<
 > = {
   dashboard: {
     eyebrow: "Admin",
-    title: "Dashboard shell",
-    description:
-      "Static admin dashboard placeholder only. Real authentication, role enforcement, and operational metrics are not implemented in this slice.",
+    title: "Control center",
+    description: "Focused shortcuts for launch-safe admin work.",
     cards: [
       {
-        title: "Role presentation",
-        body: "Admin, Editor, and Viewer roles are part of the PRD, but this slice only notes them as placeholder UI.",
+        title: "Quick actions",
+        body: "Primary admin routes are surfaced directly in the dashboard.",
       },
       {
-        title: "Operational overview",
-        body: "Reserved for future high-level order, customer, and content status summaries.",
+        title: "Secondary modules",
+        body: "Content and marketing surfaces remain accessible without crowding the page.",
       },
     ],
   },
