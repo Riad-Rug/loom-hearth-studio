@@ -1,7 +1,7 @@
+import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 
-import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { blogPosts } from "@/features/blog/blog-post-data";
 import type { BlogPost } from "@/types/domain";
 
@@ -10,6 +10,8 @@ import styles from "./blog.module.css";
 type PlaceholderBlogPost = BlogPost & {
   categoryLabel: string;
   readTime: string;
+  imageAlt: string;
+  imageSrc: string;
 };
 
 type BlogPostPageViewProps = {
@@ -34,12 +36,13 @@ export function BlogPostPageView({ post }: BlogPostPageViewProps) {
         </header>
 
         <div className={styles.articleMedia}>
-          <PlaceholderMedia
-            alt={post.title}
-            aspectRatio="16 / 9"
-            label="Featured image placeholder"
+          <Image
+            alt={post.imageAlt}
+            className={styles.articleImage}
+            fill
             priority
             sizes="(max-width: 1100px) 100vw, 80vw"
+            src={post.imageSrc}
           />
         </div>
 
@@ -52,8 +55,8 @@ export function BlogPostPageView({ post }: BlogPostPageViewProps) {
 
       <section className={styles.relatedSection}>
         <div className={styles.relatedHeader}>
-          <p className={styles.eyebrow}>More from the blog</p>
-          <h2>Static related articles UI</h2>
+          <p className={styles.eyebrow}>More from the journal</p>
+          <h2>Continue reading the collection story.</h2>
         </div>
         <div className={styles.relatedGrid}>
           {adjacentPosts.map((item) => (

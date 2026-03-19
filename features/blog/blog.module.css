@@ -86,6 +86,7 @@
     linear-gradient(135deg, rgba(34, 33, 38, 0.08), rgba(184, 94, 59, 0.16)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(245, 239, 228, 0.4));
   overflow: hidden;
+  position: relative;
 }
 
 .postMedia {
@@ -94,6 +95,11 @@
 
 .articleMedia {
   min-height: 24rem;
+}
+
+.postImage,
+.articleImage {
+  object-fit: cover;
 }
 
 .postBody {

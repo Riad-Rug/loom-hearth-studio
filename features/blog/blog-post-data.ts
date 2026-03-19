@@ -3,68 +3,82 @@ import type { BlogPost } from "@/types/domain";
 type PlaceholderBlogPost = BlogPost & {
   categoryLabel: string;
   readTime: string;
+  imageAlt: string;
+  imageSrc: string;
 };
 
 export const blogPosts: PlaceholderBlogPost[] = [
   {
-    id: "blog-materials-and-craft",
-    slug: "materials-and-craft",
-    categorySlug: "journal",
-    categoryLabel: "Journal",
-    title: "Material, texture, and craft in the Loom & Hearth Studio editorial layer",
+    id: "blog-beni-ourain-guide",
+    slug: "how-to-read-a-beni-ourain-rug",
+    categorySlug: "rugs",
+    categoryLabel: "Moroccan rugs",
+    title: "How to Read a Beni Ourain Rug Before It Reaches the Room",
     excerpt:
-      "Static placeholder article for the PRD blog surface, preserving the blog index and article template structure.",
+      "A practical editorial guide to pile, pattern spacing, wool character, and the quiet details that make a fluffy Beni Ourain-style rug feel considered instead of generic.",
     body: [
-      "This blog slice is implemented with static placeholder content only. It exists to reserve the editorial structure described in the PRD without introducing a CMS or real content retrieval.",
-      "The article template is designed to support featured imagery, category presentation, publishing metadata, long-form body content, and future SEO-aware article rendering.",
-      "The current implementation is intentionally modular so a future content system can replace the placeholder data without reworking the article layout or route structure.",
+      "The best Beni Ourain-style rugs bring softness first. Before pattern, before styling, and before scale, the pile should feel generous enough to catch light and create movement across the room. When the wool looks flat, harsh, or overly uniform, the rug usually reads more decorative than architectural.",
+      "Pattern matters most in restraint. The strongest pieces keep the linework open, slightly irregular, and breathable so the rug still feels calm from a distance. Tight, repetitive diamonds can turn a quiet room busy, while a looser drawing gives the floor presence without stealing focus from the furniture above it.",
+      "Scale is the final edit. In collected interiors, Moroccan rugs work best when they are large enough to anchor the seating area and warm enough in tone to sit comfortably beside plaster, wood, leather, and woven accents. That balance is what turns a good rug into the piece that sets the room.",
     ].join("\n\n"),
-    publishedAt: "2026-03-16",
-    readTime: "4 min read",
+    publishedAt: "March 18, 2026",
+    readTime: "6 min read",
     status: "active",
-    seoTitle: "Material, texture, and craft | Loom & Hearth Studio",
+    imageAlt:
+      "A plush neutral bedroom with a soft cream rug that suggests a Beni Ourain-style Moroccan foundation",
+    imageSrc:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+    seoTitle: "How to read a Beni Ourain rug | Loom & Hearth Studio",
     seoDescription:
-      "Placeholder blog article preserving the editorial blog template structure.",
+      "A Loom & Hearth Studio guide to choosing a fluffy, minimalist Beni Ourain-style Moroccan rug with real presence.",
   },
   {
-    id: "blog-home-styling-notes",
-    slug: "home-styling-notes",
+    id: "blog-layering-poufs-and-sabra-pillows",
+    slug: "layering-poufs-and-sabra-pillows",
     categorySlug: "styling",
-    categoryLabel: "Styling",
-    title: "Home styling notes for a premium editorial storefront",
+    categoryLabel: "Styling notes",
+    title: "Layering Poufs and Sabra Pillows Without Losing the Room",
     excerpt:
-      "Static placeholder content showing how category-led blog routing can fit within the launch information architecture.",
+      "A room-by-room approach to using Moroccan poufs and cactus silk pillows with enough contrast, texture, and spacing to feel collected rather than over-styled.",
     body: [
-      "This placeholder post keeps the category plus slug route structure intact for the PRD blog layer.",
-      "It demonstrates how a future CMS-managed article could be rendered with a consistent layout, metadata treatment, and article body rhythm.",
-      "No related-posts engine, newsletter integration, or live content workflows are implemented in this slice.",
+      "Poufs work best when they solve two things at once: movement and texture. A single leather or striped floor pouf can soften the edge of a seating group, but it should still feel grounded by the rug beneath it and by enough negative space around it to keep the room breathable.",
+      "Sabra pillows do the opposite job. They sharpen a sofa, bench, or daybed with a little geometry and faded color, especially when the rest of the palette stays warm and restrained. The goal is not to stack as many as possible, but to let one or two handmade pieces carry the contrast.",
+      "The most believable rooms mix the two with discipline. Use the pouf as the lower, quieter anchor and the pillows as the brighter editorial note. That hierarchy keeps the space layered and warm without tipping into costume.",
     ].join("\n\n"),
-    publishedAt: "2026-03-15",
-    readTime: "3 min read",
-    status: "active",
-    seoTitle: "Home styling notes | Loom & Hearth Studio",
-    seoDescription:
-      "Placeholder styling article for the blog category and post template structure.",
-  },
-  {
-    id: "blog-lookbook-direction",
-    slug: "lookbook-direction",
-    categorySlug: "lookbook",
-    categoryLabel: "Lookbook",
-    title: "Lookbook direction and editorial pacing",
-    excerpt:
-      "Static placeholder article aligned to the PRD’s content and editorial requirements.",
-    body: [
-      "This post is a placeholder for content that may eventually connect the blog and lookbook layers defined in the PRD.",
-      "For now, it exists to populate the blog index with representative editorial entries and to validate the article template route.",
-      "CMS wiring, rich media embedding, and content operations remain out of scope for this implementation slice.",
-    ].join("\n\n"),
-    publishedAt: "2026-03-14",
+    publishedAt: "March 16, 2026",
     readTime: "5 min read",
     status: "active",
-    seoTitle: "Lookbook direction | Loom & Hearth Studio",
+    imageAlt:
+      "Traditional Moroccan cushions in warm sunlight with woven texture and faded sabra-style patterning",
+    imageSrc:
+      "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    seoTitle: "Layering poufs and sabra pillows | Loom & Hearth Studio",
     seoDescription:
-      "Placeholder editorial article used to validate the blog index and post template.",
+      "Styling notes on using Moroccan poufs and cactus silk pillows in layered interiors.",
+  },
+  {
+    id: "blog-sourcing-notes-morocco",
+    slug: "why-direct-sourcing-changes-the-collection",
+    categorySlug: "sourcing",
+    categoryLabel: "Sourcing stories",
+    title: "Why Direct Sourcing in Morocco Changes the Collection",
+    excerpt:
+      "What becomes possible when rugs, poufs, pillows, and decor are selected in person: better material judgment, stronger category direction, and a more coherent point of view.",
+    body: [
+      "Collections feel sharper when they are edited close to the source. Seeing Moroccan pieces in person makes it easier to compare wool density, leather finish, hand feel, dye softness, and the small construction details that disappear in a marketplace thumbnail.",
+      "That proximity also changes the mix. Instead of buying to fill categories abstractly, the collection can be built around what actually has presence: a quieter rug, a stronger sabra pillow, a more sculptural pouf, or a small decor object that finishes a shelf without feeling ornamental.",
+      "For an editorial storefront, that matters. The goal is not volume. It is to make the customer feel that every piece belongs to the same room, the same material world, and the same standard of selection.",
+    ].join("\n\n"),
+    publishedAt: "March 12, 2026",
+    readTime: "4 min read",
+    status: "active",
+    imageAlt:
+      "A warm Moroccan interior with woven lamps, rattan furniture, and built-in seating that reflects Loom and Hearth Studio's sourcing direction",
+    imageSrc:
+      "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+    seoTitle: "Why direct sourcing changes the collection | Loom & Hearth Studio",
+    seoDescription:
+      "A sourcing story on how in-person selection in Morocco shapes the Loom & Hearth Studio collection.",
   },
 ] as const;
 
@@ -75,6 +89,7 @@ export const blogCategories = Array.from(
       {
         slug: post.categorySlug,
         label: post.categoryLabel,
+        href: `/blog/${post.categorySlug}/${post.slug}`,
       },
     ]),
   ).values(),
