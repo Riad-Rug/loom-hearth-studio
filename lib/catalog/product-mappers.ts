@@ -1,7 +1,9 @@
-import { Prisma, ProductCategory as PrismaProductCategory, type CatalogProduct } from "@prisma/client";
+import { Prisma, type CatalogProduct } from "@prisma/client";
 
 import type { Product } from "@/types/domain";
 import type { ProductMutationInput } from "@/lib/catalog/product-validation";
+
+type PrismaProductCategory = CatalogProduct["category"];
 
 export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): Product {
   const baseProduct = {
@@ -113,19 +115,10 @@ export function mapProductMutationInputToUpdateInput(
   };
 }
 
-export function mapDomainProductCategoryToPrisma(category: Product["category"]) {
-  switch (category) {
-    case "rugs":
-      return PrismaProductCategory.rugs;
-    case "poufs":
-      return PrismaProductCategory.poufs;
-    case "pillows":
-      return PrismaProductCategory.pillows;
-    case "decor":
-      return PrismaProductCategory.decor;
-    case "vintage":
-      return PrismaProductCategory.vintage;
-  }
+export function mapDomainProductCategoryToPrisma(
+  category: Product["category"],
+): PrismaProductCategory {
+  return category;
 }
 
 export function mapPrismaProductCategoryToDomain(category: PrismaProductCategory): Product["category"] {
