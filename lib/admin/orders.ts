@@ -14,26 +14,59 @@ export const adminOrderStatusOptions = [
 
 export type AdminOrderStatusOption = (typeof adminOrderStatusOptions)[number];
 
-export type AdminOrdersModuleCardData = {
-  title: string;
-  body: string;
-  lines?: string[];
+export type AdminOrdersSummaryMetric = {
+  label: string;
+  value: string;
+  detail: string;
+  tone?: "default" | "pending";
+};
+
+export type AdminOrderCostFieldKey =
+  | "product-cost"
+  | "shipping-cost"
+  | "packaging-cost"
+  | "payment-fee"
+  | "other-manual-cost"
+  | "total-estimated-cost"
+  | "estimated-net-profit"
+  | "estimated-margin";
+
+export type AdminOrderCostField = {
+  key: AdminOrderCostFieldKey;
+  label: string;
+  statusLabel: string;
+  note: string;
 };
 
 export type AdminOrderManagementItem = {
   id: string;
   orderNumber: string;
+  customerName: string;
   customerEmail: string;
+  itemCountLabel: string;
   status: Order["status"];
   statusLabel: string;
-  totalLabel: string;
+  paymentStatus: Order["paymentStatus"];
+  paymentLabel: string;
+  totalPaidLabel: string;
+  estimatedCostLabel: string;
+  estimatedProfitLabel: string;
+  estimatedMarginLabel: string;
   placedAtLabel: string;
   allowedStatuses: AdminOrderStatusOption[];
+  financialSummary: string;
+  costFields: AdminOrderCostField[];
 };
 
 export type AdminOrdersModuleData = {
   description: string;
-  cards: AdminOrdersModuleCardData[];
+  summaryMetrics: AdminOrdersSummaryMetric[];
+  costPanelTitle: string;
+  costPanelDescription: string;
+  mainTableFields: string[];
+  costCaptureFields: AdminOrderCostField[];
+  costCapturePathNote: string;
+  tableStatusNote: string;
   items: AdminOrderManagementItem[];
 };
 
@@ -51,28 +84,51 @@ export type AdminOrderStatusUpdateResult = {
 
 export async function getAdminOrdersModuleData(): Promise<AdminOrdersModuleData> {
   const orders = await createOrderRepository().listAll();
+  const paidOrders = orders.filter((order) => order.paymentStatus === "paid");
+  const paidRevenue = paidOrders.reduce((sum, order) => sum + order.totalUsd, 0);
+  const averageOrderValue = paidOrders.length > 0 ? paidRevenue / paidOrders.length : 0;
 
   return {
-    description:
-      "Persisted launch orders now load into the admin orders surface, and launch-safe status updates are available. Fulfillment actions and broader automations remain out of scope.",
-    cards: [
+    description: "Track order status, payment state, revenue, and margin readiness from one page.",
+    summaryMetrics: [
       {
-        title: "Order list",
-        body:
-          orders.length > 0
-            ? "Persisted launch orders are loaded from Prisma/PostgreSQL."
-            : "No persisted launch orders are available yet.",
-        lines: createAdminOrderSummaryLines(orders),
+        label: "Total orders",
+        value: formatInteger(orders.length),
+        detail: orders.length > 0 ? "Persisted orders" : "No orders yet",
       },
       {
-        title: "Recent persisted orders",
-        body:
-          orders.length > 0
-            ? "Latest persisted orders are shown below for launch visibility."
-            : "Recent order entries will appear here after paid Checkout webhooks persist orders.",
-        lines: createRecentAdminOrderLines(orders),
+        label: "Paid orders",
+        value: formatInteger(paidOrders.length),
+        detail: paidOrders.length > 0 ? "Orders marked paid" : "No paid orders yet",
+      },
+      {
+        label: "Revenue",
+        value: formatUsd(paidRevenue),
+        detail: paidOrders.length > 0 ? "From persisted paid totals" : "Waiting on paid orders",
+      },
+      {
+        label: "Estimated profit",
+        value: paidOrders.length > 0 ? "Awaiting costs" : formatUsd(0),
+        detail: "Blocked until per-order costs are stored",
+        tone: "pending",
+      },
+      {
+        label: "Average order value",
+        value: formatUsd(averageOrderValue),
+        detail: paidOrders.length > 0 ? "Paid orders only" : "No paid-order average yet",
       },
     ],
+    costPanelTitle: "Cost tracking setup",
+    costPanelDescription:
+      "The main table can already show revenue-side totals. Profit and margin need per-order cost inputs before they become actionable.",
+    mainTableFields: ["Total paid", "Estimated cost", "Estimated margin"],
+    costCaptureFields: createCostCaptureFields(),
+    costCapturePathNote:
+      "Planned entry path: open a future order detail panel from each row action, then store product, shipping, packaging, fee, and manual costs there.",
+    tableStatusNote:
+      orders.length > 0
+        ? `${formatInteger(orders.length)} rows loaded`
+        : "Zero-state table scaffold is live",
     items: orders.map(createAdminOrderManagementItem),
   };
 }
@@ -128,46 +184,67 @@ export async function updateAdminOrderStatus(
 }
 
 function createAdminOrderManagementItem(order: Order): AdminOrderManagementItem {
+  const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+
   return {
     id: order.id,
     orderNumber: order.orderNumber,
+    customerName: order.shippingAddress.fullName,
     customerEmail: order.shippingAddress.email,
+    itemCountLabel: `${formatInteger(itemCount)} item${itemCount === 1 ? "" : "s"}`,
     status: order.status,
     statusLabel: formatOrderStatus(order.status),
-    totalLabel: formatUsd(order.totalUsd),
+    paymentStatus: order.paymentStatus,
+    paymentLabel: formatPaymentStatus(order.paymentStatus),
+    totalPaidLabel: formatUsd(order.totalUsd),
+    estimatedCostLabel: "Awaiting costs",
+    estimatedProfitLabel: "Pending",
+    estimatedMarginLabel: "Pending",
     placedAtLabel: formatPlacedAt(order.placedAt),
     allowedStatuses: [...adminOrderStatusOptions],
+    financialSummary: "Use a future order detail panel to enter cost inputs for this row.",
+    costFields: createCostCaptureFields(),
   };
 }
 
-function createAdminOrderSummaryLines(orders: Order[]) {
-  if (!orders.length) {
-    return ["0 persisted orders", "No latest order yet"];
-  }
-
+function createCostCaptureFields(): AdminOrderCostField[] {
   return [
-    `${orders.length} persisted order${orders.length === 1 ? "" : "s"}`,
-    `Latest order: ${orders[0].orderNumber}`,
-    `Latest customer: ${orders[0].shippingAddress.email}`,
+    createPendingCostField("product-cost", "Product cost"),
+    createPendingCostField("shipping-cost", "Shipping cost"),
+    createPendingCostField("packaging-cost", "Packaging / handling"),
+    createPendingCostField("payment-fee", "Payment fee"),
+    createPendingCostField("other-manual-cost", "Other manual cost"),
+    {
+      key: "total-estimated-cost",
+      label: "Total estimated cost",
+      statusLabel: "Derived later",
+      note: "Calculated after the cost inputs above are stored.",
+    },
+    {
+      key: "estimated-net-profit",
+      label: "Estimated net profit",
+      statusLabel: "Derived later",
+      note: "Calculated from total paid minus total estimated cost.",
+    },
+    {
+      key: "estimated-margin",
+      label: "Estimated margin %",
+      statusLabel: "Derived later",
+      note: "Calculated from estimated net profit divided by total paid.",
+    },
   ];
 }
 
-function createRecentAdminOrderLines(orders: Order[]) {
-  if (!orders.length) {
-    return ["No paid Checkout orders have been persisted yet."];
-  }
-
-  return orders.slice(0, 5).map((order) => createRecentAdminOrderLine(order));
-}
-
-function createRecentAdminOrderLine(order: Order) {
-  return [
-    order.orderNumber,
-    formatOrderStatus(order.status),
-    order.shippingAddress.email,
-    formatUsd(order.totalUsd),
-    formatPlacedAt(order.placedAt),
-  ].join(" | ");
+function createPendingCostField(
+  key: AdminOrderCostFieldKey,
+  label: string,
+): AdminOrderCostField {
+  return {
+    key,
+    label,
+    statusLabel: "Not stored",
+    note: "Not available in the current order schema.",
+  };
 }
 
 function formatPlacedAt(placedAt: string) {
@@ -185,6 +262,16 @@ function formatUsd(amount: number) {
   }).format(amount);
 }
 
+function formatInteger(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 function formatOrderStatus(status: Order["status"]) {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function formatPaymentStatus(status: Order["paymentStatus"]) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }

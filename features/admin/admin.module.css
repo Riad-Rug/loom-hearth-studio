@@ -638,3 +638,247 @@
 .groupPanel strong {
   font-size: 1rem;
 }
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.metricCard {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-soft);
+}
+
+.metricCard[data-tone="pending"] {
+  background: linear-gradient(180deg, rgba(245, 239, 228, 0.92), rgba(255, 255, 255, 0.82));
+}
+
+.metricValue {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.5rem, 2vw, 2.1rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--color-charcoal-ink);
+}
+
+.metricDetail {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.7);
+  line-height: 1.55;
+}
+
+.pillRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.orderCell,
+.customerCell,
+.paymentCell,
+.financialCell,
+.statusCellStack,
+.orderActionCell {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.orderCell strong,
+.customerCell strong,
+.paymentCell strong,
+.financialCell strong {
+  font-size: 0.98rem;
+  color: var(--color-charcoal-ink);
+}
+
+.orderCell span,
+.customerCell span,
+.paymentCell span,
+.financialCell span,
+.actionMessage {
+  margin: 0;
+  font-size: 0.84rem;
+  color: rgba(34, 33, 38, 0.68);
+  line-height: 1.45;
+}
+
+.orderActionCell {
+  min-width: 14rem;
+}
+
+.orderActionCell .navLink {
+  justify-content: center;
+}
+
+.actionMessage[data-state="failure"] {
+  color: #8f3f28;
+}
+
+.actionMessage[data-state="success"] {
+  color: #245335;
+}
+
+@media (max-width: 1400px) {
+  .metricsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .metricsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .metricsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.emptyTableCell {
+  padding: 0 !important;
+  border-bottom: 0;
+}
+
+.metricCard {
+  gap: 0.75rem;
+  min-height: 10.5rem;
+  padding: 1.1rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 228, 0.68));
+}
+
+.metricHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.metricCard .cardEyebrow {
+  font-size: 0.68rem;
+}
+
+.metricValue {
+  font-size: clamp(1.8rem, 2.4vw, 2.5rem);
+}
+
+.metricDetail {
+  font-size: 0.88rem;
+}
+
+.costPanel {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-soft);
+}
+
+.costPanelCopy,
+.costEntryNote p,
+.tableScaffoldNote p {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.78);
+  line-height: 1.6;
+}
+
+.costPanelGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: var(--space-4);
+}
+
+.costPanelSection {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.costFieldList {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.costFieldRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: 1rem;
+  background: rgba(245, 239, 228, 0.42);
+}
+
+.costFieldRow strong,
+.costEntryNote strong,
+.tableScaffoldNote strong {
+  color: var(--color-charcoal-ink);
+}
+
+.costFieldRow > strong {
+  font-size: 0.96rem;
+}
+
+.costFieldRow > span,
+.costFieldCopy span,
+.costFieldStatus {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.68);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.costFieldCopy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.costFieldStatus {
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+  font-weight: 600;
+  color: var(--color-clay-terracotta);
+}
+
+.costEntryNote,
+.tableScaffoldNote {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.tableScaffoldNote {
+  margin-top: -0.25rem;
+}
+
+.tableCard .table {
+  min-width: 1080px;
+}
+
+.table thead th {
+  background: rgba(245, 239, 228, 0.6);
+}
+
+.emptyState {
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, rgba(245, 239, 228, 0.5), rgba(255, 255, 255, 0.9));
+}
+
+@media (max-width: 1100px) {
+  .costPanelGrid {
+    grid-template-columns: 1fr;
+  }
+}
