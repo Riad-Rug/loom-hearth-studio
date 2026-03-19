@@ -254,7 +254,7 @@
 .checkboxRow {
   display: flex;
   gap: var(--space-3);
-  align-items: start;
+  align-items: flex-start;
   color: rgba(34, 33, 38, 0.82);
 }
 
