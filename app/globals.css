@@ -254,6 +254,8 @@ p {
 }
 
 .site-header__brand {
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.35rem;
   letter-spacing: -0.03em;
@@ -606,3 +608,22 @@ p {
   padding-bottom: var(--space-7);
 }
 
+
+.site-header__brand-logo {
+  width: auto;
+  max-width: 11rem;
+  height: 2.6rem;
+  object-fit: contain;
+}
+
+.site-header__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

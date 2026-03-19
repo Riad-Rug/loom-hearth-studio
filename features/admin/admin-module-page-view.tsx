@@ -32,6 +32,13 @@ type DashboardAction = {
 
 const dashboardPrimaryActions: DashboardAction[] = [
   {
+    title: "Homepage manager",
+    body: "Edit the storefront homepage.",
+    href: "/admin/homepage",
+    label: "Open homepage",
+    tone: "primary",
+  },
+  {
     title: "Add product",
     body: "Start a new catalog entry.",
     href: "/admin/products/new",
@@ -108,7 +115,7 @@ function renderDashboardView(routeViewModel: {
       <div className={styles.dashboardStatusBar}>
         <span className={styles.statusPill}>Signed in as admin</span>
         <span className={styles.statusPill}>Access allowed</span>
-        <span className={styles.statusPill}>9 modules available</span>
+        <span className={styles.statusPill}>10 modules available</span>
       </div>
 
       <section className={styles.dashboardSection}>

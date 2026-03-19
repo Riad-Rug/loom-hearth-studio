@@ -634,3 +634,7 @@
     min-width: 780px;
   }
 }
+
+.groupPanel strong {
+  font-size: 1rem;
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -10,6 +11,8 @@ import { CartDrawer } from "@/features/cart/cart-drawer";
 type SiteHeaderClientProps = {
   announcement: string;
   brandName: string;
+  logoImageUrl: string;
+  logoImageAlt: string;
   tagline: string;
   primaryNav: ReadonlyArray<{
     href: string;
@@ -48,7 +51,21 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
         <div className="site-header__bar">
           <div className="site-header__identity">
             <Link className="site-header__brand" href="/">
-              {props.brandName}
+              {props.logoImageUrl ? (
+                <>
+                  <Image
+                    alt={props.logoImageAlt || props.brandName}
+                    className="site-header__brand-logo"
+                    height={64}
+                    src={props.logoImageUrl}
+                    unoptimized
+                    width={180}
+                  />
+                  <span className="site-header__sr-only">{props.brandName}</span>
+                </>
+              ) : (
+                props.brandName
+              )}
             </Link>
             <p className="site-header__tagline">{props.tagline}</p>
           </div>

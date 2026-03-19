@@ -1,5 +1,6 @@
 export type AdminModuleKey =
   | "dashboard"
+  | "homepage"
   | "products"
   | "orders"
   | "customers"
@@ -11,6 +12,7 @@ export type AdminModuleKey =
 
 export const adminNav = [
   { key: "dashboard", label: "Dashboard", href: "/admin" },
+  { key: "homepage", label: "Homepage", href: "/admin/homepage" },
   { key: "products", label: "Products", href: "/admin/products" },
   { key: "orders", label: "Orders", href: "/admin/orders" },
   { key: "customers", label: "Customers", href: "/admin/customers" },
@@ -42,6 +44,22 @@ export const adminModules: Record<
       {
         title: "Secondary modules",
         body: "Content and marketing surfaces remain accessible without crowding the page.",
+      },
+    ],
+  },
+  homepage: {
+    eyebrow: "Admin homepage",
+    title: "Homepage manager",
+    description:
+      "Edit the storefront homepage, brand presentation, and footer content from a persisted admin-managed record.",
+    cards: [
+      {
+        title: "Section-based editing",
+        body: "Hero, trust, categories, featured directions, newsletter, and footer content are grouped into practical editing blocks.",
+      },
+      {
+        title: "Persisted content",
+        body: "Homepage content now saves through Prisma/PostgreSQL instead of being scattered across static code paths.",
       },
     ],
   },

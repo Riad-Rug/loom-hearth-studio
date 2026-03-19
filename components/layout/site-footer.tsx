@@ -1,60 +1,49 @@
+import type { Route } from "next";
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
-import { siteConfig } from "@/config/site";
+import { getHomepageContent } from "@/lib/homepage/content";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const content = await getHomepageContent();
+
   return (
     <footer className="site-footer">
       <Container width="wide">
         <div className="site-footer__grid">
           <div className="site-footer__intro">
-            <p className="site-footer__eyebrow">{siteConfig.name}</p>
-            <p className="site-footer__brand">
-              Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and curated home decor.
-            </p>
-            <p className="site-footer__meta">
-              Curated for a United States launch in USD.
-            </p>
+            <p className="site-footer__eyebrow">{content.footer.introTitle}</p>
+            <p className="site-footer__brand">{content.footer.introBody}</p>
+            <p className="site-footer__meta">{content.footer.introMeta}</p>
           </div>
           <div className="site-footer__nav-group">
-            <p className="site-footer__heading">Explore</p>
+            <p className="site-footer__heading">{content.footer.exploreHeading}</p>
             <nav aria-label="Footer primary" className="site-footer__nav">
-              {siteConfig.primaryNav.map((item) => (
-                <Link key={item.href} className="site-footer__link" href={item.href}>
+              {content.footer.exploreLinks.map((item) => (
+                <Link key={item.href} className="site-footer__link" href={item.href as Route}>
                   {item.label}
                 </Link>
               ))}
             </nav>
           </div>
           <div className="site-footer__nav-group">
-            <p className="site-footer__heading">Support</p>
+            <p className="site-footer__heading">{content.footer.supportHeading}</p>
             <nav aria-label="Footer support" className="site-footer__nav">
-              {siteConfig.supportNav.map((item) => (
-                <Link key={item.href} className="site-footer__link" href={item.href}>
+              {content.footer.supportLinks.map((item) => (
+                <Link key={item.href} className="site-footer__link" href={item.href as Route}>
                   {item.label}
                 </Link>
               ))}
             </nav>
           </div>
           <div className="site-footer__nav-group">
-            <p className="site-footer__heading">Collections</p>
+            <p className="site-footer__heading">{content.footer.collectionsHeading}</p>
             <nav aria-label="Footer collections" className="site-footer__nav">
-              <Link className="site-footer__link" href="/shop/rugs">
-                Moroccan rugs
-              </Link>
-              <Link className="site-footer__link" href="/shop/vintage">
-                Vintage rugs
-              </Link>
-              <Link className="site-footer__link" href="/shop/poufs">
-                Poufs
-              </Link>
-              <Link className="site-footer__link" href="/shop/pillows">
-                Pillows
-              </Link>
-              <Link className="site-footer__link" href="/shop/decor">
-                Home decor
-              </Link>
+              {content.footer.collectionLinks.map((item) => (
+                <Link key={item.href} className="site-footer__link" href={item.href as Route}>
+                  {item.label}
+                </Link>
+              ))}
             </nav>
           </div>
         </div>

@@ -22,6 +22,7 @@ export type AccountAccessDecision = {
 
 const adminModuleAllowedRoles: Record<AdminModuleKey, readonly AdminRole[]> = {
   dashboard: supportedAdminRoles,
+  homepage: supportedAdminRoles,
   products: supportedAdminRoles,
   orders: supportedAdminRoles,
   customers: supportedAdminRoles,
