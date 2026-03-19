@@ -326,6 +326,14 @@ p {
   background: rgba(255, 255, 255, 0.88);
   color: rgba(34, 33, 38, 0.82);
   font: inherit;
+  text-decoration: none;
+}
+
+.site-header__cart-button:hover,
+.site-header__cart-button:focus-visible {
+  border-color: rgba(34, 33, 38, 0.18);
+  background: rgba(245, 239, 228, 0.96);
+  outline: none;
 }
 
 .site-header__cart-count {

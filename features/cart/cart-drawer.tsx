@@ -42,16 +42,10 @@ export function CartDrawer() {
 
   return (
     <>
-      <button
-        aria-controls="cart-drawer"
-        aria-expanded={isOpen}
-        className="site-header__cart-button"
-        type="button"
-        onClick={() => setIsOpen(true)}
-      >
-        Cart
+      <Link className="site-header__cart-button" href="/cart">
+        <span>Cart</span>
         <span className="site-header__cart-count">{itemCount}</span>
-      </button>
+      </Link>
 
       {isOpen ? (
         <div className={styles.overlay} role="presentation" onClick={() => setIsOpen(false)}>
@@ -187,13 +181,9 @@ export function CartDrawer() {
                     >
                       Checkout
                     </Link>
-                    <button
-                      className={styles.secondaryButton}
-                      type="button"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Keep shopping
-                    </button>
+                    <Link className={styles.secondaryButton} href="/cart" onClick={() => setIsOpen(false)}>
+                      View cart
+                    </Link>
                   </div>
                 </div>
               </>
