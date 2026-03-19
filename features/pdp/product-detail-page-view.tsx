@@ -356,7 +356,7 @@ function RugPurchaseShell({
         onClick={() => {
           addProduct({ product: product.cartProduct, quantity: 1 });
           window.dispatchEvent(new Event("loom-hearth:open-cart"));
-          setFeedbackMessage("Added to cart. Cart opened.");
+          setFeedbackMessage("Added to cart. Cart preview opened.");
         }}
       >
         Add to cart
@@ -473,7 +473,7 @@ function MultiUnitPurchaseShell({
               variantName: selectedVariant,
             });
             window.dispatchEvent(new Event("loom-hearth:open-cart"));
-            setFeedbackMessage("Added to cart. Cart opened.");
+            setFeedbackMessage("Added to cart. Cart preview opened.");
           }}
         >
           Add to cart

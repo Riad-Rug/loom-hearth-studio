@@ -2,27 +2,59 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import {
-  formatUsd,
-  getCartItemLabel,
-  getCartItemQuantityRule,
-  useCart,
-} from "@/features/cart/cart-provider";
+import { formatUsd, getCartItemLabel, useCart } from "@/features/cart/cart-provider";
 
 import styles from "./cart-drawer.module.css";
 
+const PREVIEW_ITEM_LIMIT = 3;
+
 export function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
-  const { itemCount, items, removeItem, shippingUsd, subtotalUsd, totalUsd, updateQuantity } =
-    useCart();
+  const [isPointerFine, setIsPointerFine] = useState(false);
+  const closeTimeoutRef = useRef<number | null>(null);
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  const {
+    itemCount,
+    items,
+    subtotalUsd,
+    totalUsd,
+  } = useCart();
+  const visibleItems = items.slice(0, PREVIEW_ITEM_LIMIT);
+  const hiddenItemCount = Math.max(0, items.length - PREVIEW_ITEM_LIMIT);
   const isEmpty = items.length === 0;
   const itemCountLabel = `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+    function syncPointerMode() {
+      setIsPointerFine(mediaQuery.matches);
+    }
+
+    syncPointerMode();
+    mediaQuery.addEventListener("change", syncPointerMode);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncPointerMode);
+    };
+  }, []);
+
+  useEffect(() => {
     function handleOpenCart() {
+      if (closeTimeoutRef.current) {
+        window.clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+
       setIsOpen(true);
+    }
+
+    function handlePointerDown(event: MouseEvent | TouchEvent) {
+      if (!shellRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
     }
 
     function handleEscape(event: KeyboardEvent) {
@@ -32,46 +64,105 @@ export function CartDrawer() {
     }
 
     window.addEventListener("loom-hearth:open-cart", handleOpenCart);
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
     window.addEventListener("keydown", handleEscape);
 
     return () => {
       window.removeEventListener("loom-hearth:open-cart", handleOpenCart);
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
       window.removeEventListener("keydown", handleEscape);
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        window.clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  function openPreview() {
+    if (closeTimeoutRef.current) {
+      window.clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+
+    setIsOpen(true);
+  }
+
+  function scheduleClose() {
+    if (!isPointerFine) {
+      return;
+    }
+
+    if (closeTimeoutRef.current) {
+      window.clearTimeout(closeTimeoutRef.current);
+    }
+
+    closeTimeoutRef.current = window.setTimeout(() => {
+      setIsOpen(false);
+      closeTimeoutRef.current = null;
+    }, 140);
+  }
+
+  function handleButtonClick() {
+    if (isPointerFine) {
+      setIsOpen((current) => !current);
+      return;
+    }
+
+    setIsOpen((current) => !current);
+  }
+
   return (
-    <>
-      <Link className="site-header__cart-button" href="/cart">
+    <div
+      ref={shellRef}
+      className={styles.shell}
+      onMouseEnter={() => {
+        if (isPointerFine) {
+          openPreview();
+        }
+      }}
+      onMouseLeave={scheduleClose}
+    >
+      <button
+        aria-controls="cart-mini-panel"
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        className="site-header__cart-button"
+        type="button"
+        onClick={handleButtonClick}
+      >
         <span>Cart</span>
         <span className="site-header__cart-count">{itemCount}</span>
-      </Link>
+      </button>
 
       {isOpen ? (
-        <div className={styles.overlay} role="presentation" onClick={() => setIsOpen(false)}>
-          <aside
-            id="cart-drawer"
-            aria-label="Shopping cart"
-            className={styles.drawer}
-            onClick={(event) => event.stopPropagation()}
-          >
+        <div
+          id="cart-mini-panel"
+          aria-label="Shopping cart preview"
+          className={styles.popover}
+          role="dialog"
+        >
+          <div className={styles.panel}>
             <div className={styles.header}>
               <div>
-                <h2>Cart</h2>
+                <p className={styles.eyebrow}>Cart</p>
+                <h2>Mini cart</h2>
                 <p className={styles.headerMeta}>
-                  {isEmpty ? "Your latest picks appear here." : `${itemCountLabel} ready for checkout`}
+                  {isEmpty ? "No pieces added yet." : `${itemCountLabel} ready to review.`}
                 </p>
               </div>
               <button
-                aria-label="Close cart"
+                aria-label="Close cart preview"
                 className={styles.closeButton}
                 type="button"
                 onClick={() => setIsOpen(false)}
               >
-                <span aria-hidden="true" className={styles.closeButtonIcon}>
-                  x
-                </span>
-                <span>Close cart</span>
+                x
               </button>
             </div>
 
@@ -79,96 +170,54 @@ export function CartDrawer() {
               <div className={styles.emptyState}>
                 <p className={styles.emptyTitle}>Your cart is empty.</p>
                 <p className={styles.emptyBody}>
-                  Add a launch piece to review it here, then move straight into checkout.
+                  Add a launch piece and preview it here before checkout.
                 </p>
                 <Link className={styles.secondaryButton} href="/shop" onClick={() => setIsOpen(false)}>
-                  Continue shopping
+                  Keep shopping
                 </Link>
               </div>
             ) : (
               <>
                 <div className={styles.itemList}>
-                  {items.map((item) => (
+                  {visibleItems.map((item) => (
                     <article key={item.id} className={styles.itemRow}>
                       <div className={styles.itemMedia}>
                         <span>{getCartItemLabel(item)}</span>
                       </div>
                       <div className={styles.itemContent}>
                         <div className={styles.itemTopline}>
-                          <div>
-                            <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
-                            <h3>
-                              <Link
-                                className={styles.itemLink}
-                                href={item.href as Route}
-                                onClick={() => setIsOpen(false)}
-                              >
-                                {item.name}
-                              </Link>
-                            </h3>
-                            {item.variantName ? (
-                              <p className={styles.itemVariant}>{item.variantName}</p>
-                            ) : null}
-                          </div>
+                          <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
                           <p className={styles.itemPrice}>{formatUsd(item.priceUsd)}</p>
                         </div>
-                        <div className={styles.itemFooter}>
-                          {item.productType === "rug" ? (
-                            <div className={styles.lockedQuantity}>
-                              <span>Quantity</span>
-                              <strong>1</strong>
-                            </div>
-                          ) : (
-                            <div className={styles.quantityShell}>
-                              <button
-                                className={styles.quantityButton}
-                                type="button"
-                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              >
-                                -
-                              </button>
-                              <span>{item.quantity}</span>
-                              <button
-                                className={styles.quantityButton}
-                                type="button"
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              >
-                                +
-                              </button>
-                            </div>
-                          )}
-                          <div className={styles.itemActions}>
-                            <p className={styles.quantityRule}>{getCartItemQuantityRule(item)}</p>
-                            <button
-                              className={styles.removeButton}
-                              type="button"
-                              onClick={() => removeItem(item.id)}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
+                        <h3>
+                          <Link
+                            className={styles.itemLink}
+                            href={item.href as Route}
+                            onClick={() => setIsOpen(false)}
+                          >
+                            {item.name}
+                          </Link>
+                        </h3>
+                        <p className={styles.itemMeta}>
+                          Qty {item.quantity}
+                          {item.variantName ? ` · ${item.variantName}` : ""}
+                        </p>
                       </div>
                     </article>
                   ))}
                 </div>
 
+                {hiddenItemCount > 0 ? (
+                  <p className={styles.moreItems}>
+                    +{hiddenItemCount} more {hiddenItemCount === 1 ? "item" : "items"} in cart
+                  </p>
+                ) : null}
+
                 <div className={styles.summaryCard}>
-                  <div className={styles.summaryHeader}>
-                    <p className={styles.summaryEyebrow}>Ready when you are</p>
-                    <p className={styles.summaryLead}>
-                      Secure your order with free U.S. launch shipping.
-                    </p>
-                  </div>
                   <div className={styles.summaryRow}>
                     <span>Subtotal</span>
                     <strong>{formatUsd(subtotalUsd)}</strong>
                   </div>
-                  <div className={styles.summaryRow}>
-                    <span>Shipping</span>
-                    <strong>{formatUsd(shippingUsd)}</strong>
-                  </div>
-                  <div className={styles.freeShippingLine}>Free shipping at launch</div>
                   <div className={styles.summaryTotal}>
                     <span>Total</span>
                     <strong>{formatUsd(totalUsd)}</strong>
@@ -181,16 +230,23 @@ export function CartDrawer() {
                     >
                       Checkout
                     </Link>
-                    <Link className={styles.secondaryButton} href="/cart" onClick={() => setIsOpen(false)}>
-                      View cart
+                    <Link
+                      className={styles.secondaryButton}
+                      href="/shop"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Keep shopping
                     </Link>
                   </div>
+                  <Link className={styles.viewCartLink} href="/cart" onClick={() => setIsOpen(false)}>
+                    View full cart
+                  </Link>
                 </div>
               </>
             )}
-          </aside>
+          </div>
         </div>
       ) : null}
-    </>
+    </div>
   );
 }
