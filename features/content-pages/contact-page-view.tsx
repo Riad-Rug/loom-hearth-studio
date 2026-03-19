@@ -2,7 +2,15 @@ import { contactData } from "@/features/content-pages/content-pages-data";
 
 import styles from "./content-pages.module.css";
 
-export function ContactPageView() {
+type ContactPageViewProps = {
+  defaults?: {
+    inquiryType?: string;
+    message?: string;
+    productName?: string;
+  };
+};
+
+export function ContactPageView({ defaults }: ContactPageViewProps) {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
@@ -18,6 +26,11 @@ export function ContactPageView() {
           <div className={styles.cardBody}>
             <h2>{contactData.formTitle}</h2>
             <p className={styles.body}>{contactData.formBody}</p>
+            {defaults?.productName ? (
+              <p className={styles.body}>
+                Inquiry prepared for <strong>{defaults.productName}</strong>.
+              </p>
+            ) : null}
           </div>
 
           <form className={styles.contactForm}>
@@ -54,7 +67,7 @@ export function ContactPageView() {
               <select
                 id="contact-inquiry-type"
                 className={styles.contactInput}
-                defaultValue=""
+                defaultValue={defaults?.inquiryType ?? ""}
                 name="inquiryType"
               >
                 <option value="" disabled>
@@ -74,6 +87,7 @@ export function ContactPageView() {
                 id="contact-message"
                 className={styles.contactTextarea}
                 name="message"
+                defaultValue={defaults?.message}
                 placeholder="Tell us about your inquiry, sourcing question, or product interest."
                 rows={7}
               />

@@ -10,6 +10,32 @@ export const metadata: Metadata = buildMetadata({
   path: "/contact",
 });
 
-export default function ContactPage() {
-  return <ContactPageView />;
+type ContactPageProps = {
+  searchParams?: Promise<{
+    inquiryType?: string;
+    message?: string;
+    productName?: string;
+  }>;
+};
+
+export default async function ContactPage({ searchParams }: ContactPageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+
+  return (
+    <ContactPageView
+      defaults={{
+        inquiryType: sanitizeContactField(resolvedSearchParams?.inquiryType, 40),
+        message: sanitizeContactField(resolvedSearchParams?.message, 800),
+        productName: sanitizeContactField(resolvedSearchParams?.productName, 120),
+      }}
+    />
+  );
+}
+
+function sanitizeContactField(value: string | undefined, maxLength: number) {
+  if (!value) {
+    return undefined;
+  }
+
+  return value.trim().slice(0, maxLength);
 }

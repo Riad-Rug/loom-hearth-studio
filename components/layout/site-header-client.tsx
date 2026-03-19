@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Container } from "@/components/layout/container";
-import { CartDrawer } from "@/features/cart/cart-drawer";
 
 type SiteHeaderClientProps = {
   announcement: string;
@@ -105,7 +104,9 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
               <span />
               <span />
             </button>
-            <CartDrawer />
+            <Link className="site-header__link" href="/contact?inquiryType=product-inquiry">
+              Inquiries
+            </Link>
           </div>
         </div>
         <div

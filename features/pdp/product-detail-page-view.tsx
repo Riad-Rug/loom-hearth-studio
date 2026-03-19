@@ -6,8 +6,10 @@ import { useEffect, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
-import type { MultiUnitProductDetailPageViewModel, ProductDetailPageViewModel } from "@/lib/catalog/contracts";
-import { useCart } from "@/features/cart/cart-provider";
+import type {
+  MultiUnitProductDetailPageViewModel,
+  ProductDetailPageViewModel,
+} from "@/lib/catalog/contracts";
 
 import styles from "./product-detail-page.module.css";
 
@@ -283,11 +285,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           </div>
           <div className={styles.relatedGrid}>
             {product.related.map((item) => (
-              <Link
-                key={item.href}
-                className={styles.relatedCard}
-                href={item.href as Route}
-              >
+              <Link key={item.href} className={styles.relatedCard} href={item.href as Route}>
                 <span>{item.categoryLabel}</span>
                 <strong>{item.title}</strong>
               </Link>
@@ -304,11 +302,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           </div>
           <div className={styles.relatedGrid}>
             {product.recentlyViewed.map((item) => (
-              <Link
-                key={item.href}
-                className={styles.relatedCard}
-                href={item.href as Route}
-              >
+              <Link key={item.href} className={styles.relatedCard} href={item.href as Route}>
                 <span>{item.categoryLabel}</span>
                 <strong>{item.title}</strong>
               </Link>
@@ -322,10 +316,10 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 
 function createProductValueLine(product: ProductDetailPageViewModel) {
   if (product.type === "rug") {
-    return `${product.materialsLabel} · ${product.originLabel} · One-of-one piece`;
+    return `${product.materialsLabel} | ${product.originLabel} | One-of-one piece`;
   }
 
-  return `${product.materialsLabel} · ${product.originLabel} · ${
+  return `${product.materialsLabel} | ${product.originLabel} | ${
     product.inventoryState === "outOfStock" ? "Currently unavailable" : "Multi-unit piece"
   }`;
 }
@@ -337,9 +331,6 @@ function RugPurchaseShell({
   product: Extract<ProductDetailPageViewModel, { type: "rug" }>;
   quantityLabel: "1";
 }) {
-  const { addProduct } = useCart();
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-
   return (
     <div className={styles.purchaseCard}>
       <div className={styles.purchaseRow}>
@@ -347,21 +338,12 @@ function RugPurchaseShell({
         <p className={styles.lockedQuantity}>{quantityLabel}</p>
       </div>
       <p className={styles.purchaseNote}>
-        This Type A rug is a one-of-one launch item. Quantity is locked to 1 and no
-        variants are available.
+        This one-of-one piece is currently offered by inquiry so the studio can confirm
+        availability, shipping timing, and sourcing details before arranging the order.
       </p>
-      <button
-        className={styles.primaryAction}
-        type="button"
-        onClick={() => {
-          addProduct({ product: product.cartProduct, quantity: 1 });
-          window.dispatchEvent(new Event("loom-hearth:open-cart"));
-          setFeedbackMessage("Added to cart. Cart preview opened.");
-        }}
-      >
-        Add to cart
-      </button>
-      {feedbackMessage ? <p className={styles.feedbackMessage}>{feedbackMessage}</p> : null}
+      <Link className={styles.primaryAction} href={buildInquiryHref(product, { quantity: 1 }) as Route}>
+        Inquire about this rug
+      </Link>
     </div>
   );
 }
@@ -386,10 +368,8 @@ function MultiUnitPurchaseShell({
 }: {
   product: MultiUnitProductDetailPageViewModel;
 }) {
-  const { addProduct } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState(product.variants[0]?.name);
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const isOutOfStock = product.inventoryState === "outOfStock";
 
   return (
@@ -415,15 +395,13 @@ function MultiUnitPurchaseShell({
       ) : null}
 
       <div className={styles.purchaseGroup}>
-        <span className={styles.metaLabel}>Quantity</span>
+        <span className={styles.metaLabel}>Desired quantity</span>
         <div className={styles.quantityShell}>
           <button
             className={styles.quantityButton}
             type="button"
             onClick={() =>
-              setQuantity((currentQuantity) =>
-                Math.max(product.quantityMin, currentQuantity - 1),
-              )
+              setQuantity((currentQuantity) => Math.max(product.quantityMin, currentQuantity - 1))
             }
           >
             -
@@ -455,31 +433,65 @@ function MultiUnitPurchaseShell({
               ? "Out of stock"
               : "In stock"}
         </span>
-        <p className={styles.purchaseNote}>{product.inventoryMessage}</p>
+        <p className={styles.purchaseNote}>
+          {isOutOfStock
+            ? "This piece is not available for direct purchase. Use the inquiry flow to ask about restock timing or similar pieces."
+            : "Purchasing is currently handled by inquiry so the studio can confirm availability, lead time, and any variant details before arranging the order."}
+        </p>
       </div>
 
-      {isOutOfStock ? (
-        <button className={styles.secondaryAction} type="button">
-          {product.notifyMeLabel ?? "Notify me"}
-        </button>
-      ) : (
-        <button
-          className={styles.primaryAction}
-          type="button"
-          onClick={() => {
-            addProduct({
-              product: product.cartProduct,
-              quantity,
-              variantName: selectedVariant,
-            });
-            window.dispatchEvent(new Event("loom-hearth:open-cart"));
-            setFeedbackMessage("Added to cart. Cart preview opened.");
-          }}
-        >
-          Add to cart
-        </button>
-      )}
-      {feedbackMessage ? <p className={styles.feedbackMessage}>{feedbackMessage}</p> : null}
+      <Link
+        className={isOutOfStock ? styles.secondaryAction : styles.primaryAction}
+        href={buildInquiryHref(product, { quantity, variantName: selectedVariant }) as Route}
+      >
+        {isOutOfStock ? "Ask about availability" : "Request details"}
+      </Link>
     </div>
   );
+}
+
+function buildInquiryHref(
+  product: ProductDetailPageViewModel,
+  options?: {
+    quantity?: number;
+    variantName?: string;
+  },
+) {
+  const params = new URLSearchParams({
+    inquiryType: "product-inquiry",
+    productName: product.name,
+    message: createInquiryMessage(product, options),
+  });
+
+  return `/contact?${params.toString()}`;
+}
+
+function createInquiryMessage(
+  product: ProductDetailPageViewModel,
+  options?: {
+    quantity?: number;
+    variantName?: string;
+  },
+) {
+  const messageLines = [
+    `I'm interested in ${product.name}.`,
+    `Product page: ${buildProductPath(product)}`,
+    options?.variantName ? `Preferred variant: ${options.variantName}.` : null,
+    options?.quantity ? `Desired quantity: ${options.quantity}.` : null,
+    "Please share current availability, shipping timing, and next steps.",
+  ].filter(Boolean);
+
+  return messageLines.join("\n");
+}
+
+function buildProductPath(product: ProductDetailPageViewModel) {
+  if (product.type === "rug") {
+    return `/shop/rugs/${toRouteSegment(product.rugStyle)}/${product.slug}`;
+  }
+
+  return `/shop/${toRouteSegment(product.category)}/${product.slug}`;
+}
+
+function toRouteSegment(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, "-");
 }
