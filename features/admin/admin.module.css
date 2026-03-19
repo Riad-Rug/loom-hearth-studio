@@ -818,6 +818,323 @@
   background: rgba(245, 239, 228, 0.42);
 }
 
+.workspaceGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(18rem, 0.82fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.editorColumn,
+.editorFormGrid,
+.assistantActions,
+.scoreMetaStack,
+.compactChecklist,
+.editorWorkflowBar {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.editorColumn {
+  gap: var(--space-4);
+}
+
+.editorWorkflowBar {
+  grid-template-columns: repeat(4, minmax(0, max-content));
+  align-items: center;
+}
+
+.sessionNotice,
+.toolbarNote {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: 1rem;
+  background: rgba(245, 239, 228, 0.4);
+}
+
+.toolbarNote span,
+.auditLabel {
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(34, 33, 38, 0.6);
+}
+
+.sessionNotice strong,
+.editorCardHeader h3,
+.assistantHeader h3 {
+  color: var(--color-charcoal-ink);
+}
+
+.sessionNotice p,
+.toolbarNote p {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.78);
+  line-height: 1.55;
+}
+
+.editorCard,
+.sidePanelStack,
+.fieldList,
+.checklist,
+.recommendationList {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.editorCard {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-soft);
+}
+
+.editorCardHeader,
+.assistantHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.editorFormGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.inlineFieldAction {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.assistantPanel {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+
+.assistantActions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.scoreMetaStack {
+  justify-items: end;
+}
+
+.seoScoreCardCompact {
+  display: grid;
+  gap: var(--space-4);
+  padding: 1rem;
+  border: 1px solid rgba(184, 94, 59, 0.18);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 228, 0.78));
+  box-shadow: var(--shadow-soft);
+}
+
+.seoScoreCard {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid rgba(184, 94, 59, 0.18);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 228, 0.78));
+  box-shadow: var(--shadow-soft);
+}
+
+.scoreHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.scoreBadge {
+  display: grid;
+  place-items: center;
+  min-width: 6.5rem;
+  padding: 1rem;
+  border-radius: 1.4rem;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  background: rgba(255, 255, 255, 0.88);
+  text-align: center;
+}
+
+.scoreBadge strong {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2.4rem;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--color-charcoal-ink);
+}
+
+.scoreBadge span {
+  color: rgba(34, 33, 38, 0.62);
+  font-size: 0.8rem;
+}
+
+.scoreBadge[data-band="strong"] {
+  background: linear-gradient(180deg, rgba(224, 241, 229, 0.92), rgba(255, 255, 255, 0.92));
+}
+
+.scoreBadge[data-band="workable"] {
+  background: linear-gradient(180deg, rgba(245, 239, 228, 0.94), rgba(255, 255, 255, 0.92));
+}
+
+.scoreBadge[data-band="weak"] {
+  background: linear-gradient(180deg, rgba(248, 226, 221, 0.94), rgba(255, 255, 255, 0.92));
+}
+
+.fieldAuditGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.auditFieldCard {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.auditFieldCard strong,
+.fieldListRow strong,
+.checklistItem strong,
+.scoreCell strong,
+.slugCell {
+  color: var(--color-charcoal-ink);
+}
+
+.auditFieldCard strong,
+.fieldListRow strong,
+.slugCell {
+  line-height: 1.45;
+}
+
+.slugCell {
+  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Consolas, monospace;
+  font-size: 0.88rem;
+}
+
+.scoreCell {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.scoreCell span,
+.checklistItem p,
+.recommendationList p,
+.fieldListRow span {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.72);
+  line-height: 1.55;
+}
+
+.fieldListRow {
+  display: grid;
+  gap: 0.45rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid rgba(34, 33, 38, 0.08);
+}
+
+.fieldListRow:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.inlineActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.compactChecklist {
+  grid-template-columns: 1fr;
+}
+
+.compactChecklistItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--color-charcoal-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.compactChecklistItem span {
+  color: rgba(34, 33, 38, 0.74);
+}
+
+.compactChecklistItem strong {
+  color: var(--color-clay-terracotta);
+}
+
+.compactChecklistItem[data-pass="false"] {
+  background: rgba(248, 226, 221, 0.44);
+}
+
+.checklistItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.checklistItem[data-pass="false"] {
+  background: rgba(248, 226, 221, 0.44);
+}
+
+.checklistPoints {
+  white-space: nowrap;
+  color: var(--color-clay-terracotta);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+@media (max-width: 1400px) {
+  .workspaceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .scoreMetaStack {
+    justify-items: start;
+  }
+}
+
+@media (max-width: 768px) {
+  .editorFormGrid,
+  .fieldAuditGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .editorWorkflowBar,
+  .assistantActions,
+  .inlineFieldAction,
+  .scoreHeader,
+  .editorCardHeader,
+  .assistantHeader,
+  .checklistItem {
+    display: grid;
+  }
+}
+
 .costFieldRow strong,
 .costEntryNote strong,
 .tableScaffoldNote strong {

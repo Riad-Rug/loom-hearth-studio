@@ -59,8 +59,8 @@ export async function generateMetadata({
   }
 
   return buildMetadata({
-    title: post.title,
-    description: post.excerpt,
+    title: post.seoTitle || post.title,
+    description: post.seoDescription || post.excerpt,
     path: `/blog/${post.categorySlug}/${post.slug}`,
     type: "article",
   });

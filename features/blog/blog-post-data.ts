@@ -5,9 +5,13 @@ type PlaceholderBlogPost = BlogPost & {
   readTime: string;
   imageAlt: string;
   imageSrc: string;
+  targetKeyword: string;
+  updatedAt: string;
 };
 
-export const blogPosts: PlaceholderBlogPost[] = [
+export type BlogPostRecord = PlaceholderBlogPost;
+
+export const blogPosts: BlogPostRecord[] = [
   {
     id: "blog-beni-ourain-guide",
     slug: "how-to-read-a-beni-ourain-rug",
@@ -31,6 +35,8 @@ export const blogPosts: PlaceholderBlogPost[] = [
     seoTitle: "How to read a Beni Ourain rug | Loom & Hearth Studio",
     seoDescription:
       "A Loom & Hearth Studio guide to choosing a fluffy, minimalist Beni Ourain-style Moroccan rug with real presence.",
+    targetKeyword: "beni ourain rug",
+    updatedAt: "2026-03-18T09:30:00.000Z",
   },
   {
     id: "blog-layering-poufs-and-sabra-pillows",
@@ -55,6 +61,8 @@ export const blogPosts: PlaceholderBlogPost[] = [
     seoTitle: "Layering poufs and sabra pillows | Loom & Hearth Studio",
     seoDescription:
       "Styling notes on using Moroccan poufs and cactus silk pillows in layered interiors.",
+    targetKeyword: "sabra pillows",
+    updatedAt: "2026-03-17T14:10:00.000Z",
   },
   {
     id: "blog-sourcing-notes-morocco",
@@ -79,6 +87,8 @@ export const blogPosts: PlaceholderBlogPost[] = [
     seoTitle: "Why direct sourcing changes the collection | Loom & Hearth Studio",
     seoDescription:
       "A sourcing story on how in-person selection in Morocco shapes the Loom & Hearth Studio collection.",
+    targetKeyword: "direct sourcing morocco",
+    updatedAt: "2026-03-13T11:45:00.000Z",
   },
 ] as const;
 
