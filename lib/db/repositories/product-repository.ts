@@ -14,6 +14,7 @@ export interface ProductRepository {
   getById(id: string): Promise<Product | null>;
   create(input: ProductMutationInput): Promise<Product>;
   update(input: ProductMutationInput & { id: string }): Promise<Product>;
+  delete(id: string): Promise<void>;
   slugExists(input: { slug: string; excludeId?: string }): Promise<boolean>;
 }
 
@@ -105,6 +106,14 @@ export class PrismaProductRepository implements ProductRepository {
     });
 
     return mapCatalogProductRecordToDomainProduct(updatedProduct);
+  }
+
+  async delete(id: string) {
+    await this.context.client.catalogProduct.delete({
+      where: {
+        id,
+      },
+    });
   }
 
   async slugExists(input: { slug: string; excludeId?: string }) {

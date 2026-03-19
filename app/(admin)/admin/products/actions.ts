@@ -6,7 +6,8 @@ import { isRedirectError } from "next/dist/client/components/redirect-error";
 import type { Route } from "next";
 
 import type { AdminProductActionState } from "@/lib/admin/product-actions-shared";
-import { parseProductFormData, validateProductMutationInput } from "@/lib/catalog/product-validation";
+import { getProductRoutePath } from "@/lib/catalog/helpers";
+import { normalizeSlug, parseProductFormData, validateProductMutationInput } from "@/lib/catalog/product-validation";
 import { requireAdminRoleForMutation } from "@/lib/auth/service";
 import { createProductRepository, isUniqueConstraintError } from "@/lib/db/repositories/product-repository";
 
@@ -68,7 +69,7 @@ export async function createAdminProductAction(
       status: "error",
       message: "A persisted product already uses that slug. Slugs must remain globally unique in v1.",
       fieldErrors: {
-          slug: "Choose a different slug.",
+        slug: "Choose a different slug.",
       },
     };
   }
@@ -193,6 +194,64 @@ export async function updateAdminProductAction(
   }
 }
 
+export async function duplicateAdminProductAction(productId: string) {
+  const permission = await requireAdminRoleForMutation();
+
+  if (permission.status !== "allowed") {
+    throw new Error("An admin role is required before products can be duplicated.");
+  }
+
+  const repository = createProductRepository();
+  const product = await repository.getById(productId);
+
+  if (!product) {
+    throw new Error("Product not found.");
+  }
+
+  const duplicate = await repository.create({
+    ...product,
+    id: undefined,
+    name: `${product.name} Copy`,
+    slug: createDuplicatedSlug(product.slug),
+    status: "draft",
+  });
+
+  revalidateCatalogPaths({
+    productId: duplicate.id,
+    nextPath: getProductRoutePath(duplicate),
+    nextCategory: duplicate.category,
+    previousPath: null,
+  });
+
+  redirect(`/admin/products/${duplicate.id}` as Route);
+}
+
+export async function deleteAdminProductAction(productId: string) {
+  const permission = await requireAdminRoleForMutation();
+
+  if (permission.status !== "allowed") {
+    throw new Error("An admin role is required before products can be deleted.");
+  }
+
+  const repository = createProductRepository();
+  const product = await repository.getById(productId);
+
+  if (!product) {
+    redirect("/admin/products" as Route);
+  }
+
+  await repository.delete(productId);
+
+  revalidateCatalogPaths({
+    productId,
+    nextPath: "",
+    nextCategory: product.category,
+    previousPath: getProductRoutePath(product),
+  });
+
+  redirect("/admin/products" as Route);
+}
+
 function revalidateCatalogPaths(input: {
   productId: string;
   nextPath: string;
@@ -211,4 +270,8 @@ function revalidateCatalogPaths(input: {
   if (input.nextPath) {
     revalidatePath(input.nextPath);
   }
+}
+
+function createDuplicatedSlug(slug: string) {
+  return normalizeSlug(`${slug}-copy-${Date.now().toString(36)}`);
 }

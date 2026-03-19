@@ -48,7 +48,8 @@
 .moduleHeaderCompact h2,
 .card h3,
 .quickActionCard h4,
-.secondaryActionCard h4 {
+.secondaryActionCard h4,
+.emptyState h3 {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
   letter-spacing: -0.04em;
@@ -66,7 +67,12 @@
 .fieldStack span,
 .quickActionCard p,
 .secondaryActionCard p,
-.dashboardMetaInline {
+.dashboardMetaInline,
+.tableSummary p,
+.productCell span,
+.productCell em,
+.dateCell span,
+.emptyState p {
   margin: 0;
   color: rgba(34, 33, 38, 0.78);
   line-height: 1.6;
@@ -175,7 +181,8 @@
 }
 
 .card,
-.quickActionCard {
+.quickActionCard,
+.emptyState {
   display: grid;
   gap: var(--space-3);
   padding: var(--space-4);
@@ -225,20 +232,30 @@
 }
 
 .inlineActionLink,
-.secondaryActionLink {
+.secondaryActionLink,
+.dangerAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 2.7rem;
-  padding: 0.75rem 0.95rem;
+  padding: 0.7rem 0.95rem;
   border-radius: 999px;
   border: 1px solid var(--color-border-strong);
   color: var(--color-charcoal-ink);
   background: rgba(255, 255, 255, 0.92);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .inlineActionLinkPrimary {
   background: rgba(184, 94, 59, 0.14);
+}
+
+.dangerAction {
+  border-color: rgba(143, 63, 40, 0.18);
+  color: #8f3f28;
+  background: rgba(184, 94, 59, 0.08);
 }
 
 .quickActionCard {
@@ -292,7 +309,8 @@
   text-transform: uppercase;
 }
 
-.card h3 {
+.card h3,
+.emptyState h3 {
   font-size: 1.5rem;
   line-height: 1.08;
 }
@@ -326,7 +344,9 @@
 
 .formField input,
 .formField textarea,
-.formField select {
+.formField select,
+.searchField input,
+.toolbarField select {
   width: 100%;
   padding: 0.85rem 1rem;
   border: 1px solid var(--color-border);
@@ -345,7 +365,8 @@
 
 .groupPanel,
 .tableCard,
-.successPanel {
+.successPanel,
+.emptyState {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   background: rgba(255, 255, 255, 0.82);
@@ -385,32 +406,190 @@
 }
 
 .tableCard {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.tableToolbar {
+  display: grid;
+  grid-template-columns: minmax(16rem, 2.2fr) repeat(3, minmax(10rem, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.searchField,
+.toolbarField {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.searchField span,
+.toolbarField span {
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(34, 33, 38, 0.6);
+}
+
+.tableSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tableScroller {
   overflow-x: auto;
 }
 
 .table {
   width: 100%;
+  min-width: 980px;
   border-collapse: collapse;
 }
 
 .table th,
 .table td {
-  padding: 1rem;
+  padding: 1.1rem 0.9rem;
   border-bottom: 1px solid rgba(34, 33, 38, 0.08);
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .table th {
-  font-size: 0.8rem;
-  letter-spacing: 0.08em;
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(34, 33, 38, 0.62);
+}
+
+.tableRow {
+  transition: background-color 180ms ease;
+}
+
+.tableRow[data-status="draft"] {
+  background: rgba(245, 239, 228, 0.36);
+}
+
+.tableRow:hover {
+  background: rgba(245, 239, 228, 0.28);
+}
+
+.thumbnailCell {
+  width: 6rem;
+}
+
+.thumbnailFrame {
+  width: 4rem;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(245, 239, 228, 0.9), rgba(232, 225, 213, 0.7));
+}
+
+.thumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.thumbnailFallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0.4rem;
+  color: rgba(34, 33, 38, 0.58);
+  font-size: 0.72rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.productCell,
+.dateCell,
+.actionCluster {
+  display: grid;
+}
+
+.productCell {
+  gap: 0.25rem;
+}
+
+.productCell strong,
+.dateCell strong {
+  font-size: 0.98rem;
+  color: var(--color-charcoal-ink);
+}
+
+.productCell span,
+.dateCell span {
+  font-size: 0.85rem;
+}
+
+.productCell em {
+  color: var(--color-clay-terracotta);
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.5rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.statusBadgeActive {
+  background: rgba(70, 116, 82, 0.16);
+  color: #245335;
+}
+
+.statusBadgeDraft,
+.statusBadgeArchived {
+  background: rgba(34, 33, 38, 0.08);
+  color: rgba(34, 33, 38, 0.72);
+}
+
+.priceCell {
+  font-weight: 600;
+  color: var(--color-charcoal-ink);
+  white-space: nowrap;
+}
+
+.dateCell {
+  gap: 0.15rem;
+}
+
+.actionCluster {
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: 0.6rem;
+  justify-content: start;
+}
+
+.actionForm {
+  margin: 0;
+}
+
+.emptyState {
+  text-align: left;
 }
 
 @media (max-width: 1200px) {
   .secondaryActionGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tableToolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -439,11 +618,19 @@
   .moduleShell,
   .card,
   .quickActionCard,
-  .secondaryActionCard {
+  .secondaryActionCard,
+  .tableCard,
+  .emptyState {
     padding: var(--space-4);
   }
 
-  .inlineGroup {
+  .inlineGroup,
+  .tableToolbar,
+  .actionCluster {
     grid-template-columns: 1fr;
+  }
+
+  .table {
+    min-width: 780px;
   }
 }

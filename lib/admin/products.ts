@@ -1,18 +1,26 @@
 import { formatProductPriceUsd, getProductRoutePath } from "@/lib/catalog/helpers";
+import { mapCatalogProductRecordToDomainProduct } from "@/lib/catalog/product-mappers";
 import type { AdminProductFormValues } from "@/lib/admin/product-form-shared";
 import { getProductRoutePreview } from "@/lib/catalog/product-validation";
+import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
+import { createRepositoryContext } from "@/lib/db";
 import { createProductRepository } from "@/lib/db/repositories/product-repository";
 import type { Product } from "@/types/domain";
 
 export type AdminProductListItem = {
   id: string;
+  imageUrl: string | null;
+  imageAlt: string;
+  hasImage: boolean;
   name: string;
-  type: Product["type"];
   category: Product["category"];
   status: Product["status"];
-  slug: string;
   priceLabel: string;
+  priceUsd: number;
   updatedAtLabel: string;
+  updatedAt: string;
+  createdAtLabel: string;
+  createdAt: string;
   routePath: string;
 };
 
@@ -28,12 +36,22 @@ export type AdminProductFormPageData = {
 };
 
 export async function getAdminProductsPageData(): Promise<AdminProductsPageData> {
-  const products = await createProductRepository().listForAdmin();
+  const records = await createRepositoryContext().client.catalogProduct.findMany({
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
 
   return {
     description:
       "Persisted catalog products load here for launch-safe listing, creation, editing, and publish visibility control without touching in-repo launch data.",
-    items: products.map(createAdminProductListItem),
+    items: records.map((record) =>
+      createAdminProductListItem(
+        mapCatalogProductRecordToDomainProduct(record),
+        record.createdAt,
+        record.updatedAt,
+      ),
+    ),
   };
 }
 
@@ -90,18 +108,61 @@ export function createEmptyAdminProductFormValues(type: Product["type"]): AdminP
   };
 }
 
-function createAdminProductListItem(product: Product): AdminProductListItem {
+function createAdminProductListItem(
+  product: Product,
+  createdAt: Date,
+  updatedAt: Date,
+): AdminProductListItem {
+  const heroImage = getProductHeroImage(product);
+
   return {
     id: product.id,
+    imageUrl: heroImage
+      ? buildCloudinaryUrl(heroImage.publicId, {
+          transformation: {
+            c: "fill",
+            g: "auto",
+            h: 120,
+            q: "auto",
+            w: 120,
+          },
+        })
+      : null,
+    imageAlt: heroImage?.altText?.trim() || `${product.name} product image`,
+    hasImage: Boolean(heroImage),
     name: product.name,
-    type: product.type,
     category: product.category,
     status: product.status,
-    slug: product.slug,
     priceLabel: formatProductPriceUsd(product.priceUsd),
-    updatedAtLabel: "Stored in Prisma catalog",
+    priceUsd: product.priceUsd,
+    updatedAtLabel: formatAdminDateLabel(updatedAt),
+    updatedAt: updatedAt.toISOString(),
+    createdAtLabel: formatAdminDateLabel(createdAt),
+    createdAt: createdAt.toISOString(),
     routePath: getProductRoutePath(product),
   };
+}
+
+function getProductHeroImage(product: Product) {
+  return (
+    product.images.find((image) => image.mediaType === "image" && image.role === "hero") ??
+    product.images.find((image) => image.mediaType === "image")
+  );
+}
+
+function formatAdminDateLabel(value: Date) {
+  const now = new Date();
+  const diffDays = Math.round((value.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (Math.abs(diffDays) <= 6) {
+    return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(diffDays, "day");
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(value);
 }
 
 function createAdminProductFormValues(product: Product): AdminProductFormValues {
