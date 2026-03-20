@@ -1484,3 +1484,44 @@
     grid-template-columns: 1fr;
   }
 }
+.authorPreviewCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.authorPreviewPhotoFrame,
+.authorPreviewFallback {
+  position: relative;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 1.2rem;
+  overflow: hidden;
+}
+
+.authorPreviewPhotoFrame {
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  background: rgba(245, 239, 228, 0.78);
+}
+
+.authorPreviewFallback {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(184, 94, 59, 0.2);
+  background: rgba(184, 94, 59, 0.12);
+  color: var(--color-clay-terracotta);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 768px) {
+  .authorPreviewCard {
+    grid-template-columns: 1fr;
+  }
+}

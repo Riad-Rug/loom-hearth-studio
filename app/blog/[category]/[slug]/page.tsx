@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/seo/json-ld";
 import { BlogPostPageView } from "@/features/blog/blog-post-page-view";
 import { getBlogPostByParams } from "@/features/blog/blog-post-data";
+import { getDefaultBlogAuthor } from "@/lib/blog/author";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { articleSchema, breadcrumbSchema } from "@/lib/seo/schema";
 
@@ -22,6 +23,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
+  const author = await getDefaultBlogAuthor();
+
   return (
     <>
       <JsonLd
@@ -39,7 +42,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           ]),
         ]}
       />
-      <BlogPostPageView post={post} />
+      <BlogPostPageView author={author} post={post} />
     </>
   );
 }

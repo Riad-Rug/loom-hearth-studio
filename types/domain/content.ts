@@ -12,6 +12,12 @@ export type BlogPost = SeoFields & {
   status: EntityStatus;
 };
 
+export type BlogAuthor = {
+  name: string;
+  bio: string;
+  photoUrl?: string | null;
+};
+
 export type FaqItem = {
   id: string;
   question: string;

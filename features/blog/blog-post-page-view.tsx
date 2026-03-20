@@ -2,8 +2,9 @@ import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 
+import { BlogAuthorBlock } from "@/features/blog/blog-author-block";
 import { blogPosts } from "@/features/blog/blog-post-data";
-import type { BlogPost } from "@/types/domain";
+import type { BlogAuthor, BlogPost } from "@/types/domain";
 
 import styles from "./blog.module.css";
 
@@ -16,9 +17,10 @@ type PlaceholderBlogPost = BlogPost & {
 
 type BlogPostPageViewProps = {
   post: PlaceholderBlogPost;
+  author: BlogAuthor;
 };
 
-export function BlogPostPageView({ post }: BlogPostPageViewProps) {
+export function BlogPostPageView({ post, author }: BlogPostPageViewProps) {
   const bodyParagraphs = post.body.split("\n\n");
   const adjacentPosts = blogPosts.filter((candidate) => candidate.id !== post.id).slice(0, 2);
 
@@ -51,6 +53,8 @@ export function BlogPostPageView({ post }: BlogPostPageViewProps) {
             <p key={paragraph}>{paragraph}</p>
           ))}
         </div>
+
+        <BlogAuthorBlock author={author} />
       </article>
 
       <section className={styles.relatedSection}>
