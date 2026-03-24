@@ -32,7 +32,7 @@ export type CloudinaryImageAsset = MediaAsset & {
   folder?: CloudinaryFolder;
 };
 
-export type CloudinaryUploadTarget = "homepage" | "rug" | "multiUnit";
+export type CloudinaryUploadTarget = "homepage" | "rug" | "multiUnit" | "blog";
 
 export type CloudinarySignedUploadRequest = {
   target: CloudinaryUploadTarget;
@@ -49,6 +49,7 @@ export type CloudinarySignedUploadPayload = {
 
 export type CloudinaryBrowserUploadResult = {
   public_id: string;
+  secure_url?: string;
   width?: number;
   height?: number;
   resource_type: "image";

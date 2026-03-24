@@ -6,7 +6,7 @@ import { signCloudinaryUploadParams } from "@/lib/cloudinary/server";
 import type { CloudinarySignedUploadRequest } from "@/lib/cloudinary/types";
 
 function isUploadTarget(value: string): value is CloudinarySignedUploadRequest["target"] {
-  return value === "homepage" || value === "rug" || value === "multiUnit";
+  return value === "homepage" || value === "rug" || value === "multiUnit" || value === "blog";
 }
 
 export async function POST(request: Request) {
@@ -58,7 +58,9 @@ export async function POST(request: Request) {
       ? config.folders.homepage
       : target === "rug"
         ? config.folders.productsRugs
-        : config.folders.productsMultiUnit;
+        : target === "multiUnit"
+          ? config.folders.productsMultiUnit
+          : config.folders.blog;
   const timestamp = Math.floor(Date.now() / 1000);
   const signature = signCloudinaryUploadParams(
     {

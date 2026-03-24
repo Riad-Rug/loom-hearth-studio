@@ -28,7 +28,6 @@ import {
   type AdminHomepageActionState,
 } from "@/lib/admin/homepage-actions-shared";
 import { updateAdminHomepageAction } from "@/app/(admin)/admin/homepage/actions";
-import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import type {
   CloudinaryBrowserUploadResult,
   CloudinarySignedUploadPayload,
@@ -38,6 +37,10 @@ import styles from "./admin.module.css";
 
 type EditorKey = "global" | HomePageSectionKey;
 type FocusableElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+
+function buildCloudinaryDeliveryUrl(cloudName: string, publicId: string) {
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${publicId}`;
+}
 
 const allEditorSections: Array<{ key: EditorKey; label: string; description: string }> = [
   {
@@ -145,7 +148,9 @@ export function AdminHomepageForm(props: {
       updateContent((draft) => {
         assignValueAtPath(draft, path, {
           ...currentImage,
-          src: buildCloudinaryUrl(uploadResult.public_id),
+          src:
+            uploadResult.secure_url ||
+            buildCloudinaryDeliveryUrl(signatureResult.payload.cloudName, uploadResult.public_id),
           publicId: uploadResult.public_id,
           width: uploadResult.width ?? null,
           height: uploadResult.height ?? null,
@@ -183,25 +188,26 @@ export function AdminHomepageForm(props: {
       <div className={styles.homepageWorkspaceGrid}>
         <aside className={styles.homepageWorkspaceRail}>
           <div className={styles.groupPanel}>
-            <strong>Editor panels</strong>
+            <strong>1. Choose a section</strong><p className={styles.workspaceHelper}>Start here. Pick the homepage section you want to edit.</p>
             <div className={styles.homepageSectionList}>{allEditorSections.map((section) => <button key={section.key} className={`${styles.homepageSectionButton} ${selectedEditor === section.key ? styles.homepageSectionButtonActive : ""}`} onClick={() => setSelectedEditor(section.key)} type="button"><span>{section.label}</span><small>{section.description}</small><span className={styles.homepageSectionMeta}>{section.key === "global" ? <><span>Brand</span><span>Page SEO</span></> : <><span>{content[section.key].visible ? "Visible" : "Hidden"}</span><span>SEO {sectionScores[section.key].score}/50</span></>}</span></button>)}</div>
           </div>
 
           <div className={styles.groupPanel}>
-            <strong>Homepage structure</strong>
+            <strong>Section order</strong>
+            <p className={styles.workspaceHelper}>Adjust the public homepage sequence without leaving this workspace.</p>
             <div className={styles.stack}>{content.sectionOrder.map((section, index) => <div key={section} className={styles.homepageOrderRow}><div><strong>{index + 1}. {homepageSectionDefinitions[section].label}</strong><p>{homepageSectionDefinitions[section].description}</p></div><div className={styles.actionRow}><button className={styles.inlineActionLink} onClick={() => moveSection(section, -1)} type="button">Up</button><button className={styles.inlineActionLink} onClick={() => moveSection(section, 1)} type="button">Down</button></div></div>)}</div>
           </div>
         </aside>
 
-        <section className={styles.homepagePreviewColumn}>
-          <div className={styles.groupPanel}><strong>Live preview</strong><p>Click a section or element to focus the matching editor controls.</p></div>
-          <HomepagePreview content={content} selectedSection={selectedEditor === "global" ? null : selectedEditor} onSelect={(section, field) => { setSelectedEditor(section); if (field) setSelectedField(field); }} />
-        </section>
-
         <section className={styles.homepageEditorColumn}>
-          <div className={styles.groupPanel}><strong>{selectedEditor === "global" ? "Global settings" : homepageSectionDefinitions[selectedEditor].label}</strong><p>{selectedEditor === "global" ? "Brand settings feed the shared header, and page SEO drives the homepage metadata." : homepageSectionDefinitions[selectedEditor].description}</p></div>
+          <div className={styles.groupPanel}><strong>2. Edit fields</strong><p>{selectedEditor === "global" ? "Global settings control shared brand text and homepage metadata." : `Editing ${homepageSectionDefinitions[selectedEditor].label.toLowerCase()}. ${homepageSectionDefinitions[selectedEditor].description}`}</p><p className={styles.workspaceHelper}>Changes update the preview immediately. Save only when the section looks correct.</p></div>
           {selectedEditor === "global" ? <GlobalSettingsEditor content={content} onChange={updateField} registerField={registerField} /> : <SectionEditor content={content} onChange={updateField} onImageChange={(path, image) => updateContent((draft) => { assignValueAtPath(draft, path, image); }, "Image preview updated locally.")} onImageUpload={handleImageUpload} onVisibilityChange={updateSectionVisibility} registerField={registerField} score={sectionScores[selectedEditor]} selectedSection={selectedEditor} uploadStates={uploadStates} />}
           <div className={styles.actionRow}><SubmitButton /></div>
+        </section>
+
+        <section className={styles.homepagePreviewColumn}>
+          <div className={styles.groupPanel}><strong>3. Check live preview</strong><p>Use the preview to verify hierarchy and click any text or image target to jump back to the matching field.</p></div>
+          <HomepagePreview content={content} selectedSection={selectedEditor === "global" ? null : selectedEditor} onSelect={(section, field) => { setSelectedEditor(section); if (field) setSelectedField(field); }} />
         </section>
       </div>
     </form>
@@ -212,5 +218,9 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return <button className={`${styles.inlineActionLink} ${styles.inlineActionLinkPrimary}`} type="submit">{pending ? "Saving homepage..." : "Save homepage"}</button>;
 }
+
+
+
+
 
 

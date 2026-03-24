@@ -489,6 +489,7 @@ export function sanitizeHomePageContent(input: unknown): HomePageContent {
     sectionOrder: readSectionOrder(source.sectionOrder, defaults.sectionOrder),
     hero: {
       ...readSectionSettings(source.hero, defaults.hero),
+      visible: true,
       eyebrow: readString(source.hero, "eyebrow", defaults.hero.eyebrow),
       title: readString(source.hero, "title", defaults.hero.title),
       paragraph: readString(source.hero, "paragraph", defaults.hero.paragraph),

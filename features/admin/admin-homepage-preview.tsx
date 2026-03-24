@@ -126,8 +126,8 @@ function PreviewSection(props: { title: string; active: boolean; hidden: boolean
   return (
     <section className={`${styles.homepagePreviewSection} ${props.active ? styles.homepagePreviewSectionActive : ""} ${props.hidden ? styles.homepagePreviewSectionHidden : ""}`}>
       <div className={styles.homepagePreviewSectionHeader}>
-        <strong>{props.title}</strong>
-        <button className={styles.inlineActionLink} onClick={props.onSelect} type="button">Edit</button>
+        <div className={styles.homepagePreviewSectionTitle}><strong>{props.title}</strong><span>Preview click targets</span></div>
+        <button className={styles.inlineActionLink} onClick={props.onSelect} type="button">Edit section</button>
       </div>
       {props.children}
     </section>
@@ -155,7 +155,7 @@ function PreviewBadge(props: { label: string; onClick: () => void }) {
 }
 
 function PreviewImage(props: { image: HomePageImage; onClick: () => void }) {
-  return <button className={styles.homepagePreviewImageFrame} onClick={props.onClick} type="button">{isRenderableImageSrc(props.image.src) ? <Image alt={props.image.alt || "Homepage preview image"} fill sizes="240px" src={props.image.src} /> : <span className={styles.thumbnailFallback}>Add a valid image URL</span>}</button>;
+  return <button className={styles.homepagePreviewImageFrame} onClick={props.onClick} type="button"><span className={styles.homepagePreviewImageBadge}>Edit image</span>{isRenderableImageSrc(props.image.src) ? <Image alt={props.image.alt || "Homepage preview image"} fill sizes="240px" src={props.image.src} /> : <span className={styles.thumbnailFallback}>Add a valid image URL</span>}</button>;
 }
 
 function PreviewCard(props: { card: HomePageContent["categories"]["cards"][number]; onTextClick: () => void; onImageClick: () => void }) {
@@ -188,6 +188,7 @@ function isRenderableImageSrc(value: string) {
     return false;
   }
 }
+
 
 
 
