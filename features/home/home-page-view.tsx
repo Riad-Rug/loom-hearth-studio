@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { Section } from "@/components/layout/section";
 import type { HomePageContent, HomePageOrderedSectionKey } from "@/features/home/home-page-data";
+import { HowItWorksSection } from "@/features/home/how-it-works-section";
 
 import styles from "./home-page.module.css";
 
@@ -62,15 +63,16 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent)
       return null;
     }
 
-    return (
+    return [
       <Section key={key} tone="muted" width="wide">
         <div className={styles.trustBanner} aria-label="Trust highlights">
           {items.map((item) => (
             <p key={item.id}>{item.label}</p>
           ))}
         </div>
-      </Section>
-    );
+      </Section>,
+      <HowItWorksSection key="how-it-works" />,
+    ];
   }
 
   if (key === "categories" && content.categories.visible) {
@@ -192,6 +194,9 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent)
                 <p className={styles.eyebrow}>{content.guide.eyebrow}</p>
                 <h2>{content.guide.title}</h2>
                 <p className={styles.sectionBody}>{content.guide.paragraph}</p>
+                <Link className={styles.narrativeLinkLabel} href={"/blog" as Route}>
+                  Read the full guide
+                </Link>
               </div>
             </div>
           ) : null}

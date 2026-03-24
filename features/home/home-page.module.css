@@ -173,6 +173,58 @@
   box-shadow: 0 0 0 0.28rem rgba(184, 94, 59, 0.09);
 }
 
+.howItWorksSection {
+  display: grid;
+  gap: calc(var(--space-5) + 0.25rem);
+  padding: var(--space-6);
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(245, 239, 228, 0.42)),
+    radial-gradient(circle at top right, rgba(184, 94, 59, 0.05), transparent 42%);
+}
+
+.howItWorksGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.howItWorksCard {
+  display: grid;
+  align-content: start;
+  gap: 0.8rem;
+  min-height: 100%;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 247, 240, 0.96)),
+    linear-gradient(135deg, rgba(184, 94, 59, 0.05), transparent);
+  box-shadow: var(--shadow-soft);
+}
+
+.howItWorksStep {
+  color: var(--color-clay-terracotta);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.howItWorksCard h3 {
+  font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.howItWorksCard p:last-child {
+  color: rgba(34, 33, 38, 0.78);
+  line-height: 1.7;
+}
+
 .sectionIntro {
   display: grid;
   gap: 0.9rem;
@@ -473,6 +525,7 @@
 }
 
 @media (max-width: 1100px) {
+  .howItWorksGrid,
   .categoryGrid,
   .badgesGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -491,7 +544,12 @@
     padding: var(--space-6);
   }
 
+  .howItWorksSection {
+    padding: var(--space-5);
+  }
+
   .trustBanner,
+  .howItWorksGrid,
   .categoryGrid,
   .badgesGrid {
     grid-template-columns: 1fr;
