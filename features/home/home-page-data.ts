@@ -232,7 +232,7 @@ const defaultHomePageContent: HomePageContent = {
       { id: "badge-1", label: "Direct from Morocco", visible: true },
       { id: "badge-2", label: "United States delivery", visible: true },
       { id: "badge-3", label: "Duties included", visible: true },
-      { id: "badge-4", label: "Curated launch selection", visible: true },
+      { id: "badge-4", label: "Video verification before payment.", visible: true },
     ],
   },
   categories: {
@@ -801,3 +801,4 @@ function isAllowedImageUrl(value: string) {
 function isOrderedSectionKey(value: unknown): value is HomePageOrderedSectionKey {
   return typeof value === "string" && homepageSectionOrderKeys.includes(value as HomePageOrderedSectionKey);
 }
+
