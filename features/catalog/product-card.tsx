@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
+import { getCategoryLabel } from "@/lib/catalog/helpers";
 
 import styles from "./catalog-page.module.css";
 
@@ -42,7 +43,7 @@ export function ProductCard({ product }: ProductCardProps) {
               sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 33vw"
             />
             <div className={styles.productFallbackCopy}>
-              <span className={styles.productFallbackEyebrow}>{formatCategory(product.category)}</span>
+              <span className={styles.productFallbackEyebrow}>{getCategoryLabel(product.category)}</span>
               <strong className={styles.productFallbackTitle}>{product.name}</strong>
               <span className={styles.productFallbackNote}>Studio image coming soon</span>
             </div>
@@ -50,7 +51,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
       <div className={styles.productContent}>
-        <p className={styles.productCategory}>{formatCategory(product.category)}</p>
+        <p className={styles.productCategory}>{getCategoryLabel(product.category)}</p>
         <h3>{product.name}</h3>
         <p className={styles.productPrice}>{product.priceUsdLabel}</p>
         <p className={styles.productSummary}>{descriptor}</p>
@@ -59,9 +60,6 @@ export function ProductCard({ product }: ProductCardProps) {
   );
 }
 
-function formatCategory(category: string) {
-  return category.charAt(0).toUpperCase() + category.slice(1);
-}
 
 function getDescriptor(description: string, merchandisingNote: string) {
   const candidate = description.trim() || merchandisingNote.trim();

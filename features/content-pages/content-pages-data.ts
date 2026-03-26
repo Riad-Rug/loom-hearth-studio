@@ -19,8 +19,13 @@ type LookbookItem = {
 export const aboutHero = {
   eyebrow: "About",
   title: "A direct source for handcrafted Moroccan rugs, poufs, pillows, and home decor.",
-  body:
-    "Loom & Hearth Studio is built on real roots in Marrakech, where our family has worked in the bazaar trade for decades. Our grandfatherÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s shop in the Semmarine souk, steps from Jemaa el-Fnaa, was known for handcrafted pieces sourced across Morocco.\n\nToday, we continue that work with a more focused approach ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â selecting Moroccan rugs, transforming some into one-of-one poufs and pillows, and curating decor with a clear point of view.\n\nEvery piece is chosen in person, not mass-produced, and not sourced from generic export catalogs. The goal is simple: bring objects with real material depth and character into homes that value design.\n\nAll orders ship directly from Morocco within 5ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ7 business days, with shipping and customs already included in the final price ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no surprises at delivery.",
+  body: `Loom & Hearth Studio is built on real roots in Marrakech, where our family has worked in the bazaar trade for decades. Our grandfather's shop in the Semmarine souk, steps from Jemaa el-Fnaa, was known for handcrafted pieces sourced across Morocco.
+
+Today, we continue that work with a more focused approach  selecting Moroccan rugs, transforming some into one-of-one poufs and pillows, and curating decor with a clear point of view.
+
+Every piece is chosen in person, not mass-produced, and not sourced from generic export catalogs. The goal is simple: bring objects with real material depth and character into homes that value design.
+
+All orders ship directly from Morocco within 57 business days, with shipping and customs already included in the final price  no surprises at delivery.`,
 } as const;
 
 export const aboutSections: AboutSection[] = [
@@ -33,8 +38,9 @@ export const aboutSections: AboutSection[] = [
   {
     eyebrow: "Direction",
     title: "Built for interiors that value texture, warmth, and individuality.",
-    body:
-      "Loom & Hearth Studio is not a marketplace and not a mass-production brand. The collection is intentionally focused on Moroccan rugs, rug-based poufs, pillows, and supporting decor ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â pieces that work together and build a coherent interior.\n\nThe direction is simple: fewer, better objects with real presence. Pieces that feel collected over time, not selected from a catalog.",
+    body: `Loom & Hearth Studio is not a marketplace and not a mass-production brand. The collection is intentionally focused on Moroccan rugs, rug-based poufs, pillows, and supporting decor  pieces that work together and build a coherent interior.
+
+The direction is simple: fewer, better objects with real presence. Pieces that feel collected over time, not selected from a catalog.`,
   },
 ] as const;
 

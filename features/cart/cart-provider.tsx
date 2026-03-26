@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 
-import { getProductRoutePath } from "@/lib/catalog/helpers";
+import { getCategoryLabel, getProductRoutePath } from "@/lib/catalog/helpers";
 import type { Product } from "@/types/domain";
 
 const CART_STORAGE_KEY = "loom-hearth-studio.cart";
@@ -19,6 +19,7 @@ export type CartStoreItem = {
   href: string;
   productId: string;
   productType: Product["type"];
+  productCategory: Product["category"];
   name: string;
   priceUsd: number;
   quantity: number;
@@ -132,7 +133,7 @@ export function formatUsd(amount: number) {
 }
 
 export function getCartItemLabel(item: CartStoreItem) {
-  return item.productType === "rug" ? "Type A rug" : "Type B multi-unit";
+  return getCategoryLabel(item.productCategory);
 }
 
 export function getCartItemQuantityRule(item: CartStoreItem) {
@@ -181,6 +182,7 @@ function createCartStoreItem({
     href: getProductRoutePath(product),
     productId: product.id,
     productType: product.type,
+    productCategory: product.category,
     name: product.name,
     priceUsd: product.priceUsd,
     quantity: normalizedQuantity,
@@ -200,6 +202,11 @@ function isCartStoreItem(value: unknown): value is CartStoreItem {
     typeof candidate.href === "string" &&
     typeof candidate.productId === "string" &&
     (candidate.productType === "rug" || candidate.productType === "multiUnit") &&
+    (candidate.productCategory === "rugs" ||
+      candidate.productCategory === "vintage" ||
+      candidate.productCategory === "decor" ||
+      candidate.productCategory === "pillows" ||
+      candidate.productCategory === "poufs") &&
     typeof candidate.name === "string" &&
     typeof candidate.priceUsd === "number" &&
     typeof candidate.quantity === "number" &&

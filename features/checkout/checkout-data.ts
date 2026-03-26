@@ -37,14 +37,14 @@ export const checkoutLineItems = [
     id: "checkout-item-rug",
     name: "Atlas Morning Rug",
     quantityLabel: "Qty 1",
-    typeLabel: "Type A rug",
+    typeLabel: "Moroccan rugs",
     priceUsdLabel: "$0.00",
   },
   {
     id: "checkout-item-pouf",
     name: "Clay Knot Pouf",
     quantityLabel: "Qty 2",
-    typeLabel: "Type B multi-unit",
+    typeLabel: "Poufs",
     priceUsdLabel: "$0.00",
   },
 ] as const;

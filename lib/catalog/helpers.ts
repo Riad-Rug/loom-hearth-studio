@@ -21,7 +21,7 @@ export function getProductRoutePattern(product: Product) {
 }
 
 export function getProductBadgeLabel(product: Product) {
-  return product.type === "rug" ? "Type A rug" : "Type B multi-unit";
+  return getCategoryLabel(product.category);
 }
 
 export function getProductMerchandisingNote(product: Product) {
@@ -43,7 +43,18 @@ export function getProductMerchandisingNote(product: Product) {
 }
 
 export function getCategoryLabel(category: ProductCategory) {
-  return category.charAt(0).toUpperCase() + category.slice(1);
+  switch (category) {
+    case "rugs":
+      return "Moroccan rugs";
+    case "vintage":
+      return "Vintage rugs";
+    case "decor":
+      return "Decor";
+    case "pillows":
+      return "Pillows";
+    case "poufs":
+      return "Poufs";
+  }
 }
 
 export function getInventoryState(product: MultiUnitProduct): LaunchInventoryState {

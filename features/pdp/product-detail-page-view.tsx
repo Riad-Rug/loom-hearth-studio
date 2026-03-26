@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
+import { getCategoryLabel } from "@/lib/catalog/helpers";
 import type {
   MultiUnitProductDetailPageViewModel,
   ProductDetailPageViewModel,
@@ -130,9 +131,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           </div>
 
           <div className={styles.infoColumn}>
-            <p className={styles.eyebrow}>
-              {product.type === "rug" ? "Type A rug" : "Type B multi-unit"}
-            </p>
+            <p className={styles.eyebrow}>{getCategoryLabel(product.category)}</p>
             <div className={styles.titleBlock}>
               <h1>{product.name}</h1>
               <p className={styles.valueLine}>{valueLine}</p>
