@@ -97,10 +97,6 @@ export function ContactPageView({ defaults }: ContactPageViewProps) {
               <button className={styles.primaryAction} type="button">
                 {contactData.ctaLabel}
               </button>
-              <p className={styles.contactFormNote}>
-                Form submission is a structured placeholder for now. Backend delivery is not yet
-                implemented.
-              </p>
             </div>
           </form>
         </div>

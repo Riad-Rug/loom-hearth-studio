@@ -1,4 +1,4 @@
-import type { FaqItem, PolicyPage, Testimonial } from "@/types/domain";
+﻿import type { FaqItem, PolicyPage, Testimonial } from "@/types/domain";
 
 type AboutSection = {
   eyebrow: string;
@@ -33,7 +33,7 @@ export const aboutSections: AboutSection[] = [
     eyebrow: "Craft",
     title: "Rooted in Moroccan sourcing, material knowledge, and direct selection.",
     body:
-      "We work directly with artisans, souks, and trusted suppliers across Morocco, selecting pieces based on texture, construction, and presence ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â not trends. Many items are one-of-one, and even repeatable designs remain handmade, which means no two pieces are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug materials, giving them the same depth, irregularity, and character as the originals they come from.",
+      "We work directly with artisans, souks, and trusted suppliers across Morocco, selecting pieces based on texture, construction, and presence \u2014 not trends. Many items are one-of-one, and even repeatable designs remain handmade, which means no two pieces are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug materials, giving them the same depth, irregularity, and character as the originals they come from.",
   },
   {
     eyebrow: "Direction",
@@ -58,17 +58,18 @@ export const contactData = {
     "Contact Loom & Hearth Studio for inquiries about handmade Moroccan rugs, custom sourcing, vintage textiles, and curated home decor.",
   formTitle: "Send a customer inquiry",
   formBody:
-    "Use this form shell to outline product questions, sourcing requests, order-related notes, or general support needs. Submission handling is not wired yet, but the layout is structured for a low-friction contact experience.",
+    "Send us a message about a specific piece, a sourcing request, or any question about the collection. We review every message personally and respond within 24 hours.",
   ctaLabel: "Send message",
   supportTitle: "Studio support",
   supportBody:
-    "If you are reaching out about Moroccan rugs, handmade decor, or sourcing context, include the product name and any room details that matter. That keeps the conversation clear and helps the studio respond with more useful guidance.",
+    "Send us a message about a specific piece, a sourcing request, or any question about the collection. We review every message personally and respond within 24 hours.",
   reassuranceLabel: "Support note",
-  reassuranceText: "Messages are reviewed with a studio-first, customer-support tone while contact operations remain in setup.",
+  reassuranceText:
+    "Every inquiry about a rug includes a video of the actual piece before payment is taken. Include the product name and your room dimensions if you have them  it helps us respond with something useful.",
   responseTimeLabel: "Response timing",
-  responseTimeText: "We usually respond within 24 hours.",
+  responseTimeText: "Within 24 hours",
   emailLabel: "Email contact placeholder",
-  hoursLabel: "Business-hours placeholder",
+  hoursLabel: "Monday to Friday, 9am  6pm CET",
   locationLabel: "Morocco sourcing studio - U.S. launch market",
 } as const;
 
@@ -194,7 +195,7 @@ export const policyPages: PolicyPage[] = [
       "Loom & Hearth Studio publishes this page to explain the launch returns surface, but detailed operational return rules remain conservative until broader fulfillment and support workflows are finalized.",
       "Customers who need help with an order should reply to their order confirmation email and include the order number and a summary of the issue. Loom & Hearth Studio will review the request and respond using the email address associated with the order.",
       "Because launch operations are intentionally narrow, this policy does not commit to automatic return labels, exchange workflows, or carrier-specific processes. Any approved return or refund handling will be communicated directly with the customer based on the order details and current launch operating constraints.",
-      "Nothing on this page changes a customerÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s non-waivable legal rights where those rights apply. More detailed return windows, exchange terms, and exception rules remain intentionally generic here because those operational decisions are not yet committed elsewhere in the repo state.",
+      "Nothing on this page changes a customer??????????????????????????????????????s non-waivable legal rights where those rights apply. More detailed return windows, exchange terms, and exception rules remain intentionally generic here because those operational decisions are not yet committed elsewhere in the repo state.",
     ].join("\n\n"),
     seoTitle: "Returns policy | Loom & Hearth Studio",
     seoDescription: "Returns policy information for the Loom & Hearth Studio launch.",
@@ -204,7 +205,7 @@ export const policyPages: PolicyPage[] = [
     title: "Privacy policy",
     body: [
       "Loom & Hearth Studio collects the information required to operate the current launch storefront and order flow. That may include customer contact details, shipping details, cart and checkout information, and payment-related order references needed to process and support a purchase.",
-      "The current launch stack includes Stripe Checkout for payment processing, Postmark for transactional order confirmation email delivery, and PostgreSQL with Prisma for persisted order data. Payment card details are handled by Stripe Checkout rather than being stored directly by Loom & Hearth Studio in this repoÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s current implementation.",
+      "The current launch stack includes Stripe Checkout for payment processing, Postmark for transactional order confirmation email delivery, and PostgreSQL with Prisma for persisted order data. Payment card details are handled by Stripe Checkout rather than being stored directly by Loom & Hearth Studio in this repo??????????????????????????????????????s current implementation.",
       "Customer information may be used to create and manage orders, send transactional confirmation messages, review order status, and support customer service requests connected to an existing purchase. The current repo state does not implement newsletter signup workflows, broader marketing automation, or real customer account authentication.",
       "Cookie consent tooling, expanded privacy controls, retention scheduling, and jurisdiction-specific privacy workflows remain intentionally generic on this page because those implementation decisions are not yet finalized in the committed launch stack.",
     ].join("\n\n"),

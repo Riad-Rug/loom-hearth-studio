@@ -83,9 +83,17 @@ export function getInventoryMessage(product: MultiUnitProduct) {
 }
 
 export function formatRugDimensions(product: RugProduct) {
-  return `${product.dimensionsCm.length} x ${product.dimensionsCm.width} cm`;
+  return `${product.dimensionsCm.length} ? ${product.dimensionsCm.width} cm (${formatFeetAndInches(product.dimensionsCm.length)} ? ${formatFeetAndInches(product.dimensionsCm.width)})`;
 }
 
 export function formatRugWeight(product: RugProduct) {
   return `${product.weightKg.toFixed(1)} kg`;
+}
+
+function formatFeetAndInches(valueCm: number) {
+  const totalInches = Math.round(valueCm / 2.54);
+  const feet = Math.floor(totalInches / 12);
+  const inches = totalInches % 12;
+
+  return `${feet}'${inches}"`;
 }

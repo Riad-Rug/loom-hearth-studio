@@ -15,12 +15,7 @@ export function CartDrawer() {
   const [isPointerFine, setIsPointerFine] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
   const shellRef = useRef<HTMLDivElement | null>(null);
-  const {
-    itemCount,
-    items,
-    subtotalUsd,
-    totalUsd,
-  } = useCart();
+  const { itemCount, items, subtotalUsd, totalUsd } = useCart();
   const visibleItems = items.slice(0, PREVIEW_ITEM_LIMIT);
   const hiddenItemCount = Math.max(0, items.length - PREVIEW_ITEM_LIMIT);
   const isEmpty = items.length === 0;
@@ -109,11 +104,6 @@ export function CartDrawer() {
   }
 
   function handleButtonClick() {
-    if (isPointerFine) {
-      setIsOpen((current) => !current);
-      return;
-    }
-
     setIsOpen((current) => !current);
   }
 
@@ -132,12 +122,18 @@ export function CartDrawer() {
         aria-controls="cart-mini-panel"
         aria-expanded={isOpen}
         aria-haspopup="dialog"
+        aria-label={isEmpty ? "Open cart" : `Open cart with ${itemCountLabel}`}
         className="site-header__cart-button"
         type="button"
         onClick={handleButtonClick}
       >
-        <span>Cart</span>
-        <span className="site-header__cart-count">{itemCount}</span>
+        <svg aria-hidden="true" height="18" viewBox="0 0 24 24" width="18">
+          <path
+            d="M7 8.5A5 5 0 0 1 17 8.5V9h1.25A1.75 1.75 0 0 1 20 10.75v8.5A1.75 1.75 0 0 1 18.25 21h-12.5A1.75 1.75 0 0 1 4 19.25v-8.5A1.75 1.75 0 0 1 5.75 9H7zm1.5.5h7V8.5a3.5 3.5 0 0 0-7 0zm9.75 1.5H5.75a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25v-8.5a.25.25 0 0 0-.25-.25"
+            fill="currentColor"
+          />
+        </svg>
+        {itemCount > 0 ? <span className="site-header__cart-count">{itemCount}</span> : null}
       </button>
 
       {isOpen ? (
@@ -200,7 +196,7 @@ export function CartDrawer() {
                         </h3>
                         <p className={styles.itemMeta}>
                           Qty {item.quantity}
-                          {item.variantName ? ` · ${item.variantName}` : ""}
+                          {item.variantName ? ` ? ${item.variantName}` : ""}
                         </p>
                       </div>
                     </article>

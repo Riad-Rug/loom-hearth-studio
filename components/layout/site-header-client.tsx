@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Container } from "@/components/layout/container";
+import { CartDrawer } from "@/features/cart/cart-drawer";
 
 type SiteHeaderClientProps = {
   announcement: string;
@@ -82,16 +83,12 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                   Account
                 </Link>
               ) : (
-                <>
-                  <Link className="site-header__link" href="/account/login">
-                    Login
-                  </Link>
-                  <Link className="site-header__link" href="/account/register">
-                    Register
-                  </Link>
-                </>
+                <Link className="site-header__link" href="/account/login">
+                  Login
+                </Link>
               )}
             </div>
+            <CartDrawer />
             <button
               aria-controls="site-mobile-menu"
               aria-expanded={isMobileMenuOpen}
@@ -104,9 +101,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
               <span />
               <span />
             </button>
-            <Link className="site-header__link" href="/contact?inquiryType=product-inquiry">
-              Inquiries
-            </Link>
           </div>
         </div>
         <div
@@ -137,22 +131,13 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 Account
               </Link>
             ) : (
-              <>
-                <Link
-                  className="site-header__mobile-link"
-                  href="/account/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  className="site-header__mobile-link"
-                  href="/account/register"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Register
-                </Link>
-              </>
+              <Link
+                className="site-header__mobile-link"
+                href="/account/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Login
+              </Link>
             )}
           </nav>
         </div>

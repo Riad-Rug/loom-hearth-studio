@@ -297,7 +297,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         <div className={styles.relatedSection}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Recently viewed</p>
-            <h2>Recent launch products</h2>
+            <h2>More from the collection</h2>
           </div>
           <div className={styles.relatedGrid}>
             {product.recentlyViewed.map((item) => (
@@ -337,8 +337,8 @@ function RugPurchaseShell({
         <p className={styles.lockedQuantity}>{quantityLabel}</p>
       </div>
       <p className={styles.purchaseNote}>
-        This one-of-one piece is currently offered by inquiry so the studio can confirm
-        availability, shipping timing, and sourcing details before arranging the order.
+        This is a one-of-one piece. Before your payment is taken, we send you a video of the
+        actual rug so you can confirm the color, texture, and size are right for your space.
       </p>
       <Link className={styles.primaryAction} href={buildInquiryHref(product, { quantity: 1 }) as Route}>
         Inquire about this rug

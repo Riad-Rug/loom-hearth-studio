@@ -1,4 +1,4 @@
-import {
+﻿import {
   formatProductPriceUsd,
   formatRugDimensions,
   formatRugWeight,
@@ -61,11 +61,7 @@ export async function getCategoryProductDetailByParams(input: {
   const repository = input.repository ?? createProductRepository();
   const product = await repository.getBySlug(input.slug);
 
-  if (
-    !product ||
-    product.type !== "multiUnit" ||
-    product.category !== input.category
-  ) {
+  if (!product || product.type !== "multiUnit" || product.category !== input.category) {
     return null;
   }
 
@@ -83,7 +79,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
   return {
     id: product.id,
     href: getProductRoutePath(product),
-    name: product.name,
+    name: getDisplayProductName(product.name),
     category: product.category,
     type: product.type,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
@@ -121,7 +117,7 @@ function createProductDetailPageViewModel(
   const baseViewModel = {
     id: product.id,
     slug: product.slug,
-    name: product.name,
+    name: getDisplayProductName(product.name),
     category: product.category,
     description: product.description,
     type: product.type,
@@ -178,7 +174,7 @@ function getPrimaryImage(product: Product) {
 
 function createProductLinks(products: Product[], count: number): ProductLinkViewModel[] {
   return products.slice(0, count).map((product) => ({
-    title: product.name,
+    title: getDisplayProductName(product.name),
     categoryLabel: getProductBadgeLabel(product),
     href: getProductRoutePath(product),
   }));
@@ -210,8 +206,19 @@ function createProductDetailSections(product: Product) {
   sections.push({
     title: "Shipping & returns",
     body:
-      "Launch shipping is limited to the United States and is fixed at $0.00. Broader shipping-provider and fulfillment integrations remain out of scope.",
+      "Ships directly from Morocco to the United States. Delivery takes 57 business days. Duties and customs are included in the price  there are no additional fees at delivery. For returns or any issue with your order, contact us within 7 days of receipt.",
   });
 
   return sections;
+}
+
+function getDisplayProductName(name: string) {
+  switch (name.trim().toLowerCase()) {
+    case "beni":
+      return "Beni Ourain Rug";
+    case "rug maroc":
+      return "Rug Maroc";
+    default:
+      return name;
+  }
 }

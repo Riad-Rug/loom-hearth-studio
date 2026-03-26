@@ -2,10 +2,14 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
+import { siteConfig } from "@/config/site";
 import { getHomepageContent } from "@/lib/homepage/content";
 
 export async function SiteFooter() {
   const content = await getHomepageContent();
+  const introTitle = /homepage manager studio/i.test(content.footer.introTitle)
+    ? siteConfig.name
+    : content.footer.introTitle;
 
   if (!content.footer.visible) {
     return null;
@@ -16,7 +20,7 @@ export async function SiteFooter() {
       <Container width="wide">
         <div className="site-footer__grid">
           <div className="site-footer__intro">
-            <p className="site-footer__eyebrow">{content.footer.introTitle}</p>
+            <p className="site-footer__eyebrow">{introTitle}</p>
             <p className="site-footer__brand">{content.footer.introBody}</p>
             <p className="site-footer__meta">{content.footer.introMeta}</p>
           </div>

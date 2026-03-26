@@ -1,4 +1,4 @@
-export const launchProducts = [
+﻿export const launchProducts = [
   {
     "id": "rug-atlas-morning",
     "type": "rug",
@@ -604,7 +604,7 @@ export const launchProducts = [
     "id": "cmmwax7ur0000vbkjobaks6dy",
     "type": "rug",
     "slug": "rug-maroc-1",
-    "name": "rug maroc",
+    "name": "Rug Maroc",
     "category": "rugs",
     "description": "rug maroc",
     "priceUsd": 1000,
@@ -625,7 +625,7 @@ export const launchProducts = [
     "materials": [
       "wool"
     ],
-    "seoTitle": "rug maroc",
+    "seoTitle": "Rug Maroc",
     "seoDescription": "ru maroc magnifique",
     "rugStyle": "beni ourain",
     "dimensionsCm": {
@@ -643,7 +643,7 @@ export const launchProducts = [
     "id": "cmmwdg2aw0000vboa6ccvzhv4",
     "type": "rug",
     "slug": "beni",
-    "name": "beni",
+    "name": "Beni Ourain Rug",
     "category": "rugs",
     "description": "beni ourain",
     "priceUsd": 1500,
@@ -694,7 +694,7 @@ export const launchProducts = [
     "materials": [
       "wool"
     ],
-    "seoTitle": "beni ourain",
+    "seoTitle": "Beni Ourain Rug",
     "seoDescription": "beni ourain",
     "rugStyle": "beni ourain",
     "dimensionsCm": {
