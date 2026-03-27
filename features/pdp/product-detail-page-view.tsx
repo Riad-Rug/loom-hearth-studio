@@ -21,10 +21,14 @@ type ProductDetailPageViewProps = {
 export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [openDetailSection, setOpenDetailSection] = useState<string | null>(
+    product.detailSections[0]?.title ?? null,
+  );
 
   useEffect(() => {
     setActiveImageIndex(0);
     setIsLightboxOpen(false);
+    setOpenDetailSection(product.detailSections[0]?.title ?? null);
   }, [product.id]);
 
   useEffect(() => {
@@ -139,7 +143,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             <p className={styles.price}>{product.priceUsdLabel}</p>
 
             {product.type === "rug" ? (
-              <RugPurchaseShell product={product} quantityLabel={product.quantityLabel} />
+              <RugPurchaseShell product={product} />
             ) : (
               <MultiUnitPurchaseShell product={product} />
             )}
@@ -268,9 +272,31 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
       <Section width="wide">
         <div className={styles.detailsGrid}>
           {product.detailSections.map((section) => (
-            <article key={section.title} className={styles.accordionCard}>
-              <h2>{section.title}</h2>
-              <p>{section.body}</p>
+            <article
+              key={section.title}
+              className={`${styles.accordionCard} ${
+                openDetailSection === section.title ? styles.accordionCardOpen : ""
+              }`}
+            >
+              <h2>
+                <button
+                  className={styles.accordionTrigger}
+                  type="button"
+                  aria-expanded={openDetailSection === section.title}
+                  aria-controls={createAccordionPanelId(section.title)}
+                  onClick={() =>
+                    setOpenDetailSection((currentSection) =>
+                      currentSection === section.title ? null : section.title,
+                    )
+                  }
+                >
+                  <span>{section.title}</span>
+                  <span className={styles.accordionChevron} aria-hidden="true" />
+                </button>
+              </h2>
+              {openDetailSection === section.title ? (
+                <p id={createAccordionPanelId(section.title)}>{section.body}</p>
+              ) : null}
             </article>
           ))}
         </div>
@@ -313,6 +339,10 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   );
 }
 
+function createAccordionPanelId(title: string) {
+  return `product-detail-section-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+}
+
 function createProductValueLine(product: ProductDetailPageViewModel) {
   if (product.type === "rug") {
     return `${product.materialsLabel} | ${product.originLabel} | One-of-one piece`;
@@ -325,17 +355,11 @@ function createProductValueLine(product: ProductDetailPageViewModel) {
 
 function RugPurchaseShell({
   product,
-  quantityLabel,
 }: {
   product: Extract<ProductDetailPageViewModel, { type: "rug" }>;
-  quantityLabel: "1";
 }) {
   return (
     <div className={styles.purchaseCard}>
-      <div className={styles.purchaseRow}>
-        <span className={styles.metaLabel}>Quantity</span>
-        <p className={styles.lockedQuantity}>{quantityLabel}</p>
-      </div>
       <p className={styles.purchaseNote}>
         This is a one-of-one piece. Before your payment is taken, we send you a video of the
         actual rug so you can confirm the color, texture, and size are right for your space.
@@ -494,3 +518,10 @@ function buildProductPath(product: ProductDetailPageViewModel) {
 function toRouteSegment(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, "-");
 }
+
+
+
+
+
+
+
