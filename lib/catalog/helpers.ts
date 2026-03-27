@@ -83,7 +83,9 @@ export function getInventoryMessage(product: MultiUnitProduct) {
 }
 
 export function formatRugDimensions(product: RugProduct) {
-  return `${product.dimensionsCm.length} \u00d7 ${product.dimensionsCm.width} cm (${formatFeetAndInches(product.dimensionsCm.length)} \u00d7 ${formatFeetAndInches(product.dimensionsCm.width)})`;
+  const multiplicationSymbol = "\u00d7";
+
+  return `${product.dimensionsCm.length} ${multiplicationSymbol} ${product.dimensionsCm.width} cm (${formatFeetAndInches(product.dimensionsCm.length)} ${multiplicationSymbol} ${formatFeetAndInches(product.dimensionsCm.width)})`;
 }
 
 export function formatRugWeight(product: RugProduct) {

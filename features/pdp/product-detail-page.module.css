@@ -633,11 +633,8 @@
     justify-self: stretch;
   }
 
-  .primaryAction,
-  .secondaryAction {
+  .primaryAction {
     width: calc(100% + (var(--space-5) * 2));
-    min-height: 48px;
-    justify-self: stretch;
     margin-inline: calc(var(--space-5) * -1);
   }
 }
