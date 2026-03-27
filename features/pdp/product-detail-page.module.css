@@ -8,6 +8,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-6);
   align-items: start;
+  min-width: 0;
 }
 
 .galleryColumn,
@@ -23,6 +24,7 @@
 
 .galleryColumn {
   padding: var(--space-5);
+  min-width: 0;
 }
 
 .primaryMediaButton {
@@ -138,6 +140,7 @@
   padding: var(--space-6);
   position: sticky;
   top: 1.5rem;
+  min-width: 0;
 }
 
 .eyebrow {
@@ -158,6 +161,7 @@
 .titleBlock {
   display: grid;
   gap: 0.55rem;
+  min-width: 0;
 }
 
 .infoColumn h1 {
@@ -166,6 +170,7 @@
   line-height: 0.92;
   letter-spacing: -0.04em;
   text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 .valueLine {
@@ -258,6 +263,7 @@
 .primaryAction,
 .secondaryAction {
   display: inline-flex;
+  box-sizing: border-box;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -483,8 +489,39 @@
 
 .accordionCard h2 {
   margin: 0;
+}
+
+.accordionTrigger {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
   font-size: 1.55rem;
   letter-spacing: -0.03em;
+  text-align: left;
+  cursor: pointer;
+}
+
+.accordionChevron {
+  flex: 0 0 auto;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-right: 0.15rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 180ms ease;
+}
+
+.accordionCardOpen .accordionChevron {
+  transform: rotate(225deg);
 }
 
 .accordionCard p {
@@ -535,8 +572,7 @@
   letter-spacing: -0.03em;
 }
 
-@media (max-width: 1100px) {
-  .layout,
+@media (max-width: 900px) {
   .detailsGrid,
   .relatedGrid {
     grid-template-columns: 1fr;
@@ -548,9 +584,22 @@
 }
 
 @media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
   .galleryColumn,
   .infoColumn {
     padding: var(--space-5);
+  }
+
+  .infoColumn {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch;
+  }
+
+  .infoColumn h1 {
+    font-size: clamp(2.9rem, 12vw, 4rem);
   }
 
   .primaryMedia {
@@ -577,4 +626,21 @@
   .metaGrid {
     grid-template-columns: 1fr;
   }
+
+  .purchaseCard {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    justify-self: stretch;
+  }
+
+  .primaryAction,
+  .secondaryAction {
+    width: calc(100% + (var(--space-5) * 2));
+    min-height: 48px;
+    justify-self: stretch;
+    margin-inline: calc(var(--space-5) * -1);
+  }
 }
+
+
+
