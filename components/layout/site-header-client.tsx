@@ -3,13 +3,13 @@
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Container } from "@/components/layout/container";
 import { CartDrawer } from "@/features/cart/cart-drawer";
 
 type SiteHeaderClientProps = {
-  announcement: string;
+  announcementItems: readonly string[];
   brandName: string;
   logoImageUrl: string;
   logoImageAlt: string;
@@ -23,28 +23,25 @@ type SiteHeaderClientProps = {
 
 export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const announcementText = props.announcementItems.join(" / ");
+  const tickerItems = [...props.announcementItems, ...props.announcementItems];
 
-  useEffect(() => {
-    if (!isMobileMenuOpen) {
-      return;
-    }
-
-    function handleScroll() {
-      setIsMobileMenuOpen(false);
-    }
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [isMobileMenuOpen]);
 
   return (
     <header className="site-header">
       <div className="site-header__announcement">
         <Container width="wide">
-          <p>{props.announcement}</p>
+          <p className="site-header__announcement-copy">{announcementText}</p>
+          <span className="site-header__sr-only">{announcementText}</span>
+          <div aria-hidden="true" className="site-header__announcement-marquee">
+            <div className="site-header__announcement-track">
+              {tickerItems.map((item, index) => (
+                <span key={item + "-" + index} className="site-header__announcement-item">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
         </Container>
       </div>
       <Container width="wide">
@@ -145,3 +142,4 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     </header>
   );
 }
+

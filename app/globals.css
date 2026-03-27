@@ -226,13 +226,17 @@ p {
   background: rgba(245, 239, 228, 0.7);
 }
 
-.site-header__announcement p {
+.site-header__announcement-copy {
   padding: 0.625rem 0;
   color: rgba(34, 33, 38, 0.75);
   font-size: 0.75rem;
   letter-spacing: 0.18em;
   text-align: center;
   text-transform: uppercase;
+}
+
+.site-header__announcement-marquee {
+  display: none;
 }
 
 .site-header__bar {
@@ -521,11 +525,45 @@ p {
     padding-top: var(--space-6);
   }
 
-  .site-header__announcement p {
+  .site-header__announcement-copy {
+    display: none;
+  }
+
+  .site-header__announcement-marquee {
+    display: block;
+    overflow: hidden;
+  }
+
+  .site-header__announcement-track {
+    display: flex;
+    width: max-content;
+    align-items: center;
+    gap: 0;
     padding: 0.4rem 0;
+    animation: site-header-announcement-ticker 18s linear infinite;
+    will-change: transform;
+  }
+
+  .site-header__announcement-item {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    padding-right: 2.5rem;
+    color: rgba(34, 33, 38, 0.75);
     font-size: 0.68rem;
+    font-weight: 500;
     letter-spacing: 0.08em;
+    text-transform: uppercase;
     white-space: nowrap;
+  }
+
+  .site-header__announcement-item::after {
+    content: "";
+    width: 0.24rem;
+    height: 0.24rem;
+    margin-left: 1.25rem;
+    border-radius: 999px;
+    background: rgba(34, 33, 38, 0.35);
   }
 
   .site-header__bar {
@@ -698,4 +736,39 @@ p {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+@media (min-width: 768px) {
+  .site-header__announcement-copy {
+    display: block;
+  }
+
+  .site-header__announcement-marquee {
+    display: none;
+  }
+}
+
+@keyframes site-header-announcement-ticker {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header__announcement-track {
+    animation: none;
+  }
+
+  .site-header__announcement-marquee {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .site-header__announcement-marquee::-webkit-scrollbar {
+    display: none;
+  }
 }

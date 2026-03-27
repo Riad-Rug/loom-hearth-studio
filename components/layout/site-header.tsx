@@ -13,7 +13,7 @@ export async function SiteHeader() {
 
   return (
     <SiteHeaderClient
-      announcement={siteConfig.announcement}
+      announcementItems={siteConfig.announcementItems}
       brandName={content.brand.logoText}
       logoImageAlt={content.brand.logoImageAlt}
       logoImageUrl={content.brand.logoImageUrl}

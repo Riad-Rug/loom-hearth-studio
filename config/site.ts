@@ -8,7 +8,7 @@ export const siteConfig = {
   market: "US",
   ogImagePath: "/og/default-placeholder.jpg",
   tagline: "Handcrafted Moroccan rugs and home decor",
-  announcement: "FREE SHIPPING TO THE USA ALL DUTIES INCLUDED SHIPS FROM MOROCCO",
+  announcementItems: ["FREE SHIPPING TO THE USA", "ALL DUTIES INCLUDED", "SHIPS FROM MOROCCO"],
   primaryNav: [
     { href: "/shop", label: "Shop" },
     { href: "/lookbook", label: "Lookbook" },
