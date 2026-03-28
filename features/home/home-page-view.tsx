@@ -16,6 +16,12 @@ export function HomePageView({ content }: HomePageViewProps) {
   return <div className={styles.page}>{content.sectionOrder.map((key) => renderSection(key, content))}</div>;
 }
 
+function getMobileHeroParagraph(paragraph: string) {
+  const sentences = paragraph.trim().split(/(?<=[.!?])\s+/);
+
+  return sentences[0] || paragraph;
+}
+
 function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent) {
   if (key === "hero" && content.hero.visible) {
     return (
@@ -24,7 +30,10 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent)
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>{content.hero.eyebrow}</p>
             <h1>{content.hero.title}</h1>
-            <p className={styles.lede}>{content.hero.paragraph}</p>
+            <p className={styles.lede}>
+              <span className={styles.ledeDesktop}>{content.hero.paragraph}</span>
+              <span className={styles.ledeMobile}>{getMobileHeroParagraph(content.hero.paragraph)}</span>
+            </p>
             <div className={styles.heroActions}>
               {content.hero.primaryCta.visible ? (
                 <Link className={styles.primaryAction} href={content.hero.primaryCta.href as Route}>
@@ -245,3 +254,7 @@ function firstEditorialSection(content: HomePageContent) {
     (key) => (key === "guide" && content.guide.visible) || (key === "newsletter" && content.newsletter.visible),
   );
 }
+
+
+
+
