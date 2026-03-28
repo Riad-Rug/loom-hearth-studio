@@ -14,7 +14,7 @@
 .galleryColumn,
 .infoColumn,
 .purchaseCard,
-.accordionCard,
+.detailCard,
 .relatedCard {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -152,7 +152,7 @@
 }
 
 .infoColumn h1,
-.accordionCard h2,
+.detailCardHeading,
 .sectionIntro h2,
 .relatedCard strong {
   font-family: var(--font-display), Georgia, serif;
@@ -481,50 +481,19 @@
   gap: var(--space-5);
 }
 
-.accordionCard {
+.detailCard {
   display: grid;
   gap: var(--space-2);
   padding: calc(var(--space-5) - 0.2rem);
 }
 
-.accordionCard h2 {
+.detailCardHeading {
   margin: 0;
-}
-
-.accordionTrigger {
-  display: flex;
-  width: 100%;
-  min-height: 44px;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
   font-size: 1.55rem;
   letter-spacing: -0.03em;
-  text-align: left;
-  cursor: pointer;
 }
 
-.accordionChevron {
-  flex: 0 0 auto;
-  width: 0.7rem;
-  height: 0.7rem;
-  margin-right: 0.15rem;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(45deg);
-  transition: transform 180ms ease;
-}
-
-.accordionCardOpen .accordionChevron {
-  transform: rotate(225deg);
-}
-
-.accordionCard p {
+.detailCard p {
   margin: 0;
   color: rgba(34, 33, 38, 0.78);
   line-height: 1.68;

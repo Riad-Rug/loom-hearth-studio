@@ -21,14 +21,10 @@ type ProductDetailPageViewProps = {
 export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [openDetailSection, setOpenDetailSection] = useState<string | null>(
-    product.detailSections[0]?.title ?? null,
-  );
 
   useEffect(() => {
     setActiveImageIndex(0);
     setIsLightboxOpen(false);
-    setOpenDetailSection(product.detailSections[0]?.title ?? null);
   }, [product.id]);
 
   useEffect(() => {
@@ -152,13 +148,19 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 
             <div className={styles.metaGrid}>
               <div className={styles.metaItem}>
-                <span className={styles.metaLabel}>Materials</span>
-                <p className={styles.metaValue}>{product.materialsLabel}</p>
+                <span className={styles.metaLabel}>Material</span>
+                <p className={styles.metaValue}>{product.materialLabel}</p>
               </div>
               <div className={styles.metaItem}>
                 <span className={styles.metaLabel}>Origin</span>
                 <p className={styles.metaValue}>{product.originLabel}</p>
               </div>
+              {product.techniqueLabel ? (
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Technique</span>
+                  <p className={styles.metaValue}>{product.techniqueLabel}</p>
+                </div>
+              ) : null}
               {product.type === "rug" ? (
                 <>
                   <div className={styles.metaItem}>
@@ -272,31 +274,9 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
       <Section width="wide">
         <div className={styles.detailsGrid}>
           {product.detailSections.map((section) => (
-            <article
-              key={section.title}
-              className={`${styles.accordionCard} ${
-                openDetailSection === section.title ? styles.accordionCardOpen : ""
-              }`}
-            >
-              <h2>
-                <button
-                  className={styles.accordionTrigger}
-                  type="button"
-                  aria-expanded={openDetailSection === section.title}
-                  aria-controls={createAccordionPanelId(section.title)}
-                  onClick={() =>
-                    setOpenDetailSection((currentSection) =>
-                      currentSection === section.title ? null : section.title,
-                    )
-                  }
-                >
-                  <span>{section.title}</span>
-                  <span className={styles.accordionChevron} aria-hidden="true" />
-                </button>
-              </h2>
-              {openDetailSection === section.title ? (
-                <p id={createAccordionPanelId(section.title)}>{section.body}</p>
-              ) : null}
+            <article key={section.title} className={styles.detailCard}>
+              <h2 className={styles.detailCardHeading}>{section.title}</h2>
+              <p>{section.body}</p>
             </article>
           ))}
         </div>
@@ -339,16 +319,12 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   );
 }
 
-function createAccordionPanelId(title: string) {
-  return `product-detail-section-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-}
-
 function createProductValueLine(product: ProductDetailPageViewModel) {
   if (product.type === "rug") {
-    return `${product.materialsLabel} | ${product.originLabel} | One-of-one piece`;
+    return `${product.materialLabel} | ${product.originLabel} | One-of-one piece`;
   }
 
-  return `${product.materialsLabel} | ${product.originLabel} | ${
+  return `${product.materialLabel} | ${product.originLabel} | ${
     product.inventoryState === "outOfStock" ? "Currently unavailable" : "Multi-unit piece"
   }`;
 }
@@ -483,41 +459,17 @@ function buildInquiryHref(
   const params = new URLSearchParams({
     inquiryType: "product-inquiry",
     productName: product.name,
-    message: createInquiryMessage(product, options),
   });
 
   return `/contact?${params.toString()}`;
 }
 
-function createInquiryMessage(
-  product: ProductDetailPageViewModel,
-  options?: {
-    quantity?: number;
-    variantName?: string;
-  },
-) {
-  const messageLines = [
-    `I'm interested in ${product.name}.`,
-    `Product page: ${buildProductPath(product)}`,
-    options?.variantName ? `Preferred variant: ${options.variantName}.` : null,
-    options?.quantity ? `Desired quantity: ${options.quantity}.` : null,
-    "Please share current availability, shipping timing, and next steps.",
-  ].filter(Boolean);
-
-  return messageLines.join("\n");
-}
-
-function buildProductPath(product: ProductDetailPageViewModel) {
-  if (product.type === "rug") {
-    return `/shop/rugs/${toRouteSegment(product.rugStyle)}/${product.slug}`;
-  }
-
-  return `/shop/${toRouteSegment(product.category)}/${product.slug}`;
-}
-
 function toRouteSegment(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, "-");
 }
+
+
+
 
 
 
