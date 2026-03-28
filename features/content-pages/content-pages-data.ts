@@ -188,9 +188,9 @@ export const policyPages: PolicyPage[] = [
     slug: "shipping-policy",
     title: "Shipping policy",
     body: [
-      "All orders ship directly from Morocco.",
+      "All orders ship directly from Morocco with Aramex or DHL.",
       "We offer international delivery with duties included in the final price.",
-      "Your order is prepared with care so it arrives clearly and without unexpected import charges at delivery.",
+      "Rugs are rolled, wrapped in polypropylene, and boxed for international transit so they arrive protected and presentation-ready.",
     ].join("\n\n"),
     seoTitle: "Shipping policy | Loom & Hearth Studio",
     seoDescription:
@@ -231,4 +231,5 @@ export const policyPages: PolicyPage[] = [
     seoDescription: "Terms and conditions for the Loom & Hearth Studio launch storefront.",
   },
 ] as const;
+
 
