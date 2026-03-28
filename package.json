@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma migrate deploy && npm run catalog:bootstrap && next build",
+    "build": "bash ./scripts/prisma-migrate-deploy.sh && npm run catalog:bootstrap && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
@@ -12,7 +12,7 @@
     "catalog:import-launch-local": "node scripts/import-launch-products.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:deploy": "bash ./scripts/prisma-migrate-deploy.sh",
     "postinstall": "prisma generate",
     "catalog:bootstrap": "node scripts/bootstrap-launch-catalog.mjs"
   },
@@ -34,3 +34,6 @@
     "typescript": "^5.7.2"
   }
 }
+
+
+
