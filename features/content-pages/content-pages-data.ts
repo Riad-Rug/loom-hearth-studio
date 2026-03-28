@@ -200,10 +200,8 @@ export const policyPages: PolicyPage[] = [
     slug: "returns-policy",
     title: "Returns policy",
     body: [
-      "Loom & Hearth Studio publishes this page to explain the launch returns surface, but detailed operational return rules remain conservative until broader fulfillment and support workflows are finalized.",
-      "Customers who need help with an order should reply to their order confirmation email and include the order number and a summary of the issue. Loom & Hearth Studio will review the request and respond using the email address associated with the order.",
-      "Because launch operations are intentionally narrow, this policy does not commit to automatic return labels, exchange workflows, or carrier-specific processes. Any approved return or refund handling will be communicated directly with the customer based on the order details and current launch operating constraints.",
-      "Nothing on this page changes a customer??????????????????????????????????????s non-waivable legal rights where those rights apply. More detailed return windows, exchange terms, and exception rules remain intentionally generic here because those operational decisions are not yet committed elsewhere in the repo state.",
+      "Damaged items",
+      "If your item arrives damaged, contact us within 48 hours of delivery with photos of the package and the item. If the damage is confirmed, we will arrange a replacement or a refund.",
     ].join("\n\n"),
     seoTitle: "Returns policy | Loom & Hearth Studio",
     seoDescription: "Returns policy information for the Loom & Hearth Studio launch.",
@@ -233,3 +231,4 @@ export const policyPages: PolicyPage[] = [
     seoDescription: "Terms and conditions for the Loom & Hearth Studio launch storefront.",
   },
 ] as const;
+
