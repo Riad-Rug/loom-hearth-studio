@@ -1,4 +1,4 @@
-﻿import type { FaqItem, PolicyPage, Testimonial } from "@/types/domain";
+import type { FaqItem, PolicyPage, Testimonial } from "@/types/domain";
 
 type AboutSection = {
   eyebrow: string;
@@ -68,7 +68,7 @@ export const contactData = {
     "Every inquiry about a rug includes a video of the actual piece before payment is taken. Include the product name and your room dimensions if you have them  it helps us respond with something useful.",
   responseTimeLabel: "Response timing",
   responseTimeText: "Within 24 hours",
-  emailLabel: "Email contact placeholder",
+  emailLabel: "hello@loomandhearthstudio.com",
   hoursLabel: "Monday to Friday, 9am  6pm CET",
   locationLabel: "Morocco sourcing studio - U.S. launch market",
 } as const;
@@ -76,24 +76,32 @@ export const contactData = {
 export const faqItems: FaqItem[] = [
   {
     id: "faq-1",
-    question: "Do you ship only within the United States at launch?",
-    answer:
-      "Yes. The PRD defines the launch market as United States only, and this placeholder answer preserves that policy direction.",
+    group: "Shipping",
+    question: "Will I receive tracking?",
+    answer: "Yes, tracking is provided once your order ships.",
     sortOrder: 1,
   },
   {
     id: "faq-2",
-    question: "What is the launch shipping price?",
-    answer:
-      "Shipping is fixed at $0.00 at launch. This page is static placeholder content and does not reflect live operational logic.",
+    group: "Shipping",
+    question: "Do I need to handle customs?",
+    answer: "No, we take care of duties and customs.",
     sortOrder: 2,
   },
   {
     id: "faq-3",
-    question: "Are rugs and multi-unit products handled differently?",
+    group: "Holds",
+    question: "Can you reserve a rug for me?",
     answer:
-      "Yes. Rugs are unique items with quantity locked to one, while multi-unit products can support quantities greater than one and optional variants.",
+      "We can place a temporary hold for account holders while you review a piece. Longer or paid holds can be arranged case by case.",
     sortOrder: 3,
+  },
+  {
+    id: "faq-4",
+    group: "Inquiry",
+    question: "Can I see the rug before purchasing?",
+    answer: "Yes, we send a video of the exact piece before payment.",
+    sortOrder: 4,
   },
 ] as const;
 
@@ -180,13 +188,13 @@ export const policyPages: PolicyPage[] = [
     slug: "shipping-policy",
     title: "Shipping policy",
     body: [
-      "Loom & Hearth Studio currently accepts launch orders shipping to addresses within the United States only. Orders with non-United States shipping destinations are not supported in the current checkout flow.",
-      "Launch shipping is fixed at $0.00 for eligible orders. Storefront pricing and checkout totals are shown in USD, and the current launch checkout remains limited to that market and currency configuration.",
-      "Order handling timelines, carrier selection, tracking workflows, and other fulfillment operations remain intentionally generic in this policy because the underlying shipping-provider and broader fulfillment tooling decisions are still unresolved in the current implementation state.",
-      "If an order cannot be fulfilled to the submitted United States address after purchase, Loom & Hearth Studio may contact the customer using the order email address to resolve the issue or cancel and refund the order when shipment is not possible.",
+      "All orders ship directly from Morocco.",
+      "We offer international delivery with duties included in the final price.",
+      "Your order is prepared with care so it arrives clearly and without unexpected import charges at delivery.",
     ].join("\n\n"),
     seoTitle: "Shipping policy | Loom & Hearth Studio",
-    seoDescription: "Shipping policy for the Loom & Hearth Studio United States launch.",
+    seoDescription:
+      "Shipping policy for Loom & Hearth Studio orders shipped from Morocco with duties included for international delivery.",
   },
   {
     slug: "returns-policy",
