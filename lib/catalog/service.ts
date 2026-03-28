@@ -1,4 +1,4 @@
-﻿import {
+import {
   formatProductPriceUsd,
   formatRugDimensions,
   formatRugWeight,
@@ -133,8 +133,9 @@ function createProductDetailPageViewModel(
         publicId: image.publicId,
         altText: image.altText,
       })),
-    materialsLabel: product.materials.join(", "),
+    materialLabel: product.materials.join(", "),
     originLabel: product.origin,
+    techniqueLabel: product.type === "rug" ? "Handwoven" : undefined,
     detailSections: createProductDetailSections(product),
     related,
     recentlyViewed,
@@ -206,7 +207,7 @@ function createProductDetailSections(product: Product) {
   sections.push({
     title: "Shipping & returns",
     body:
-      "Ships directly from Morocco to the United States. Delivery takes 57 business days. Duties and customs are included in the price  there are no additional fees at delivery. For returns or any issue with your order, contact us within 7 days of receipt.",
+      "Ships from Morocco with duties included for international delivery.",
   });
 
   return sections;

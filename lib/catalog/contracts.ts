@@ -52,8 +52,9 @@ type ProductDetailPageViewModelBase = {
     publicId: string;
     altText: string;
   }>;
-  materialsLabel: string;
+  materialLabel: string;
   originLabel: string;
+  techniqueLabel?: string;
   detailSections: ProductDetailSectionViewModel[];
   related: ProductLinkViewModel[];
   recentlyViewed: ProductLinkViewModel[];
