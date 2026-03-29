@@ -81,7 +81,7 @@ export function AboutPageView() {
           </Link>
         </div>
         <div className={styles.trustHighlight}>
-          Ships from Morocco in 5–7 business days — shipping and duties included.
+          Ships from Morocco in 5-7 business days - no unexpected import charges for US orders.
         </div>
       </section>
 
@@ -127,3 +127,5 @@ export function AboutPageView() {
     </div>
   );
 }
+
+

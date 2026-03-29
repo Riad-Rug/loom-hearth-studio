@@ -207,7 +207,7 @@ function createProductDetailSections(product: Product) {
   sections.push({
     title: "Shipping & returns",
     body:
-      "Ships from Morocco with duties included for international delivery.",
+      "Ships from Morocco with customs handled to help prevent unexpected import charges for US orders.",
   });
 
   return sections;
@@ -223,3 +223,4 @@ function getDisplayProductName(name: string) {
       return name;
   }
 }
+

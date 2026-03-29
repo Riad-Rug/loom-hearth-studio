@@ -25,7 +25,7 @@ Today, we continue that work with a more focused approach  selecting Moroccan ru
 
 Every piece is chosen in person, not mass-produced, and not sourced from generic export catalogs. The goal is simple: bring objects with real material depth and character into homes that value design.
 
-All orders ship directly from Morocco within 57 business days, with shipping and customs already included in the final price  no surprises at delivery.`,
+All orders ship directly from Morocco within 5–7 business days, with shipping included and customs handled to help prevent unexpected import charges for US orders.`,
 } as const;
 
 export const aboutSections: AboutSection[] = [
@@ -259,11 +259,11 @@ If your tracking number is not working or showing no updates within 48 hours of 
 
 ## 8. Customs and import duties  United States
 
-**Duties are included in the price for all US orders.** You will not be charged additional import duties or customs fees at the door on your US order under normal circumstances.
+**For US orders, we handle customs documentation and work to prevent unexpected import charges.**
 
-We handle all customs documentation for US shipments. Our products are classified under the relevant Harmonised Tariff Schedule codes applicable to handcrafted Moroccan textiles, and we prepare all export documentation to facilitate smooth clearance through US Customs and Border Protection.
+We handle the customs documentation for US shipments and coordinate with carriers to support smooth clearance through US Customs and Border Protection.
 
-In the rare event that a US shipment is assessed an unexpected customs charge  due to a carrier error or a CBP determination outside our control  contact us immediately at hello@loomandhearthstudio.com and we will resolve it. We do not pass unexpected US duty charges to buyers.
+If a US shipment is assessed an unexpected import charge, contact us immediately at hello@loomandhearthstudio.com before paying it so we can review the notice and help resolve it.
 
 ---
 
@@ -343,7 +343,7 @@ Email: hello@loomandhearthstudio.com
 We aim to respond to all shipping enquiries within 2 business days.`,
     seoTitle: "Shipping policy | Loom & Hearth Studio",
     seoDescription:
-      "Shipping policy for Loom & Hearth Studio orders shipped from Morocco with duties included for international delivery.",
+      "Shipping policy for Loom & Hearth Studio orders shipped from Morocco with customs handled to help prevent unexpected import charges for US buyers.",
   },
   {
     slug: "returns-policy",
@@ -569,7 +569,7 @@ Last updated: March 29, 2026
 
 ## 1. Who we are
 
-This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We sell handcrafted Moroccan rugs, poufs, pillows, and home décor, shipping all orders directly from Morocco.
+This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We sell handcrafted Moroccan rugs, poufs, pillows, and home dÃ©cor, shipping all orders directly from Morocco.
 
 For any privacy-related questions or requests, contact us at:
 **hello@loomandhearthstudio.com**
@@ -739,7 +739,7 @@ Last updated: March 29, 2026
 
 ## 1. Who we are
 
-This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We source and sell handcrafted Moroccan rugs, poufs, pillows, and home décor. All products are sourced in Morocco and ship directly from Morocco to your delivery address.
+This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We source and sell handcrafted Moroccan rugs, poufs, pillows, and home dÃ©cor. All products are sourced in Morocco and ship directly from Morocco to your delivery address.
 
 For any legal or commercial questions, contact us at:
 **hello@loomandhearthstudio.com**
@@ -750,7 +750,7 @@ By accessing this website or placing an order, you agree to these Terms of Servi
 
 ## 2. What we sell
 
-We sell handcrafted Moroccan rugs, poufs, pillows, and home décor items. Products are sourced directly from artisans and bazaars in Morocco and are described on each product page.
+We sell handcrafted Moroccan rugs, poufs, pillows, and home dÃ©cor items. Products are sourced directly from artisans and bazaars in Morocco and are described on each product page.
 
 **One-of-one products.** Many rugs in our collection are unique, one-of-one handmade pieces. These are identified clearly on their product pages. For one-of-one items:
 
@@ -758,7 +758,7 @@ We sell handcrafted Moroccan rugs, poufs, pillows, and home décor items. Produc
 - Once sold, the item will not be restocked. A similar piece may be listed in the future as a separate product.
 - Product pages for sold one-of-one items remain visible on the site marked as Sold Out. This is intentional.
 
-**Multi-unit products.** Poufs, pillows, and some décor items may have more than one unit available. These products may have variants such as size or colour, which are specified on the product page.
+**Multi-unit products.** Poufs, pillows, and some dÃ©cor items may have more than one unit available. These products may have variants such as size or colour, which are specified on the product page.
 
 We make every effort to represent colour, texture, size, and condition accurately. Natural lighting conditions in Morocco and the hand-made nature of all products mean that slight variation in colour rendering across different screens is inherent. Our pre-shipment verification process (described in section 5) exists specifically to address this before payment is captured.
 
@@ -951,6 +951,7 @@ We aim to respond to all inquiries within 5 business days.`,
     seoDescription: "Terms of Service for Loom & Hearth Studio.",
   },
 ] as const;
+
 
 
 

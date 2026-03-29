@@ -226,12 +226,12 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Moroccan home decor value highlights | Loom & Hearth Studio",
       metaDescription:
-        "Direct sourcing, United States delivery, duties included, and a tightly curated launch selection shape the homepage value highlights.",
+        "Direct sourcing, United States delivery, no unexpected import charges for US orders, and a tightly curated launch selection shape the homepage value highlights.",
     },
     items: [
       { id: "badge-1", label: "Direct from Morocco", visible: true },
       { id: "badge-2", label: "United States delivery", visible: true },
-      { id: "badge-3", label: "Duties included", visible: true },
+      { id: "badge-3", label: "No unexpected import charges for US orders", visible: true },
       { id: "badge-4", label: "Video verification before payment.", visible: true },
     ],
   },
@@ -801,4 +801,5 @@ function isAllowedImageUrl(value: string) {
 function isOrderedSectionKey(value: unknown): value is HomePageOrderedSectionKey {
   return typeof value === "string" && homepageSectionOrderKeys.includes(value as HomePageOrderedSectionKey);
 }
+
 

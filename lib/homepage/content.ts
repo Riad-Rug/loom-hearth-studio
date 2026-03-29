@@ -26,7 +26,7 @@ export async function getHomepageContentState(): Promise<{
   }
 
   return {
-    content: normalizeHomepageCloudinaryImages(sanitizeHomePageContent(record.content)),
+    content: normalizeHomepageDutiesCopy(normalizeHomepageCloudinaryImages(sanitizeHomePageContent(record.content))),
     source: "database",
     updatedAt: record.updatedAt,
   };
@@ -40,6 +40,22 @@ export async function saveHomepageContent(content: HomePageContent) {
   await createHomepageContentRepository().save(content);
 }
 
+function normalizeHomepageDutiesCopy(content: HomePageContent): HomePageContent {
+  const next = structuredClone(content);
+
+  if (next.badges.seo.metaDescription.includes("duties included")) {
+    next.badges.seo.metaDescription =
+      "Direct sourcing, United States delivery, no unexpected import charges for US orders, and a tightly curated launch selection shape the homepage value highlights.";
+  }
+
+  next.badges.items = next.badges.items.map((item) =>
+    item.id === "badge-3" && item.label === "Duties included"
+      ? { ...item, label: "No unexpected import charges for US orders" }
+      : item,
+  );
+
+  return next;
+}
 function normalizeHomepageCloudinaryImages(content: HomePageContent): HomePageContent {
   const next = structuredClone(content);
 
