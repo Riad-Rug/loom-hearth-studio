@@ -502,8 +502,31 @@
   gap: var(--space-3);
 }
 
+.newsletterDisclosure {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 30rem;
+  color: rgba(34, 33, 38, 0.7);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.newsletterDisclosure p {
+  margin: 0;
+}
+
 .newsletterLabel {
   font-size: 0.9rem;
+}
+
+.newsletterPolicyLink {
+  color: var(--color-clay-terracotta);
+  text-underline-offset: 0.16em;
+}
+
+.newsletterPolicyLink:hover,
+.newsletterPolicyLink:focus-visible {
+  color: rgba(184, 94, 59, 0.84);
 }
 
 .newsletterControls {
@@ -683,6 +706,7 @@
   color: var(--color-clay-terracotta);
   font-size: 0.92rem;
 }
+
 
 
 

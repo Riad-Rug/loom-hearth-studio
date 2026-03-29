@@ -232,6 +232,17 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent)
                     {content.newsletter.ctaLabel}
                   </button>
                 </div>
+                <div className={styles.newsletterDisclosure}>
+                  <p>New arrivals, lookbook updates, and early access to new pieces.</p>
+                  <p>
+                    By joining you agree to our{" "}
+                    <Link className={styles.newsletterPolicyLink} href={"/privacy-policy" as Route}>
+                      Privacy Policy
+                    </Link>
+                    .
+                  </p>
+                  <p>Unsubscribe any time via the link in our emails.</p>
+                </div>
               </form>
             </div>
           ) : null}
@@ -254,6 +265,7 @@ function firstEditorialSection(content: HomePageContent) {
     (key) => (key === "guide" && content.guide.visible) || (key === "newsletter" && content.newsletter.visible),
   );
 }
+
 
 
 
