@@ -8,9 +8,18 @@ type ContactPageViewProps = {
     message?: string;
     productName?: string;
   };
+  submitAction: (formData: FormData) => Promise<void>;
+  submissionState?: {
+    tone: "success" | "error";
+    message: string;
+  };
 };
 
-export function ContactPageView({ defaults }: ContactPageViewProps) {
+export function ContactPageView({
+  defaults,
+  submitAction,
+  submissionState,
+}: ContactPageViewProps) {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
@@ -33,16 +42,31 @@ export function ContactPageView({ defaults }: ContactPageViewProps) {
             ) : null}
           </div>
 
-          <form className={styles.contactForm}>
+          <form action={submitAction} className={styles.contactForm}>
+            {submissionState ? (
+              <p
+                className={`${styles.contactFormNote} ${
+                  submissionState.tone === "success"
+                    ? styles.contactFormSuccess
+                    : styles.contactFormError
+                }`}
+                role="status"
+              >
+                {submissionState.message}
+              </p>
+            ) : null}
+
             <div className={styles.contactFieldGroup}>
               <label className={styles.contactLabel} htmlFor="contact-name">
                 Name
               </label>
               <input
                 id="contact-name"
+                autoComplete="name"
                 className={styles.contactInput}
                 name="name"
                 placeholder="Your name"
+                required
                 type="text"
               />
             </div>
@@ -53,9 +77,11 @@ export function ContactPageView({ defaults }: ContactPageViewProps) {
               </label>
               <input
                 id="contact-email"
+                autoComplete="email"
                 className={styles.contactInput}
                 name="email"
                 placeholder="name@example.com"
+                required
                 type="email"
               />
             </div>
@@ -69,6 +95,7 @@ export function ContactPageView({ defaults }: ContactPageViewProps) {
                 className={styles.contactInput}
                 defaultValue={defaults?.inquiryType ?? ""}
                 name="inquiryType"
+                required
               >
                 <option value="" disabled>
                   Select an inquiry type
@@ -89,12 +116,13 @@ export function ContactPageView({ defaults }: ContactPageViewProps) {
                 name="message"
                 defaultValue={defaults?.message}
                 placeholder="Tell us about your inquiry, sourcing question, or product interest."
+                required
                 rows={7}
               />
             </div>
 
             <div className={styles.contactFormFooter}>
-              <button className={styles.primaryAction} type="button">
+              <button className={styles.primaryAction} type="submit">
                 {contactData.ctaLabel}
               </button>
             </div>

@@ -257,6 +257,19 @@
   gap: var(--space-4);
 }
 
+.faqGroup {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.faqGroupTitle {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.58);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .faqItem {
   display: grid;
   gap: var(--space-3);
@@ -501,4 +514,11 @@
   .lookbookBody h2 {
     font-size: 1.45rem;
   }
+}
+.contactFormSuccess {
+  color: #1b5e20;
+}
+
+.contactFormError {
+  color: #8a1f11;
 }
