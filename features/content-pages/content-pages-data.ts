@@ -542,6 +542,22 @@ We aim to respond to all return-related enquiries within 3 business days.`,
     seoDescription: "Returns policy information for the Loom & Hearth Studio launch.",
   },
   {
+    slug: "accessibility-statement",
+    title: "Accessibility Statement",
+    showPageHeader: false,
+    bodyFormat: "markdown",
+    body: String.raw`# Accessibility Statement
+
+Loom & Hearth Studio is committed to making this website accessible to as many people as possible.
+
+We are working toward conformance with **WCAG 2.1 Level AA**.
+
+If you experience an accessibility issue on this site, or if you need assistance accessing any content, email us at hello@loomandhearthstudio.com.
+
+We aim to respond within 5 business days.`,
+    seoTitle: "Accessibility Statement | Loom & Hearth Studio",
+    seoDescription: "Accessibility statement for the Loom & Hearth Studio website.",
+  },  {
     slug: "privacy-policy",
     title: "Privacy Policy",
     bodyFormat: "markdown",

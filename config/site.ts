@@ -22,5 +22,6 @@ export const siteConfig = {
     { href: "/returns-policy", label: "Returns" },
     { href: "/privacy-policy", label: "Privacy" },
     { href: "/terms-and-conditions", label: "Terms" },
+    { href: "/accessibility-statement", label: "Accessibility" },
   ],
 } as const;

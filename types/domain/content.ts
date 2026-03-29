@@ -48,7 +48,8 @@ export type PolicyPage = SeoFields & {
     | "shipping-policy"
     | "returns-policy"
     | "privacy-policy"
-    | "terms-and-conditions";
+    | "terms-and-conditions"
+    | "accessibility-statement";
   title: string;
   body: string;
   bodyFormat?: "plain" | "markdown";
