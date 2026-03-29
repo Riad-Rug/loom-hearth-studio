@@ -187,11 +187,160 @@ export const policyPages: PolicyPage[] = [
   {
     slug: "shipping-policy",
     title: "Shipping policy",
-    body: [
-      "All orders ship directly from Morocco with Aramex or DHL.",
-      "We offer international delivery with duties included in the final price.",
-      "Rugs are rolled, wrapped in polypropylene, and boxed for international transit so they arrive protected and presentation-ready.",
-    ].join("\n\n"),
+    showPageHeader: false,
+    bodyFormat: "markdown",
+    body: String.raw`# Shipping Policy
+
+**Loom and Hearth Studio LLC**
+Effective date: March 29, 2026
+Last updated: March 29, 2026
+
+---
+
+## 1. Where all orders ship from
+
+Every item in the Loom & Hearth Studio collection is sourced and stored in Morocco. All orders are packed and dispatched directly from Morocco. There is no warehouse or fulfilment centre in the United States or elsewhere  your piece travels directly from Morocco to your door.
+
+---
+
+## 2. Where we ship
+
+At launch, we ship to the **United States only**. International shipping to Europe, Canada, and Australia will be added in a future phase. If you are outside the United States and would like to enquire about a purchase, contact us at hello@loomandhearthstudio.com and we will see what we can do.
+
+---
+
+## 3. Shipping cost
+
+Shipping is included in the price of every item. There is no separate shipping charge at checkout. What you see on the product page is what you pay  including shipping from Morocco to your US delivery address.
+
+---
+
+## 4. How dispatch works  the pre-shipment window
+
+Before your order ships, we contact you within 24 hours of purchase to offer a short video of the actual piece you ordered  shown in natural Moroccan light with a tape measure for scale. This is our pre-shipment verification process. It exists because colour, texture, and scale are difficult to fully communicate through photographs alone, and we would rather you see the piece before it is packed than have any uncertainty after delivery.
+
+Once you confirm you are happy, payment is captured and your order is packed and dispatched. This means the time from order to dispatch can be up to 7 days. In practice it is usually faster  most verifications are completed within 48 hours.
+
+If we are unable to reach you within 7 days of the order date after two contact attempts, we will capture payment and dispatch your order.
+
+For the full details of how the verification works, see the [Terms of Service](https://www.loomandhearthstudio.com/terms-and-conditions).
+
+---
+
+## 5. Carriers
+
+We ship using **Aramex**, **DHL Express**, and **FedEx International**, selected based on the destination, package weight, and dimensions. You will be notified of the carrier and tracking number when your order is dispatched.
+
+We do not allow carrier selection at checkout. We choose the carrier best suited to your shipment on a per-order basis.
+
+---
+
+## 6. Estimated delivery times
+
+All delivery time estimates below are measured from the **date of dispatch**  not the date of order. Allow up to 7 days for the pre-shipment verification window before dispatch begins.
+
+| Destination | Estimated delivery after dispatch |
+|---|---|
+| United States | 7 to 14 business days |
+
+These are estimates, not guarantees. International shipments from Morocco pass through customs clearance, which can add time outside our control. Carrier delays, public holidays, and weather events can also affect timelines. We will always provide you with a tracking number so you can monitor your shipment in real time.
+
+If your shipment has not arrived within the estimated window, contact us before opening a dispute  most delays resolve themselves within a few days, and we can check the carrier status on your behalf.
+
+---
+
+## 7. Tracking
+
+Every order ships with a tracking number. You will receive your tracking number by email at the time of dispatch. Use it to monitor progress directly on the carrier's website.
+
+If your tracking number is not working or showing no updates within 48 hours of receiving it, contact us and we will investigate with the carrier.
+
+---
+
+## 8. Customs and import duties  United States
+
+**Duties are included in the price for all US orders.** You will not be charged additional import duties or customs fees at the door on your US order under normal circumstances.
+
+We handle all customs documentation for US shipments. Our products are classified under the relevant Harmonised Tariff Schedule codes applicable to handcrafted Moroccan textiles, and we prepare all export documentation to facilitate smooth clearance through US Customs and Border Protection.
+
+In the rare event that a US shipment is assessed an unexpected customs charge  due to a carrier error or a CBP determination outside our control  contact us immediately at hello@loomandhearthstudio.com and we will resolve it. We do not pass unexpected US duty charges to buyers.
+
+---
+
+## 9. Customs holds and delays
+
+International shipments are occasionally held by customs for inspection. This is a routine part of international trade and is outside our control. Customs holds can add anywhere from a few days to several weeks to the delivery timeline.
+
+If your shipment is held by US Customs and Border Protection:
+
+- You will typically receive a notice from the carrier or CBP directly.
+- Contact us immediately with the notice details and we will assist.
+- Do not pay any unexpected fee without contacting us first.
+
+We cannot initiate customs clearance on your behalf from our end once a shipment is in transit, but we can provide supporting documentation if CBP requests additional information about the origin or nature of the goods.
+
+---
+
+## 10. Packaging
+
+All items are packed to survive international transit. Rugs are rolled pile-side inward, wrapped in a moisture barrier, and secured inside heavy-duty outer packaging rated for carrier handling. Fragile or decorative items receive additional internal protection as needed.
+
+Every order includes a brand presentation layer inside the outer packaging  your piece arrives ready to unwrap, not just ready to survive shipping.
+
+---
+
+## 11. Risk of loss
+
+Risk of loss and damage transfers to you when the item is handed to the carrier for shipment. From that point, the carrier is responsible for the physical integrity of the package in transit.
+
+If your item arrives damaged, see section 12 below.
+
+---
+
+## 12. Items damaged in transit
+
+If your order arrives visibly damaged  damage that occurred during international shipping and is not the result of handling after delivery  contact us within **48 hours of delivery** at hello@loomandhearthstudio.com with:
+
+- Your order number
+- Clear photographs of the damaged item
+- Photographs of the outer packaging, including any visible damage to the box or wrapping
+
+Do not discard the outer packaging until the matter is fully resolved. Carriers require the original packaging as evidence when processing a damage claim.
+
+We will open a carrier investigation promptly and work toward a resolution. Where possible, we will source a replacement. If a replacement cannot be found, we will issue a full refund.
+
+---
+
+## 13. Lost or significantly delayed shipments
+
+A shipment is considered lost if tracking shows no movement for 14 consecutive calendar days and the carrier confirms the shipment cannot be located.
+
+If your shipment appears lost or significantly delayed beyond the estimated delivery window, contact us within **30 days of the dispatch date**. We will open a formal carrier investigation. If the carrier confirms the shipment is lost, we will resolve with a replacement or full refund.
+
+We cannot open a carrier claim after 30 days from dispatch. Contact us promptly if something seems wrong  do not wait.
+
+---
+
+## 14. Incorrect or incomplete delivery address
+
+You are responsible for providing an accurate and complete delivery address at checkout. If a shipment is returned to us due to an incorrect address, refused delivery, or failure to collect from a carrier facility:
+
+- We will contact you to arrange re-shipment.
+- Re-shipment costs are at your expense.
+- If you choose not to receive the re-shipment, we will issue a refund for the item price minus the original outbound shipping cost absorbed in the price.
+
+If you realise your address is incorrect after placing an order, contact us immediately at hello@loomandhearthstudio.com. We can correct the address before dispatch if we have not yet shipped.
+
+---
+
+## 15. Contact
+
+For any question about your shipment, tracking, or delivery:
+
+**Loom and Hearth Studio LLC**
+Email: hello@loomandhearthstudio.com
+
+We aim to respond to all shipping enquiries within 2 business days.`,
     seoTitle: "Shipping policy | Loom & Hearth Studio",
     seoDescription:
       "Shipping policy for Loom & Hearth Studio orders shipped from Morocco with duties included for international delivery.",
