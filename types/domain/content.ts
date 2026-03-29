@@ -51,4 +51,6 @@ export type PolicyPage = SeoFields & {
     | "terms-and-conditions";
   title: string;
   body: string;
+  bodyFormat?: "plain" | "markdown";
 };
+
