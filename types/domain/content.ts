@@ -52,5 +52,6 @@ export type PolicyPage = SeoFields & {
   title: string;
   body: string;
   bodyFormat?: "plain" | "markdown";
+  showPageHeader?: boolean;
 };
 

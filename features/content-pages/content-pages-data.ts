@@ -199,10 +199,196 @@ export const policyPages: PolicyPage[] = [
   {
     slug: "returns-policy",
     title: "Returns policy",
-    body: [
-      "Damaged items",
-      "If your item arrives damaged, contact us within 48 hours of delivery with photos of the package and the item. If the damage is confirmed, we will arrange a replacement or a refund.",
-    ].join("\n\n"),
+    showPageHeader: false,
+    bodyFormat: "markdown",
+    body: String.raw`# Return and Refund Policy
+
+**Loom and Hearth Studio LLC**
+Effective date: March 29, 2026
+Last updated: March 29, 2026
+
+---
+
+## 1. Our commitment
+
+We want every piece you receive to be exactly right. That is why we offer a pre-shipment video verification on every order  so you can see the actual item in natural light before payment is captured and before anything ships. If you take advantage of that process, the likelihood of a return is significantly reduced.
+
+If something is still not right after delivery, this policy explains exactly what you are entitled to, how to request a return, and what happens next. Nothing in this policy removes or limits any rights you have under the consumer protection laws of your country of residence.
+
+---
+
+## 2. Return window
+
+You have **14 days from the date of confirmed delivery** to request a return.
+
+The delivery date is determined by the tracking record from the carrier. If you have not received a delivery confirmation but believe your item has arrived, contact us at hello@loomandhearthstudio.com and we will verify with the carrier.
+
+Requests received after 14 days from confirmed delivery will not be accepted, except where required by applicable consumer protection law in your country.
+
+---
+
+## 3. Items that are eligible for return
+
+To be accepted for return, an item must meet all of the following conditions at the time it is received back in Morocco:
+
+- Unused and in the same condition as delivered
+- Unwashed and unaltered  no cleaning, trimming, cutting, or modification of any kind
+- Free of embedded pet hair in the pile or fringe
+- Free of absorbed smoke, strong perfume, or other odour not present at delivery
+- Rolled and packaged with reasonable care for return transit
+
+Items that do not meet these conditions will not be accepted for return and will be sent back to you at your expense.
+
+---
+
+## 4. Items that are not eligible for return
+
+The following are not eligible for return:
+
+**Custom or bespoke orders.** If an item was sourced, reserved, or modified specifically for you at your request, it is not eligible for return unless it was materially misdescribed.
+
+**Items damaged after delivery.** Damage caused by use, cleaning, pets, moisture, or improper storage after the item has been delivered is not eligible for return.
+
+**Natural variation.** Handmade products show inherent variation in knot density, colour consistency, and pattern symmetry. These are characteristics of authentic handcraft and are not defects. Variation of this kind is not grounds for return. Our product descriptions and pre-shipment verification process exist specifically to show you these qualities before you commit.
+
+**Minor wear disclosed in the listing.** Some vintage and one-of-one pieces have minor condition notes  light pile wear, small repairs, slight fading  disclosed in the product description. Returning an item solely for a disclosed condition that was accurately described in the listing is not accepted.
+
+---
+
+## 5. What qualifies as a material misdescription
+
+A material misdescription is a significant factual error in the product listing that a reasonable buyer would have relied on when making their purchase decision  and that is meaningfully different from the actual item received.
+
+Examples that qualify:
+
+- Dimensions stated as significantly larger or smaller than the actual item (more than 10% variance)
+- A pile rug described and sold as a flatweave, or vice versa
+- An item described as having no repairs that has a visible, significant repair
+- A material error  for example, an item described as wool that is primarily synthetic
+
+Examples that do not qualify:
+
+- Colour appearing slightly different on your screen than in photographs (this is why we offer pre-shipment video)
+- Natural variation in pattern or weave density inherent to handmade production
+- Minor tonal differences in areas of abrash that were visible in photographs
+
+If you believe your item was materially misdescribed, contact us before returning. Do not ship the item back without speaking to us first  we will review your claim and respond within 3 business days.
+
+---
+
+## 6. How to request a return
+
+**Step 1.** Email hello@loomandhearthstudio.com within 14 days of confirmed delivery. Use the subject line "Return Request  Order [your order number]."
+
+**Step 2.** Include the following in your email:
+- Your order number
+- The item you are returning
+- The reason for the return
+- Photographs showing the current condition of the item
+
+**Step 3.** We will review your request and respond within 3 business days. We will either approve the return and provide return instructions, request additional information, or explain why the return does not qualify under this policy.
+
+**Do not ship the item back before receiving written approval from us.** Unapproved returns will not be accepted and cannot be refunded.
+
+---
+
+## 7. Return shipping
+
+### Buyer-paid returns
+
+In most cases, return shipping is at your expense. This includes:
+
+- Returns where you have changed your mind
+- Returns where the item matches its description but is not what you expected
+- Returns due to colour or size perception that was not resolved via the pre-shipment verification offer
+
+You are responsible for choosing a carrier, paying for shipping from your location back to Morocco, and ensuring the item is adequately packaged to arrive without damage. We strongly recommend using a tracked and insured service. Loom and Hearth Studio LLC is not responsible for items lost or damaged in return transit.
+
+### Returns we cover
+
+If your return is approved on the basis of material misdescription, we will provide a prepaid return shipping label or reimburse your documented return shipping cost up to a reasonable amount for the destination. We will confirm the arrangement in writing before you ship.
+
+---
+
+## 8. Packaging your return
+
+Rugs must be rolled pile-side inward and wrapped securely. Use sturdy outer packaging suitable for international transit. If the item arrives back in Morocco in a damaged state due to inadequate packaging, we reserve the right to reduce the refund amount to reflect the damage, or in cases of severe damage, to decline the refund.
+
+If you need guidance on how to package your item for return, email us and we will advise.
+
+---
+
+## 9. Refunds
+
+### Timeline
+
+Once we receive your return and confirm the item meets the eligibility conditions in section 3, we will issue your refund within **5 business days**.
+
+### Method
+
+Refunds are issued to the original payment method used at checkout. We cannot issue refunds to a different card or account.
+
+### Amount
+
+**Full refund:** Issued when the item is returned in eligible condition and the return was approved.
+
+**Partial refund:** We reserve the right to issue a partial refund if the returned item shows signs of use, odour, or damage not present at delivery that reduce its resale value. We will notify you of any deduction and the reason before processing.
+
+**Return shipping costs:** Original shipping costs are non-refundable. If you paid a separate shipping charge at checkout, that amount is not included in your refund.
+
+### Processing time
+
+After we process the refund, the time for funds to appear in your account depends on your card issuer or payment provider  typically 3 to 10 business days. This is outside our control.
+
+---
+
+## 10. Exchanges
+
+Exchanges are available subject to current inventory. Because many of our rugs are one-of-one pieces, a direct exchange for the same item is not possible  but if you are interested in a different piece from the collection, contact us before returning and we will do our best to find a suitable alternative.
+
+To request an exchange, email hello@loomandhearthstudio.com with your order number and the item you have in mind. We will confirm availability and hold the alternative item for you while your return is in transit.
+
+---
+
+## 11. Items damaged in transit to you
+
+If your item arrives visibly damaged  meaning the damage occurred during international shipping and is not a result of use after delivery  contact us within **48 hours of delivery** with:
+
+- Your order number
+- Photographs of the damaged item
+- Photographs of the outer packaging
+
+We will open a carrier investigation and work toward a resolution  replacement where possible, or a full refund if a replacement cannot be sourced. Do not discard the packaging until the investigation is resolved, as the carrier may require it as evidence.
+
+---
+
+## 12. Pre-shipment verification and returns
+
+We offer a pre-shipment video verification on every order. Before payment is captured and before your item ships, we send you a video of the actual piece in natural Moroccan light  showing colour, texture, pile height, and size in context.
+
+Accepting this offer is the most effective way to ensure you are completely happy with your purchase before it leaves Morocco. If after watching the video you have any concerns  about colour, scale, texture, or anything else  tell us before confirming. That is the right moment to raise it.
+
+If you accepted the pre-shipment verification and confirmed you were happy with the item, and subsequently return it for reasons visible in the verification video, that will be taken into account when assessing your return. This does not remove your right to return within 14 days  but it is relevant to whether a return shipping cost exemption applies.
+
+---
+
+## 13. Your statutory rights
+
+Nothing in this policy excludes or limits rights you have under the consumer protection laws of your country of residence. Where those rights provide for a longer return window, a different standard of proof, or other protections not covered here, those rights apply in addition to this policy.
+
+If you are unsure about your rights, contact us  we will deal with you fairly.
+
+---
+
+## 14. Contact
+
+For return requests, questions about this policy, or anything related to an order:
+
+**Loom and Hearth Studio LLC**
+Email: hello@loomandhearthstudio.com
+Subject line: Return Request  Order [your order number]
+
+We aim to respond to all return-related enquiries within 3 business days.`,
     seoTitle: "Returns policy | Loom & Hearth Studio",
     seoDescription: "Returns policy information for the Loom & Hearth Studio launch.",
   },

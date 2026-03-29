@@ -104,6 +104,26 @@ function parseTableRow(line: string) {
     .map((cell) => cell.trim());
 }
 
+function renderBulletList(lines: string[], key: string) {
+  return (
+    <ul key={key}>
+      {lines.map((line, lineIndex) => (
+        <li key={`${key}-bullet-${lineIndex}`}>{renderInline(line.slice(2).trim())}</li>
+      ))}
+    </ul>
+  );
+}
+
+function renderOrderedList(lines: string[], key: string) {
+  return (
+    <ol key={key}>
+      {lines.map((line, lineIndex) => (
+        <li key={`${key}-ordered-${lineIndex}`}>{renderInline(line.replace(/^\d+\. /, "").trim())}</li>
+      ))}
+    </ol>
+  );
+}
+
 function renderMarkdownBody(body: string) {
   const blocks = body.trim().split(/\n\s*\n/);
 
@@ -161,22 +181,28 @@ function renderMarkdownBody(body: string) {
     }
 
     if (lines.every((line) => /^- /.test(line))) {
-      return (
-        <ul key={index}>
-          {lines.map((line, lineIndex) => (
-            <li key={`${index}-bullet-${lineIndex}`}>{renderInline(line.slice(2).trim())}</li>
-          ))}
-        </ul>
-      );
+      return renderBulletList(lines, `${index}`);
     }
 
     if (lines.every((line) => /^\d+\. /.test(line))) {
+      return renderOrderedList(lines, `${index}`);
+    }
+
+    if (lines.length > 1 && lines.slice(1).every((line) => /^- /.test(line))) {
       return (
-        <ol key={index}>
-          {lines.map((line, lineIndex) => (
-            <li key={`${index}-ordered-${lineIndex}`}>{renderInline(line.replace(/^\d+\. /, "").trim())}</li>
-          ))}
-        </ol>
+        <div key={index}>
+          <p>{renderInline(lines[0].trim())}</p>
+          {renderBulletList(lines.slice(1), `${index}-nested-bullets`)}
+        </div>
+      );
+    }
+
+    if (lines.length > 1 && lines.slice(1).every((line) => /^\d+\. /.test(line))) {
+      return (
+        <div key={index}>
+          <p>{renderInline(lines[0].trim())}</p>
+          {renderOrderedList(lines.slice(1), `${index}-nested-ordered`)}
+        </div>
       );
     }
 
@@ -194,8 +220,12 @@ export function PolicyPageView({ slug }: PolicyPageViewProps) {
   return (
     <div className={styles.page}>
       <article className={styles.policyShell}>
-        <p className={styles.eyebrow}>Policy</p>
-        <h1>{page.title}</h1>
+        {page.showPageHeader === false ? null : (
+          <>
+            <p className={styles.eyebrow}>Policy</p>
+            <h1>{page.title}</h1>
+          </>
+        )}
         <div className={styles.policyBody}>
           {page.bodyFormat === "markdown"
             ? renderMarkdownBody(page.body)
