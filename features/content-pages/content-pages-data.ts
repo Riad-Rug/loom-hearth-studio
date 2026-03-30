@@ -21,9 +21,9 @@ export const aboutHero = {
   title: "A direct source for handcrafted Moroccan rugs, poufs, pillows, and home decor.",
   body: `Loom & Hearth Studio is built on real roots in Marrakech, where our family has worked in the bazaar trade for decades. Our grandfather's shop in the Semmarine souk, steps from Jemaa el-Fnaa, was known for handcrafted pieces sourced across Morocco.
 
-Today, we continue that work with a more focused scope — selecting hand-knotted Moroccan rugs, transforming some into one-of-one poufs and pillows, and adding a small selection of supporting decor.
+Today, we continue that work with a more focused scope â€” selecting hand-knotted Moroccan rugs, transforming some into one-of-one poufs and pillows, and adding a small selection of supporting decor.
 
-Every piece is chosen in person. Nothing is mass-produced. Nothing comes from an export catalogue assembled for foreign buyers. You are getting the rug the weaver made — not a category managed by a middleman.
+Every piece is chosen in person. Nothing is mass-produced. Nothing comes from an export catalogue assembled for foreign buyers. You are getting the rug the weaver made â€” not a category managed by a middleman.
 
 We source directly through the family bazaar. Not through cooperatives. That is what makes the difference in what you receive.`,
 } as const;
@@ -33,12 +33,12 @@ export const aboutSections: AboutSection[] = [
     eyebrow: "Craft",
     title: "Built on material knowledge and direct selection.",
     body:
-      "We select based on construction and fibre quality — not trends. For rugs, that means checking pile density by weight and feel, examining the back for knot structure, and assessing warp tension. Many pieces are one-of-one. Even repeatable designs remain handmade — no two are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug material, which means they carry the same fibre, weave structure, and colour as the source piece.",
+      "We select based on construction and fibre quality â€” not trends. For rugs, that means checking pile density by weight and feel, examining the back for knot structure, and assessing warp tension. Many pieces are one-of-one. Even repeatable designs remain handmade â€” no two are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug material, which means they carry the same fibre, weave structure, and colour as the source piece.",
   },
   {
     eyebrow: "Direction",
     title: "A focused collection. Not a marketplace.",
-    body: `Loom & Hearth Studio is not a marketplace. We do not list everything we encounter. The collection stays deliberately narrow — hand-knotted rugs, rug-based poufs, pillows, and a small selection of supporting decor.
+    body: `Loom & Hearth Studio is not a marketplace. We do not list everything we encounter. The collection stays deliberately narrow â€” hand-knotted rugs, rug-based poufs, pillows, and a small selection of supporting decor.
 
 The criterion is simple: does this piece hold up on its own, in a room, without explanation?`,
   },
@@ -48,14 +48,14 @@ export const aboutBridge = {
   eyebrow: "How we source",
   title: "Selected in person, not pulled from a catalog.",
   body:
-    "We work directly across Morocco — primarily through the family bazaar in Marrakech — to source rugs, rug-made poufs, pillows, and supporting decor. Every piece is assessed in person for construction, fibre quality, and condition before it enters the collection.",
+    "We work directly across Morocco â€” primarily through the family bazaar in Marrakech â€” to source rugs, rug-made poufs, pillows, and supporting decor. Every piece is assessed in person for construction, fibre quality, and condition before it enters the collection.",
 } as const;
 
 export const contactData = {
   eyebrow: "Contact",
   title: "Contact Loom & Hearth Studio",
   body:
-    "Questions about a specific piece, your order, or a sourcing request? We review every message personally. If you are asking about a rug, include the product name and your room dimensions â€” it helps us respond with something specific.\n\nEvery rug inquiry includes a video of the actual piece before payment is taken.",
+    "Questions about a specific piece, your order, or a sourcing request? We review every message personally. If you are asking about a rug, include the product name and your room dimensions Ã¢â‚¬â€ it helps us respond with something specific.\n\nEvery rug inquiry includes a video of the actual piece before payment is taken.",
   formTitle: "SEND AN INQUIRY",
   formBody:
     "Include the product name and your room dimensions if relevant. We respond within 24 hours.",
@@ -69,7 +69,7 @@ export const contactData = {
   responseTimeLabel: "Response timing",
   responseTimeText: "Within 24 hours",
   emailLabel: "hello@loomandhearthstudio.com",
-  hoursLabel: "Monday to Friday, 9am â€“ 6pm CET (GMT+1)",
+  hoursLabel: "Monday to Friday, 9am Ã¢â‚¬â€œ 6pm CET (GMT+1)",
   locationLabel: "Morocco sourcing studio - U.S. launch market",
 } as const;
 
@@ -110,7 +110,7 @@ export const lookbookItems: LookbookItem[] = [
     id: "lookbook-1",
     title: "Modern Moroccan Living Room with Beni Ourain Rug",
     description:
-      "A refined living room featuring a handwoven Beni Ourain rug paired with warm wood tones and natural light. Designed for a calm, textured, and grounded interior.",
+      "A living room with a hand-knotted Beni Ourain rug on a pale wood floor. Ivory field, sparse geometric pattern. Natural light from the north.",
     ctaLabel: "Shop Beni Ourain Rugs",
     href: "/shop/rugs",
     imageSrc:
@@ -122,8 +122,8 @@ export const lookbookItems: LookbookItem[] = [
     id: "lookbook-2",
     title: "Handwoven Moroccan Rug Texture Detail",
     description:
-      "Close-up view of traditional Moroccan weaving techniques, highlighting natural wool fibers, texture depth, and artisanal craftsmanship.",
-    ctaLabel: "Explore Handmade Rugs",
+      "Close view of a hand-knotted Moroccan pile rug. Individual knots visible in the warp structure, natural wool, pile depth varying across the field.",
+    ctaLabel: "See the rug collection",
     href: "/shop/rugs",
     imageSrc:
       "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
@@ -134,7 +134,7 @@ export const lookbookItems: LookbookItem[] = [
     id: "lookbook-3",
     title: "Layered Moroccan Interior with Vintage Textiles",
     description:
-      "A curated interior blending vintage Moroccan rugs, soft textiles, and earthy tones to create a rich, layered living environment.",
+      "A hallway with vintage Moroccan rugs and woven textiles. Warm terracotta tones, pendant lights, wall hangings in stacked arrangement.",
     ctaLabel: "Shop Vintage Rugs",
     href: "/shop/vintage",
     imageSrc:
@@ -146,8 +146,8 @@ export const lookbookItems: LookbookItem[] = [
     id: "lookbook-4",
     title: "Minimal Moroccan Styling with Neutral Decor",
     description:
-      "A minimalist approach to Moroccan decor using neutral palettes, soft textures, and subtle handcrafted elements for a modern aesthetic.",
-    ctaLabel: "Discover Home Styling",
+      "A sitting area with cactus silk pillows, a low wood table, and neutral Moroccan decor. Pale walls, natural light, no competing pattern.",
+    ctaLabel: "See the decor collection",
     href: "/shop/decor",
     imageSrc:
       "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
@@ -569,7 +569,7 @@ Last updated: March 29, 2026
 
 ## 1. Who we are
 
-This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor, shipping all orders directly from Morocco.
+This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor, shipping all orders directly from Morocco.
 
 For any privacy-related questions or requests, contact us at:
 **hello@loomandhearthstudio.com**
@@ -739,7 +739,7 @@ Last updated: March 29, 2026
 
 ## 1. Who we are
 
-This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We source and sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor. All products are sourced in Morocco and ship directly from Morocco to your delivery address.
+This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We source and sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor. All products are sourced in Morocco and ship directly from Morocco to your delivery address.
 
 For any legal or commercial questions, contact us at:
 **hello@loomandhearthstudio.com**
@@ -750,7 +750,7 @@ By accessing this website or placing an order, you agree to these Terms of Servi
 
 ## 2. What we sell
 
-We sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor items. Products are sourced directly from artisans and bazaars in Morocco and are described on each product page.
+We sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor items. Products are sourced directly from artisans and bazaars in Morocco and are described on each product page.
 
 **One-of-one products.** Many rugs in our collection are unique, one-of-one handmade pieces. These are identified clearly on their product pages. For one-of-one items:
 
@@ -758,7 +758,7 @@ We sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€
 - Once sold, the item will not be restocked. A similar piece may be listed in the future as a separate product.
 - Product pages for sold one-of-one items remain visible on the site marked as Sold Out. This is intentional.
 
-**Multi-unit products.** Poufs, pillows, and some dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor items may have more than one unit available. These products may have variants such as size or colour, which are specified on the product page.
+**Multi-unit products.** Poufs, pillows, and some dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor items may have more than one unit available. These products may have variants such as size or colour, which are specified on the product page.
 
 We make every effort to represent colour, texture, size, and condition accurately. Natural lighting conditions in Morocco and the hand-made nature of all products mean that slight variation in colour rendering across different screens is inherent. Our pre-shipment verification process (described in section 5) exists specifically to address this before payment is captured.
 

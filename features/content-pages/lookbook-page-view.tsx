@@ -11,10 +11,9 @@ export function LookbookPageView() {
     <div className={styles.page}>
       <section className={styles.sectionHeader}>
         <p className={styles.eyebrow}>Lookbook</p>
-        <h1>Curated Moroccan interiors that turn inspiration into product discovery.</h1>
+        <h1>Moroccan rugs and decor in real interiors.</h1>
         <p className={styles.body}>
-          Explore curated Moroccan interiors and discover how handcrafted rugs transform
-          living spaces. Each look connects directly to the pieces used.
+          Photographs of Moroccan rugs, poufs, pillows, and decor in interior contexts. Each image links to the pieces shown, where available.
         </p>
       </section>
 
