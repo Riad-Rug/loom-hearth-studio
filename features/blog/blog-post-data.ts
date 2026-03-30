@@ -19,7 +19,7 @@ export const blogPosts: BlogPostRecord[] = [
     categoryLabel: "Moroccan rugs",
     title: "How to Read a Beni Ourain Rug Before It Reaches the Room",
     excerpt:
-      "A practical editorial guide to pile, pattern spacing, wool character, and the quiet details that make a fluffy Beni Ourain-style rug feel considered instead of generic.",
+      "A practical guide to pile depth, knot density, pattern spacing, and the back-of-rug indicators that separate a well-constructed Beni Ourain from a poor one.",
     body: [
       "The best Beni Ourain-style rugs bring softness first. Before pattern, before styling, and before scale, the pile should feel generous enough to catch light and create movement across the room. When the wool looks flat, harsh, or overly uniform, the rug usually reads more decorative than architectural.",
       "Pattern matters most in restraint. The strongest pieces keep the linework open, slightly irregular, and breathable so the rug still feels calm from a distance. Tight, repetitive diamonds can turn a quiet room busy, while a looser drawing gives the floor presence without stealing focus from the furniture above it.",
@@ -45,7 +45,7 @@ export const blogPosts: BlogPostRecord[] = [
     categoryLabel: "Styling notes",
     title: "Layering Poufs and Sabra Pillows Without Losing the Room",
     excerpt:
-      "A room-by-room approach to using Moroccan poufs and cactus silk pillows with enough contrast, texture, and spacing to feel collected rather than over-styled.",
+      "A room-by-room guide to combining Moroccan poufs and cactus silk pillows — scale, spacing, colour contrast, and how to avoid too much competing texture.",
     body: [
       "Poufs work best when they solve two things at once: movement and texture. A single leather or striped floor pouf can soften the edge of a seating group, but it should still feel grounded by the rug beneath it and by enough negative space around it to keep the room breathable.",
       "Sabra pillows do the opposite job. They sharpen a sofa, bench, or daybed with a little geometry and faded color, especially when the rest of the palette stays warm and restrained. The goal is not to stack as many as possible, but to let one or two handmade pieces carry the contrast.",

@@ -14,9 +14,7 @@ export function BlogIndexPageView() {
           <p className={styles.eyebrow}>Journal</p>
           <h1>The editorial journal for Moroccan rugs, materials, and lived-in rooms.</h1>
           <p className={styles.lede}>
-            Notes from Loom &amp; Hearth Studio on Beni Ourain-style rugs, cactus silk
-            pillows, poufs, sourcing in Morocco, and the quieter styling decisions that
-            make a room feel layered rather than staged.
+            Notes from Loom &amp; Hearth Studio on Beni Ourain rugs, cactus silk pillows, poufs, and the sourcing process behind this collection.
           </p>
         </div>
         <div className={styles.categoryRail} aria-label="Blog categories">
