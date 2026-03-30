@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Section } from "@/components/layout/section";
-import { catalogCategories, catalogFilterLabels, catalogSortOptions } from "@/features/catalog/catalog-data";
+import { catalogCategories, catalogFilterLabels, catalogLanding, catalogSortOptions } from "@/features/catalog/catalog-data";
 import { ProductCard } from "@/features/catalog/product-card";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import type { ProductCategory } from "@/types/domain";
@@ -17,28 +17,31 @@ export function CatalogPageView({ category, products }: CatalogPageViewProps) {
   const categoryMeta = category
     ? catalogCategories.find((item) => item.key === category) ?? null
     : null;
-  const heroTitle = categoryMeta ? categoryMeta.label : "Shop the collection";
-  const heroCopy = categoryMeta
-    ? categoryMeta.description
-    : "A curated edit of rugs, pillows, poufs, vintage textiles, and decor designed to bring warmth and texture home.";
+  const heroEyebrow = categoryMeta ? "Collection" : catalogLanding.eyebrow;
+  const heroTitle = categoryMeta ? categoryMeta.title : catalogLanding.title;
+  const heroCopy = categoryMeta ? categoryMeta.description : catalogLanding.description;
+  const heroBullets = categoryMeta ? categoryMeta.bullets : catalogLanding.bullets;
+  const heroParagraphs = heroCopy.split("\n\n");
 
   return (
     <div className={styles.page}>
       <Section width="wide">
         <div className={styles.hero}>
           <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>
-              {categoryMeta ? "Collection" : "Storefront"}
-            </p>
+            <p className={styles.eyebrow}>{heroEyebrow}</p>
             <h1>{heroTitle}</h1>
-            <p className={styles.lede}>{heroCopy}</p>
+            {heroParagraphs.map((paragraph) => (
+              <p key={paragraph} className={styles.lede}>
+                {paragraph}
+              </p>
+            ))}
           </div>
           <div className={styles.heroPanel}>
             <p className={styles.heroPanelLabel}>In this collection</p>
             <ul className={styles.heroPanelList}>
-              <li>Artisan-made textures and earthy palettes</li>
-              <li>Collected pieces for layering, gifting, and everyday living</li>
-              <li>Ready to browse by category or sort by what suits your space</li>
+              {heroBullets.map((bullet) => (
+                <li key={bullet}>{bullet}</li>
+              ))}
             </ul>
           </div>
         </div>
