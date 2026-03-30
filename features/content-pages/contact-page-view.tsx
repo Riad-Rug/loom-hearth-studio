@@ -157,10 +157,7 @@ export function ContactPageView({
             <span className={styles.metaLabel}>Business hours</span>
             <p>{contactData.hoursLabel}</p>
           </div>
-          <div className={styles.metaRow}>
-            <span className={styles.metaLabel}>Brand context</span>
-            <p>{contactData.locationLabel}</p>
-          </div>
+
           <div className={styles.metaRow}>
             <span className={styles.metaLabel}>{contactData.reassuranceLabel}</span>
             <p>{contactData.reassuranceText}</p>
@@ -174,3 +171,4 @@ export function ContactPageView({
     </div>
   );
 }
+
