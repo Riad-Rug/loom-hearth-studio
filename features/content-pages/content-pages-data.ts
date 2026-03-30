@@ -76,32 +76,161 @@ export const contactData = {
 export const faqItems: FaqItem[] = [
   {
     id: "faq-1",
-    group: "Shipping",
-    question: "Will I receive tracking?",
-    answer: "Yes, tracking is provided once your order ships.",
+    group: "Ordering",
+    question: "Can I see the rug before I pay?",
+    answer:
+      "Yes. Before your payment is captured, we send you a video of the actual piece \u2014 texture, colour in natural light, and size in context. If it is not right for your space, your payment is released. No charge. This applies to every rug order.",
     sortOrder: 1,
   },
   {
     id: "faq-2",
-    group: "Shipping",
-    question: "Do I need to handle customs?",
-    answer: "No, we take care of duties and customs.",
+    group: "Ordering",
+    question: "Can you reserve a piece for me?",
+    answer:
+      "Account holders can request a short hold while reviewing a piece. For longer holds, contact us directly \u2014 we handle these case by case.",
     sortOrder: 2,
   },
   {
     id: "faq-3",
-    group: "Holds",
-    question: "Can you reserve a rug for me?",
+    group: "Ordering",
+    question: "Are the rugs really one of one?",
     answer:
-      "We can place a temporary hold for account holders while you review a piece. Longer or paid holds can be arranged case by case.",
+      "Every rug in this collection is a unique piece. When it sells, it does not come back. The photographs in each listing show the exact rug you will receive \u2014 not a representative sample of the style.",
     sortOrder: 3,
   },
   {
     id: "faq-4",
-    group: "Inquiry",
-    question: "Can I see the rug before purchasing?",
-    answer: "Yes, we send a video of the exact piece before payment.",
+    group: "Ordering",
+    question: "How do I know the rug is genuinely hand-knotted?",
+    answer:
+      "Look at the back. On a hand-knotted rug, the knot structure is visible on the reverse \u2014 individual knots, slightly irregular, tied into the warp threads. Machine-made and tufted rugs have a smooth or latex-backed reverse. We photograph the back of every rug in the listing, and you can verify this in the pre-shipment video.",
     sortOrder: 4,
+  },
+  {
+    id: "faq-5",
+    group: "Ordering",
+    question: "Do you offer samples?",
+    answer:
+      "No. The pieces in this collection are one-of-one \u2014 there is no sample stock. What we offer instead is a pre-shipment video of the actual piece in natural light before your payment is captured. This gives you the most accurate read of colour, pile depth, and size before committing.",
+    sortOrder: 5,
+  },
+  {
+    id: "faq-6",
+    group: "Products",
+    question: "Does the rug shed?",
+    answer:
+      "New wool pile rugs shed in the first weeks of use. This is normal. Loose fibres from the weaving process work their way out during the break-in period. Vacuum on low suction without a beater brush. Shedding reduces significantly within the first month and stops. Flatweave kilims do not shed.",
+    sortOrder: 6,
+  },
+  {
+    id: "faq-7",
+    group: "Products",
+    question: "What is abrash?",
+    answer:
+      "Abrash is colour variation across the field of a rug \u2014 horizontal shifts in tone where the weaver used wool from more than one dye batch. In natural undyed rugs like Beni Ourain, it reflects variation in the wool's natural colour across different fleeces. In vintage rugs, it reflects how natural dye has interacted with light and use over time. It is not a defect. It is a visible record of handmade construction.",
+    sortOrder: 7,
+  },
+  {
+    id: "faq-8",
+    group: "Products",
+    question: "Is the colour in the photos accurate?",
+    answer:
+      "We calibrate listing photographs for colour accuracy, but screen calibration varies by device. This is why we offer the pre-shipment video \u2014 filmed in natural light, it gives the most accurate read of the rug's true colour. If colour is critical to your decision, use the video before approving shipment.",
+    sortOrder: 8,
+  },
+  {
+    id: "faq-9",
+    group: "Products",
+    question: "Are your rugs naturally dyed?",
+    answer:
+      "We note in each listing whether the dye is assessed as natural or synthetic, and whether that assessment is based on physical evidence or attributed provenance. We do not make natural dye claims we cannot verify. Most commercially produced Moroccan rugs use synthetic dye \u2014 we state this clearly rather than assume.",
+    sortOrder: 9,
+  },
+  {
+    id: "faq-10",
+    group: "Products",
+    question: "What size rug do I need?",
+    answer:
+      "Living room with sofa and two chairs: an 810 ft rug grounds the seating group without leaving furniture legs floating. Smaller groupings work with a 69 ft. Dining room: the rug should extend at least 24 inches beyond the table edge on all sides so chairs stay on the rug when pulled out. Bedroom: a 912 ft rug under a king bed with the rug visible on both sides of the frame is the standard. Send us your room dimensions and we will give you a specific recommendation.",
+    sortOrder: 10,
+  },
+  {
+    id: "faq-11",
+    group: "Shipping",
+    question: "Where do orders ship from?",
+    answer: "All orders ship from Morocco.",
+    sortOrder: 11,
+  },
+  {
+    id: "faq-12",
+    group: "Shipping",
+    question: "How long does shipping take?",
+    answer:
+      "USA: 7\u201314 business days after dispatch. This is an estimate \u2014 customs processing can add time. We send tracking when the order leaves Morocco.",
+    sortOrder: 12,
+  },
+  {
+    id: "faq-13",
+    group: "Shipping",
+    question: "Will I receive tracking?",
+    answer: "Yes. A tracking number is sent by email when your order is dispatched.",
+    sortOrder: 13,
+  },
+  {
+    id: "faq-14",
+    group: "Shipping",
+    question: "Do I need to pay customs or import duties?",
+    answer:
+      "For US orders: no. Duties are included in the price. There are no unexpected charges at delivery.",
+    sortOrder: 14,
+  },
+  {
+    id: "faq-15",
+    group: "Shipping",
+    question: "What carriers do you use?",
+    answer:
+      "DHL Express, FedEx International, and Aramex. Carrier is selected based on destination and shipment dimensions.",
+    sortOrder: 15,
+  },
+  {
+    id: "faq-16",
+    group: "Returns",
+    question: "What is your return policy?",
+    answer:
+      "14 days from confirmed delivery, provided the piece is unwashed, unaltered, free of pet hair embedded in the pile, and free of strong odours. The buyer covers return shipping in all cases, except where an item was materially misdescribed in the listing. Refunds are processed within 5 business days of confirmed return receipt.",
+    sortOrder: 16,
+  },
+  {
+    id: "faq-17",
+    group: "Returns",
+    question: "How do I avoid needing to return a rug?",
+    answer:
+      "The most common reasons for returns are colour mismatch and size mismatch. The pre-shipment video addresses both directly. Accept the video before your rug ships and you will see the actual colour in natural light and can confirm the size in context.",
+    sortOrder: 17,
+  },
+  {
+    id: "faq-18",
+    group: "Rug Care",
+    question: "How do I clean a Moroccan rug?",
+    answer:
+      "Vacuum regularly on low suction without a beater brush. Spot clean with cold water and a small amount of wool-safe detergent \u2014 blot, do not rub. For deep cleaning, use a professional who works with hand-knotted wool textiles. Avoid steam, high heat, and machine washing.",
+    sortOrder: 18,
+  },
+  {
+    id: "faq-19",
+    group: "Rug Care",
+    question: "My rug smells like wool. Is that normal?",
+    answer:
+      "Yes. Natural wool carries a lanolin smell that is more pronounced when the rug is new or has been stored. It fades with air circulation. Lay the rug flat in a well-ventilated room for a few days if the smell is strong at arrival.",
+    sortOrder: 19,
+  },
+  {
+    id: "faq-20",
+    group: "Rug Care",
+    question: "Can I use the rug outdoors?",
+    answer:
+      "Hand-knotted wool pile rugs are not suitable for outdoor use. Wool absorbs moisture and will mildew in sustained outdoor conditions. Kilim flatweaves can tolerate limited covered outdoor use in dry climates, but are not built for it.",
+    sortOrder: 20,
   },
 ] as const;
 
