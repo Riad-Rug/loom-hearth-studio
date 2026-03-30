@@ -20,7 +20,7 @@ export type BlogAuthor = {
 
 export type FaqItem = {
   id: string;
-  group: "Shipping" | "Holds" | "Inquiry";
+  group: "Ordering" | "Products" | "Shipping" | "Returns" | "Rug Care";
   question: string;
   answer: string;
   sortOrder: number;
