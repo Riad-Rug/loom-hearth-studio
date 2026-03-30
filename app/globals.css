@@ -400,6 +400,12 @@ p {
   color: rgba(34, 33, 38, 0.76);
 }
 
+.site-footer__trade {
+  max-width: 26rem;
+  margin: 0;
+  color: rgba(34, 33, 38, 0.82);
+}
+
 .site-footer__nav {
   display: grid;
   gap: 0.35rem;

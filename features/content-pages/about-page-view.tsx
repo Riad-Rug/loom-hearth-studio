@@ -77,7 +77,7 @@ export function AboutPageView() {
             Shop Moroccan rugs
           </Link>
           <Link className={styles.secondaryAction} href="/shop">
-            Explore the collection
+            Shop the collection
           </Link>
         </div>
         <div className={styles.trustHighlight}>

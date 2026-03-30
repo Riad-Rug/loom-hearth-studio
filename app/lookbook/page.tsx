@@ -6,7 +6,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildMetadata({
   title: "Moroccan Interior Lookbook",
   description:
-    "Explore curated Moroccan interiors, discover handcrafted rugs in context, and shop editorial looks across rugs, vintage finds, and decor.",
+    "See Moroccan rugs and decor in real interiors, and shop the pieces shown across rugs, vintage finds, and decor.",
   path: "/lookbook",
 });
 

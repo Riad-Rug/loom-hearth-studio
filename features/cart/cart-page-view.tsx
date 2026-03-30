@@ -33,7 +33,7 @@ export function CartPageView() {
             checkout flow.
           </p>
           <Link className={styles.primaryAction} href="/shop">
-            Explore the shop
+            Shop the collection
           </Link>
         </div>
       </section>

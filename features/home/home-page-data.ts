@@ -197,7 +197,7 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Shop handcrafted Moroccan rugs, poufs, pillows, and decor.",
       metaDescription:
-        "Discover handcrafted Moroccan rugs, vintage finds, poufs, pillows, and decor selected for warmth, texture, and collected character.",
+        "Shop handcrafted Moroccan rugs, vintage finds, poufs, pillows, and decor selected for wool texture, leather, and visible construction detail.",
     },
     eyebrow: "Loom & Hearth Studio",
     title: "Moroccan rugs sourced directly from Marrakech  not from a catalogue.",
@@ -215,7 +215,7 @@ const defaultHomePageContent: HomePageContent = {
     },
     image: {
       src: "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
-      alt: "A refined Moroccan sitting room with warm textiles, carved wood, and a quiet artisanal feel",
+      alt: "A Moroccan sitting room with wool textiles, carved wood, and handmade furnishings",
       publicId: "",
       width: null,
       height: null,
@@ -226,7 +226,7 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Moroccan home decor value highlights | Loom & Hearth Studio",
       metaDescription:
-        "Direct sourcing, United States delivery, no unexpected import charges for US orders, and a tightly curated launch selection shape the homepage value highlights.",
+        "Direct sourcing, United States delivery, no unexpected import charges for US orders, and a focused launch selection shape the homepage value highlights.",
     },
     items: [
       { id: "badge-1", label: "Direct from Morocco", visible: true },
@@ -245,7 +245,7 @@ const defaultHomePageContent: HomePageContent = {
     eyebrow: "SHOP BY CATEGORY",
     title: "Moroccan rugs, poufs, pillows, decor, and vintage  the full collection.",
     paragraph:
-      "Start with the pieces at the center of the collection: handcrafted Moroccan rugs, one-of-one vintage rugs, rug-made poufs, cactus silk pillows, and decor selected for warmth, texture, and character.",
+      "Start with the pieces at the center of the collection: handcrafted Moroccan rugs, one of one vintage rugs, rug-made poufs, cactus silk pillows, and decor selected for wool texture, visible construction, and colour contrast.",
     cards: [
       {
         id: "category-rugs",
@@ -253,7 +253,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/rugs",
         visible: true,
         description:
-          "Handcrafted Moroccan rugs chosen for texture, material depth, and lasting presence in the room.",
+          "Handcrafted Moroccan rugs chosen for texture, material depth, and lasting scale in the room.",
         image: {
           src: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
           alt: "Handmade Moroccan rug in a warm neutral living room with soft natural light",
@@ -283,10 +283,10 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/pillows",
         visible: true,
         description:
-          "Cactus silk and rug-based pillows for color, contrast, and layered texture.",
+          "Cactus silk and rug-based pillows for color, contrast, and woven texture.",
         image: {
           src: "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          alt: "Cactus silk pillows layered in warm Moroccan sunlight with woven textiles",
+          alt: "Cactus silk pillows in Moroccan sunlight with woven textiles",
           publicId: "",
           width: null,
           height: null,
@@ -301,7 +301,7 @@ const defaultHomePageContent: HomePageContent = {
           "Handcrafted Moroccan decor selected to finish shelves, consoles, tables, and quiet corners.",
         image: {
           src: "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
-          alt: "Moroccan decor in a warm interior with carved wood, ceramics, and layered styling",
+          alt: "Moroccan decor with carved wood, ceramics, and woven textiles",
           publicId: "",
           width: null,
           height: null,
@@ -313,7 +313,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/vintage",
         visible: true,
         description:
-          "One-of-one vintage Moroccan rugs selected for construction quality, patina, and visible age.",
+          "One of one vintage Moroccan rugs selected for construction quality, patina, and visible age.",
         image: {
           src: "https://images.pexels.com/photos/28582589/pexels-photo-28582589.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1600",
           alt: "Vintage Moroccan rugs displayed in a warm showroom with visible patina and texture",
@@ -329,7 +329,7 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Brand story | Loom & Hearth Studio",
       metaDescription:
-        "Read how Loom & Hearth Studio builds the collection through direct sourcing in Morocco and a sharp point of view on craft and material character.",
+        "Read how Loom & Hearth Studio builds the collection through direct sourcing in Morocco and a sharp point of view on craft and material quality.",
     },
     eyebrow: "Brand story",
     title: "Sourced directly in Marrakech. Selected in person.",
@@ -343,7 +343,7 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Design direction | Loom & Hearth Studio",
       metaDescription:
-        "See the design direction behind the collection: layered interiors, warm materials, quiet contrast, and handcrafted accents with lasting presence.",
+        "See the design direction behind the collection: stacked textiles, wool, wood, quiet contrast, and handcrafted accents with lasting weight.",
     },
     eyebrow: "Design direction",
     title: "Pieces with weight. For rooms that do not look like a catalogue.",
@@ -357,12 +357,12 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Featured Moroccan collections | Loom & Hearth Studio",
       metaDescription:
-        "Start with the signature homepage directions: Moroccan rugs, rug-made poufs, and cactus silk pillows curated for warmth and texture.",
+        "Start with the signature homepage directions: Moroccan rugs, rug-made poufs, and cactus silk pillows selected for wool, leather, and woven texture.",
     },
     eyebrow: "Featured directions",
     title: "Start with the signature pieces of the collection.",
     paragraph:
-      "Explore the three directions that define the launch: Moroccan rugs, rug-made poufs, and cactus silk pillows.",
+      "Shop the three directions that define the launch: Moroccan rugs, rug-made poufs, and cactus silk pillows.",
     cards: [
       {
         id: "featured-rugs",
@@ -403,7 +403,7 @@ const defaultHomePageContent: HomePageContent = {
         visible: true,
         image: {
           src: "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          alt: "Handmade Moroccan cushions in warm sunlight with layered woven textiles and soft neutral tones",
+          alt: "Handmade Moroccan cushions in sunlight with woven textiles and soft neutral tones",
           publicId: "",
           width: null,
           height: null,
@@ -416,7 +416,7 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "What makes Moroccan rugs unique? | Loom & Hearth Studio",
       metaDescription:
-        "Learn what makes Moroccan rugs distinctive, from handwoven texture and plush wool to vintage patina, movement, and a stronger sense of history.",
+        "Learn what makes Moroccan rugs distinctive, from handwoven texture and plush wool to vintage patina, movement, and visible age.",
     },
     eyebrow: "Moroccan rugs guide",
     title: "What separates a hand-knotted Moroccan rug from everything else on the market.",

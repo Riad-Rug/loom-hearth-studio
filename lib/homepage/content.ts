@@ -70,7 +70,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
     if (card.id === "category-vintage") {
       return {
         ...card,
-        description: "One-of-one vintage Moroccan rugs selected for construction quality, patina, and visible age.",
+        description: "One of one vintage Moroccan rugs selected for construction quality, patina, and visible age.",
       };
     }
 
@@ -117,7 +117,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.newsletter.title = "Get first access to new Moroccan rugs, vintage finds, and studio releases.";
 
   next.footer.introBody =
-    "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor  sourced directly from Marrakech.";
+    "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor — sourced directly from Marrakech.";
   next.footer.introMeta = "Shipping to the United States. Prices in USD. All duties included.";
 
   return next;

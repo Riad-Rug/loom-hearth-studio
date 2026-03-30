@@ -23,6 +23,10 @@ export async function SiteFooter() {
             <p className="site-footer__eyebrow">{introTitle}</p>
             <p className="site-footer__brand">{content.footer.introBody}</p>
             <p className="site-footer__meta">{content.footer.introMeta}</p>
+            <p className="site-footer__trade">
+              Interior designers and trade professionals: contact us for sourcing and project
+              inquiries.
+            </p>
           </div>
           <div className="site-footer__nav-group">
             <p className="site-footer__heading">{content.footer.exploreHeading}</p>

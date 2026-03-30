@@ -9,7 +9,7 @@ import { submitContactInquiry } from "./actions";
 export const metadata: Metadata = buildMetadata({
   title: "Contact Loom & Hearth Studio",
   description:
-    "Contact Loom & Hearth Studio for inquiries about handmade Moroccan rugs, custom sourcing, vintage textiles, and curated home decor.",
+    "Contact Loom & Hearth Studio for inquiries about handmade Moroccan rugs, custom sourcing, vintage textiles, and handmade home decor.",
   path: "/contact",
 });
 
