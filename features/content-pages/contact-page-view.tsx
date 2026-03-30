@@ -27,7 +27,11 @@ export function ContactPageView({
         <div className={styles.heroBody}>
           <p className={styles.eyebrow}>{contactData.eyebrow}</p>
           <h1>{contactData.title}</h1>
-          <p className={styles.lede}>{contactData.body}</p>
+          {contactData.body.split("\n\n").map((paragraph) => (
+            <p key={paragraph} className={styles.lede}>
+              {paragraph}
+            </p>
+          ))}
         </div>
       </section>
 
@@ -129,7 +133,7 @@ export function ContactPageView({
                 className={styles.contactTextarea}
                 name="message"
                 defaultValue={defaults?.message}
-                placeholder="Tell us about your inquiry, sourcing question, or product interest."
+                placeholder={"Your message — product name, room dimensions, or any question about the collection."}
                 required
                 rows={7}
               />
