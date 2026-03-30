@@ -99,8 +99,8 @@ export function AboutPageView() {
         <div className={styles.proofBody}>
           <p className={styles.eyebrow}>Selected in Morocco</p>
           <p className={styles.body}>
-            Direct sourcing, in-person selection, and pieces chosen for texture, character, and
-            material presence.
+            Direct sourcing, in-person selection, and pieces assessed for construction quality
+            before entering the collection.
           </p>
         </div>
       </section>
@@ -123,6 +123,12 @@ export function AboutPageView() {
             </div>
           </article>
         ))}
+      </section>
+
+      <section className={styles.contactActions}>
+        <Link className={styles.primaryAction} href="/shop">
+          SHOP THE COLLECTION
+        </Link>
       </section>
     </div>
   );
