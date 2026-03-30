@@ -200,17 +200,17 @@ const defaultHomePageContent: HomePageContent = {
         "Discover handcrafted Moroccan rugs, vintage finds, poufs, pillows, and decor selected for warmth, texture, and collected character.",
     },
     eyebrow: "Loom & Hearth Studio",
-    title: "Shop handcrafted Moroccan rugs, poufs, pillows, and home decor.",
+    title: "Moroccan rugs sourced directly from Marrakech  not from a catalogue.",
     paragraph:
-      "Discover Moroccan rugs, vintage rugs, rug-made poufs, cactus silk pillows, and handcrafted decor selected for warmth, texture, and collected character. From plush Beni Ourain-inspired pieces to one-of-one vintage finds, each piece is chosen to bring artisanal depth into everyday interiors.",
+      "Hand-knotted rugs, rug-made poufs, cactus silk pillows, and handcrafted decor  sourced in person in Morocco, not pulled from an export catalogue.",
     primaryCta: {
-      label: "Shop Moroccan rugs",
+      label: "SHOP NOW",
       href: "/shop/rugs",
       visible: true,
     },
     secondaryCta: {
-      label: "View the lookbook",
-      href: "/lookbook",
+      label: "Our Story",
+      href: "/about",
       visible: true,
     },
     image: {
@@ -230,9 +230,9 @@ const defaultHomePageContent: HomePageContent = {
     },
     items: [
       { id: "badge-1", label: "Direct from Morocco", visible: true },
-      { id: "badge-2", label: "United States delivery", visible: true },
-      { id: "badge-3", label: "No unexpected import charges for US orders", visible: true },
-      { id: "badge-4", label: "Video verification before payment.", visible: true },
+      { id: "badge-2", label: "Free shipping to the USA", visible: true },
+      { id: "badge-3", label: "All duties included", visible: true },
+      { id: "badge-4", label: "14-day returns", visible: true },
     ],
   },
   categories: {
@@ -242,8 +242,8 @@ const defaultHomePageContent: HomePageContent = {
       metaDescription:
         "Browse Moroccan rugs, vintage rugs, rug-made poufs, cactus silk pillows, and decor through a structured category section on the homepage.",
     },
-    eyebrow: "Categories",
-    title: "Shop Moroccan rugs, poufs, pillows, and decor by category.",
+    eyebrow: "SHOP BY CATEGORY",
+    title: "Moroccan rugs, poufs, pillows, decor, and vintage  the full collection.",
     paragraph:
       "Start with the pieces at the center of the collection: handcrafted Moroccan rugs, one-of-one vintage rugs, rug-made poufs, cactus silk pillows, and decor selected for warmth, texture, and character.",
     cards: [
@@ -268,7 +268,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/poufs",
         visible: true,
         description:
-          "Rug-made and leather poufs that bring flexible function and a softer, more collected look.",
+          "Rug-made and leather poufs. Functional seating with a softer, less formal footprint in the room.",
         image: {
           src: "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
           alt: "Moroccan leather pouf styled in a tactile interior with warm linen textures",
@@ -313,7 +313,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/vintage",
         visible: true,
         description:
-          "One-of-one vintage Moroccan rugs chosen for patina, history, and collected appeal.",
+          "One-of-one vintage Moroccan rugs selected for construction quality, patina, and visible age.",
         image: {
           src: "https://images.pexels.com/photos/28582589/pexels-photo-28582589.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1600",
           alt: "Vintage Moroccan rugs displayed in a warm showroom with visible patina and texture",
@@ -332,9 +332,9 @@ const defaultHomePageContent: HomePageContent = {
         "Read how Loom & Hearth Studio builds the collection through direct sourcing in Morocco and a sharp point of view on craft and material character.",
     },
     eyebrow: "Brand story",
-    title: "Rooted in Moroccan craft, material character, and pieces chosen in person.",
+    title: "Sourced directly in Marrakech. Selected in person.",
     paragraph:
-      "Loom & Hearth Studio builds its collection through direct sourcing in Morocco and a clear eye for rugs, rug-made poufs, pillows, and decor with real presence.",
+      "Loom & Hearth Studio sources its collection directly through a family bazaar in Marrakech  a business with roots close to 80 years in the Semmarine souk. We select rugs, rug-made poufs, pillows, and decor in person. Not from export catalogues. Not through cooperatives.",
     linkLabel: "Read the story",
     href: "/about",
   },
@@ -346,9 +346,9 @@ const defaultHomePageContent: HomePageContent = {
         "See the design direction behind the collection: layered interiors, warm materials, quiet contrast, and handcrafted accents with lasting presence.",
     },
     eyebrow: "Design direction",
-    title: "Created for interiors that feel layered, warm, and collected.",
+    title: "Pieces with weight. For rooms that do not look like a catalogue.",
     paragraph:
-      "The collection brings together tactile rugs, quiet contrast, and handcrafted accents that help a room feel more grounded and individual.",
+      "The collection is focused: hand-knotted Moroccan rugs, rug-based poufs, pillows, and a small selection of supporting decor. Each piece is chosen for what it is made of and how it is made  not for how it photographs.",
     linkLabel: "View the lookbook",
     href: "/lookbook",
   },
@@ -368,7 +368,7 @@ const defaultHomePageContent: HomePageContent = {
         id: "featured-rugs",
         title: "Moroccan rugs",
         description:
-          "Handwoven Moroccan rugs selected for warmth, texture, and a stronger sense of home.",
+          "Hand-knotted Moroccan rugs selected for pile quality, construction, and performance underfoot.",
         href: "/shop/rugs",
         visible: true,
         image: {
@@ -383,7 +383,7 @@ const defaultHomePageContent: HomePageContent = {
         id: "featured-poufs",
         title: "Poufs",
         description:
-          "Leather and rug-made poufs selected for texture, function, and character.",
+          "Leather and rug-made poufs. Selected for construction quality and function.",
         href: "/shop/poufs",
         visible: true,
         image: {
@@ -398,7 +398,7 @@ const defaultHomePageContent: HomePageContent = {
         id: "featured-pillows",
         title: "Cactus silk pillows",
         description:
-          "Handcrafted pillows that add softness, color, and a more layered finish to the room.",
+          "Cactus silk pillows  flat-woven, low-shed, with good colour saturation and a quieter surface than wool pile.",
         href: "/shop/pillows",
         visible: true,
         image: {
@@ -419,9 +419,9 @@ const defaultHomePageContent: HomePageContent = {
         "Learn what makes Moroccan rugs distinctive, from handwoven texture and plush wool to vintage patina, movement, and a stronger sense of history.",
     },
     eyebrow: "Moroccan rugs guide",
-    title: "What makes Moroccan rugs unique?",
+    title: "What separates a hand-knotted Moroccan rug from everything else on the market.",
     paragraph:
-      "Moroccan rugs are valued for their handwoven texture, individual character, and the way they bring warmth into a room without feeling generic. Some styles, like Beni Ourain rugs, are known for plush wool and quieter patterning, while vintage Moroccan rugs often bring faded color, movement, and a stronger sense of history. Together, they offer a more collected alternative to mass-market floor coverings.",
+      "A hand-knotted Moroccan rug is built knot by knot onto a warp structure. That process takes weeks for a single piece and produces a construction that holds up under foot traffic in a way machine-made and tufted rugs do not. Beni Ourain rugs are knotted by Amazigh weavers in the Middle Atlas Mountains using natural undyed wool. The ivory field and sparse geometric pattern are structural  a result of the wool's colour and the weaver's design, not dye. Pile height typically runs 1525mm. Vintage Moroccan rugs carry abrash: colour variation that occurs when natural dye interacts with light and use over time. It is not a defect. It is a visible record of how the piece was made.",
   },
   newsletter: {
     visible: true,
@@ -446,8 +446,8 @@ const defaultHomePageContent: HomePageContent = {
         "Structured footer content covering primary navigation, support links, and collection shortcuts for the Loom & Hearth Studio storefront.",
     },
     introTitle: siteConfig.name,
-    introBody: "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and curated home decor.",
-    introMeta: "Curated for a United States launch in USD.",
+    introBody: "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor  sourced directly from Marrakech.",
+    introMeta: "Shipping to the United States. Prices in USD. All duties included.",
     exploreHeading: "Explore",
     exploreLinks: siteConfig.primaryNav.map((item) => ({ ...item })),
     supportHeading: "Support",
@@ -801,5 +801,6 @@ function isAllowedImageUrl(value: string) {
 function isOrderedSectionKey(value: unknown): value is HomePageOrderedSectionKey {
   return typeof value === "string" && homepageSectionOrderKeys.includes(value as HomePageOrderedSectionKey);
 }
+
 
 

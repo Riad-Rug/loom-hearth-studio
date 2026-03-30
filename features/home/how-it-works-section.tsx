@@ -9,7 +9,7 @@ const steps = [
   {
     number: "Step 1",
     title: "Browse and inquire",
-    description: "Find a piece you love and submit an inquiry or contact us directly.",
+    description: "Find a piece that interests you and place an order or send us an inquiry directly.",
   },
   {
     number: "Step 2",
@@ -19,7 +19,7 @@ const steps = [
   {
     number: "Step 3",
     title: "Confirm and we ship",
-    description: "Once you are happy, payment is captured and your piece ships from Morocco.",
+    description: "Once you are satisfied, payment is captured and your piece ships from Morocco with tracking.",
   },
 ] as const;
 
@@ -54,3 +54,4 @@ export function HowItWorksSection() {
     </Section>
   );
 }
+
