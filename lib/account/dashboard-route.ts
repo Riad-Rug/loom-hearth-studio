@@ -1,5 +1,4 @@
-import type { AccountAccessDecision } from "@/lib/auth";
-import type { SignOutRequestState } from "@/lib/auth";
+import type { AccountAccessDecision, SignOutRequestState } from "@/lib/auth";
 import type {
   AccountDashboardData,
   AccountProfileSummaryView,
@@ -61,57 +60,45 @@ export function createAccountDashboardRouteViewModel(input: {
 }): AccountDashboardRouteViewModel {
   return {
     hero: {
-      title: "Customer dashboard shell",
-      body:
-        "This dashboard reads persisted launch order history for the signed-in account email while profile persistence remains out of scope.",
-      emptyStateTitle: input.dashboardData?.overview.greeting ?? "No live account data yet",
+      title: "Your account",
+      body: "Review order history and update the contact details tied to this account.",
+      emptyStateTitle: input.dashboardData?.overview.greeting ?? "Welcome back",
       emptyStateLines: input.dashboardData
         ? [
             input.dashboardData.overview.statusLabel,
             input.dashboardData.overview.accountEmail,
           ]
-        : [
-            "Empty-state presentation only. No persisted orders were found for the current placeholder account email.",
-          ],
+        : ["No orders are linked to this account yet."],
     },
     session: {
-      title: "Account auth/session",
-      statusLine: `Status: ${input.accessDecision.sessionSummary.status}. Authenticated: ${
-        input.accessDecision.sessionSummary.isAuthenticated ? "yes" : "no"
-      }.`,
-      accessLine: `Access: ${input.accessDecision.status}`,
-      redirectTargetLine: `Redirect target: ${input.accessDecision.redirectTarget}`,
-      modeLine: `Mode: ${input.accessDecision.sessionSummary.roleLabel}`,
-      todoLines: [
-        input.accessDecision.sessionSummary.todo,
-        input.accountGuardTodo,
-        input.accountDashboardDataTodo,
-      ],
+      title: "Signed-in account",
+      statusLine: "You are signed in and can review the details linked to this account below.",
+      accessLine: input.dashboardData?.overview.accountEmail ?? "",
+      redirectTargetLine: "",
+      modeLine: "",
+      todoLines: [],
     },
     gate: {
-      title: "Account gate",
-      body: "This route is reserved for authenticated customer sessions only.",
-      redirectTargetLine: `Boundary redirect target: ${input.accessDecision.redirectTarget}`,
+      title: "Sign in required",
+      body: "Please sign in to view your account.",
+      redirectTargetLine: "",
     },
     signOut: {
       actionLabel: "Sign out",
-      stateLine: `Sign-out request state: ${input.signOutState.status}`,
+      stateLine: "",
       message: input.signOutState.message,
-      redirectTargetLine: input.signOutState.redirectTarget
-        ? `Sign-out redirect target: ${input.signOutState.redirectTarget}`
-        : null,
+      redirectTargetLine: null,
     },
     profileUpdate: {
-      title: "Profile update boundary",
-      stateLine: `Request state: ${input.profileUpdateState.status}`,
+      title: "Profile details",
+      stateLine:
+        input.profileUpdateState.status === "submitting"
+          ? "Saving your details..."
+          : input.profileUpdateState.status === "idle"
+            ? "Update your contact details for future orders and inquiries."
+            : "",
       message: input.profileUpdateState.message,
-      payloadLine: input.profileUpdateState.payload
-        ? `Payload ready: ${input.profileUpdateState.payload.fullName}, ${input.profileUpdateState.payload.email}${
-            input.profileUpdateState.payload.phone
-              ? `, ${input.profileUpdateState.payload.phone}`
-              : ""
-          }`
-        : null,
+      payloadLine: null,
     },
     sections: [
       {

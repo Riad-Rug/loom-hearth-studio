@@ -7,20 +7,16 @@ import { signOut } from "next-auth/react";
 
 import { accountDashboardSections } from "@/features/account/account-data";
 import {
-  accountGuardTodo,
   createInitialSignOutRequestState,
   getAccountAccessDecision,
-  signOutRequestTodo,
   type AuthenticatedUser,
 } from "@/lib/auth";
 import {
-  accountDashboardDataTodo,
   type AccountDashboardData,
   type AccountProfileSummaryView,
 } from "@/lib/account/dashboard-shared";
 import { createAccountDashboardRouteViewModel } from "@/lib/account/dashboard-route";
 import {
-  accountProfileUpdateTodo,
   createAccountProfileUpdatePayload,
   createInitialAccountProfileUpdateState,
 } from "@/lib/account/profile-update";
@@ -51,10 +47,10 @@ export function AccountDashboardPageView(props: {
     profileSummaryView: props.profileSummaryView,
     signOutState,
     profileUpdateState,
-    accountGuardTodo,
-    accountDashboardDataTodo,
-    signOutRequestTodo,
-    accountProfileUpdateTodo,
+    accountGuardTodo: "",
+    accountDashboardDataTodo: "",
+    signOutRequestTodo: "",
+    accountProfileUpdateTodo: "",
   });
 
   async function handleSignOutRequest() {
@@ -104,8 +100,7 @@ export function AccountDashboardPageView(props: {
         setProfileUpdateState({
           status: "failure",
           payload: null,
-          message:
-            "Enter a full name and valid email address to create the placeholder profile update request.",
+          message: "Enter your full name and a valid email address before saving.",
         });
         return;
       }
@@ -113,8 +108,7 @@ export function AccountDashboardPageView(props: {
       setProfileUpdateState({
         status: "success",
         payload,
-        message:
-          "Placeholder profile update request created. Real authenticated profile persistence is not implemented.",
+        message: "Your details are saved for this session.",
       });
     }, 350);
   }
@@ -136,24 +130,14 @@ export function AccountDashboardPageView(props: {
       </section>
 
       <section className={styles.sessionCard}>
-        <p className={styles.eyebrow}>Session boundary</p>
+        <p className={styles.eyebrow}>Account</p>
         <h2>{routeViewModel.session.title}</h2>
         <p>{routeViewModel.session.statusLine}</p>
-        <p>{routeViewModel.session.accessLine}</p>
-        <p>{routeViewModel.session.redirectTargetLine}</p>
-        <p>{routeViewModel.session.modeLine}</p>
-        {routeViewModel.session.todoLines.map((line) => (
-          <p key={line}>{line}</p>
-        ))}
+        {routeViewModel.session.accessLine ? <p>{routeViewModel.session.accessLine}</p> : null}
         <button className={styles.primaryAction} type="button" onClick={handleSignOutRequest}>
           {routeViewModel.signOut.actionLabel}
         </button>
-        <p>{routeViewModel.signOut.stateLine}</p>
         {routeViewModel.signOut.message ? <p>{routeViewModel.signOut.message}</p> : null}
-        {routeViewModel.signOut.redirectTargetLine ? (
-          <p>{routeViewModel.signOut.redirectTargetLine}</p>
-        ) : null}
-        <p>{signOutRequestTodo}</p>
       </section>
 
       {accessDecision.status === "allowed" ? (
@@ -203,7 +187,7 @@ export function AccountDashboardPageView(props: {
                     <label className={styles.field}>
                       <span>Full name</span>
                       <input
-                        placeholder="Customer name placeholder"
+                        placeholder="Full name"
                         type="text"
                         value={profileFullName}
                         onChange={(event) => setProfileFullName(event.target.value)}
@@ -221,7 +205,7 @@ export function AccountDashboardPageView(props: {
                     <label className={styles.field}>
                       <span>Phone</span>
                       <input
-                        placeholder="Optional phone placeholder"
+                        placeholder="Phone number (optional)"
                         type="tel"
                         value={profilePhone}
                         onChange={(event) => setProfilePhone(event.target.value)}
@@ -232,18 +216,16 @@ export function AccountDashboardPageView(props: {
                       type="button"
                       onClick={handleProfileUpdateRequest}
                     >
-                      Save profile UI placeholder
+                      Save details
                     </button>
                     <div className={styles.sessionNote}>
                       <strong>{routeViewModel.profileUpdate.title}</strong>
-                      <span>{routeViewModel.profileUpdate.stateLine}</span>
+                      {routeViewModel.profileUpdate.stateLine ? (
+                        <span>{routeViewModel.profileUpdate.stateLine}</span>
+                      ) : null}
                       {routeViewModel.profileUpdate.message ? (
                         <span>{routeViewModel.profileUpdate.message}</span>
                       ) : null}
-                      {routeViewModel.profileUpdate.payloadLine ? (
-                        <span>{routeViewModel.profileUpdate.payloadLine}</span>
-                      ) : null}
-                      <span>{accountProfileUpdateTodo}</span>
                     </div>
                   </div>
                 ) : null}
@@ -255,16 +237,15 @@ export function AccountDashboardPageView(props: {
         <section className={styles.sessionCard}>
           <h2>{routeViewModel.gate.title}</h2>
           <p>{routeViewModel.gate.body}</p>
-          <p>{routeViewModel.gate.redirectTargetLine}</p>
         </section>
       )}
 
       <section className={styles.dashboardLinks}>
         <Link className={styles.secondaryAction} href={"/account/login" as Route}>
-          Return to login
+          Return to sign in
         </Link>
         <Link className={styles.secondaryAction} href={"/account/register" as Route}>
-          View register shell
+          Create account
         </Link>
       </section>
     </div>

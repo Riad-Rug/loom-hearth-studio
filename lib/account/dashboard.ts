@@ -24,7 +24,7 @@ export async function getAccountDashboardData(
     },
     orders: createAccountOrderHistoryData(orders),
     profile: {
-      fullName: orders[0]?.shippingAddress.fullName ?? "Customer name placeholder",
+      fullName: orders[0]?.shippingAddress.fullName ?? "Name not provided",
       email: user.email,
       phone: orders[0]?.shippingAddress.phone ?? null,
     },

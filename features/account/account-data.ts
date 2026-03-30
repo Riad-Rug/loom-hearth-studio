@@ -27,7 +27,7 @@ export const accountAuthContent = {
       "Start with your full name, email, and password. Use the same email you plan to use at checkout for a more consistent account experience.",
     supportTitle: "Track your orders and saved pieces",
     supportBody:
-      "Create an account to track your orders and saved pieces, access future curated drops, and save your preferences for faster checkout.",
+      "Create an account to track your orders and saved pieces, access future product releases, and save your preferences for faster checkout.",
     reassurance:
       "Keep your orders, saved pieces, and future checkout details tied to one account email.",
   },
@@ -53,18 +53,18 @@ export const accountDashboardSections = [
     id: "overview",
     title: "Overview",
     body:
-      "Placeholder account overview panel reserved for future customer account data and status summaries.",
+      "Review the details tied to this account and keep your contact information up to date.",
   },
   {
     id: "orders",
     title: "Order history",
     body:
-      "Persisted launch orders now appear here for the signed-in account email. Broader account linking and order operations remain out of scope.",
+      "Orders linked to this account email appear here.",
   },
   {
     id: "profile",
     title: "Profile details",
     body:
-      "Placeholder profile area reserved for future customer details and account management fields.",
+      "Update the contact details tied to this account.",
   },
 ] as const;

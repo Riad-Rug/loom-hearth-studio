@@ -68,7 +68,7 @@ export function createAccountProfileSummaryView(
       {
         id: "phone",
         label: "Phone",
-        value: profile.phone ?? "Phone not available in placeholder data",
+        value: profile.phone ?? "Phone not provided",
         tone: profile.phone ? "default" : "muted",
       },
     ],
