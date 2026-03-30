@@ -21,9 +21,9 @@ export const aboutHero = {
   title: "A direct source for handcrafted Moroccan rugs, poufs, pillows, and home decor.",
   body: `Loom & Hearth Studio is built on real roots in Marrakech, where our family has worked in the bazaar trade for decades. Our grandfather's shop in the Semmarine souk, steps from Jemaa el-Fnaa, was known for handcrafted pieces sourced across Morocco.
 
-Today, we continue that work with a more focused scope Ã¢â‚¬â€ selecting hand-knotted Moroccan rugs, turning some into one of one poufs and pillows, and adding a small selection of supporting decor.
+Today, we continue that work with a more focused scope \u2014 selecting hand-knotted Moroccan rugs, turning some into one of one poufs and pillows, and adding a small selection of supporting decor.
 
-Every piece is chosen in person. Nothing is mass-produced. Nothing comes from an export catalogue assembled for foreign buyers. You are getting the rug the weaver made Ã¢â‚¬â€ not a category managed by a middleman.
+Every piece is chosen in person. Nothing is mass-produced. Nothing comes from an export catalogue assembled for foreign buyers. You are getting the rug the weaver made \u2014 not a category managed by a middleman.
 
 We source directly through the family bazaar. Not through cooperatives. That is what makes the difference in what you receive.`,
 } as const;
@@ -33,12 +33,12 @@ export const aboutSections: AboutSection[] = [
     eyebrow: "Craft",
     title: "Built on material knowledge and direct selection.",
     body:
-      "We select based on construction and fibre quality Ã¢â‚¬â€ not trends. For rugs, that means checking pile density by weight and feel, examining the back for knot structure, and assessing warp tension. Many pieces are one of one. Even repeatable designs remain handmade Ã¢â‚¬â€ no two are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug material, which means they carry the same fibre, weave structure, and colour as the source piece.",
+      "We select based on construction and fibre quality \u2014 not trends. For rugs, that means checking pile density by weight and feel, examining the back for knot structure, and assessing warp tension. Many pieces are one of one. Even repeatable designs remain handmade \u2014 no two are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug material, which means they carry the same fibre, weave structure, and colour as the source piece.",
   },
   {
     eyebrow: "Direction",
     title: "A focused collection. Not a marketplace.",
-    body: `Loom & Hearth Studio is not a marketplace. We do not list everything we encounter. The collection stays deliberately narrow Ã¢â‚¬â€ hand-knotted rugs, rug-based poufs, pillows, and a small selection of supporting decor.
+    body: `Loom & Hearth Studio is not a marketplace. We do not list everything we encounter. The collection stays deliberately narrow \u2014 hand-knotted rugs, rug-based poufs, pillows, and a small selection of supporting decor.
 
 The criterion is simple: does this piece hold up on its own, in a room, without explanation?`,
   },
@@ -48,7 +48,7 @@ export const aboutBridge = {
   eyebrow: "How we source",
   title: "Selected in person, not pulled from a catalog.",
   body:
-    "We work directly across Morocco Ã¢â‚¬â€ primarily through the family bazaar in Marrakech Ã¢â‚¬â€ to source rugs, rug-made poufs, pillows, and supporting decor. Every piece is assessed in person for construction, fibre quality, and condition before it enters the collection.",
+    "We work directly across Morocco \u2014 primarily through the family bazaar in Marrakech \u2014 to source rugs, rug-made poufs, pillows, and supporting decor. Every piece is assessed in person for construction, fibre quality, and condition before it enters the collection.",
 } as const;
 
 export const contactData = {
@@ -65,7 +65,7 @@ export const contactData = {
     "Reach us directly for the fastest response.",
   reassuranceLabel: "Support note",
   reassuranceText:
-    "Every inquiry about a rug includes a video of the actual piece before payment is taken. Include the product name and your room dimensions if you have them â€” it helps us respond with something useful.",
+    "Every inquiry about a rug includes a video of the actual piece before payment is taken. Include the product name and your room dimensions if you have them \u2014 it helps us respond with something useful.",
   responseTimeLabel: "Response timing",
   responseTimeText: "Within 24 hours",
   emailLabel: "hello@loomandhearthstudio.com",
@@ -151,7 +151,7 @@ export const faqItems: FaqItem[] = [
     group: "Products",
     question: "What size rug do I need?",
     answer:
-      "Living room with sofa and two chairs: an 810 ft rug grounds the seating group without leaving furniture legs floating. Smaller groupings work with a 69 ft. Dining room: the rug should extend at least 24 inches beyond the table edge on all sides so chairs stay on the rug when pulled out. Bedroom: a 912 ft rug under a king bed with the rug visible on both sides of the frame is the standard. Send us your room dimensions and we will give you a specific recommendation.",
+      "Living room with sofa and two chairs: an 8\u00d710 ft rug grounds the seating group without leaving furniture legs floating. Smaller groupings work with a 6\u00d79 ft. Dining room: the rug should extend at least 24 inches beyond the table edge on all sides so chairs stay on the rug when pulled out. Bedroom: a 9\u00d712 ft rug under a king bed with the rug visible on both sides of the frame is the standard. Send us your room dimensions and we will give you a specific recommendation.",
     sortOrder: 10,
   },
   {

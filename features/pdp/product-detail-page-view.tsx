@@ -348,11 +348,18 @@ function RugPurchaseShell({
 }
 
 function MultiUnitMeta({ product }: { product: MultiUnitProductDetailPageViewModel }) {
+  const inventoryStateLabel =
+    product.inventoryState === "lowStock"
+      ? "Low stock"
+      : product.inventoryState === "outOfStock"
+        ? "Out of stock"
+        : "In stock";
+
   return (
     <>
       <div className={styles.metaItem}>
         <span className={styles.metaLabel}>Inventory state</span>
-        <p className={styles.metaValue}>{product.inventoryState}</p>
+        <p className={styles.metaValue}>{inventoryStateLabel}</p>
       </div>
       <div className={styles.metaItem}>
         <span className={styles.metaLabel}>Quantity</span>

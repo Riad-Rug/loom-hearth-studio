@@ -45,7 +45,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className={styles.productFallbackCopy}>
               <span className={styles.productFallbackEyebrow}>{getCategoryLabel(product.category)}</span>
               <strong className={styles.productFallbackTitle}>{product.name}</strong>
-              <span className={styles.productFallbackNote}>Studio image coming soon</span>
+              <span className={styles.productFallbackNote}>Image preview coming soon</span>
             </div>
           </div>
         )}

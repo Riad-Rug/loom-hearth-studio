@@ -58,8 +58,17 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   });
 
   next.categories.eyebrow = "SHOP BY CATEGORY";
-  next.categories.title = "Moroccan rugs, poufs, pillows, decor, and vintage — the full collection.";
+  next.categories.title = "Moroccan rugs, poufs, pillows, decor, and vintage \u2014 the full collection.";
+  next.categories.paragraph =
+    "Start with the pieces at the center of the collection: handcrafted Moroccan rugs, one of one vintage rugs, rug-made poufs, cactus silk pillows, and decor selected for wool texture, visible construction, and colour contrast.";
   next.categories.cards = next.categories.cards.map((card) => {
+    if (card.id === "category-rugs") {
+      return {
+        ...card,
+        description: "Handcrafted Moroccan rugs chosen for texture, material depth, and lasting scale in the room.",
+      };
+    }
+
     if (card.id === "category-poufs") {
       return {
         ...card,
@@ -84,6 +93,9 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.designDirection.title = "Pieces with weight. For rooms that do not look like a catalogue.";
   next.designDirection.paragraph =
     "The collection is focused: hand-knotted Moroccan rugs, rug-based poufs, pillows, and a small selection of supporting decor. Each piece is chosen for what it is made of and how it is made — not for how it photographs.";
+
+  next.featured.paragraph =
+    "Shop the three directions that define the launch: Moroccan rugs, rug-made poufs, and cactus silk pillows.";
 
   next.featured.cards = next.featured.cards.map((card) => {
     if (card.id === "featured-rugs") {
