@@ -246,10 +246,58 @@
 }
 
 .contactFormNote {
+  display: grid;
+  gap: var(--space-3);
   margin: 0;
-  color: rgba(34, 33, 38, 0.58);
-  font-size: 0.92rem;
+  padding: var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.contactFormNoteTitle,
+.contactFormNoteMessage,
+.contactRequestNumberLabel,
+.contactRequestNumberValue {
+  margin: 0;
+}
+
+.contactFormNoteTitle {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.contactFormNoteMessage {
+  color: inherit;
+  font-size: 0.98rem;
   line-height: 1.7;
+}
+
+.contactRequestNumberBlock {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.1);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.contactRequestNumberLabel {
+  color: rgba(34, 33, 38, 0.56);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.contactRequestNumberValue {
+  color: var(--color-charcoal-ink);
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  word-break: break-word;
 }
 .faqList,
 .testimonialsGrid {
@@ -517,8 +565,24 @@
 }
 .contactFormSuccess {
   color: #1b5e20;
+  border-color: rgba(27, 94, 32, 0.16);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(238, 247, 239, 0.98)),
+    radial-gradient(circle at top right, rgba(27, 94, 32, 0.08), transparent 40%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 1rem 2rem rgba(27, 94, 32, 0.08);
+}
+
+.contactFormSuccess .contactRequestNumberBlock {
+  border-color: rgba(27, 94, 32, 0.14);
+  background: rgba(255, 255, 255, 0.84);
 }
 
 .contactFormError {
   color: #8a1f11;
+  border-color: rgba(138, 31, 17, 0.16);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(250, 240, 238, 0.98)),
+    radial-gradient(circle at top right, rgba(138, 31, 17, 0.08), transparent 40%);
 }

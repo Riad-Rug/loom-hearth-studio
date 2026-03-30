@@ -45,7 +45,7 @@ export function ContactPageView({
 
           <form action={submitAction} className={styles.contactForm}>
             {submissionState ? (
-              <p
+              <div
                 className={`${styles.contactFormNote} ${
                   submissionState.tone === "success"
                     ? styles.contactFormSuccess
@@ -53,14 +53,21 @@ export function ContactPageView({
                 }`}
                 role="status"
               >
-                {submissionState.message}
+                <p className={styles.contactFormNoteTitle}>
+                  {submissionState.tone === "success"
+                    ? "Inquiry received"
+                    : "We could not send your inquiry"}
+                </p>
+                <p className={styles.contactFormNoteMessage}>{submissionState.message}</p>
                 {submissionState.requestNumber ? (
-                  <>
-                    <br />
-                    <strong>Request number:</strong> {submissionState.requestNumber}
-                  </>
+                  <div className={styles.contactRequestNumberBlock}>
+                    <span className={styles.contactRequestNumberLabel}>Request number</span>
+                    <strong className={styles.contactRequestNumberValue}>
+                      {submissionState.requestNumber}
+                    </strong>
+                  </div>
                 ) : null}
-              </p>
+              </div>
             ) : null}
 
             <div className={styles.contactFieldGroup}>
