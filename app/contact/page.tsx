@@ -20,6 +20,7 @@ type ContactPageProps = {
     productName?: string;
     status?: string;
     reason?: string;
+    request?: string;
   }>;
 };
 
@@ -65,9 +66,12 @@ function buildDefaultMessage(searchParams: Awaited<ContactPageProps["searchParam
 
 function buildSubmissionState(searchParams: Awaited<ContactPageProps["searchParams"]>) {
   if (searchParams?.status === "sent") {
+    const requestNumber = sanitizeRequestNumber(searchParams.request);
+
     return {
       tone: "success" as const,
       message: "Your inquiry has been sent. We will reply within 24 hours.",
+      requestNumber,
     };
   }
 
@@ -82,4 +86,12 @@ function buildSubmissionState(searchParams: Awaited<ContactPageProps["searchPara
         ? `The contact form is not configured to send yet. Please email ${contactData.emailLabel} directly.`
         : `We could not send your inquiry. Please try again or email ${contactData.emailLabel} directly.`,
   };
+}
+
+function sanitizeRequestNumber(value: string | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  return /^[A-Z0-9-]{8,32}$/.test(value) ? value : undefined;
 }

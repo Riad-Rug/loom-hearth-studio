@@ -21,16 +21,20 @@ export async function submitContactInquiry(formData: FormData) {
     redirect("/contact?status=error&reason=validation");
   }
 
+  const requestNumber = createContactRequestNumber();
+
   const deliveryResult = await sendTransactionalEmailMessage({
     to: contactData.emailLabel,
-    subject: `Contact inquiry: ${inquiryTypeLabels[inquiryType]} from ${name}`,
+    subject: `Contact inquiry ${requestNumber}: ${inquiryTypeLabels[inquiryType]} from ${name}`,
     html: createContactInquiryHtml({
+      requestNumber,
       name,
       email,
       inquiryTypeLabel: inquiryTypeLabels[inquiryType],
       message,
     }),
     text: createContactInquiryText({
+      requestNumber,
       name,
       email,
       inquiryTypeLabel: inquiryTypeLabels[inquiryType],
@@ -39,7 +43,7 @@ export async function submitContactInquiry(formData: FormData) {
   });
 
   if (deliveryResult.status === "sent") {
-    redirect("/contact?status=sent");
+    redirect(`/contact?status=sent&request=${encodeURIComponent(requestNumber)}`);
   }
 
   redirect(
@@ -74,6 +78,7 @@ function isValidEmail(value: string) {
 }
 
 function createContactInquiryHtml(input: {
+  requestNumber: string;
   name: string;
   email: string;
   inquiryTypeLabel: string;
@@ -81,6 +86,7 @@ function createContactInquiryHtml(input: {
 }) {
   return [
     "<p>A new contact inquiry was submitted from loomandhearthstudio.com.</p>",
+    `<p><strong>Request number:</strong> ${escapeHtml(input.requestNumber)}</p>`,
     `<p><strong>Name:</strong> ${escapeHtml(input.name)}<br />`,
     `<strong>Email:</strong> ${escapeHtml(input.email)}<br />`,
     `<strong>Inquiry type:</strong> ${escapeHtml(input.inquiryTypeLabel)}</p>`,
@@ -89,6 +95,7 @@ function createContactInquiryHtml(input: {
 }
 
 function createContactInquiryText(input: {
+  requestNumber: string;
   name: string;
   email: string;
   inquiryTypeLabel: string;
@@ -96,6 +103,8 @@ function createContactInquiryText(input: {
 }) {
   return [
     "A new contact inquiry was submitted from loomandhearthstudio.com.",
+    "",
+    `Request number: ${input.requestNumber}`,
     "",
     `Name: ${input.name}`,
     `Email: ${input.email}`,
@@ -113,4 +122,14 @@ function escapeHtml(value: string) {
     .replace(/>/g, "&gt;")
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function createContactRequestNumber() {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(now.getUTCDate()).padStart(2, "0");
+  const randomSegment = crypto.randomUUID().slice(0, 8).toUpperCase();
+
+  return `LH-${year}${month}${day}-${randomSegment}`;
 }

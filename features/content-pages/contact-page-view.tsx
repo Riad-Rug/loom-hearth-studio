@@ -12,6 +12,7 @@ type ContactPageViewProps = {
   submissionState?: {
     tone: "success" | "error";
     message: string;
+    requestNumber?: string;
   };
 };
 
@@ -53,6 +54,12 @@ export function ContactPageView({
                 role="status"
               >
                 {submissionState.message}
+                {submissionState.requestNumber ? (
+                  <>
+                    <br />
+                    <strong>Request number:</strong> {submissionState.requestNumber}
+                  </>
+                ) : null}
               </p>
             ) : null}
 
