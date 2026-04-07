@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isSupportedCheckoutCountry, supportedCheckoutCountryLabels } from "@/config/supported-markets";
 import type {
   LaunchCheckoutValidationIssue,
   LaunchCheckoutValidationResult,
@@ -58,10 +59,13 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
     });
   }
 
-  if (parsedSnapshot?.shippingAddress && parsedSnapshot.shippingAddress.country !== "US") {
+  if (
+    parsedSnapshot?.shippingAddress &&
+    !isSupportedCheckoutCountry(parsedSnapshot.shippingAddress.country)
+  ) {
     issues.push({
       code: "unsupported-market",
-      message: "Launch Checkout only supports United States shipping addresses.",
+      message: `Launch Checkout only supports ${supportedCheckoutCountryLabels.US} shipping addresses.`,
     });
   }
 
@@ -78,7 +82,7 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
     if (requiredShippingFields.some((value) => value.trim().length === 0)) {
       issues.push({
         code: "missing-shipping-address",
-        message: "Launch Checkout requires a complete United States shipping address.",
+        message: `Launch Checkout requires a complete ${supportedCheckoutCountryLabels.US} shipping address.`,
       });
     }
   }
@@ -114,8 +118,7 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
       product.type === "multiUnit" && lineItem.variant
         ? product.variants.find((variant) => variant.name === lineItem.variant?.name) ?? undefined
         : undefined;
-    const validatedUnitAmountUsd =
-      validatedVariant?.priceUsd ?? product.priceUsd;
+    const validatedUnitAmountUsd = validatedVariant?.priceUsd ?? product.priceUsd;
 
     return [
       {
@@ -344,3 +347,4 @@ function parseCheckoutOrderSnapshot(value: string): StripeCheckoutOrderSnapshot 
     return null;
   }
 }
+

@@ -1,3 +1,11 @@
+"use client";
+
+import { useId, useState } from "react";
+
+import {
+  getSupportedInquiryCountry,
+  supportedInquiryCountries,
+} from "@/config/inquiry-countries";
 import { contactData } from "@/features/content-pages/content-pages-data";
 
 import styles from "./content-pages.module.css";
@@ -21,6 +29,18 @@ export function ContactPageView({
   submitAction,
   submissionState,
 }: ContactPageViewProps) {
+  const countrySelectId = useId();
+  const cityInputId = useId();
+  const regionInputId = useId();
+  const postalCodeInputId = useId();
+  const address1InputId = useId();
+  const [selectedCountryCode, setSelectedCountryCode] = useState("");
+  const selectedCountry = getSupportedInquiryCountry(selectedCountryCode);
+  const regionLabel = selectedCountry?.regionLabel ?? "State, province, or region";
+  const postalCodeLabel = selectedCountry?.postalCodeLabel ?? "Postal code";
+  const regionRequired = selectedCountry?.requiresRegion ?? false;
+  const postalCodeRequired = selectedCountry?.requiresPostalCode ?? false;
+
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
@@ -125,6 +145,88 @@ export function ContactPageView({
             </div>
 
             <div className={styles.contactFieldGroup}>
+              <label className={styles.contactLabel} htmlFor={countrySelectId}>
+                Destination country
+              </label>
+              <select
+                id={countrySelectId}
+                className={styles.contactInput}
+                name="country"
+                required
+                value={selectedCountryCode}
+                onChange={(event) => setSelectedCountryCode(event.target.value)}
+              >
+                <option value="" disabled>
+                  Select destination country
+                </option>
+                {supportedInquiryCountries.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className={styles.contactFieldGroup}>
+              <label className={styles.contactLabel} htmlFor={cityInputId}>
+                City
+              </label>
+              <input
+                id={cityInputId}
+                autoComplete="address-level2"
+                className={styles.contactInput}
+                name="city"
+                placeholder="City"
+                required
+                type="text"
+              />
+            </div>
+
+            <div className={styles.contactFieldGroup}>
+              <label className={styles.contactLabel} htmlFor={regionInputId}>
+                {regionLabel}
+              </label>
+              <input
+                id={regionInputId}
+                autoComplete="address-level1"
+                className={styles.contactInput}
+                name="region"
+                placeholder={regionLabel}
+                required={regionRequired}
+                type="text"
+              />
+            </div>
+
+            <div className={styles.contactFieldGroup}>
+              <label className={styles.contactLabel} htmlFor={postalCodeInputId}>
+                {postalCodeLabel}
+              </label>
+              <input
+                id={postalCodeInputId}
+                autoComplete="postal-code"
+                className={styles.contactInput}
+                name="postalCode"
+                placeholder={postalCodeLabel}
+                required={postalCodeRequired}
+                type="text"
+              />
+            </div>
+
+            <div className={styles.contactFieldGroup}>
+              <label className={styles.contactLabel} htmlFor={address1InputId}>
+                Address line 1 (optional)
+              </label>
+              <input
+                id={address1InputId}
+                autoComplete="address-line1"
+                className={styles.contactInput}
+                name="address1"
+                placeholder="Street address"
+                type="text"
+              />
+            </div>
+
+            <div className={styles.contactFieldGroup}>
               <label className={styles.contactLabel} htmlFor="contact-message">
                 Message
               </label>
@@ -133,7 +235,7 @@ export function ContactPageView({
                 className={styles.contactTextarea}
                 name="message"
                 defaultValue={defaults?.message}
-                placeholder={"Your message — product name, room dimensions, or any question about the collection."}
+                placeholder={"Your message ? product name, room dimensions, or any question about the collection."}
                 required
                 rows={7}
               />
@@ -175,4 +277,3 @@ export function ContactPageView({
     </div>
   );
 }
-

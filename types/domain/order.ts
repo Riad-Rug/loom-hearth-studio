@@ -1,3 +1,4 @@
+import type { SupportedCheckoutCountry } from "@/config/supported-markets";
 import type { CartItem } from "@/types/domain/cart";
 
 export type OrderStatus =
@@ -25,7 +26,7 @@ export type OrderAddress = {
   city: string;
   state: string;
   postalCode: string;
-  country: "US";
+  country: SupportedCheckoutCountry;
 };
 
 export type Order = {
@@ -46,3 +47,4 @@ export type Order = {
   // TODO: Validate final refund operation flow and Stripe object mapping.
   refundedAt?: string;
 };
+

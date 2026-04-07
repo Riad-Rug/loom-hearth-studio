@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 
+import { defaultSupportedCheckoutCountry } from "@/config/supported-markets";
 import type { CartStoreItem } from "@/features/cart/cart-provider";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
@@ -34,13 +35,13 @@ type CheckoutInformation = Pick<
   OrderAddress,
   "email" | "fullName" | "address1" | "address2" | "city" | "state" | "postalCode"
 > & {
-  country: "US";
+  country: typeof defaultSupportedCheckoutCountry;
 };
 
 type CheckoutShippingMethod = {
   id: "standard";
   label: "Standard shipping";
-  market: "US";
+  market: typeof defaultSupportedCheckoutCountry;
   priceUsd: 0;
 };
 
@@ -93,7 +94,7 @@ type CheckoutContextValue = {
 const defaultShippingMethod: CheckoutShippingMethod = {
   id: "standard",
   label: "Standard shipping",
-  market: "US",
+  market: defaultSupportedCheckoutCountry,
   priceUsd: 0,
 };
 
@@ -105,7 +106,7 @@ const initialInformation: CheckoutInformation = {
   city: "",
   state: "",
   postalCode: "",
-  country: "US",
+  country: defaultSupportedCheckoutCountry,
 };
 
 const initialSubmissionAttempt: OrderSubmissionAttemptState = {
@@ -154,7 +155,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         setInformation({
           ...initialInformation,
           ...parsedValue.information,
-          country: "US",
+          country: defaultSupportedCheckoutCountry,
         });
       }
 
@@ -190,7 +191,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       shippingAddress: isInformationComplete
         ? {
             ...information,
-            country: "US",
+            country: defaultSupportedCheckoutCountry,
           }
         : null,
       shippingMethod,
@@ -479,3 +480,4 @@ function canContinueToCheckoutReview(
       checkoutExecutionAttempt.result.redirectTarget,
   );
 }
+
