@@ -166,7 +166,7 @@ export const faqItems: FaqItem[] = [
     group: "Shipping",
     question: "How long does shipping take?",
     answer:
-      "USA: 7\u201314 business days after dispatch. This is an estimate \u2014 customs processing can add time. We send tracking when the order leaves Morocco.",
+      "Orders ship from Morocco to the USA, Europe, Canada, and Australia. Delivery timing varies by destination, carrier availability, and customs processing, and we confirm the destination timing with you before payment is captured. We send tracking when the order leaves Morocco.",
     sortOrder: 12,
   },
   {
@@ -181,7 +181,7 @@ export const faqItems: FaqItem[] = [
     group: "Shipping",
     question: "Do I need to pay customs or import duties?",
     answer:
-      "For US orders: no. Duties are included in the price. There are no unexpected charges at delivery.",
+      "Import duties, VAT, GST, and customs fees depend on the destination. We confirm destination-specific shipping and delivery conditions with you before payment is captured, and any charges due on arrival remain the buyer\'s responsibility unless we confirm otherwise in writing before capture.",
     sortOrder: 14,
   },
   {
@@ -334,13 +334,13 @@ Every item in the Loom & Hearth Studio collection is sourced and stored in Moroc
 
 ## 2. Where we ship
 
-At launch, we ship to the **United States only**. International shipping to Europe, Canada, and Australia will be added in a future phase. If you are outside the United States and would like to enquire about a purchase, contact us at hello@loomandhearthstudio.com and we will see what we can do.
+At launch, we ship to the **United States, Europe, Canada, and Australia**. Shipping is included in the product price for these launch markets. We confirm destination, timing, and delivery conditions with you before payment is captured.
 
 ---
 
 ## 3. Shipping cost
 
-Shipping is included in the price of every item. There is no separate shipping charge at checkout. What you see on the product page is what you pay  including shipping from Morocco to your US delivery address.
+Shipping is included in the price of every item for the USA, Europe, Canada, and Australia. There is no separate shipping charge at checkout. What you see on the product page is what you pay for the item and shipping from Morocco to your launch-market delivery address.
 
 ---
 
@@ -350,7 +350,7 @@ Before your order ships, we contact you within 24 hours of purchase to offer a s
 
 Once you confirm you are happy, payment is captured and your order is packed and dispatched. This means the time from order to dispatch can be up to 7 days. In practice it is usually faster  most verifications are completed within 48 hours.
 
-If we are unable to reach you within 7 days of the order date after two contact attempts, we will capture payment and dispatch your order.
+If we are unable to confirm your destination, timing, or delivery conditions within the verification window, we will not capture payment until that confirmation is complete.
 
 For the full details of how the verification works, see the [Terms of Service](https://www.loomandhearthstudio.com/terms-and-conditions).
 
@@ -371,6 +371,7 @@ All delivery time estimates below are measured from the **date of dispatch**  no
 | Destination | Estimated delivery after dispatch |
 |---|---|
 | United States | 7 to 14 business days |
+| Europe, Canada, and Australia | Confirmed before payment is captured based on destination, carrier availability, and customs processing |
 
 These are estimates, not guarantees. International shipments from Morocco pass through customs clearance, which can add time outside our control. Carrier delays, public holidays, and weather events can also affect timelines. We will always provide you with a tracking number so you can monitor your shipment in real time.
 
@@ -386,13 +387,11 @@ If your tracking number is not working or showing no updates within 48 hours of 
 
 ---
 
-## 8. Customs and import duties  United States
+## 8. Customs and import duties
 
-**For US orders, we handle customs documentation and work to prevent unexpected import charges.**
+Import duties, VAT, GST, and customs fees vary by destination. We review destination-specific shipping, customs, and delivery conditions with you before payment is captured.
 
-We handle the customs documentation for US shipments and coordinate with carriers to support smooth clearance through US Customs and Border Protection.
-
-If a US shipment is assessed an unexpected import charge, contact us immediately at hello@loomandhearthstudio.com before paying it so we can review the notice and help resolve it.
+Unless we confirm otherwise in writing before capture, any duties, VAT, GST, brokerage, or customs fees assessed on arrival remain the buyer's responsibility.
 
 ---
 
@@ -400,7 +399,7 @@ If a US shipment is assessed an unexpected import charge, contact us immediately
 
 International shipments are occasionally held by customs for inspection. This is a routine part of international trade and is outside our control. Customs holds can add anywhere from a few days to several weeks to the delivery timeline.
 
-If your shipment is held by US Customs and Border Protection:
+If your shipment is held by customs in your destination market:
 
 - You will typically receive a notice from the carrier or CBP directly.
 - Contact us immediately with the notice details and we will assist.
@@ -924,7 +923,7 @@ If we cancel your order, we will notify you promptly by email and release any pa
 
 ### 4.1 Prices
 
-All prices are displayed in United States Dollars (USD). Prices include the cost of the item and, for US orders, duties and customs fees as described in section 6. Prices do not include return shipping.
+All prices are displayed in United States Dollars (USD). Prices include the cost of the item and shipping for the USA, Europe, Canada, and Australia. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
 
 We reserve the right to correct pricing errors on the site at any time. If an error is identified after you have placed an order, we will contact you to confirm whether you wish to proceed at the correct price, or cancel for a full release of any held funds.
 
@@ -956,7 +955,7 @@ We offer a pre-shipment video verification for every order. This is a core part 
 
 **If something is not right.** Contact us before confirming and we will work with you to resolve it before the item ships. This is the right moment to raise any concern  it is far easier to resolve before shipment than after.
 
-**If we cannot reach you.** If we do not receive a response within 7 days of the order date after two contact attempts, we will capture payment and dispatch your order as described.
+**If we cannot reach you.** If we do not receive a response within 7 days of the order date after two contact attempts, we will keep the order on hold and will not capture payment until destination, timing, and delivery conditions are confirmed.
 
 Accepting the pre-shipment verification offer significantly reduces the likelihood of returns due to colour or size mismatch. We encourage all buyers to take advantage of it.
 
@@ -975,8 +974,7 @@ We ship using DHL Express, FedEx International, or Aramex, selected based on des
 ### 6.3 Estimated delivery times
 
 - United States: 7 to 14 business days from dispatch
-- Europe: 10 to 18 business days from dispatch
-- Australia: 14 to 21 business days from dispatch
+- Europe, Canada, and Australia: timing is confirmed before payment is captured based on destination, carrier availability, and customs processing
 
 These are estimates, not guarantees. Customs clearance, carrier delays, and circumstances outside our control may extend delivery times. We will provide you with a tracking number when your order is dispatched so you can monitor progress.
 
@@ -988,15 +986,11 @@ Orders are dispatched after pre-shipment verification is complete and payment is
 
 Risk of loss and damage passes to you when the item is handed to the carrier for shipment. If your item is lost or significantly delayed, contact us within 30 days of the expected delivery date and we will open an investigation with the carrier and work toward a resolution.
 
-### 6.6 Import duties and customs  United States
+### 6.6 Import duties and customs
 
-For orders shipping to the United States, import duties are included in the product price. You will not be charged additional customs fees at the door for US orders under normal circumstances.
+Import duties, VAT, GST, brokerage, and customs fees vary by destination. We confirm the destination-specific shipping and import conditions with you before payment is captured.
 
-We handle all customs documentation for US shipments. The duty treatment for each product is based on the applicable Harmonised Tariff Schedule code and Morocco-United States Free Trade Agreement eligibility. In the rare event of an unexpected customs charge on a US order that arises from our documentation, contact us and we will resolve it.
-
-### 6.7 Import duties and customs  all other destinations
-
-For orders shipping outside the United States, import duties, VAT, GST, and any applicable customs fees are the buyer's responsibility. These charges are assessed by your country's customs authority and are outside our control. We do not collect or pre-pay these charges for non-US orders.
+Unless we confirm otherwise in writing before capture, any import duties, VAT, GST, brokerage, or customs fees assessed by the destination country remain the buyer's responsibility.
 
 ---
 

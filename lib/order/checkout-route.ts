@@ -136,15 +136,15 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
     },
     information: {
       note:
-        "Guest email and US shipping address are stored in local client state only for this slice.",
+        "Guest email and shipping details are stored in local client state only for this slice.",
       actionLabel: "Continue to shipping",
     },
     shipping: {
       optionTitle: "Standard shipping",
-      optionBody: "United States only",
+      optionBody: "Launch markets: USA, Europe, Canada, and Australia",
       optionPriceLabel: "$0.00",
       body:
-        "Shipping is fixed at $0.00 for launch in the PRD. No shipping provider or rate calculation logic is implemented in this slice.",
+        "Shipping is fixed at $0.00 for the launch markets in the PRD. Destination and delivery conditions still need to be confirmed before payment is captured. No shipping provider or rate calculation logic is implemented in this slice.",
       actionLabel: "Continue to payment",
     },
     payment: {

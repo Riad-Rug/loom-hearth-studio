@@ -8,7 +8,11 @@ export const siteConfig = {
   market: "US",
   ogImagePath: "/og/default-placeholder.jpg",
   tagline: "Handcrafted Moroccan rugs and home decor",
-  announcementItems: ["FREE SHIPPING TO THE USA", "NO UNEXPECTED IMPORT CHARGES FOR US ORDERS", "SHIPS FROM MOROCCO"],
+  announcementItems: [
+    "FREE SHIPPING TO THE USA, EUROPE, CANADA, AND AUSTRALIA",
+    "DESTINATION AND DELIVERY CONDITIONS CONFIRMED BEFORE PAYMENT IS CAPTURED",
+    "SHIPS FROM MOROCCO",
+  ],
   primaryNav: [
     { href: "/shop", label: "Shop" },
     { href: "/lookbook", label: "Lookbook" },

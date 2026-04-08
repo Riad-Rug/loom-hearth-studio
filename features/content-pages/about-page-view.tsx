@@ -81,7 +81,7 @@ export function AboutPageView() {
           </Link>
         </div>
         <div className={styles.trustHighlight}>
-          Ships from Morocco in 5-7 business days - no unexpected import charges for US orders.
+          Ships from Morocco with free shipping to the USA, Europe, Canada, and Australia. Destination and delivery conditions are confirmed before payment is captured.
         </div>
       </section>
 
