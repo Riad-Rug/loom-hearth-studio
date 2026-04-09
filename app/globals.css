@@ -406,6 +406,22 @@ p {
   color: rgba(34, 33, 38, 0.82);
 }
 
+.site-footer__legal {
+  display: grid;
+  gap: 0.2rem;
+  max-width: 26rem;
+  color: rgba(34, 33, 38, 0.76);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.site-footer__legal-heading {
+  color: rgba(34, 33, 38, 0.54);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .site-footer__nav {
   display: grid;
   gap: 0.35rem;

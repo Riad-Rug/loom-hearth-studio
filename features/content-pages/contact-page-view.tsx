@@ -260,8 +260,20 @@ export function ContactPageView({
           </div>
 
           <div className={styles.metaRow}>
+            <span className={styles.metaLabel}>Legal business name</span>
+            <p>{contactData.legalNameLabel}</p>
+          </div>
+          <div className={styles.metaRow}>
+            <span className={styles.metaLabel}>Public address</span>
+            <p>{contactData.addressLabel}</p>
+          </div>
+          <div className={styles.metaRow}>
             <span className={styles.metaLabel}>Email</span>
             <p>{contactData.emailLabel}</p>
+          </div>
+          <div className={styles.metaRow}>
+            <span className={styles.metaLabel}>Complaints</span>
+            <p>{contactData.complaintsLabel}</p>
           </div>
           <div className={styles.metaRow}>
             <span className={styles.metaLabel}>Business hours</span>

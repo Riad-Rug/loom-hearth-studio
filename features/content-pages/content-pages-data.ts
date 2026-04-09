@@ -1,4 +1,5 @@
 import type { FaqItem, PolicyPage, Testimonial } from "@/types/domain";
+import { publicBusinessDetails } from "@/config/public-business-details";
 
 type AboutSection = {
   eyebrow: string;
@@ -62,13 +63,16 @@ export const contactData = {
   ctaLabel: "SEND MESSAGE",
   supportTitle: "Studio support",
   supportBody:
-    "Reach us directly for the fastest response.",
+    "Reach us directly for the fastest response. Public trader and legal contact details are below.",
   reassuranceLabel: "Support note",
   reassuranceText:
     "Every inquiry about a rug includes a video of the actual piece before payment is taken. Include the product name and your room dimensions if you have them \u2014 it helps us respond with something useful.",
   responseTimeLabel: "Response timing",
   responseTimeText: "Within 24 hours",
-  emailLabel: "hello@loomandhearthstudio.com",
+  legalNameLabel: publicBusinessDetails.legalName,
+  addressLabel: publicBusinessDetails.address,
+  emailLabel: publicBusinessDetails.email,
+  complaintsLabel: publicBusinessDetails.complaintsLine,
   hoursLabel: "Monday to Friday, 9am \u2013 6pm CET (GMT+1)",
   locationLabel: "Morocco sourcing studio - U.S. launch market",
 } as const;
@@ -467,7 +471,9 @@ If you realise your address is incorrect after placing an order, contact us imme
 For any question about your shipment, tracking, or delivery:
 
 **Loom and Hearth Studio LLC**
-Email: hello@loomandhearthstudio.com
+Address: ${publicBusinessDetails.address}
+Email: ${publicBusinessDetails.email}
+${publicBusinessDetails.complaintsLine}
 
 We aim to respond to all shipping enquiries within 2 business days.`,
     seoTitle: "Shipping policy | Loom & Hearth Studio",
@@ -663,7 +669,9 @@ If you are unsure about your rights, contact us  we will deal with you fairly.
 For return requests, questions about this policy, or anything related to an order:
 
 **Loom and Hearth Studio LLC**
-Email: hello@loomandhearthstudio.com
+Address: ${publicBusinessDetails.address}
+Email: ${publicBusinessDetails.email}
+${publicBusinessDetails.complaintsLine}
 Subject line: Return Request  Order [your order number]
 
 We aim to respond to all return-related enquiries within 3 business days.`,
@@ -850,7 +858,9 @@ We encourage you to review this policy periodically.
 For any question, request, or concern about this Privacy Policy or how we handle your data:
 
 **Loom and Hearth Studio LLC**
-Email: hello@loomandhearthstudio.com
+Address: ${publicBusinessDetails.address}
+Email: ${publicBusinessDetails.email}
+${publicBusinessDetails.complaintsLine}
 
 We aim to respond to all inquiries within 5 business days.`,
     seoTitle: "Privacy Policy | Loom & Hearth Studio",
@@ -1069,7 +1079,9 @@ For material changes, we will notify registered account holders by email.
 For any question about these Terms:
 
 **Loom and Hearth Studio LLC**
-Email: hello@loomandhearthstudio.com
+Address: ${publicBusinessDetails.address}
+Email: ${publicBusinessDetails.email}
+${publicBusinessDetails.complaintsLine}
 
 We aim to respond to all inquiries within 5 business days.`,
     seoTitle: "Terms of Service | Loom & Hearth Studio",

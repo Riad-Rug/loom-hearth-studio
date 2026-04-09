@@ -2,6 +2,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
+import { publicBusinessDetails } from "@/config/public-business-details";
 import { siteConfig } from "@/config/site";
 import { getHomepageContent } from "@/lib/homepage/content";
 
@@ -27,6 +28,13 @@ export async function SiteFooter() {
               Interior designers and trade professionals: contact us for sourcing and project
               inquiries.
             </p>
+            <div className="site-footer__legal">
+              <p className="site-footer__legal-heading">Trader and contact details</p>
+              <p>{publicBusinessDetails.legalName}</p>
+              <p>{publicBusinessDetails.address}</p>
+              <p>{publicBusinessDetails.email}</p>
+              <p>{publicBusinessDetails.complaintsLine}</p>
+            </div>
           </div>
           <div className="site-footer__nav-group">
             <p className="site-footer__heading">{content.footer.exploreHeading}</p>
