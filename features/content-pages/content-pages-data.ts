@@ -344,7 +344,7 @@ At launch, we ship to the **United States, Canada, Australia, and United Kingdom
 
 ## 3. Shipping cost
 
-Shipping is included in the price of every item for the United States, Canada, Australia, and United Kingdom. There is no separate shipping charge at checkout. What you see on the product page is what you pay for the item and shipping from Morocco to your launch-market delivery address. For other countries, shipping is quoted only after a case-by-case review.
+Shipping is included in the price of every item for the United States, Canada, Australia, and United Kingdom. What you see on the product page is what you pay for the item and shipping from Morocco to your launch-market delivery address. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
 
 ---
 
@@ -364,7 +364,7 @@ For the full details of how the verification works, see the [Terms of Service](h
 
 We ship using **Aramex**, **DHL Express**, and **FedEx International**, selected based on the destination, package weight, and dimensions. You will be notified of the carrier and tracking number when your order is dispatched.
 
-We do not allow carrier selection at checkout. We choose the carrier best suited to your shipment on a per-order basis.
+We do not offer carrier selection as part of the current inquiry-first order process. We choose the carrier best suited to your shipment on a per-order basis.
 
 ---
 
@@ -456,7 +456,7 @@ We cannot open a carrier claim after 30 days from dispatch. Contact us promptly 
 
 ## 14. Incorrect or incomplete delivery address
 
-You are responsible for providing an accurate and complete delivery address at checkout. If a shipment is returned to us due to an incorrect address, refused delivery, or failure to collect from a carrier facility:
+You are responsible for providing an accurate and complete delivery address during the order confirmation process. If a shipment is returned to us due to an incorrect address, refused delivery, or failure to collect from a carrier facility:
 
 - We will contact you to arrange re-shipment.
 - Re-shipment costs are at your expense.
@@ -610,7 +610,7 @@ Once we receive your return and confirm the item meets the eligibility condition
 
 ### Method
 
-Refunds are issued to the original payment method used at checkout. We cannot issue refunds to a different card or account.
+Refunds are issued to the original payment method used for the order. We cannot issue refunds to a different card or account.
 
 ### Amount
 
@@ -618,7 +618,7 @@ Refunds are issued to the original payment method used at checkout. We cannot is
 
 **Partial refund:** We reserve the right to issue a partial refund if the returned item shows signs of use, odour, or damage not present at delivery that reduce its resale value. We will notify you of any deduction and the reason before processing.
 
-**Return shipping costs:** Original shipping costs are non-refundable. If you paid a separate shipping charge at checkout, that amount is not included in your refund.
+**Return shipping costs:** Original shipping costs are non-refundable. If a separate shipping charge was agreed for your order, that amount is not included in your refund.
 
 ### Processing time
 
@@ -723,7 +723,7 @@ We collect only what is necessary to operate this store and communicate with you
 | Email address | Account registration; order confirmations; password reset emails; newsletter (if you opted in) | Contract performance / Legitimate interest / Consent (newsletter only) |
 | Password (stored as a one-way hash  never the raw password) | Authenticating your account | Contract performance |
 | Shipping address  street, city, state, postal code, country | Delivering your order; customs documentation | Contract performance |
-| Phone number (optional, collected at checkout) | Carrier delivery coordination if required | Contract performance |
+| Phone number (only if you choose to provide one during order handling) | Carrier delivery coordination if required | Contract performance |
 | Order details  items ordered, prices, quantities, Stripe session and payment intent identifiers, order status | Fulfilling your order; resolving disputes; financial record-keeping | Contract performance / Legal obligation |
 | Session token | Keeping you logged in during your visit | Legitimate interest (security) |
 | Hashed login identifier (a one-way SHA-256 hash derived from your email address, IP address, and the login surface  the raw IP and raw email are never stored in this record) | Preventing automated login abuse and brute-force attacks | Legitimate interest (security) |
@@ -739,11 +739,11 @@ We do not run third-party analytics, advertising pixels, session recording tools
 | Name | Type | Purpose | Expiry |
 |---|---|---|---|
 | \`loom_hearth_cookie_consent\` | First-party cookie | Stores your cookie consent preference so we do not ask again | 180 days |
-| Auth.js session cookies (\`next-auth.session-token\` and related) | First-party cookies | Keeps you authenticated while browsing and at checkout | Session / rolling |
+| Auth.js session cookies (\`next-auth.session-token\` and related) | First-party cookies | Keeps you authenticated while browsing account areas of the site | Session / rolling |
 
 ### Local storage (not cookies)
 
-Your shopping cart and checkout state are saved in your browser's local storage, not in cookies. This data never leaves your device until you place an order.
+Your shopping cart and temporary checkout state are saved in your browser's local storage, not in cookies. This data remains on your device unless and until you proceed with an order after direct confirmation with us.
 
 We do not set any advertising, analytics, or third-party tracking cookies. If this changes, this policy will be updated before any new cookie is activated.
 
@@ -753,13 +753,13 @@ We do not set any advertising, analytics, or third-party tracking cookies. If th
 
 We share your data with the following third parties only to the extent necessary to operate the store. We do not sell your personal data to anyone.
 
-**Stripe**  payment processing. When you place an order, your email address, order line items, and order metadata are transmitted to Stripe to create a checkout session. Your payment card details are entered directly on Stripe's servers and are never seen or stored by us. Stripe's privacy policy is available at stripe.com/privacy.
+**Stripe**  payment processing. If you proceed with an order after direct confirmation with us, your email address, order line items, and order metadata are transmitted to Stripe so payment can be authorised and, if approved after verification, captured. Your payment card details are entered directly on Stripe's servers and are never seen or stored by us. Stripe's privacy policy is available at stripe.com/privacy.
 
-**Postmark**  transactional email delivery. When you place an order or request a password reset, we transmit your email address, name, order details, and shipping address to Postmark to deliver your confirmation or reset email. Postmark's privacy policy is available at postmarkapp.com/privacy-policy.
+**Postmark**  transactional email delivery. When you proceed with an order after direct confirmation with us, or request a password reset, we transmit your email address, name, order details, and shipping address to Postmark to deliver your confirmation or reset email. Postmark's privacy policy is available at postmarkapp.com/privacy-policy.
 
 **Vercel**  website hosting. This site is hosted on Vercel's infrastructure. As with any web host, Vercel's servers process requests from your browser and may retain standard server access logs including IP addresses for a limited period as part of normal hosting operations. Vercel's privacy policy is available at vercel.com/legal/privacy-policy.
 
-**Shipping carriers (DHL Express, FedEx International, Aramex)**  order fulfilment. When your order is dispatched, we share your full name, shipping address, and where required by the carrier, your phone number with the carrier responsible for delivering your order. These carriers process your data solely to complete delivery.
+**Shipping carriers (DHL Express, FedEx International, Aramex)**  order fulfilment. When your order is dispatched, we share your full name, shipping address, and where required by the carrier and provided during order handling, your phone number with the carrier responsible for delivering your order. These carriers process your data solely to complete delivery.
 
 No other third-party service currently receives your personal data. If we add a tool that requires sharing your data  for example an email marketing platform or analytics service  we will update this policy before activating that tool.
 
@@ -909,14 +909,14 @@ We make every effort to represent colour, texture, size, and condition accuratel
 
 Browsing the site and adding items to your cart does not create a contract. A contract between you and Loom and Hearth Studio LLC is formed when:
 
-1. You submit your order through the checkout, and
+1. You confirm that you wish to proceed after contacting us directly or responding to our order-confirmation message, and
 2. We send you an order confirmation email to the email address you provided.
 
 The confirmation email constitutes our acceptance of your order. If we are unable to accept your order for any reason, we will notify you and no charge will be applied.
 
 ### 3.2 Accurate information
 
-When placing an order you agree to provide accurate, complete, and current information  including your name, email address, and shipping address. Orders placed with incorrect or incomplete shipping addresses may be delayed or undeliverable. We are not responsible for non-delivery resulting from inaccurate information you provide.
+When proceeding with an order you agree to provide accurate, complete, and current information  including your name, email address, and shipping address. Orders placed with incorrect or incomplete shipping addresses may be delayed or undeliverable. We are not responsible for non-delivery resulting from inaccurate information you provide.
 
 ### 3.3 Our right to cancel before dispatch
 
@@ -942,7 +942,7 @@ We reserve the right to correct pricing errors on the site at any time. If an er
 
 **This is important to read.** Our payment process works in two steps, and understanding it prevents confusion when you check your bank statement.
 
-**Step 1  Authorisation at checkout.** When you complete checkout, your payment method is authorised for the order total. This places a hold on the funds on your card or account. You will see this as a pending charge. No money is transferred to us at this point.
+**Step 1  Authorisation after confirmation.** If you decide to proceed after direct confirmation with us, your payment method is authorised for the order total. This places a hold on the funds on your card or account. You will see this as a pending charge. No money is transferred to us at this point.
 
 **Step 2  Capture after verification.** Payment is captured  meaning funds are actually collected  only after your pre-shipment verification is complete (see section 5). The capture window is up to 7 days from the order date.
 
@@ -950,7 +950,7 @@ If you confirm after seeing the verification video that you are happy with the i
 
 ### 4.3 Payment processing
 
-Payments are processed by Stripe. Your card details are entered directly on Stripe's secure servers and are never seen or stored by Loom and Hearth Studio LLC.
+Payments are processed by Stripe if you proceed after direct confirmation with us. Your card details are entered directly on Stripe's secure servers and are never seen or stored by Loom and Hearth Studio LLC.
 
 ---
 
@@ -958,7 +958,7 @@ Payments are processed by Stripe. Your card details are entered directly on Stri
 
 We offer a pre-shipment video verification for every order. This is a core part of how we operate  not a delay.
 
-**How it works.** Within 24 hours of your order being placed, we will contact you by email to offer a short video of the actual piece you purchased  shown in natural light in Morocco, with a tape measure for scale, so you can see the colour, texture, and size before your payment is captured and your item ships.
+**How it works.** Within 24 hours of your confirmed order request, we will contact you by email to offer a short video of the actual piece you selected  shown in natural light in Morocco, with a tape measure for scale, so you can see the colour, texture, and size before your payment is captured and your item ships.
 
 **Your options.** You can confirm by reply email, request a live video call via WhatsApp or FaceTime, or receive a short recorded video clip  whichever suits you best.
 
