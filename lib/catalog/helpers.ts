@@ -78,7 +78,7 @@ export function getInventoryMessage(product: MultiUnitProduct) {
     case "lowStock":
       return `Only ${product.inventory} remaining in the current launch allocation.`;
     case "inStock":
-      return "Available across the USA, Europe, Canada, and Australia launch markets.";
+      return "Available across the United States, Canada, Australia, and United Kingdom launch markets.";
   }
 }
 

@@ -207,7 +207,7 @@ function createProductDetailSections(product: Product) {
   sections.push({
     title: "Shipping & returns",
     body:
-      "Ships from Morocco with customs handled to help prevent unexpected import charges for US orders.",
+      "Ships from Morocco with free shipping to the United States, Canada, Australia, and United Kingdom. Inquiries from other countries are reviewed case by case before payment is captured.",
   });
 
   return sections;

@@ -226,13 +226,13 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Moroccan home decor value highlights | Loom & Hearth Studio",
       metaDescription:
-        "Direct sourcing, launch-market shipping to the USA, Europe, Canada, and Australia, and a confirm-before-capture model shape the homepage value highlights.",
+        "Direct sourcing, launch-market shipping to the United States, Canada, Australia, and United Kingdom, and a confirm-before-capture model shape the homepage value highlights.",
     },
     items: [
       { id: "badge-1", label: "Direct from Morocco", visible: true },
       {
         id: "badge-2",
-        label: "Free shipping to the USA, Europe, Canada, and Australia",
+        label: "Free shipping to the United States, Canada, Australia, and United Kingdom",
         visible: true,
       },
       { id: "badge-3", label: "Destination confirmed before capture", visible: true },
@@ -452,7 +452,7 @@ const defaultHomePageContent: HomePageContent = {
     introTitle: siteConfig.name,
     introBody: "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor  sourced directly from Marrakech.",
     introMeta:
-      "Free shipping to the USA, Europe, Canada, and Australia. Prices in USD. Destination and delivery conditions are confirmed before payment is captured.",
+      "Free shipping to the United States, Canada, Australia, and United Kingdom. Inquiries from other countries are reviewed case by case. Prices in USD. Destination and delivery conditions are confirmed before payment is captured.",
     exploreHeading: "Explore",
     exploreLinks: siteConfig.primaryNav.map((item) => ({ ...item })),
     supportHeading: "Support",

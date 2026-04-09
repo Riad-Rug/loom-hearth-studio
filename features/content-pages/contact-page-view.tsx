@@ -40,6 +40,7 @@ export function ContactPageView({
   const postalCodeLabel = selectedCountry?.postalCodeLabel ?? "Postal code";
   const regionRequired = selectedCountry?.requiresRegion ?? false;
   const postalCodeRequired = selectedCountry?.requiresPostalCode ?? false;
+  const shippingAvailabilityNote = selectedCountry?.shippingAvailabilityNote;
 
   return (
     <div className={styles.page}>
@@ -165,6 +166,9 @@ export function ContactPageView({
                   </option>
                 ))}
               </select>
+              {shippingAvailabilityNote ? (
+                <p className={styles.contactFieldHint}>{shippingAvailabilityNote}</p>
+              ) : null}
             </div>
 
             <div className={styles.contactFieldGroup}>

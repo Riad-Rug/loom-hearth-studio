@@ -81,7 +81,7 @@ export function AboutPageView() {
           </Link>
         </div>
         <div className={styles.trustHighlight}>
-          Ships from Morocco with free shipping to the USA, Europe, Canada, and Australia. Destination and delivery conditions are confirmed before payment is captured.
+          Ships from Morocco with free shipping to the United States, Canada, Australia, and United Kingdom. Inquiries from other countries are reviewed case by case before payment is captured.
         </div>
       </section>
 

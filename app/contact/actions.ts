@@ -19,6 +19,7 @@ type InquiryDestination = {
   region: string | null;
   postalCode: string | null;
   address1: string | null;
+  shippingAvailabilityNote: string | null;
 };
 
 export async function submitContactInquiry(formData: FormData) {
@@ -124,6 +125,7 @@ function sanitizeInquiryDestination(formData: FormData): InquiryDestination | nu
     region,
     postalCode,
     address1,
+    shippingAvailabilityNote: country.shippingAvailabilityNote,
   };
 }
 
@@ -182,6 +184,7 @@ function formatDestinationLabel(destination: InquiryDestination) {
     destination.region,
     destination.postalCode,
     destination.address1,
+    destination.shippingAvailabilityNote,
   ]
     .filter(Boolean)
     .join("\n");

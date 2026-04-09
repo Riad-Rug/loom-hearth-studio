@@ -5,6 +5,7 @@ export type InquiryCountryDefinition = {
   postalCodeLabel: string;
   requiresRegion: boolean;
   requiresPostalCode: boolean;
+  shippingAvailabilityNote: string | null;
 };
 
 const baseSupportedInquiryCountries = {
@@ -15,6 +16,7 @@ const baseSupportedInquiryCountries = {
     postalCodeLabel: "ZIP code",
     requiresRegion: true,
     requiresPostalCode: true,
+    shippingAvailabilityNote: null,
   },
   CA: {
     code: "CA",
@@ -23,6 +25,7 @@ const baseSupportedInquiryCountries = {
     postalCodeLabel: "Postal code",
     requiresRegion: true,
     requiresPostalCode: true,
+    shippingAvailabilityNote: null,
   },
   AU: {
     code: "AU",
@@ -31,16 +34,31 @@ const baseSupportedInquiryCountries = {
     postalCodeLabel: "Postcode",
     requiresRegion: true,
     requiresPostalCode: true,
+    shippingAvailabilityNote: null,
   },
-} as const satisfies Record<string, InquiryCountryDefinition>;
-
-const europeanSupportedInquiryCountries = {
-  // TODO: Fill this object with the exact European inquiry-country list chosen by the user.
+  GB: {
+    code: "GB",
+    label: "United Kingdom",
+    regionLabel: "County, region, or nation",
+    postalCodeLabel: "Postcode",
+    requiresRegion: true,
+    requiresPostalCode: true,
+    shippingAvailabilityNote: null,
+  },
+  OTHER: {
+    code: "OTHER",
+    label: "Other country - reviewed case by case",
+    regionLabel: "State, province, region, or county",
+    postalCodeLabel: "Postal code",
+    requiresRegion: false,
+    requiresPostalCode: false,
+    shippingAvailabilityNote:
+      "Inquiries from outside our launch markets are welcome. Shipping availability is reviewed case by case before payment is captured.",
+  },
 } as const satisfies Record<string, InquiryCountryDefinition>;
 
 export const supportedInquiryCountriesByCode = {
   ...baseSupportedInquiryCountries,
-  ...europeanSupportedInquiryCountries,
 } as const;
 
 export type SupportedInquiryCountry = keyof typeof supportedInquiryCountriesByCode;

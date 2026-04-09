@@ -141,7 +141,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
     },
     shipping: {
       optionTitle: "Standard shipping",
-      optionBody: "Launch markets: USA, Europe, Canada, and Australia",
+      optionBody: "Launch markets: United States, Canada, Australia, and United Kingdom",
       optionPriceLabel: "$0.00",
       body:
         "Shipping is fixed at $0.00 for the launch markets in the PRD. Destination and delivery conditions still need to be confirmed before payment is captured. No shipping provider or rate calculation logic is implemented in this slice.",
