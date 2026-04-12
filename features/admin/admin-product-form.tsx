@@ -226,7 +226,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
         <section className={styles.card}>
           <p className={styles.cardEyebrow}>Basics</p>
           <label className={styles.formField}>
-            <span>Product type</span>
+            <span>Product model</span>
             <select
               name="type"
               value={type}
@@ -238,7 +238,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
             >
               {adminProductTypeOptions.map((option) => (
                 <option key={option} value={option}>
-                  {option}
+                  {option === "rug" ? "One-of-one" : "Multi-unit"}
                 </option>
               ))}
             </select>
