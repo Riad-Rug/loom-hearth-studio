@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "bash ./scripts/prisma-migrate-deploy.sh && npm run catalog:bootstrap && next build",
+    "build": "next build",
+    "build:release": "bash ./scripts/prisma-migrate-deploy.sh && npm run catalog:bootstrap && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
@@ -34,6 +35,3 @@
     "typescript": "^5.7.2"
   }
 }
-
-
-
