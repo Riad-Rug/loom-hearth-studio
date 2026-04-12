@@ -31,6 +31,8 @@ export type StripeCheckoutWebhookEventType =
 export type StripeOrderPaymentInput = {
   checkoutMode: "guest";
   email?: string;
+  promoCode?: string;
+  discountUsd: number;
   subtotalUsd: number;
   shippingUsd: 0;
   taxUsd: number;
@@ -51,6 +53,8 @@ export type StripeOrderPaymentInput = {
 
 export type StripeCheckoutOrderSnapshot = {
   shippingAddress: OrderAddress;
+  promoCode?: string;
+  discountUsd: number;
   items: Array<{
     id: string;
     productId: string;
@@ -79,6 +83,8 @@ export type StripeCheckoutSessionRequest = {
   successUrl: string;
   cancelUrl: string;
   currency: StripeOrderPaymentInput["currency"];
+  promoCode?: string;
+  discountUsd: number;
   subtotalUsd: StripeOrderPaymentInput["subtotalUsd"];
   shippingUsd: StripeOrderPaymentInput["shippingUsd"];
   taxUsd: StripeOrderPaymentInput["taxUsd"];

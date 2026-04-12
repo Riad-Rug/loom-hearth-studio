@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { CookieConsentBanner } from "@/components/compliance/cookie-consent-banner";
 import { CookieConsentProvider } from "@/components/compliance/cookie-consent-provider";
 import { AppShell } from "@/components/layout/app-shell";
@@ -32,11 +33,18 @@ export const metadata: Metadata = {
     type: "website",
     siteName: siteConfig.name,
     url: siteConfig.siteUrl,
+    images: [
+      {
+        url: siteConfig.ogImagePath,
+        alt: siteConfig.name,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
+    images: [siteConfig.ogImagePath],
   },
 };
 
@@ -52,6 +60,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <JsonLd data={websiteSchema()} />
         <CartProvider>
           <CookieConsentProvider>
+            <GoogleAnalytics />
             <AppShell
               header={<SiteHeader />}
               footer={<SiteFooter />}

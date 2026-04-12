@@ -2,22 +2,31 @@ import type { Metadata } from "next";
 
 import { ContactPageView } from "@/features/content-pages/contact-page-view";
 import { contactData } from "@/features/content-pages/content-pages-data";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { buildManagedMetadata } from "@/lib/seo/metadata";
 
 import { submitContactInquiry } from "./actions";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Contact Loom & Hearth Studio",
-  description:
-    "Contact Loom & Hearth Studio for inquiries about handmade Moroccan rugs, custom sourcing, vintage textiles, and handmade home decor.",
-  path: "/contact",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return buildManagedMetadata({
+    entityType: "static_page",
+    entityKey: "contact",
+    title: "Contact Loom & Hearth Studio",
+    description:
+      "Contact Loom & Hearth Studio for inquiries about handmade Moroccan rugs, custom sourcing, vintage textiles, and handmade home decor.",
+    path: "/contact",
+  });
+}
 
 type ContactPageProps = {
   searchParams?: Promise<{
     inquiryType?: string;
     message?: string;
     productName?: string;
+    quantity?: string;
+    variant?: string;
+    requestVideoReview?: string;
+    requestHold?: string;
+    requestImages?: string;
     status?: string;
     reason?: string;
     request?: string;
@@ -32,6 +41,11 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
       defaults={{
         inquiryType: sanitizeContactField(resolvedSearchParams?.inquiryType, 40),
         productName: sanitizeContactField(resolvedSearchParams?.productName, 120),
+        quantity: sanitizeNumericField(resolvedSearchParams?.quantity),
+        variantName: sanitizeContactField(resolvedSearchParams?.variant, 120),
+        requestVideoReview: sanitizeYesNoField(resolvedSearchParams?.requestVideoReview) ?? true,
+        requestHold: sanitizeYesNoField(resolvedSearchParams?.requestHold),
+        requestImages: sanitizeYesNoField(resolvedSearchParams?.requestImages),
         message: buildDefaultMessage(resolvedSearchParams),
       }}
       submitAction={submitContactInquiry}
@@ -56,12 +70,23 @@ function buildDefaultMessage(searchParams: Awaited<ContactPageProps["searchParam
   }
 
   const productName = sanitizeContactField(searchParams?.productName, 120);
+  const quantity = sanitizeNumericField(searchParams?.quantity);
+  const variantName = sanitizeContactField(searchParams?.variant, 120);
 
   if (!productName) {
     return undefined;
   }
 
-  return `Hello, I would like to inquire about ${productName}.`;
+  const details = [
+    quantity ? `Quantity: ${quantity}` : null,
+    variantName ? `Variant: ${variantName}` : null,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+
+  return details
+    ? `Hello, I would like to inquire about ${productName}.\n\n${details}`
+    : `Hello, I would like to inquire about ${productName}.`;
 }
 
 function buildSubmissionState(searchParams: Awaited<ContactPageProps["searchParams"]>) {
@@ -94,4 +119,22 @@ function sanitizeRequestNumber(value: string | undefined) {
   }
 
   return /^[A-Z0-9-]{8,32}$/.test(value) ? value : undefined;
+}
+
+function sanitizeNumericField(value: string | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  const sanitized = value.trim();
+
+  return /^[0-9]{1,3}$/.test(sanitized) ? sanitized : undefined;
+}
+
+function sanitizeYesNoField(value: string | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  return value === "yes";
 }

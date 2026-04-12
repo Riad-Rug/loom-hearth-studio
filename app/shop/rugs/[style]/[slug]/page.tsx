@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRugProductDetailByParams } from "@/lib/catalog/service";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/schema";
 
 type RugProductPageProps = {
@@ -61,14 +61,16 @@ export async function generateMetadata({
   if (!product) {
     return buildMetadata({
       title: "Rugs",
-      description: "Browse handcrafted launch rugs.",
+      description: "Browse handcrafted Moroccan rugs sourced in Marrakech and prepared for review-first buying.",
       path: "/shop/rugs",
     });
   }
 
-  return buildMetadata({
-    title: product.name,
-    description: product.description,
+  return buildManagedMetadata({
+    entityType: "product",
+    entityKey: product.id,
+    title: product.seoTitle || product.name,
+    description: product.seoDescription || product.description,
     path: `/shop/rugs/${product.rugStyle}/${product.slug}`,
   });
 }

@@ -129,33 +129,33 @@ export const adminModules: Record<
   },
   newsletter: {
     eyebrow: "Admin newsletter",
-    title: "Newsletter module shell",
+    title: "Newsletter",
     description:
-      "Reserved for newsletter tooling after the provider decision is validated.",
+      "Audience records, Mailchimp sync status, and subscriber health are managed here.",
     cards: [
       {
         title: "Audience tools",
-        body: "Placeholder audience and campaign UI only.",
+        body: "Subscriber records and sync status are available in the dedicated newsletter page.",
       },
       {
         title: "Provider integration",
-        body: "No Mailchimp/Klaviyo or other provider wiring is implemented in this slice.",
+        body: "Mailchimp is the active provider for outward audience sync.",
       },
     ],
   },
   promos: {
     eyebrow: "Admin promos",
-    title: "Promotions module shell",
+    title: "Promotions",
     description:
-      "Reserved for future promo code and campaign management.",
+      "Promo code creation, activation, and launch-safe discount rules are managed here.",
     cards: [
       {
         title: "Promo definitions",
-        body: "Placeholder discount and code configuration surface only.",
+        body: "Percent and fixed discounts can be created and toggled from the dedicated promos page.",
       },
       {
         title: "Campaign visibility",
-        body: "Reserved for future merchandising and campaign status UI.",
+        body: "Promo usage and activation state are available for launch operations.",
       },
     ],
   },

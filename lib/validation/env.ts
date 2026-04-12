@@ -4,6 +4,11 @@ export const envDefinitions = {
     required: false,
     description: "Canonical site URL override for metadata and SEO foundations.",
   },
+  NEXT_PUBLIC_GA_MEASUREMENT_ID: {
+    scope: "public",
+    required: false,
+    description: "GA4 measurement ID for consent-aware storefront analytics.",
+  },
   DATABASE_URL: {
     scope: "server",
     required: false,
@@ -54,17 +59,32 @@ export const envDefinitions = {
     required: false,
     description: "Postmark server token for transactional email delivery.",
   },
-  NEWSLETTER_API_KEY: {
+  MAILCHIMP_API_KEY: {
     scope: "server",
     required: false,
-    description: "Newsletter provider API key placeholder. Provider is unresolved.",
+    description: "Mailchimp API key for audience sync.",
+  },
+  MAILCHIMP_SERVER_PREFIX: {
+    scope: "server",
+    required: false,
+    description: "Mailchimp server prefix such as us21.",
+  },
+  MAILCHIMP_AUDIENCE_ID: {
+    scope: "server",
+    required: false,
+    description: "Mailchimp audience ID for newsletter subscribers.",
+  },
+  MAILCHIMP_WEBHOOK_SECRET: {
+    scope: "server",
+    required: false,
+    description: "Optional shared secret used to protect the Mailchimp webhook route.",
   },
 } as const;
 
 export type EnvKey = keyof typeof envDefinitions;
 
 export const envGroups = {
-  site: ["NEXT_PUBLIC_SITE_URL"],
+  site: ["NEXT_PUBLIC_SITE_URL", "NEXT_PUBLIC_GA_MEASUREMENT_ID"],
   database: ["DATABASE_URL"],
   auth: ["AUTH_SECRET"],
   stripe: [
@@ -78,7 +98,7 @@ export const envGroups = {
     "CLOUDINARY_API_SECRET",
   ],
   email: ["EMAIL_FROM", "POSTMARK_SERVER_TOKEN"],
-  newsletter: ["NEWSLETTER_API_KEY"],
+  newsletter: ["MAILCHIMP_API_KEY", "MAILCHIMP_SERVER_PREFIX", "MAILCHIMP_AUDIENCE_ID", "MAILCHIMP_WEBHOOK_SECRET"],
 } as const satisfies Record<string, readonly EnvKey[]>;
 
 type EnvShape = {
@@ -103,6 +123,7 @@ export function getPublicEnv() {
 
   return {
     NEXT_PUBLIC_SITE_URL: env.NEXT_PUBLIC_SITE_URL,
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   } as const;
 }

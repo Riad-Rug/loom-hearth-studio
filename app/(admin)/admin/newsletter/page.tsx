@@ -1,5 +1,10 @@
-import { AdminModulePageView } from "@/features/admin/admin-module-page-view";
+import { AdminNewsletterPageView } from "@/features/admin/admin-newsletter-page-view";
+import { getAdminNewsletterPageData } from "@/lib/admin/newsletter";
 
-export default function AdminNewsletterPage() {
-  return <AdminModulePageView moduleKey="newsletter" />;
+export const dynamic = "force-dynamic";
+
+export default async function AdminNewsletterPage() {
+  const pageData = await getAdminNewsletterPageData();
+
+  return <AdminNewsletterPageView {...pageData} />;
 }

@@ -7,6 +7,7 @@ import type { OrderRepository } from "@/lib/db/repositories/order-repository";
 import { sendOrderConfirmationEmailFromCreatedOrder } from "@/lib/email/service";
 import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
 import type { PersistConfirmedOrderResult } from "@/lib/order/contracts";
+import { recordPromoRedemption } from "@/lib/promos/service";
 import {
   createOrderCreationRequestFromStripeConfirmation,
   createOrderPersistenceRequestFromOrderCreation,
@@ -74,6 +75,14 @@ export async function persistConfirmedStripeCheckoutOrder(input: {
 
   try {
     const persistedOrder = await repository.create(persistenceResult.request);
+    if (persistedOrder.promoCode && persistedOrder.discountUsd > 0) {
+      await recordPromoRedemption({
+        promoCode: persistedOrder.promoCode,
+        discountUsd: persistedOrder.discountUsd,
+        orderId: persistedOrder.id,
+        customerEmail: persistedOrder.shippingAddress.email,
+      });
+    }
     const emailDeliveryResult = await sendOrderConfirmationEmailFromCreatedOrder({
       order: persistedOrder,
       orderCreationRequest: orderCreationResult.request,

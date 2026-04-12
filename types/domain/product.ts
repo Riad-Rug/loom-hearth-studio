@@ -18,6 +18,13 @@ export type ProductBase = SeoFields & {
   materials: string[];
   origin: string;
   status: EntityStatus;
+  provenanceNote?: string;
+  attributionRegion?: string;
+  attributionConfidence?: string;
+  conditionNote?: string;
+  verificationNotes?: string[];
+  shippingNotes?: string[];
+  careNote?: string;
 };
 
 export type RugProduct = ProductBase & {

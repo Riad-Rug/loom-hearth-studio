@@ -15,7 +15,7 @@ export function CartDrawer() {
   const [isPointerFine, setIsPointerFine] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
   const shellRef = useRef<HTMLDivElement | null>(null);
-  const { itemCount, items, subtotalUsd, totalUsd } = useCart();
+  const { itemCount, items, subtotalUsd, discountUsd, promoCode, totalUsd } = useCart();
   const visibleItems = items.slice(0, PREVIEW_ITEM_LIMIT);
   const hiddenItemCount = Math.max(0, items.length - PREVIEW_ITEM_LIMIT);
   const isEmpty = items.length === 0;
@@ -214,6 +214,12 @@ export function CartDrawer() {
                     <span>Subtotal</span>
                     <strong>{formatUsd(subtotalUsd)}</strong>
                   </div>
+                  {discountUsd > 0 ? (
+                    <div className={styles.summaryRow}>
+                      <span>Discount{promoCode ? ` (${promoCode})` : ""}</span>
+                      <strong>-{formatUsd(discountUsd)}</strong>
+                    </div>
+                  ) : null}
                   <div className={styles.summaryTotal}>
                     <span>Total</span>
                     <strong>{formatUsd(totalUsd)}</strong>

@@ -12,6 +12,7 @@ import {
 } from "react";
 
 import { defaultSupportedCheckoutCountry } from "@/config/supported-markets";
+import { trackBeginCheckout } from "@/lib/analytics/gtag";
 import type { CartStoreItem } from "@/features/cart/cart-provider";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
@@ -50,6 +51,8 @@ export type OrderDraft = {
   items: CartStoreItem[];
   shippingAddress: OrderAddress | null;
   shippingMethod: CheckoutShippingMethod | null;
+  promoCode: string | null;
+  discountUsd: number;
   subtotalUsd: number;
   shippingUsd: 0;
   taxUsd: 0;
@@ -128,7 +131,7 @@ const CheckoutContext = createContext<CheckoutContextValue | null>(null);
 export function CheckoutProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { items, shippingUsd, subtotalUsd, totalUsd } = useCart();
+  const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd } = useCart();
   const [information, setInformation] = useState<CheckoutInformation>(initialInformation);
   const [shippingMethod, setShippingMethod] = useState<CheckoutShippingMethod | null>(null);
   const [hasVisitedConfirmation, setHasVisitedConfirmation] = useState(false);
@@ -195,6 +198,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
           }
         : null,
       shippingMethod,
+      promoCode,
+      discountUsd,
       subtotalUsd,
       shippingUsd,
       taxUsd: 0,
@@ -202,13 +207,15 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       currency: "USD",
       paymentMethod: "stripe-placeholder",
     }),
-    [information, isInformationComplete, items, shippingMethod, shippingUsd, subtotalUsd, totalUsd],
+    [discountUsd, information, isInformationComplete, items, promoCode, shippingMethod, shippingUsd, subtotalUsd, totalUsd],
   );
   const stripeOrderPaymentInput = useMemo<StripeOrderPaymentInput>(
     () =>
       createStripeOrderPaymentInput({
         checkoutMode: orderDraft.checkoutMode,
         email: orderDraft.shippingAddress?.email,
+        promoCode: orderDraft.promoCode ?? undefined,
+        discountUsd: orderDraft.discountUsd,
         subtotalUsd: orderDraft.subtotalUsd,
         shippingUsd: orderDraft.shippingUsd,
         taxUsd: orderDraft.taxUsd,
@@ -329,6 +336,19 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       if (!canAccessShipping) {
         return;
       }
+
+      trackBeginCheckout({
+        currency: orderDraft.currency,
+        value: orderDraft.totalUsd,
+        items: orderDraft.items.map((item) => ({
+          item_id: item.productId,
+          item_name: item.name,
+          item_category: item.productCategory,
+          item_variant: item.variantName,
+          price: item.priceUsd,
+          quantity: item.quantity,
+        })),
+      });
 
       router.push(stepPathMap.shipping as Route);
     },

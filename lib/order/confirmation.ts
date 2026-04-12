@@ -29,17 +29,16 @@ export function createCheckoutConfirmationViewModel(input: {
   shippingLabel: string | null;
 }): CheckoutConfirmationViewModel {
   const { submissionAttempt, submissionPreview } = input;
+  const isFailure = submissionAttempt.status === "failure";
 
   return {
-    headline:
-      submissionAttempt.status === "failure"
-        ? "Order submission attempt failed"
-        : submissionPreview?.confirmationLabel ?? "Order draft confirmation UI shell",
-    customerLabel: input.customerName ?? "Guest checkout draft",
+    headline: isFailure ? "We couldn't complete your request" : "Order request received",
+    customerLabel: input.customerName ?? "Guest checkout",
     submissionStateLabel: submissionAttempt.status,
     orderReference: submissionPreview?.orderReference ?? null,
-    body:
-      "Confirmation, order submission, payment execution, and email delivery are not implemented in this slice. This page exists to complete the PRD checkout flow shell with client-side draft state only.",
+    body: isFailure
+      ? "Please review your checkout details and try again, or contact the studio directly for help."
+      : "We have recorded your details. You will receive an email update with pre-shipment verification and next steps before payment is captured.",
     failureMessage: submissionAttempt.failure?.message ?? null,
     paymentStatusLabel: submissionPreview?.paymentStatus ?? null,
     shippingLabel: input.shippingLabel,

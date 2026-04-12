@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Section } from "@/components/layout/section";
 import type { HomePageContent, HomePageOrderedSectionKey } from "@/features/home/home-page-data";
 import { HowItWorksSection } from "@/features/home/how-it-works-section";
+import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 
 import styles from "./home-page.module.css";
 
@@ -216,34 +217,11 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent)
                 <h2>{content.newsletter.title}</h2>
                 <p className={styles.sectionBody}>{content.newsletter.paragraph}</p>
               </div>
-              <form className={styles.newsletterForm}>
-                <label className={styles.newsletterLabel} htmlFor="newsletter-email">
-                  {content.newsletter.inputLabel}
-                </label>
-                <div className={styles.newsletterControls}>
-                  <input
-                    id="newsletter-email"
-                    className={styles.newsletterInput}
-                    name="email"
-                    type="email"
-                    placeholder={content.newsletter.inputPlaceholder}
-                  />
-                  <button className={styles.newsletterButton} type="button">
-                    {content.newsletter.ctaLabel}
-                  </button>
-                </div>
-                <div className={styles.newsletterDisclosure}>
-                  <p>New arrivals, lookbook updates, and early access to new pieces.</p>
-                  <p>
-                    By joining you agree to our{" "}
-                    <Link className={styles.newsletterPolicyLink} href={"/privacy-policy" as Route}>
-                      Privacy Policy
-                    </Link>
-                    .
-                  </p>
-                  <p>Unsubscribe any time via the link in our emails.</p>
-                </div>
-              </form>
+              <NewsletterSignupIntentForm
+                ctaLabel={content.newsletter.ctaLabel}
+                inputLabel={content.newsletter.inputLabel}
+                inputPlaceholder={content.newsletter.inputPlaceholder}
+              />
             </div>
           ) : null}
         </div>

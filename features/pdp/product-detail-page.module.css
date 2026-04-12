@@ -15,7 +15,8 @@
 .infoColumn,
 .purchaseCard,
 .detailCard,
-.relatedCard {
+.relatedCard,
+.supportCard {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.82);
@@ -154,7 +155,8 @@
 .infoColumn h1,
 .detailCardHeading,
 .sectionIntro h2,
-.relatedCard strong {
+.relatedCard strong,
+.supportCardHeading {
   font-family: var(--font-display), Georgia, serif;
 }
 
@@ -235,15 +237,9 @@
   box-shadow: 0 1.25rem 2.5rem rgba(34, 33, 38, 0.08);
 }
 
-.purchaseRow,
 .purchaseGroup {
   display: grid;
   gap: var(--space-2);
-}
-
-.lockedQuantity {
-  margin: 0;
-  font-size: 1.1rem;
 }
 
 .purchaseNote {
@@ -365,12 +361,6 @@
   gap: var(--space-2);
 }
 
-.feedbackMessage {
-  margin: 0;
-  color: var(--color-success);
-  font-size: 0.9rem;
-}
-
 .inventoryPill {
   display: inline-flex;
   width: fit-content;
@@ -475,28 +465,41 @@
     rgba(255, 255, 255, 0.03);
 }
 
+.supportGrid,
 .detailsGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-5);
 }
 
+.supportCard,
 .detailCard {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
   padding: calc(var(--space-5) - 0.2rem);
 }
 
+.supportCardHeading,
 .detailCardHeading {
   margin: 0;
   font-size: 1.55rem;
   letter-spacing: -0.03em;
 }
 
+.supportCardBody,
 .detailCard p {
   margin: 0;
   color: rgba(34, 33, 38, 0.78);
   line-height: 1.68;
+}
+
+.supportList {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: rgba(34, 33, 38, 0.8);
+  line-height: 1.6;
 }
 
 .relatedSection {
@@ -542,6 +545,7 @@
 }
 
 @media (max-width: 900px) {
+  .supportGrid,
   .detailsGrid,
   .relatedGrid {
     grid-template-columns: 1fr;
@@ -602,11 +606,9 @@
     justify-self: stretch;
   }
 
-  .primaryAction {
+  .primaryAction,
+  .secondaryAction {
     width: calc(100% + (var(--space-5) * 2));
     margin-inline: calc(var(--space-5) * -1);
   }
 }
-
-
-

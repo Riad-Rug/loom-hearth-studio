@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import {
   checkoutSteps,
@@ -10,15 +11,12 @@ import {
   type CheckoutStepKey,
 } from "@/features/checkout/checkout-data";
 import { formatUsd, getCartItemLabel, useCart } from "@/features/cart/cart-provider";
-import {
-  checkoutFoundationTodos,
-  useCheckout,
-} from "@/features/checkout/checkout-provider";
+import { useCheckout } from "@/features/checkout/checkout-provider";
 import {
   createOrderConfirmationEmailPayload,
   createOrderConfirmationEmailPreview,
-  orderConfirmationEmailTodo,
 } from "@/lib/email";
+import { trackPurchase } from "@/lib/analytics/gtag";
 import {
   createCheckoutNonConfirmationRouteViewModel,
   createCheckoutConfirmationViewModel,
@@ -26,9 +24,7 @@ import {
   createOrderSubmissionFailure,
   createOrderSubmissionPayload,
   createOrderSubmissionPreview,
-  orderSubmissionTodo,
 } from "@/lib/order";
-import { stripeHelpersTodo } from "@/lib/stripe";
 
 import styles from "./checkout-page.module.css";
 
@@ -37,7 +33,19 @@ type CheckoutPageViewProps = {
 };
 
 export function CheckoutPageView({ step }: CheckoutPageViewProps) {
-  const { items, shippingUsd, subtotalUsd, totalUsd } = useCart();
+  const {
+    items,
+    promoCode,
+    promoMessage,
+    discountUsd,
+    shippingUsd,
+    subtotalUsd,
+    totalUsd,
+    applyPromoCode,
+    removePromoCode,
+  } = useCart();
+  const [promoDraft, setPromoDraft] = useState(promoCode ?? "");
+  const [promoFeedback, setPromoFeedback] = useState<string | null>(null);
   const {
     canAccessPayment,
     canAccessReview,
@@ -91,6 +99,37 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
   const orderConfirmationEmailPreview = createOrderConfirmationEmailPreview(
     orderConfirmationEmailPayload,
   );
+
+  useEffect(() => {
+    setPromoDraft(promoCode ?? "");
+  }, [promoCode]);
+
+  useEffect(() => {
+    if (step !== "confirmation" || !resolvedSubmissionPreview || !orderSubmissionPayload) {
+      return;
+    }
+
+    const sessionKey = `loom-hearth.purchase.${resolvedSubmissionPreview.orderReference}`;
+
+    if (typeof window !== "undefined" && window.sessionStorage.getItem(sessionKey)) {
+      return;
+    }
+
+    trackPurchase({
+      transactionId: resolvedSubmissionPreview.orderReference,
+      currency: "USD",
+      value: orderDraft.totalUsd,
+      items: orderSubmissionPayload.items.map((item) => ({
+        item_id: item.id,
+        item_name: item.name,
+        quantity: item.quantity,
+      })),
+    });
+
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(sessionKey, "sent");
+    }
+  }, [orderDraft.totalUsd, orderSubmissionPayload, resolvedSubmissionPreview, step]);
   const confirmationViewModel = createCheckoutConfirmationViewModel({
     submissionAttempt,
     submissionPreview: resolvedSubmissionPreview,
@@ -120,6 +159,17 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     checkoutExecutionAttempt,
     stripePaymentDraft,
   });
+
+  async function handlePromoSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const result = await applyPromoCode(promoDraft);
+    setPromoFeedback(result.message);
+  }
+
+  function handlePromoRemove() {
+    removePromoCode();
+    setPromoFeedback(null);
+  }
 
   return (
     <div className={styles.page}>
@@ -223,11 +273,42 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
                 <strong>{summary.shippingUsdLabel}</strong>
               </div>
               <div className={styles.freeShippingLine}>Shipping fixed at $0.00</div>
+              <form className={styles.promoForm} onSubmit={handlePromoSubmit}>
+                <label className={styles.promoLabel} htmlFor="checkout-promo-code">
+                  Promo code
+                </label>
+                <div className={styles.promoControls}>
+                  <input
+                    id="checkout-promo-code"
+                    className={styles.promoInput}
+                    type="text"
+                    value={promoDraft}
+                    onChange={(event) => setPromoDraft(event.target.value.toUpperCase())}
+                    placeholder="Enter code"
+                  />
+                  <button className={styles.promoButton} type="submit">
+                    Apply
+                  </button>
+                  {promoCode ? (
+                    <button className={styles.promoRemoveButton} type="button" onClick={handlePromoRemove}>
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+                {promoCode ? <p className={styles.promoApplied}>Applied: {promoCode}</p> : null}
+                {promoFeedback || promoMessage ? <p className={styles.promoFeedback}>{promoFeedback ?? promoMessage}</p> : null}
+              </form>
+              {discountUsd > 0 ? (
+                <div className={styles.summaryRow}>
+                  <span>Discount</span>
+                  <strong>-{formatUsd(discountUsd)}</strong>
+                </div>
+              ) : null}
               <div className={styles.summaryRow}>
                 <span>Estimated tax</span>
                 <strong>{summary.taxUsdLabel}</strong>
               </div>
-              <p className={styles.summaryNote}>{checkoutFoundationTodos.tax}</p>
+              <p className={styles.summaryNote}>Taxes and duties, if applicable, are confirmed before payment is captured.</p>
               <div className={styles.summaryTotal}>
                 <span>Total</span>
                 <strong>{summary.totalUsdLabel}</strong>
@@ -306,6 +387,8 @@ type CheckoutStepRenderProps = {
       label: string;
       priceUsd: 0;
     } | null;
+    promoCode?: string | null;
+    discountUsd: number;
     paymentMethod: "stripe-placeholder";
   };
   orderConfirmationEmailPayload: {
@@ -635,6 +718,13 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             </label>
           </div>
           <p className={styles.summaryNote}>{props.nonConfirmationRouteViewModel.information.note}</p>
+          <div className={styles.reviewCard}>
+            <h3>Need help before you continue?</h3>
+            <p>If you are checking out a one-of-one rug and want guidance before payment, use the inquiry flow and we will review the piece with you directly.</p>
+            <Link className={styles.secondaryAction} href="/contact">
+              Contact the studio
+            </Link>
+          </div>
           <button
             className={styles.primaryAction}
             disabled={!props.canAccessShipping}
@@ -660,6 +750,10 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             <strong>{props.nonConfirmationRouteViewModel.shipping.optionPriceLabel}</strong>
           </div>
           <p className={styles.panelBody}>{props.nonConfirmationRouteViewModel.shipping.body}</p>
+          <div className={styles.reviewCard}>
+            <h3>Shipping review</h3>
+            <p>We review the destination and shipping conditions before payment is captured. If anything needs clarification, we contact you before moving forward.</p>
+          </div>
           <button
             className={styles.primaryAction}
             type="button"
@@ -676,137 +770,31 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             <p className={styles.eyebrow}>Step 3</p>
             <h2>Payment</h2>
           </div>
-          <div className={styles.paymentShell}>
-            <div className={styles.cardPreview}>
-              <span>
-                {props.stripePaymentDraft.provider} {props.stripePaymentDraft.method}
-              </span>
-            </div>
-            <div className={styles.reviewCard}>
-              <h3>Stripe launch mode</h3>
-              <p>{props.nonConfirmationRouteViewModel.payment.launchModeLabel}</p>
-            </div>
-            <div className={styles.reviewCard}>
-              <h3>Hosted Checkout handoff</h3>
-              <p>{props.nonConfirmationRouteViewModel.payment.handoffLabel}</p>
-            </div>
-            <div className={styles.reviewCard}>
-              <h3>Checkout service boundary</h3>
-              <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.statusLabel}</p>
-              <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.endpointLabel}</p>
-              <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.successUrlLabel}</p>
-              <p>{props.nonConfirmationRouteViewModel.payment.checkoutService.cancelUrlLabel}</p>
-              {props.nonConfirmationRouteViewModel.payment.checkoutService
-                .missingClientConfigLabel ? (
-                <p>
-                  {
-                    props.nonConfirmationRouteViewModel.payment.checkoutService
-                      .missingClientConfigLabel
-                  }
-                </p>
-              ) : null}
-              {props.nonConfirmationRouteViewModel.payment.checkoutService
-                .missingServerConfigLabel ? (
-                <p>
-                  {
-                    props.nonConfirmationRouteViewModel.payment.checkoutService
-                      .missingServerConfigLabel
-                  }
-                </p>
-              ) : null}
-            </div>
-            <div className={styles.reviewCard}>
-              <h3>Checkout execution boundary</h3>
-              <p>{props.nonConfirmationRouteViewModel.payment.checkoutExecution.statusLabel}</p>
-              <p>{props.nonConfirmationRouteViewModel.payment.checkoutExecution.endpointLabel}</p>
-              {props.nonConfirmationRouteViewModel.payment.checkoutExecution
-                .redirectTargetLabel ? (
-                <p>
-                  {
-                    props.nonConfirmationRouteViewModel.payment.checkoutExecution
-                      .redirectTargetLabel
-                  }
-                </p>
-              ) : null}
-              {props.nonConfirmationRouteViewModel.payment.checkoutExecution
-                .missingServerConfigLabel ? (
-                <p>
-                  {
-                    props.nonConfirmationRouteViewModel.payment.checkoutExecution
-                      .missingServerConfigLabel
-                  }
-                </p>
-              ) : null}
-            </div>
-            <div className={styles.reviewCard}>
-              <h3>Checkout execution attempt</h3>
-              <p>{props.nonConfirmationRouteViewModel.payment.executionAttempt.stateLabel}</p>
-              {props.nonConfirmationRouteViewModel.payment.executionAttempt.messageLabel ? (
-                <p>{props.nonConfirmationRouteViewModel.payment.executionAttempt.messageLabel}</p>
-              ) : null}
-              {props.nonConfirmationRouteViewModel.payment.executionAttempt
-                .redirectTargetLabel ? (
-                <p>
-                  {
-                    props.nonConfirmationRouteViewModel.payment.executionAttempt
-                      .redirectTargetLabel
-                  }
-                </p>
-              ) : null}
-            </div>
-            <div className={styles.reviewCard}>
-              <h3>Checkout session request</h3>
-              {props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest.emptyLabel ? (
-                <p>{props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest.emptyLabel}</p>
-              ) : (
-                <>
-                  {props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
-                    .customerEmailLabel ? (
-                    <p>
-                      {
-                        props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
-                          .customerEmailLabel
-                      }
-                    </p>
-                  ) : null}
-                  {props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
-                    .lineItemsLabel ? (
-                    <p>
-                      {
-                        props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
-                          .lineItemsLabel
-                      }
-                    </p>
-                  ) : null}
-                  {props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
-                    .totalLabel ? (
-                    <p>
-                      {
-                        props.nonConfirmationRouteViewModel.payment.checkoutSessionRequest
-                          .totalLabel
-                      }
-                    </p>
-                  ) : null}
-                </>
-              )}
-            </div>
-          </div>
-          <p className={styles.panelBody}>{props.nonConfirmationRouteViewModel.payment.body}</p>
           <div className={styles.reviewCard}>
-            <h3>Stripe boundary state</h3>
-            <p>{props.nonConfirmationRouteViewModel.payment.boundary.modeLabel}</p>
-            <p>{props.nonConfirmationRouteViewModel.payment.boundary.statusLabel}</p>
-            <p>{props.nonConfirmationRouteViewModel.payment.boundary.publishableKeyLabel}</p>
-            {props.nonConfirmationRouteViewModel.payment.boundary.missingConfigLabel ? (
-              <p>{props.nonConfirmationRouteViewModel.payment.boundary.missingConfigLabel}</p>
-            ) : null}
-            <p>{props.nonConfirmationRouteViewModel.payment.boundary.sessionResponseLabel}</p>
-            <p>{props.nonConfirmationRouteViewModel.payment.boundary.sessionResponseStatusLabel}</p>
-          <p>{props.nonConfirmationRouteViewModel.payment.boundary.paymentStatusLabel}</p>
-          <p>{props.nonConfirmationRouteViewModel.payment.boundary.readinessLabel}</p>
+            <h3>Secure payment</h3>
+            <p>{props.nonConfirmationRouteViewModel.payment.body}</p>
           </div>
-          <p className={styles.summaryNote}>{checkoutFoundationTodos.payment}</p>
-          <p className={styles.summaryNote}>{stripeHelpersTodo.checkoutState}</p>
+          <div className={styles.reviewCard}>
+            <h3>What happens next</h3>
+            <p>
+              You will be redirected to Stripe Checkout to review your payment details. After
+              checkout, we confirm your order details, destination, and next steps by email before
+              payment is captured.
+            </p>
+          </div>
+          <div className={styles.reviewCard}>
+            <h3>Prefer a reviewed buying path?</h3>
+            <p>For one-of-one rugs or project purchases, you can contact the studio instead of continuing through checkout.</p>
+            <Link className={styles.secondaryAction} href="/contact?inquiryType=product-inquiry">
+              Start an inquiry instead
+            </Link>
+          </div>
+          {props.checkoutExecutionAttempt.message ? (
+            <div className={styles.reviewCard}>
+              <h3>Checkout update</h3>
+              <p>{props.checkoutExecutionAttempt.message}</p>
+            </div>
+          ) : null}
           <button
             className={styles.secondaryAction}
             disabled={
@@ -846,7 +834,7 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
                 ))}
               </>
             ) : (
-              <p>Guest information must be completed before review.</p>
+              <p>Complete your shipping details before reviewing your order.</p>
             )}
           </div>
           <div className={styles.reviewCard}>
@@ -857,43 +845,20 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             <h3>Payment</h3>
             <p>{props.reviewViewModel.paymentLabel}</p>
           </div>
-          <div className={styles.reviewCard}>
-            <h3>Order submission boundary</h3>
-            {props.reviewViewModel.submissionBoundary.emptyLabel ? (
-              <p>{props.reviewViewModel.submissionBoundary.emptyLabel}</p>
-            ) : (
-              <>
-                {props.reviewViewModel.submissionBoundary.emailLabel ? (
-                  <p>{props.reviewViewModel.submissionBoundary.emailLabel}</p>
-                ) : null}
-                {props.reviewViewModel.submissionBoundary.itemCountLabel ? (
-                  <p>{props.reviewViewModel.submissionBoundary.itemCountLabel}</p>
-                ) : null}
-                {props.reviewViewModel.submissionBoundary.paymentMethodLabel ? (
-                  <p>{props.reviewViewModel.submissionBoundary.paymentMethodLabel}</p>
-                ) : null}
-                {props.reviewViewModel.submissionBoundary.paymentStatusLabel ? (
-                  <p>{props.reviewViewModel.submissionBoundary.paymentStatusLabel}</p>
-                ) : null}
-              </>
-            )}
-          </div>
           <p className={styles.panelBody}>
-            This review step is presentation only. Place-order behavior and confirmation
-            side effects remain out of scope for this slice.
+            Review your details before continuing. After checkout, we confirm the piece,
+            destination, and next steps by email before payment is captured.
           </p>
-          <p className={styles.summaryNote}>{checkoutFoundationTodos.submission}</p>
-          <p className={styles.summaryNote}>{orderSubmissionTodo}</p>
           <div className={styles.reviewCard}>
-            <h3>Submission attempt state</h3>
-            <p>Current state: {props.reviewViewModel.submissionAttempt.stateLabel}</p>
-            {props.reviewViewModel.submissionAttempt.failureMessage ? (
-              <p>{props.reviewViewModel.submissionAttempt.failureMessage}</p>
-            ) : null}
-            {props.reviewViewModel.submissionAttempt.previewReference ? (
-              <p>{props.reviewViewModel.submissionAttempt.previewReference}</p>
-            ) : null}
+            <h3>Final review</h3>
+            <p>This step confirms your checkout details in our system. If you need to switch to a more guided inquiry flow, contact the studio before proceeding.</p>
           </div>
+          {props.reviewViewModel.submissionAttempt.failureMessage ? (
+            <div className={styles.reviewCard}>
+              <h3>Checkout update</h3>
+              <p>{props.reviewViewModel.submissionAttempt.failureMessage}</p>
+            </div>
+          ) : null}
           <button
             className={styles.primaryAction}
             type="button"
@@ -918,44 +883,29 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           <div className={styles.confirmationCard}>
             <strong>{props.confirmationViewModel.headline}</strong>
             <p>{props.confirmationViewModel.customerLabel}</p>
-            <p>Submission state: {props.confirmationViewModel.submissionStateLabel}</p>
-            {props.confirmationViewModel.orderReference ? (
-              <p>{props.confirmationViewModel.orderReference}</p>
-            ) : null}
             <p>{props.confirmationViewModel.body}</p>
             {props.confirmationViewModel.failureMessage ? (
               <p>{props.confirmationViewModel.failureMessage}</p>
             ) : null}
-            {props.confirmationViewModel.paymentStatusLabel ? (
-              <p>{props.confirmationViewModel.paymentStatusLabel}</p>
+            {props.confirmationViewModel.orderReference ? (
+              <p>Reference: {props.confirmationViewModel.orderReference}</p>
             ) : null}
             {props.confirmationViewModel.shippingLabel ? (
               <p>{props.confirmationViewModel.shippingLabel}</p>
             ) : null}
           </div>
-          <div className={styles.confirmationCard}>
-            <strong>{props.confirmationViewModel.emailBoundary.headline}</strong>
-            <p>{props.confirmationViewModel.emailBoundary.stateLabel}</p>
-            {props.confirmationViewModel.emailBoundary.toLabel ? (
-              <p>{props.confirmationViewModel.emailBoundary.toLabel}</p>
-            ) : null}
-            {props.confirmationViewModel.emailBoundary.subjectLabel ? (
-              <p>{props.confirmationViewModel.emailBoundary.subjectLabel}</p>
-            ) : null}
-            {props.confirmationViewModel.emailBoundary.itemCountLabel ? (
-              <p>{props.confirmationViewModel.emailBoundary.itemCountLabel}</p>
-            ) : null}
-            {props.confirmationViewModel.emailBoundary.totalLabel ? (
-              <p>{props.confirmationViewModel.emailBoundary.totalLabel}</p>
-            ) : null}
-            {props.confirmationViewModel.emailBoundary.previewTextLabel ? (
-              <p>{props.confirmationViewModel.emailBoundary.previewTextLabel}</p>
-            ) : null}
+          <div className={styles.reviewCard}>
+            <h3>Next step support</h3>
+            <p>If you need to clarify delivery timing, product questions, or project details after checkout, reply to the confirmation email or contact the studio directly.</p>
           </div>
-          <p className={styles.summaryNote}>{orderConfirmationEmailTodo}</p>
-          <Link className={styles.secondaryAction} href="/shop">
-            Return to shop
-          </Link>
+          <div className={styles.formGrid}>
+            <Link className={styles.secondaryAction} href="/shop">
+              Return to shop
+            </Link>
+            <Link className={styles.secondaryAction} href="/contact?inquiryType=order-question">
+              Contact the studio
+            </Link>
+          </div>
         </div>
       );
     default:

@@ -1,13 +1,13 @@
 export const siteConfig = {
   name: "Loom & Hearth Studio",
   description:
-    "Premium ecommerce storefront scaffold for handcrafted Moroccan rugs and home decor.",
+    "Premium Moroccan rugs, poufs, pillows, and home decor sourced in Marrakech and shipped from Morocco.",
   siteUrl: "https://example.com",
   locale: "en-US",
   currency: "USD",
   market: "US",
   ogImagePath: "/og/default-placeholder.jpg",
-  tagline: "Handcrafted Moroccan rugs and home decor",
+  tagline: "Handcrafted Moroccan rugs and home decor sourced in Marrakech",
   announcementItems: [
     "FREE SHIPPING TO THE UNITED STATES, CANADA, AUSTRALIA, AND UNITED KINGDOM",
     "DESTINATION AND DELIVERY CONDITIONS CONFIRMED BEFORE PAYMENT IS CAPTURED",
@@ -18,10 +18,14 @@ export const siteConfig = {
     { href: "/lookbook", label: "Lookbook" },
     { href: "/blog", label: "Journal" },
     { href: "/about", label: "About" },
+    { href: "/sourcing", label: "Sourcing" },
+    { href: "/trade", label: "Trade" },
     { href: "/contact", label: "Contact" },
   ],
   supportNav: [
     { href: "/faq", label: "FAQ" },
+    { href: "/sourcing", label: "Sourcing" },
+    { href: "/trade", label: "Trade" },
     { href: "/shipping-policy", label: "Shipping" },
     { href: "/returns-policy", label: "Returns" },
     { href: "/privacy-policy", label: "Privacy" },
@@ -29,4 +33,3 @@ export const siteConfig = {
     { href: "/accessibility-statement", label: "Accessibility" },
   ],
 } as const;
-

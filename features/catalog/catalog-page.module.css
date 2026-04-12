@@ -77,6 +77,47 @@
   gap: var(--space-3);
 }
 
+.tradePanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.tradePanelCopy {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 42rem;
+}
+
+.tradePanelCopy h2,
+.tradePanelCopy p {
+  margin: 0;
+}
+
+.tradePanelCopy h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  letter-spacing: -0.03em;
+}
+
+.tradePanelCopy p {
+  color: rgba(34, 33, 38, 0.78);
+  line-height: 1.7;
+}
+
+.tradePanelActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+
 .categoryChip {
   display: inline-flex;
   align-items: center;

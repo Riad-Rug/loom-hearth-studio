@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
+import { trackViewItem } from "@/lib/analytics/gtag";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
 import type {
   MultiUnitProductDetailPageViewModel,
@@ -26,6 +27,22 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
     setActiveImageIndex(0);
     setIsLightboxOpen(false);
   }, [product.id]);
+
+  useEffect(() => {
+    trackViewItem({
+      currency: "USD",
+      value: product.priceUsd,
+      items: [
+        {
+          item_id: product.id,
+          item_name: product.name,
+          item_category: product.category,
+          price: product.priceUsd,
+          quantity: 1,
+        },
+      ],
+    });
+  }, [product.category, product.id, product.name, product.priceUsd]);
 
   useEffect(() => {
     if (!isLightboxOpen) {
@@ -137,6 +154,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               <p className={styles.valueLine}>{valueLine}</p>
             </div>
             <p className={styles.price}>{product.priceUsdLabel}</p>
+            <p className={styles.summary}>{product.description}</p>
 
             {product.type === "rug" ? (
               <RugPurchaseShell product={product} />
@@ -144,37 +162,13 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               <MultiUnitPurchaseShell product={product} />
             )}
 
-            <p className={styles.summary}>{product.description}</p>
-
             <div className={styles.metaGrid}>
-              <div className={styles.metaItem}>
-                <span className={styles.metaLabel}>Material</span>
-                <p className={styles.metaValue}>{product.materialLabel}</p>
-              </div>
-              <div className={styles.metaItem}>
-                <span className={styles.metaLabel}>Origin</span>
-                <p className={styles.metaValue}>{product.originLabel}</p>
-              </div>
-              {product.techniqueLabel ? (
-                <div className={styles.metaItem}>
-                  <span className={styles.metaLabel}>Technique</span>
-                  <p className={styles.metaValue}>{product.techniqueLabel}</p>
+              {product.specifications.map((spec) => (
+                <div key={spec.label} className={styles.metaItem}>
+                  <span className={styles.metaLabel}>{spec.label}</span>
+                  <p className={styles.metaValue}>{spec.value}</p>
                 </div>
-              ) : null}
-              {product.type === "rug" ? (
-                <>
-                  <div className={styles.metaItem}>
-                    <span className={styles.metaLabel}>Dimensions</span>
-                    <p className={styles.metaValue}>{product.dimensionsLabel}</p>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <span className={styles.metaLabel}>Weight</span>
-                    <p className={styles.metaValue}>{product.weightLabel}</p>
-                  </div>
-                </>
-              ) : (
-                <MultiUnitMeta product={product} />
-              )}
+              ))}
             </div>
 
             <div className={styles.shareBlock}>
@@ -271,6 +265,27 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         </div>
       ) : null}
 
+      {product.supportPanels.length ? (
+        <Section width="wide">
+          <div className={styles.supportGrid}>
+            {product.supportPanels.map((panel) => (
+              <article key={panel.id} className={styles.supportCard}>
+                <p className={styles.eyebrow}>{panel.eyebrow}</p>
+                <h2 className={styles.supportCardHeading}>{panel.title}</h2>
+                <p className={styles.supportCardBody}>{panel.body}</p>
+                {panel.items.length ? (
+                  <ul className={styles.supportList}>
+                    {panel.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </Section>
+      ) : null}
+
       <Section width="wide">
         <div className={styles.detailsGrid}>
           {product.detailSections.map((section) => (
@@ -325,7 +340,7 @@ function createProductValueLine(product: ProductDetailPageViewModel) {
   }
 
   return `${product.materialLabel} | ${product.originLabel} | ${
-    product.inventoryState === "outOfStock" ? "Currently unavailable" : "Multi-unit piece"
+    product.inventoryState === "outOfStock" ? "Currently unavailable" : "Made for project review"
   }`;
 }
 
@@ -337,35 +352,16 @@ function RugPurchaseShell({
   return (
     <div className={styles.purchaseCard}>
       <p className={styles.purchaseNote}>
-        This is a one-of-one piece. Before your payment is taken, we send you a video of the
-        actual rug so you can confirm the color, texture, and size are right for your space.
+        This is a one-of-one piece. Before your payment is taken, we review the actual rug with
+        you so you can confirm the color, texture, and scale for your space.
       </p>
       <Link className={styles.primaryAction} href={buildInquiryHref(product, { quantity: 1 }) as Route}>
-        Inquire about this rug
+        Start rug inquiry
+      </Link>
+      <Link className={styles.secondaryAction} href="/trade">
+        Trade and project inquiries
       </Link>
     </div>
-  );
-}
-
-function MultiUnitMeta({ product }: { product: MultiUnitProductDetailPageViewModel }) {
-  const inventoryStateLabel =
-    product.inventoryState === "lowStock"
-      ? "Low stock"
-      : product.inventoryState === "outOfStock"
-        ? "Out of stock"
-        : "In stock";
-
-  return (
-    <>
-      <div className={styles.metaItem}>
-        <span className={styles.metaLabel}>Inventory state</span>
-        <p className={styles.metaValue}>{inventoryStateLabel}</p>
-      </div>
-      <div className={styles.metaItem}>
-        <span className={styles.metaLabel}>Quantity</span>
-        <p className={styles.metaValue}>{product.quantityMin}+ allowed</p>
-      </div>
-    </>
   );
 }
 
@@ -442,7 +438,7 @@ function MultiUnitPurchaseShell({
         <p className={styles.purchaseNote}>
           {isOutOfStock
             ? "This piece is not available for direct purchase. Use the inquiry flow to ask about restock timing or similar pieces."
-            : "Purchasing is currently handled by inquiry so the studio can confirm availability, lead time, and any variant details before arranging the order."}
+            : "Purchasing is handled through inquiry so the studio can confirm availability, destination, lead time, and delivery conditions before payment is captured."}
         </p>
       </div>
 
@@ -468,19 +464,13 @@ function buildInquiryHref(
     productName: product.name,
   });
 
+  if (options?.quantity) {
+    params.set("quantity", String(options.quantity));
+  }
+
+  if (options?.variantName) {
+    params.set("variant", options.variantName);
+  }
+
   return `/contact?${params.toString()}`;
 }
-
-function toRouteSegment(value: string) {
-  return value.trim().toLowerCase().replace(/\s+/g, "-");
-}
-
-
-
-
-
-
-
-
-
-

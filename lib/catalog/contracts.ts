@@ -36,12 +36,27 @@ export type ProductDetailSectionViewModel = {
   body: string;
 };
 
+export type ProductSpecificationViewModel = {
+  label: string;
+  value: string;
+};
+
+export type ProductSupportPanelViewModel = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  body: string;
+  items: string[];
+};
+
 type ProductDetailPageViewModelBase = {
   id: string;
   slug: string;
   name: string;
   category: ProductCategory;
   description: string;
+  seoTitle: string;
+  seoDescription: string;
   type: Product["type"];
   priceUsd: number;
   priceUsdLabel: string;
@@ -51,10 +66,13 @@ type ProductDetailPageViewModelBase = {
     src: string;
     publicId: string;
     altText: string;
+    role: string;
   }>;
   materialLabel: string;
   originLabel: string;
   techniqueLabel?: string;
+  specifications: ProductSpecificationViewModel[];
+  supportPanels: ProductSupportPanelViewModel[];
   detailSections: ProductDetailSectionViewModel[];
   related: ProductLinkViewModel[];
   recentlyViewed: ProductLinkViewModel[];
@@ -105,6 +123,7 @@ export type LaunchCheckoutValidationIssue = {
     | "invalid-tax"
     | "subtotal-mismatch"
     | "total-mismatch"
+    | "invalid-promo"
     | "customer-email-mismatch";
   message: string;
   lineItemId?: string;

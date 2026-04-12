@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { BlogPostPageView } from "@/features/blog/blog-post-page-view";
 import { getBlogPostByParams } from "@/features/blog/blog-post-data";
 import { getDefaultBlogAuthor } from "@/lib/blog/author";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { articleSchema, breadcrumbSchema } from "@/lib/seo/schema";
 
 type BlogPostPageProps = {
@@ -61,7 +61,9 @@ export async function generateMetadata({
     });
   }
 
-  return buildMetadata({
+  return buildManagedMetadata({
+    entityType: "blog_post",
+    entityKey: post.id,
     title: post.seoTitle || post.title,
     description: post.seoDescription || post.excerpt,
     path: `/blog/${post.categorySlug}/${post.slug}`,

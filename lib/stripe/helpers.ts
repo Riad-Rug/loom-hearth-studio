@@ -15,6 +15,8 @@ import type {
 export function createStripeOrderPaymentInput(input: {
   checkoutMode: "guest";
   email?: string;
+  promoCode?: string;
+  discountUsd: number;
   subtotalUsd: number;
   shippingUsd: 0;
   taxUsd: number;
@@ -35,6 +37,8 @@ export function createStripeOrderPaymentInput(input: {
   return {
     checkoutMode: input.checkoutMode,
     email: input.email,
+    promoCode: input.promoCode,
+    discountUsd: input.discountUsd,
     subtotalUsd: input.subtotalUsd,
     shippingUsd: input.shippingUsd,
     taxUsd: input.taxUsd,
@@ -122,6 +126,8 @@ export function createStripeCheckoutSessionRequest(
     successUrl: config.successUrl,
     cancelUrl: config.cancelUrl,
     currency: paymentInput.currency,
+    promoCode: paymentInput.promoCode,
+    discountUsd: paymentInput.discountUsd,
     subtotalUsd: paymentInput.subtotalUsd,
     shippingUsd: paymentInput.shippingUsd,
     taxUsd: paymentInput.taxUsd,
@@ -189,6 +195,8 @@ function createStripeCheckoutOrderSnapshotMetadata(paymentInput: StripeOrderPaym
 
   return JSON.stringify({
     shippingAddress: paymentInput.shippingAddress,
+    promoCode: paymentInput.promoCode,
+    discountUsd: paymentInput.discountUsd,
     items: paymentInput.lineItems.map((item) => ({
       id: item.id,
       productId: item.productId,

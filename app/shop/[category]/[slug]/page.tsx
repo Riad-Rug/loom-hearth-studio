@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getCategoryProductDetailByParams } from "@/lib/catalog/service";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/schema";
 
 type CategoryProductPageProps = {
@@ -66,14 +66,16 @@ export async function generateMetadata({
   if (!product) {
     return buildMetadata({
       title: "Shop",
-      description: "Browse the launch collection for rugs and home decor.",
+      description: "Browse Moroccan rugs, poufs, pillows, and decor sourced in Marrakech and prepared for review-first buying.",
       path: "/shop",
     });
   }
 
-  return buildMetadata({
-    title: product.name,
-    description: product.description,
+  return buildManagedMetadata({
+    entityType: "product",
+    entityKey: product.id,
+    title: product.seoTitle || product.name,
+    description: product.seoDescription || product.description,
     path: `/shop/${product.category}/${product.slug}`,
   });
 }

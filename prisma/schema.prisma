@@ -43,6 +43,17 @@ enum PaymentStatus {
   refunded
 }
 
+enum PromoType {
+  percent
+  fixed
+}
+
+enum PromoScopeType {
+  all
+  category
+  product
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -126,6 +137,8 @@ model OrderRecord {
   paymentStatus     PaymentStatus
   customerEmail     String?
   shippingAddress   Json
+  promoCode         String?
+  discountUsd       Decimal             @default(0) @db.Decimal(10, 2)
   subtotalUsd       Decimal             @db.Decimal(10, 2)
   shippingUsd       Decimal             @db.Decimal(10, 2)
   taxUsd            Decimal             @db.Decimal(10, 2)
@@ -136,6 +149,7 @@ model OrderRecord {
   placedAt          DateTime            @default(now())
   fulfillmentExecutions FulfillmentExecutionRecord[]
   lineItems         OrderLineItemRecord[]
+  promoRedemptions  PromoRedemptionRecord[]
 
   @@index([customerEmail])
   @@index([placedAt])
@@ -202,6 +216,80 @@ model CatalogProduct {
   @@index([status])
   @@index([category, status])
   @@index([type, status])
+}
+
+
+model SeoSetting {
+  id            String   @id @default(cuid())
+  entityType    String
+  entityKey     String
+  title         String?
+  description   String?  @db.Text
+  canonicalUrl  String?
+  robotsIndex   Boolean?
+  ogTitle       String?
+  ogDescription String?  @db.Text
+  ogImageUrl    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([entityType, entityKey])
+  @@index([entityType])
+}
+
+model NewsletterSubscriberRecord {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  source             String
+  status             String
+  mailchimpAudienceId String?
+  mailchimpMemberId  String?
+  tags               Json
+  consentedAt        DateTime?
+  unsubscribedAt     DateTime?
+  lastSyncedAt       DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model PromoRecord {
+  id               String         @id @default(cuid())
+  code             String         @unique
+  type             PromoType
+  amount           Decimal        @db.Decimal(10, 2)
+  active           Boolean        @default(true)
+  startsAt         DateTime?
+  endsAt           DateTime?
+  usageLimit       Int?
+  usageCount       Int            @default(0)
+  minimumSubtotalUsd Decimal?     @db.Decimal(10, 2)
+  scopeType        PromoScopeType @default(all)
+  scopeCategory    ProductCategory?
+  scopeProductIds  Json?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  redemptions      PromoRedemptionRecord[]
+
+  @@index([active, code])
+}
+
+model PromoRedemptionRecord {
+  id            String      @id @default(cuid())
+  promoId       String
+  orderId       String?
+  customerEmail String?
+  code          String
+  discountUsd   Decimal     @db.Decimal(10, 2)
+  redeemedAt    DateTime    @default(now())
+  promo         PromoRecord @relation(fields: [promoId], references: [id], onDelete: Cascade)
+  order         OrderRecord? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([promoId, redeemedAt])
+  @@index([orderId])
 }
 
 model HomepageContentRecord {

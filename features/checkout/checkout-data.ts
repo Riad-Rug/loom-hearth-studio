@@ -27,9 +27,9 @@ export const checkoutSummary = {
   shippingUsdLabel: "$0.00",
   taxUsdLabel: "$0.00",
   totalUsdLabel: "$0.00",
-  guestLabel: "Guest checkout only",
-  marketLabel: "United States, Canada, Australia, United Kingdom",
-  currencyLabel: "USD only",
+  guestLabel: "Guest checkout",
+  marketLabel: "Shipping to the United States, Canada, Australia, and the United Kingdom",
+  currencyLabel: "Prices shown in USD",
 } as const;
 
 export const checkoutLineItems = [

@@ -48,16 +48,13 @@ export function createCheckoutReviewViewModel(input: {
       : null,
     shippingMethodLabel: orderDraft.shippingMethod
       ? `${orderDraft.shippingMethod.label} ($0.00)`
-      : "Standard shipping will be set in the shipping step.",
-    paymentLabel:
-      orderDraft.paymentMethod === "stripe-placeholder"
-        ? "Stripe placeholder boundary preserved for a future payment slice."
-        : "",
+      : "Standard shipping will be confirmed in the shipping step.",
+    paymentLabel: "Secure payment through Stripe Checkout",
     submissionBoundary: orderSubmissionPayload
       ? {
           emailLabel: `Email: ${orderSubmissionPayload.email}`,
           itemCountLabel: `Items: ${orderSubmissionPayload.items.length}`,
-          paymentMethodLabel: `Payment method: ${orderSubmissionPayload.paymentMethod}`,
+          paymentMethodLabel: "Payment method: Stripe Checkout",
           paymentStatusLabel: `Status: ${orderSubmissionPayload.paymentStatus}`,
           emptyLabel: null,
         }
@@ -66,7 +63,7 @@ export function createCheckoutReviewViewModel(input: {
           itemCountLabel: null,
           paymentMethodLabel: null,
           paymentStatusLabel: null,
-          emptyLabel: "Submission payload requires completed guest shipping details.",
+          emptyLabel: "Complete your shipping details before continuing.",
         },
     submissionAttempt: {
       stateLabel: input.submissionState,
@@ -75,10 +72,10 @@ export function createCheckoutReviewViewModel(input: {
     },
     placeOrderLabel:
       input.submissionState === "submitting"
-        ? "Submitting placeholder..."
-        : "Place order UI placeholder",
+        ? "Preparing confirmation..."
+        : "Confirm details",
     stripeBoundary: {
-      modeLabel: input.stripePaymentDraft.mode ?? "Undecided placeholder",
+      modeLabel: input.stripePaymentDraft.mode ?? "checkout",
       statusLabel: input.stripePaymentDraft.paymentStepStatus,
     },
   };

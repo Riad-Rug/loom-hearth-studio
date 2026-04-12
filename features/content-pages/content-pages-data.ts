@@ -56,25 +56,25 @@ export const contactData = {
   eyebrow: "Contact",
   title: "Contact Loom & Hearth Studio",
   body:
-    "Questions about a specific piece, your order, or a sourcing request? We review every message personally. If you are asking about a rug, include the product name and your room dimensions \u2014 it helps us respond with something specific.\n\nEvery rug inquiry includes a video of the actual piece before payment is taken.",
-  formTitle: "SEND AN INQUIRY",
+    "Questions about a specific piece, a trade project, your order, or a sourcing request? We review every message personally. If you are asking about a rug, include the product name, room dimensions, or any project timing you already know.\n\nEvery rug inquiry includes a review of the exact piece before payment is taken.",
+  formTitle: "Send an inquiry",
   formBody:
-    "Include the product name and your room dimensions if relevant. We respond within 24 hours.",
-  ctaLabel: "SEND MESSAGE",
+    "Share the details you already have. We use them to reply with practical next steps instead of a generic response.",
+  ctaLabel: "Send inquiry",
   supportTitle: "Studio support",
   supportBody:
     "Reach us directly for the fastest response. Public trader and legal contact details are below.",
   reassuranceLabel: "Support note",
   reassuranceText:
-    "Every inquiry about a rug includes a video of the actual piece before payment is taken. Include the product name and your room dimensions if you have them \u2014 it helps us respond with something useful.",
+    "For rug inquiries, we review the exact piece before payment is taken and follow up with the right next step for your request, whether that is a video review, project hold discussion, or shipping guidance.",
   responseTimeLabel: "Response timing",
   responseTimeText: "Within 24 hours",
   legalNameLabel: publicBusinessDetails.legalName,
   addressLabel: publicBusinessDetails.address,
   emailLabel: publicBusinessDetails.email,
   complaintsLabel: publicBusinessDetails.complaintsLine,
-  hoursLabel: "Monday to Friday, 9am \u2013 6pm CET (GMT+1)",
-  locationLabel: "Morocco sourcing studio - U.S. launch market",
+  hoursLabel: "Monday to Friday, 9am - 6pm CET (GMT+1)",
+  locationLabel: "Morocco sourcing studio - serving current supported markets",
 } as const;
 
 export const faqItems: FaqItem[] = [
@@ -170,7 +170,7 @@ export const faqItems: FaqItem[] = [
     group: "Shipping",
     question: "How long does shipping take?",
     answer:
-      "Orders ship from Morocco to the United States, Canada, Australia, and United Kingdom. Delivery timing varies by destination, carrier availability, and customs processing, and we confirm the destination timing with you before payment is captured. If you are outside those launch markets, you can still inquire and we will review shipping availability case by case before payment is captured. We send tracking when the order leaves Morocco.",
+      "Orders ship from Morocco to the United States, Canada, Australia, and the United Kingdom. Delivery timing varies by destination, carrier availability, and customs processing, and we confirm destination timing with you before payment is captured. If you are outside these currently supported markets, you can still inquire and we will review shipping availability case by case before payment is captured. We send tracking when the order leaves Morocco.",
     sortOrder: 12,
   },
   {
@@ -289,32 +289,7 @@ export const lookbookItems: LookbookItem[] = [
   },
 ] as const;
 
-export const testimonials: Testimonial[] = [
-  {
-    id: "testimonial-1",
-    quote:
-      "Placeholder testimonial content preserving the testimonials listing surface described in the PRD.",
-    customerName: "Studio Client",
-    location: "United States",
-    sortOrder: 1,
-  },
-  {
-    id: "testimonial-2",
-    quote:
-      "This section remains static for now, but the layout is ready to receive final customer stories later.",
-    customerName: "Editorial Buyer",
-    location: "United States",
-    sortOrder: 2,
-  },
-  {
-    id: "testimonial-3",
-    quote:
-      "A trust-focused presentation is in place here without introducing review systems or external integrations.",
-    customerName: "Home Decor Client",
-    location: "United States",
-    sortOrder: 3,
-  },
-] as const;
+export const testimonials: Testimonial[] = [];
 
 export const policyPages: PolicyPage[] = [
   {
@@ -332,27 +307,27 @@ Last updated: March 29, 2026
 
 ## 1. Where all orders ship from
 
-Every item in the Loom & Hearth Studio collection is sourced and stored in Morocco. All orders are packed and dispatched directly from Morocco. There is no warehouse or fulfilment centre in the United States or elsewhere  your piece travels directly from Morocco to your door.
+Every item in the Loom & Hearth Studio collection is sourced and stored in Morocco. All orders are packed and dispatched directly from Morocco. There is no warehouse or fulfilment centre in the United States or elsewhere. Your piece travels directly from Morocco to your door.
 
 ---
 
 ## 2. Where we ship
 
-At launch, we ship to the **United States, Canada, Australia, and United Kingdom**. Shipping is included in the product price for these launch markets. If you are outside those launch markets, you can still send an inquiry and we will review shipping availability case by case before payment is captured.
+We currently ship to the **United States, Canada, Australia, and the United Kingdom**. Shipping is included in the product price for these currently supported markets. If you are outside these markets, you can still send an inquiry and we will review shipping availability case by case before payment is captured.
 
 ---
 
 ## 3. Shipping cost
 
-Shipping is included in the price of every item for the United States, Canada, Australia, and United Kingdom. What you see on the product page is what you pay for the item and shipping from Morocco to your launch-market delivery address. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
+Shipping is included in the price of every item for the United States, Canada, Australia, and the United Kingdom. What you see on the product page is what you pay for the item and shipping from Morocco to your delivery address in a currently supported market. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
 
 ---
 
-## 4. How dispatch works  the pre-shipment window
+## 4. How dispatch works - the pre-shipment verification window
 
-Before your order ships, we contact you within 24 hours of purchase to offer a short video of the actual piece you ordered  shown in natural Moroccan light with a tape measure for scale. This is our pre-shipment verification process. It exists because colour, texture, and scale are difficult to fully communicate through photographs alone, and we would rather you see the piece before it is packed than have any uncertainty after delivery.
+Before your order ships, we contact you after purchase to offer a short video of the exact piece you ordered, shown in natural Moroccan light with a tape measure for scale. This is our pre-shipment verification process. It exists because color, texture, and scale are difficult to fully communicate through photographs alone, and we would rather you review the piece before it is packed than have uncertainty after delivery.
 
-Once you confirm you are happy, payment is captured and your order is packed and dispatched. This means the time from order to dispatch can be up to 7 days. In practice it is usually faster  most verifications are completed within 48 hours.
+Once you confirm you are happy, payment is captured and your order is packed and dispatched. This means the time from order to dispatch can be up to 7 days. In practice it is usually faster, and most verifications are completed within 48 hours.
 
 If we are unable to confirm your destination, timing, or delivery conditions within the verification window, we will not capture payment until that confirmation is complete.
 
@@ -370,7 +345,7 @@ We do not offer carrier selection as part of the current inquiry-first order pro
 
 ## 6. Estimated delivery times
 
-All delivery time estimates below are measured from the **date of dispatch**  not the date of order. Allow up to 7 days for the pre-shipment verification window before dispatch begins.
+All delivery time estimates below are measured from the **date of dispatch**, not the date of order. Allow up to 7 days for the pre-shipment verification window before dispatch begins.
 
 | Destination | Estimated delivery after dispatch |
 |---|---|
@@ -380,7 +355,7 @@ All delivery time estimates below are measured from the **date of dispatch**  no
 
 These are estimates, not guarantees. International shipments from Morocco pass through customs clearance, which can add time outside our control. Carrier delays, public holidays, and weather events can also affect timelines. We will always provide you with a tracking number so you can monitor your shipment in real time.
 
-If your shipment has not arrived within the estimated window, contact us before opening a dispute  most delays resolve themselves within a few days, and we can check the carrier status on your behalf.
+If your shipment has not arrived within the estimated window, contact us before opening a dispute. Most delays resolve themselves within a few days, and we can check the carrier status on your behalf.
 
 ---
 
@@ -418,7 +393,7 @@ We cannot initiate customs clearance on your behalf from our end once a shipment
 
 All items are packed to survive international transit. Rugs are rolled pile-side inward, wrapped in a moisture barrier, and secured inside heavy-duty outer packaging rated for carrier handling. Fragile or decorative items receive additional internal protection as needed.
 
-Every order includes a brand presentation layer inside the outer packaging  your piece arrives ready to unwrap, not just ready to survive shipping.
+Every order includes a brand presentation layer inside the outer packaging. Your piece arrives ready to unwrap, not just ready to survive shipping.
 
 ---
 
@@ -432,7 +407,7 @@ If your item arrives damaged, see section 12 below.
 
 ## 12. Items damaged in transit
 
-If your order arrives visibly damaged  damage that occurred during international shipping and is not the result of handling after delivery  contact us within **48 hours of delivery** at hello@loomandhearthstudio.com with:
+If your order arrives visibly damaged, meaning damage that occurred during international shipping and is not the result of handling after delivery, contact us within **48 hours of delivery** at hello@loomandhearthstudio.com with:
 
 - Your order number
 - Clear photographs of the damaged item
@@ -450,7 +425,7 @@ A shipment is considered lost if tracking shows no movement for 14 consecutive c
 
 If your shipment appears lost or significantly delayed beyond the estimated delivery window, contact us within **30 days of the dispatch date**. We will open a formal carrier investigation. If the carrier confirms the shipment is lost, we will resolve with a replacement or full refund.
 
-We cannot open a carrier claim after 30 days from dispatch. Contact us promptly if something seems wrong  do not wait.
+We cannot open a carrier claim after 30 days from dispatch. Contact us promptly if something seems wrong and do not wait.
 
 ---
 
@@ -478,7 +453,7 @@ ${publicBusinessDetails.complaintsLine}
 We aim to respond to all shipping enquiries within 2 business days.`,
     seoTitle: "Shipping policy | Loom & Hearth Studio",
     seoDescription:
-      "Shipping policy for Loom & Hearth Studio orders shipped from Morocco with customs handled to help prevent unexpected import charges for US buyers.",
+      "Shipping policy for Loom & Hearth Studio orders shipped from Morocco, including pre-shipment verification, customs guidance, and delivery support.",
   },
   {
     slug: "returns-policy",
@@ -495,7 +470,7 @@ Last updated: March 29, 2026
 
 ## 1. Our commitment
 
-We want every piece you receive to be exactly right. That is why we offer a pre-shipment video verification on every order  so you can see the actual item in natural light before payment is captured and before anything ships. If you take advantage of that process, the likelihood of a return is significantly reduced.
+We want every piece you receive to be exactly right. That is why we offer pre-shipment verification on every order, so you can review the exact item in natural light before payment is captured and before anything ships. If you take advantage of that process, the likelihood of a return is significantly reduced.
 
 If something is still not right after delivery, this policy explains exactly what you are entitled to, how to request a return, and what happens next. Nothing in this policy removes or limits any rights you have under the consumer protection laws of your country of residence.
 
@@ -516,7 +491,7 @@ Requests received after 14 days from confirmed delivery will not be accepted, ex
 To be accepted for return, an item must meet all of the following conditions at the time it is received back in Morocco:
 
 - Unused and in the same condition as delivered
-- Unwashed and unaltered  no cleaning, trimming, cutting, or modification of any kind
+- Unwashed and unaltered - no cleaning, trimming, cutting, or modification of any kind
 - Free of embedded pet hair in the pile or fringe
 - Free of absorbed smoke, strong perfume, or other odour not present at delivery
 - Rolled and packaged with reasonable care for return transit
@@ -535,20 +510,20 @@ The following are not eligible for return:
 
 **Natural variation.** Handmade products show inherent variation in knot density, colour consistency, and pattern symmetry. These are characteristics of authentic handcraft and are not defects. Variation of this kind is not grounds for return. Our product descriptions and pre-shipment verification process exist specifically to show you these qualities before you commit.
 
-**Minor wear disclosed in the listing.** Some vintage and one-of-one pieces have minor condition notes  light pile wear, small repairs, slight fading  disclosed in the product description. Returning an item solely for a disclosed condition that was accurately described in the listing is not accepted.
+**Minor wear disclosed in the listing.** Some vintage and one-of-one pieces have minor condition notes - light pile wear, small repairs, slight fading - disclosed in the product description. Returning an item solely for a disclosed condition that was accurately described in the listing is not accepted.
 
 ---
 
 ## 5. What qualifies as a material misdescription
 
-A material misdescription is a significant factual error in the product listing that a reasonable buyer would have relied on when making their purchase decision  and that is meaningfully different from the actual item received.
+A material misdescription is a significant factual error in the product listing that a reasonable buyer would have relied on when making their purchase decision, and that is meaningfully different from the actual item received.
 
 Examples that qualify:
 
 - Dimensions stated as significantly larger or smaller than the actual item (more than 10% variance)
 - A pile rug described and sold as a flatweave, or vice versa
 - An item described as having no repairs that has a visible, significant repair
-- A material error  for example, an item described as wool that is primarily synthetic
+- A material error - for example, an item described as wool that is primarily synthetic
 
 Examples that do not qualify:
 
@@ -556,7 +531,7 @@ Examples that do not qualify:
 - Natural variation in pattern or weave density inherent to handmade production
 - Minor tonal differences in areas of abrash that were visible in photographs
 
-If you believe your item was materially misdescribed, contact us before returning. Do not ship the item back without speaking to us first  we will review your claim and respond within 3 business days.
+If you believe your item was materially misdescribed, contact us before returning. Do not ship the item back without speaking to us first. We will review your claim and respond within 3 business days.
 
 ---
 
@@ -676,7 +651,7 @@ Subject line: Return Request  Order [your order number]
 
 We aim to respond to all return-related enquiries within 3 business days.`,
     seoTitle: "Returns policy | Loom & Hearth Studio",
-    seoDescription: "Returns policy information for the Loom & Hearth Studio launch.",
+    seoDescription: "Returns policy for Loom & Hearth Studio orders, including eligibility, timing, and refund handling.",
   },
   {
     slug: "accessibility-statement",
@@ -864,7 +839,7 @@ ${publicBusinessDetails.complaintsLine}
 
 We aim to respond to all inquiries within 5 business days.`,
     seoTitle: "Privacy Policy | Loom & Hearth Studio",
-    seoDescription: "Privacy Policy for Loom & Hearth Studio.",
+    seoDescription: "Privacy policy for Loom & Hearth Studio.",
   },
   {
     slug: "terms-and-conditions",
@@ -1085,7 +1060,7 @@ ${publicBusinessDetails.complaintsLine}
 
 We aim to respond to all inquiries within 5 business days.`,
     seoTitle: "Terms of Service | Loom & Hearth Studio",
-    seoDescription: "Terms of Service for Loom & Hearth Studio.",
+    seoDescription: "Terms and conditions for Loom & Hearth Studio orders and site use.",
   },
 ] as const;
 

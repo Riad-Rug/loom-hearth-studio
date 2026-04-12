@@ -32,21 +32,38 @@ type AddCartProductInput = {
   variantName?: string;
 };
 
+type AppliedPromo = {
+  code: string;
+  discountUsd: number;
+  message: string;
+};
+
 type CartContextValue = {
   items: CartStoreItem[];
   itemCount: number;
   subtotalUsd: number;
+  discountUsd: number;
+  promoCode: string | null;
+  promoMessage: string | null;
   shippingUsd: 0;
   totalUsd: number;
   addProduct: (input: AddCartProductInput) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  applyPromoCode: (code: string) => Promise<{ status: "success" | "error"; message: string }>;
+  removePromoCode: () => void;
+};
+
+type StoredCartState = {
+  items: CartStoreItem[];
+  promo: AppliedPromo | null;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartStoreItem[]>([]);
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
 
   useEffect(() => {
     try {
@@ -56,34 +73,82 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const parsedValue = JSON.parse(storedValue);
+      const parsedValue = JSON.parse(storedValue) as unknown;
 
-      if (!Array.isArray(parsedValue)) {
+      if (Array.isArray(parsedValue)) {
+        setItems(parsedValue.filter(isCartStoreItem));
         return;
       }
 
-      setItems(parsedValue.filter(isCartStoreItem));
+      if (parsedValue && typeof parsedValue === "object") {
+        const candidate = parsedValue as Partial<StoredCartState>;
+        if (Array.isArray(candidate.items)) {
+          setItems(candidate.items.filter(isCartStoreItem));
+        }
+        if (candidate.promo && isAppliedPromo(candidate.promo)) {
+          setAppliedPromo(candidate.promo);
+        }
+      }
     } catch {
       // Ignore malformed local cart data and continue with an empty cart.
     }
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+    const storedState: StoredCartState = {
+      items,
+      promo: appliedPromo,
+    };
+
+    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(storedState));
+  }, [appliedPromo, items]);
+
+  useEffect(() => {
+    if (!appliedPromo?.code || !items.length) {
+      if (!items.length && appliedPromo) {
+        setAppliedPromo(null);
+      }
+      return;
+    }
+
+    let cancelled = false;
+    void validatePromo(appliedPromo.code, items).then((result) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (result.status === "success") {
+        setAppliedPromo({
+          code: appliedPromo.code,
+          discountUsd: result.discountUsd,
+          message: result.message,
+        });
+        return;
+      }
+
+      setAppliedPromo(null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [items, appliedPromo?.code]);
 
   const value = useMemo<CartContextValue>(() => {
-    const subtotalUsd = items.reduce(
-      (runningTotal, item) => runningTotal + item.priceUsd * item.quantity,
-      0,
+    const subtotalUsd = roundCurrency(
+      items.reduce((runningTotal, item) => runningTotal + item.priceUsd * item.quantity, 0),
     );
+    const discountUsd = Math.min(appliedPromo?.discountUsd ?? 0, subtotalUsd);
 
     return {
       items,
       itemCount: items.reduce((runningTotal, item) => runningTotal + item.quantity, 0),
       subtotalUsd,
+      discountUsd,
+      promoCode: appliedPromo?.code ?? null,
+      promoMessage: appliedPromo?.message ?? null,
       shippingUsd: 0,
-      totalUsd: subtotalUsd,
+      totalUsd: roundCurrency(subtotalUsd - discountUsd),
       addProduct(input) {
         setItems((currentItems) => addProductToCart(currentItems, input));
       },
@@ -109,8 +174,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
           }),
         );
       },
+      async applyPromoCode(code) {
+        const result = await validatePromo(code, items);
+
+        if (result.status === "success") {
+          setAppliedPromo({
+            code: result.code,
+            discountUsd: result.discountUsd,
+            message: result.message,
+          });
+          return { status: "success", message: result.message };
+        }
+
+        setAppliedPromo(null);
+        return { status: "error", message: result.message };
+      },
+      removePromoCode() {
+        setAppliedPromo(null);
+      },
     };
-  }, [items]);
+  }, [appliedPromo, items]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
@@ -190,6 +273,50 @@ function createCartStoreItem({
   };
 }
 
+async function validatePromo(code: string, items: CartStoreItem[]) {
+  const subtotalUsd = roundCurrency(
+    items.reduce((runningTotal, item) => runningTotal + item.priceUsd * item.quantity, 0),
+  );
+
+  const response = await fetch("/api/promos/validate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      code,
+      subtotalUsd,
+      items: items.map((item) => ({
+        productId: item.productId,
+        productCategory: item.productCategory,
+        quantity: item.quantity,
+        priceUsd: item.priceUsd,
+      })),
+    }),
+  });
+
+  const data = (await response.json()) as {
+    status: "valid" | "invalid";
+    promoCode: string;
+    discountUsd: number;
+    message: string;
+  };
+
+  if (!response.ok || data.status !== "valid") {
+    return {
+      status: "error" as const,
+      code: data.promoCode || code.trim().toUpperCase(),
+      discountUsd: 0,
+      message: data.message || "That promo code could not be applied.",
+    };
+  }
+
+  return {
+    status: "success" as const,
+    code: data.promoCode,
+    discountUsd: data.discountUsd,
+    message: data.message,
+  };
+}
+
 function isCartStoreItem(value: unknown): value is CartStoreItem {
   if (!value || typeof value !== "object") {
     return false;
@@ -214,9 +341,24 @@ function isCartStoreItem(value: unknown): value is CartStoreItem {
   );
 }
 
+function isAppliedPromo(value: unknown): value is AppliedPromo {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<AppliedPromo>;
+  return (
+    typeof candidate.code === "string" &&
+    typeof candidate.discountUsd === "number" &&
+    typeof candidate.message === "string"
+  );
+}
+
+function roundCurrency(value: number) {
+  return Math.round(value * 100) / 100;
+}
+
 export const cartFoundationTodos = {
-  promoCodes:
-    "TODO: Promo code validation remains placeholder-only until pricing and checkout integrations are implemented.",
   checkout:
     "TODO: Replace client-only cart state with server-backed checkout and order creation when the Stripe flow is implemented.",
 } as const;

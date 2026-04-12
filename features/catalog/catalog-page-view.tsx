@@ -69,6 +69,24 @@ export function CatalogPageView({ category, products }: CatalogPageViewProps) {
             );
           })}
         </div>
+        <div className={styles.tradePanel}>
+          <div className={styles.tradePanelCopy}>
+            <p className={styles.heroPanelLabel}>Trade and project support</p>
+            <h2>Working on a client project?</h2>
+            <p>
+              Use the trade route for sourcing questions, image requests, and project-specific
+              inquiries before you present a piece or move into checkout.
+            </p>
+          </div>
+          <div className={styles.tradePanelActions}>
+            <Link className={styles.categoryChip} href="/trade">
+              View trade support
+            </Link>
+            <Link className={styles.categoryChip} href="/contact?inquiryType=trade-request">
+              Start a trade inquiry
+            </Link>
+          </div>
+        </div>
       </Section>
 
       <Section width="wide">

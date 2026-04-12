@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { policyPages } from "@/features/content-pages/content-pages-data";
@@ -230,6 +231,17 @@ export function PolicyPageView({ slug }: PolicyPageViewProps) {
           {page.bodyFormat === "markdown"
             ? renderMarkdownBody(page.body)
             : renderPlainBody(page.body)}
+        </div>
+        <div className={styles.policyActions}>
+          <Link className={styles.secondaryAction} href="/faq">
+            Read the FAQ
+          </Link>
+          <Link className={styles.secondaryAction} href="/sourcing">
+            Review sourcing
+          </Link>
+          <Link className={styles.primaryAction} href="/contact">
+            Contact the studio
+          </Link>
         </div>
       </article>
     </div>

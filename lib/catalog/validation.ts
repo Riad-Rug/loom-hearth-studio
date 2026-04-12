@@ -10,6 +10,7 @@ import type {
   StripeCheckoutOrderSnapshot,
   StripeCheckoutSessionRequest,
 } from "@/lib/stripe/contracts";
+import { validatePromoCode } from "@/lib/promos/service";
 import type { Product } from "@/types/domain";
 
 export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: {
@@ -138,7 +139,32 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
     (runningTotal, lineItem) => runningTotal + lineItem.unitAmountUsd * lineItem.quantity,
     0,
   );
-  const validatedTotalUsd = validatedSubtotalUsd + input.request.shippingUsd + input.request.taxUsd;
+  let validatedDiscountUsd = 0;
+
+  if (input.request.promoCode) {
+    const promoValidation = await validatePromoCode({
+      code: input.request.promoCode,
+      subtotalUsd: validatedSubtotalUsd,
+      items: validatedLineItems.map((lineItem) => ({
+        productId: lineItem.productId,
+        productCategory: productById.get(lineItem.productId)?.category ?? "decor",
+        quantity: lineItem.quantity,
+        priceUsd: lineItem.unitAmountUsd,
+      })),
+    });
+
+    if (promoValidation.status !== "valid") {
+      issues.push({
+        code: "invalid-promo",
+        message: promoValidation.message,
+      });
+    } else {
+      validatedDiscountUsd = promoValidation.discountUsd;
+    }
+  }
+
+  const validatedTotalUsd =
+    validatedSubtotalUsd - validatedDiscountUsd + input.request.shippingUsd + input.request.taxUsd;
 
   if (input.request.subtotalUsd !== validatedSubtotalUsd) {
     issues.push({
@@ -147,10 +173,17 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
     });
   }
 
+  if (input.request.discountUsd !== validatedDiscountUsd) {
+    issues.push({
+      code: "invalid-promo",
+      message: "Checkout discount does not match the active promo configuration.",
+    });
+  }
+
   if (input.request.totalUsd !== validatedTotalUsd) {
     issues.push({
       code: "total-mismatch",
-      message: "Checkout total does not match the launch catalog prices and launch shipping assumptions.",
+      message: "Checkout total does not match the launch catalog prices, promo discount, and launch shipping assumptions.",
     });
   }
 
@@ -176,6 +209,8 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
 
   const validatedSnapshot: StripeCheckoutOrderSnapshot = {
     shippingAddress: parsedSnapshot.shippingAddress,
+    promoCode: input.request.promoCode,
+    discountUsd: validatedDiscountUsd,
     items: validatedLineItems.map((lineItem) => ({
       id: lineItem.id,
       productId: lineItem.productId,
@@ -201,6 +236,8 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
       successUrl: input.request.successUrl,
       cancelUrl: input.request.cancelUrl,
       currency: "USD",
+      promoCode: input.request.promoCode,
+      discountUsd: validatedDiscountUsd,
       subtotalUsd: validatedSubtotalUsd,
       shippingUsd: 0,
       taxUsd: 0,
@@ -348,3 +385,41 @@ function parseCheckoutOrderSnapshot(value: string): StripeCheckoutOrderSnapshot 
   }
 }
 
+
+
+function applyDiscountToLineItems(
+  lineItems: StripeCheckoutSessionRequest["lineItems"],
+  discountUsd: number,
+) {
+  if (discountUsd <= 0 || !lineItems.length) {
+    return lineItems;
+  }
+
+  const discountCents = Math.round(discountUsd * 100);
+  const pricedItems = lineItems.map((item) => ({
+    item,
+    lineTotalCents: Math.round(item.unitAmountUsd * 100) * item.quantity,
+  }));
+  const subtotalCents = pricedItems.reduce((sum, entry) => sum + entry.lineTotalCents, 0);
+
+  let remainingDiscountCents = discountCents;
+
+  return pricedItems.map((entry, index) => {
+    const remainingItems = pricedItems.length - index;
+    const allocatedCents =
+      remainingItems === 1
+        ? remainingDiscountCents
+        : Math.min(
+            remainingDiscountCents,
+            Math.round((entry.lineTotalCents / Math.max(1, subtotalCents)) * discountCents),
+          );
+    remainingDiscountCents -= allocatedCents;
+    const perUnitDiscountCents = Math.floor(allocatedCents / entry.item.quantity);
+    const adjustedUnitCents = Math.max(0, Math.round(entry.item.unitAmountUsd * 100) - perUnitDiscountCents);
+
+    return {
+      ...entry.item,
+      unitAmountUsd: adjustedUnitCents / 100,
+    };
+  });
+}

@@ -25,6 +25,8 @@ export type OrderSubmissionPayload = {
   shippingMethod: NonNullable<OrderDraft["shippingMethod"]>;
   paymentMethod: OrderDraft["paymentMethod"];
   paymentStatus: StripeCheckoutPaymentDraft["paymentStatus"];
+  promoCode?: string;
+  discountUsd: number;
   subtotalUsd: number;
   shippingUsd: 0;
   taxUsd: number;
@@ -106,6 +108,8 @@ export type OrderPersistenceRequest = {
   status: Extract<OrderStatus, "paid">;
   paymentStatus: OrderCreationRequest["paymentStatus"];
   items: Order["items"];
+  promoCode?: string;
+  discountUsd: number;
   subtotalUsd: number;
   shippingUsd: 0;
   taxUsd: number;

@@ -8,7 +8,8 @@ import { sendTransactionalEmailMessage } from "@/lib/email/service";
 
 const inquiryTypeLabels = {
   "product-inquiry": "Product inquiry",
-  "custom-request": "Custom request",
+  "trade-request": "Trade or project request",
+  "sourcing-request": "Sourcing request",
   "order-question": "Order question",
 } as const;
 
@@ -22,11 +23,23 @@ type InquiryDestination = {
   shippingAvailabilityNote: string | null;
 };
 
+type InquiryProjectContext = {
+  studioName: string | null;
+  productName: string | null;
+  variantName: string | null;
+  quantity: string | null;
+  roomType: string | null;
+  desiredSize: string | null;
+  projectTimeline: string | null;
+  requestFlags: string[];
+};
+
 export async function submitContactInquiry(formData: FormData) {
   const name = sanitizeContactField(formData.get("name"), 120);
   const email = sanitizeContactField(formData.get("email"), 160);
   const inquiryType = sanitizeInquiryType(formData.get("inquiryType"));
   const destination = sanitizeInquiryDestination(formData);
+  const projectContext = sanitizeProjectContext(formData);
   const message = sanitizeContactField(formData.get("message"), 2000);
 
   if (!name || !email || !inquiryType || !destination || !message || !isValidEmail(email)) {
@@ -44,6 +57,7 @@ export async function submitContactInquiry(formData: FormData) {
       email,
       inquiryTypeLabel: inquiryTypeLabels[inquiryType],
       destination,
+      projectContext,
       message,
     }),
     text: createContactInquiryText({
@@ -52,6 +66,7 @@ export async function submitContactInquiry(formData: FormData) {
       email,
       inquiryTypeLabel: inquiryTypeLabels[inquiryType],
       destination,
+      projectContext,
       message,
     }),
   });
@@ -82,9 +97,7 @@ function sanitizeInquiryType(value: FormDataEntryValue | null) {
     return null;
   }
 
-  return value in inquiryTypeLabels
-    ? (value as keyof typeof inquiryTypeLabels)
-    : null;
+  return value in inquiryTypeLabels ? (value as keyof typeof inquiryTypeLabels) : null;
 }
 
 function sanitizeInquiryDestination(formData: FormData): InquiryDestination | null {
@@ -129,6 +142,35 @@ function sanitizeInquiryDestination(formData: FormData): InquiryDestination | nu
   };
 }
 
+function sanitizeProjectContext(formData: FormData): InquiryProjectContext {
+  const requestFlags = [
+    formData.get("requestVideoReview") === "yes" ? "Video review requested" : null,
+    formData.get("requestHold") === "yes" ? "Hold request" : null,
+    formData.get("requestImages") === "yes" ? "High-resolution image request" : null,
+  ].filter((value): value is string => Boolean(value));
+
+  return {
+    studioName: sanitizeContactField(formData.get("studioName"), 160),
+    productName: sanitizeContactField(formData.get("productName"), 160),
+    variantName: sanitizeContactField(formData.get("variantName"), 120),
+    quantity: sanitizeNumericField(formData.get("quantity")),
+    roomType: sanitizeContactField(formData.get("roomType"), 120),
+    desiredSize: sanitizeContactField(formData.get("desiredSize"), 120),
+    projectTimeline: sanitizeContactField(formData.get("projectTimeline"), 120),
+    requestFlags,
+  };
+}
+
+function sanitizeNumericField(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const sanitized = value.trim();
+
+  return /^[0-9]{1,3}$/.test(sanitized) ? sanitized : null;
+}
+
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -139,8 +181,13 @@ function createContactInquiryHtml(input: {
   email: string;
   inquiryTypeLabel: string;
   destination: InquiryDestination;
+  projectContext: InquiryProjectContext;
   message: string;
 }) {
+  const projectContextHtml = createProjectContextLines(input.projectContext)
+    .map((line) => escapeHtml(line))
+    .join("<br />");
+
   return [
     "<p>A new contact inquiry was submitted from loomandhearthstudio.com.</p>",
     `<p><strong>Request number:</strong> ${escapeHtml(input.requestNumber)}</p>`,
@@ -148,6 +195,7 @@ function createContactInquiryHtml(input: {
     `<strong>Email:</strong> ${escapeHtml(input.email)}<br />`,
     `<strong>Inquiry type:</strong> ${escapeHtml(input.inquiryTypeLabel)}</p>`,
     `<p><strong>Destination</strong><br />${escapeHtml(formatDestinationLabel(input.destination)).replace(/\n/g, "<br />")}</p>`,
+    projectContextHtml ? `<p><strong>Project details</strong><br />${projectContextHtml}</p>` : "",
     `<p><strong>Message</strong><br />${escapeHtml(input.message).replace(/\n/g, "<br />")}</p>`,
   ].join("");
 }
@@ -158,8 +206,11 @@ function createContactInquiryText(input: {
   email: string;
   inquiryTypeLabel: string;
   destination: InquiryDestination;
+  projectContext: InquiryProjectContext;
   message: string;
 }) {
+  const projectContextLines = createProjectContextLines(input.projectContext);
+
   return [
     "A new contact inquiry was submitted from loomandhearthstudio.com.",
     "",
@@ -171,10 +222,24 @@ function createContactInquiryText(input: {
     "",
     "Destination",
     formatDestinationLabel(input.destination),
+    ...(projectContextLines.length ? ["", "Project details", ...projectContextLines] : []),
     "",
     "Message",
     input.message,
   ].join("\n");
+}
+
+function createProjectContextLines(projectContext: InquiryProjectContext) {
+  return [
+    projectContext.productName ? `Product: ${projectContext.productName}` : null,
+    projectContext.variantName ? `Variant: ${projectContext.variantName}` : null,
+    projectContext.quantity ? `Quantity: ${projectContext.quantity}` : null,
+    projectContext.studioName ? `Studio or company: ${projectContext.studioName}` : null,
+    projectContext.roomType ? `Room type: ${projectContext.roomType}` : null,
+    projectContext.desiredSize ? `Desired size: ${projectContext.desiredSize}` : null,
+    projectContext.projectTimeline ? `Timeline: ${projectContext.projectTimeline}` : null,
+    ...projectContext.requestFlags,
+  ].filter((value): value is string => Boolean(value));
 }
 
 function formatDestinationLabel(destination: InquiryDestination) {
@@ -208,4 +273,3 @@ function createContactRequestNumber() {
 
   return `LH-${year}${month}${day}-${randomSegment}`;
 }
-

@@ -11,7 +11,9 @@ export type CloudinaryAssetRole =
   | "thumbnail"
   | "featured"
   | "og"
-  | "lookbook";
+  | "lookbook"
+  | "detail"
+  | "back";
 
 export type MediaAsset = {
   id: string;

@@ -112,85 +112,83 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
   return {
     shell: {
       eyebrow: "Checkout",
-      title: "Guest checkout UI shell",
+      title: "Secure checkout",
       body:
-        "This slice implements the PRD checkout structure only. Payment, order creation, cart wiring, tax handling, email, and provider integrations remain unresolved.",
+        "Review your order details, confirm your shipping information, and continue to secure payment. Final delivery details are confirmed before payment is captured.",
     },
     stepIndicators: input.checkoutSteps.map((item, index) => ({
       key: item.key,
       label: item.label,
       stateLabel:
         input.step !== "start" && currentStepIndex > index
-          ? "Complete preview"
-          : "Placeholder step",
+          ? "Complete"
+          : item.key === input.step
+            ? "Current step"
+            : "Next",
       isActive: item.key === input.step,
       isComplete: input.step !== "start" && currentStepIndex > index,
     })),
     start: {
-      title: input.hasCartItems ? "Checkout route shell" : "Your cart is empty",
+      title: input.hasCartItems ? "Ready to check out" : "Your cart is empty",
       body: input.hasCartItems
-        ? "Guest checkout is the only supported mode in the PRD. Use the step links below to move through the existing 5-step flow using the current client-side checkout state."
-        : "Add at least one product before starting checkout. The checkout shell is available, but there is no active cart to submit.",
-      actionLabel: input.hasCartItems ? "Start guest checkout" : "Return to shop",
+        ? "Continue to checkout to confirm your details, review delivery information, and move to secure payment."
+        : "Add a product to your cart before starting checkout.",
+      actionLabel: input.hasCartItems ? "Start checkout" : "Return to shop",
       actionHref: input.hasCartItems ? "/checkout/information" : "/shop",
     },
     information: {
       note:
-        "Guest email and shipping details are stored in local client state only for this slice.",
+        "We use these details to prepare your delivery review, secure payment handoff, and follow-up confirmation.",
       actionLabel: "Continue to shipping",
     },
     shipping: {
       optionTitle: "Standard shipping",
-      optionBody: "Launch markets: United States, Canada, Australia, and United Kingdom",
+      optionBody: "Available for the United States, Canada, Australia, and the United Kingdom",
       optionPriceLabel: "$0.00",
       body:
-        "Shipping is fixed at $0.00 for the launch markets in the PRD. Destination and delivery conditions still need to be confirmed before payment is captured. No shipping provider or rate calculation logic is implemented in this slice.",
-      actionLabel: "Continue to payment",
+        "Shipping and destination details are reviewed before payment is captured. If any delivery conditions need clarification, we confirm them by email before finalizing the order.",
+      actionLabel: "Continue to payment review",
     },
     payment: {
       body:
-        "Stripe Checkout is the only supported launch path in this boundary layer. This step now reflects the hosted Checkout handoff state only. No payment capture, webhook handling, or order creation is implemented yet.",
-      launchModeLabel: `Launch mode: Stripe ${input.stripePaymentDraft.launchMode}`,
+        "Payment is handled through secure Stripe Checkout. After checkout, we confirm your order details, destination, and next steps by email before payment is captured.",
+      launchModeLabel: "Secure Stripe Checkout",
       handoffLabel:
-        "A successful Checkout session-creation result now hands off to hosted Stripe Checkout by redirecting the browser to the returned Checkout URL.",
+        "You will be redirected to Stripe to review your payment details and complete checkout securely.",
       boundary: {
-        modeLabel: `Mode: ${input.stripePaymentDraft.mode}`,
-        statusLabel: `Status: ${input.stripePaymentDraft.paymentStepStatus}`,
-        publishableKeyLabel: `Publishable key: ${
-          input.stripePaymentDraft.publishableKeyReady
-            ? "Configured"
-            : "Missing placeholder env"
+        modeLabel: `Checkout mode: ${input.stripePaymentDraft.mode}`,
+        statusLabel: `Checkout status: ${input.stripePaymentDraft.paymentStepStatus}`,
+        publishableKeyLabel: `Payment configuration: ${
+          input.stripePaymentDraft.publishableKeyReady ? "Ready" : "Needs setup"
         }`,
         missingConfigLabel: input.stripePaymentDraft.missingConfig.length
-          ? `Missing config: ${input.stripePaymentDraft.missingConfig.join(", ")}`
+          ? `Additional setup required: ${input.stripePaymentDraft.missingConfig.join(", ")}`
           : null,
-        sessionResponseLabel: `Session response: ${
+        sessionResponseLabel: `Checkout session: ${
           input.stripePaymentDraft.checkoutSessionResponse
             ? input.stripePaymentDraft.checkoutSessionResponse.id
-            : "Not created"
+            : "Not created yet"
         }`,
-        sessionResponseStatusLabel: `Session response status: ${
-          input.stripePaymentDraft.checkoutSessionResponse?.status ?? "Not created"
+        sessionResponseStatusLabel: `Session status: ${
+          input.stripePaymentDraft.checkoutSessionResponse?.status ?? "Not created yet"
         }`,
         paymentStatusLabel: `Payment status: ${input.stripePaymentDraft.paymentStatus}`,
-        readinessLabel: `Review readiness: ${
-          input.stripePaymentDraft.isReadyForPlaceholderFlow
-            ? "Launch mode locked"
-            : "Unavailable"
+        readinessLabel: `Review step: ${
+          input.stripePaymentDraft.isReadyForPlaceholderFlow ? "Available" : "Unavailable"
         }`,
       },
       checkoutService: {
         statusLabel: `Service status: ${input.stripePaymentDraft.checkoutService.status}`,
-        endpointLabel: `Session endpoint: ${input.stripePaymentDraft.checkoutService.sessionEndpointPath}`,
+        endpointLabel: `Checkout endpoint: ${input.stripePaymentDraft.checkoutService.sessionEndpointPath}`,
         successUrlLabel: `Success URL: ${input.stripePaymentDraft.checkoutService.successUrl}`,
         cancelUrlLabel: `Cancel URL: ${input.stripePaymentDraft.checkoutService.cancelUrl}`,
         missingClientConfigLabel: input.stripePaymentDraft.checkoutService.missingClientConfig
           .length
-          ? `Missing client config: ${input.stripePaymentDraft.checkoutService.missingClientConfig.join(", ")}`
+          ? `Client setup required: ${input.stripePaymentDraft.checkoutService.missingClientConfig.join(", ")}`
           : null,
         missingServerConfigLabel: input.stripePaymentDraft.checkoutService.missingServerConfig
           .length
-          ? `Missing server config: ${input.stripePaymentDraft.checkoutService.missingServerConfig.join(", ")}`
+          ? `Server setup required: ${input.stripePaymentDraft.checkoutService.missingServerConfig.join(", ")}`
           : null,
       },
       checkoutExecution: {
@@ -201,38 +199,45 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
           : null,
         missingServerConfigLabel: input.stripePaymentDraft.checkoutExecution.missingServerConfig
           .length
-          ? `Missing server config: ${input.stripePaymentDraft.checkoutExecution.missingServerConfig.join(", ")}`
+          ? `Server setup required: ${input.stripePaymentDraft.checkoutExecution.missingServerConfig.join(", ")}`
           : null,
       },
       executionAttempt: {
-        stateLabel: `Execution attempt: ${input.checkoutExecutionAttempt.status}`,
+        stateLabel:
+          input.checkoutExecutionAttempt.status === "success"
+            ? "Checkout session ready"
+            : input.checkoutExecutionAttempt.status === "submitting"
+              ? "Preparing secure checkout"
+              : input.checkoutExecutionAttempt.status === "failure"
+                ? "Checkout unavailable"
+                : "Ready when you are",
         messageLabel: input.checkoutExecutionAttempt.message,
         redirectTargetLabel: input.checkoutExecutionAttempt.result?.redirectTarget
-          ? `Redirect target handoff: ${input.checkoutExecutionAttempt.result.redirectTarget}`
+          ? `Redirect target: ${input.checkoutExecutionAttempt.result.redirectTarget}`
           : null,
         actionLabel:
           input.checkoutExecutionAttempt.status === "submitting"
-            ? "Creating Checkout session..."
+            ? "Preparing secure checkout..."
             : input.checkoutExecutionAttempt.status === "success"
-              ? "Redirecting to Stripe Checkout..."
-              : "Create Checkout session",
+              ? "Continue to Stripe..."
+              : "Continue to secure payment",
       },
       checkoutSessionRequest: input.stripePaymentDraft.checkoutSessionRequest
         ? {
             customerEmailLabel: input.stripePaymentDraft.checkoutSessionRequest.customerEmail
-              ? `Customer email: ${input.stripePaymentDraft.checkoutSessionRequest.customerEmail}`
-              : "Customer email: not collected yet",
-            lineItemsLabel: `Line items: ${input.stripePaymentDraft.checkoutSessionRequest.lineItems.length}`,
-            totalLabel: `Checkout total: $${input.stripePaymentDraft.checkoutSessionRequest.totalUsd.toFixed(2)}`,
+              ? `Email: ${input.stripePaymentDraft.checkoutSessionRequest.customerEmail}`
+              : "Email will be added at checkout",
+            lineItemsLabel: `Items: ${input.stripePaymentDraft.checkoutSessionRequest.lineItems.length}`,
+            totalLabel: `Total: $${input.stripePaymentDraft.checkoutSessionRequest.totalUsd.toFixed(2)}`,
             emptyLabel: null,
           }
         : {
             customerEmailLabel: null,
             lineItemsLabel: null,
             totalLabel: null,
-            emptyLabel: "Checkout session request will be prepared once cart items are present.",
+            emptyLabel: "Checkout details will appear here once your cart is ready.",
           },
-      actionLabel: "Continue to review",
+      actionLabel: "Continue to final review",
     },
   };
 }

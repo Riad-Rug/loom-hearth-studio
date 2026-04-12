@@ -13,6 +13,8 @@ import type {
   CatalogProductCardViewModel,
   MultiUnitProductDetailPageViewModel,
   ProductLinkViewModel,
+  ProductSpecificationViewModel,
+  ProductSupportPanelViewModel,
   RugProductDetailPageViewModel,
 } from "@/lib/catalog/contracts";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
@@ -120,6 +122,8 @@ function createProductDetailPageViewModel(
     name: getDisplayProductName(product.name),
     category: product.category,
     description: product.description,
+    seoTitle: product.seoTitle,
+    seoDescription: product.seoDescription,
     type: product.type,
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
@@ -132,10 +136,13 @@ function createProductDetailPageViewModel(
         src: buildCloudinaryUrl(image.publicId),
         publicId: image.publicId,
         altText: image.altText,
+        role: image.role,
       })),
     materialLabel: product.materials.join(", "),
     originLabel: product.origin,
     techniqueLabel: product.type === "rug" ? "Handwoven" : undefined,
+    specifications: createProductSpecifications(product),
+    supportPanels: createProductSupportPanels(product),
     detailSections: createProductDetailSections(product),
     related,
     recentlyViewed,
@@ -167,6 +174,111 @@ function createProductDetailPageViewModel(
   };
 }
 
+function createProductSpecifications(product: Product): ProductSpecificationViewModel[] {
+  const specs: ProductSpecificationViewModel[] = [
+    { label: "Material", value: product.materials.join(", ") },
+    { label: "Origin", value: product.origin },
+  ];
+
+  if (product.type === "rug") {
+    specs.push(
+      { label: "Technique", value: "Handwoven" },
+      { label: "Dimensions", value: formatRugDimensions(product) },
+      { label: "Weight", value: formatRugWeight(product) },
+      { label: "Piece type", value: "One-of-one rug" },
+    );
+  } else {
+    specs.push(
+      { label: "Availability", value: createInventoryStateLabel(product) },
+      { label: "Ordering", value: "Project and destination reviewed before payment capture" },
+    );
+  }
+
+  if (product.attributionRegion?.trim()) {
+    specs.push({ label: "Region", value: product.attributionRegion.trim() });
+  }
+
+  if (product.attributionConfidence?.trim()) {
+    specs.push({ label: "Attribution", value: product.attributionConfidence.trim() });
+  }
+
+  return specs;
+}
+
+function createProductSupportPanels(product: Product): ProductSupportPanelViewModel[] {
+  const provenanceItems = [
+    ...(product.attributionRegion?.trim() ? [`Region: ${product.attributionRegion.trim()}`] : []),
+    ...(product.attributionConfidence?.trim()
+      ? [`Attribution: ${product.attributionConfidence.trim()}`]
+      : []),
+    `Origin noted as ${product.origin}.`,
+  ];
+
+  const verificationItems =
+    product.verificationNotes?.filter(Boolean).length
+      ? product.verificationNotes.filter(Boolean)
+      : product.type === "rug"
+        ? [
+            "Product pages are structured to support exact-piece photography and close detail views.",
+            "Pre-shipment verification confirms the actual rug before payment is captured.",
+          ]
+        : [
+            "Availability and destination are reviewed before payment is captured.",
+            "Additional details can be requested through the inquiry flow.",
+          ];
+
+  const shippingItems =
+    product.shippingNotes?.filter(Boolean).length
+      ? product.shippingNotes.filter(Boolean)
+      : [
+          "Ships from Morocco.",
+          "Free shipping applies to the United States, Canada, Australia, and the United Kingdom.",
+          "Destination and delivery conditions are confirmed before payment is captured.",
+        ];
+
+  const panels: ProductSupportPanelViewModel[] = [
+    {
+      id: "provenance",
+      eyebrow: "Provenance",
+      title: product.type === "rug" ? "Product attribution and origin" : "Collection origin and sourcing",
+      body:
+        product.provenanceNote?.trim() ||
+        "This page is prepared to support more detailed provenance notes as final product stories, imagery, and sourcing documentation are added.",
+      items: provenanceItems,
+    },
+    {
+      id: "verification",
+      eyebrow: "Verification",
+      title: product.type === "rug" ? "How this piece is confirmed before shipment" : "How availability is confirmed before shipment",
+      body:
+        product.type === "rug"
+          ? "For one-of-one rugs, the buying flow includes a final verification step before payment is captured."
+          : "For multi-unit pieces, availability, destination, and delivery conditions are reviewed before payment is captured.",
+      items: verificationItems,
+    },
+    {
+      id: "shipping",
+      eyebrow: "Shipping",
+      title: "Shipping and delivery notes",
+      body:
+        "This product page supports shipping guidance and market notes without requiring final product copy to be in place yet.",
+      items: shippingItems,
+    },
+  ];
+
+  if (product.conditionNote?.trim()) {
+    panels.push({
+      id: "condition",
+      eyebrow: "Condition",
+      title: "Condition notes",
+      body: product.conditionNote.trim(),
+      items: [],
+    });
+  }
+
+  return panels;
+}
+
 function getPrimaryImage(product: Product) {
   const heroImage = product.images.find((image) => image.role === "hero");
 
@@ -184,31 +296,26 @@ function createProductLinks(products: Product[], count: number): ProductLinkView
 function createProductDetailSections(product: Product) {
   const sections = [
     {
-      title: "Materials & origin",
-      body: `${product.materials.join(", ")}. Crafted in ${product.origin}.`,
+      title: "Materials & construction",
+      body:
+        product.type === "rug"
+          ? `${product.materials.join(", ")}. Built as a one-of-one woven piece selected for structure, scale, and material presence.`
+          : `${product.materials.join(", ")}. Added to the collection as a supporting handcrafted piece for layered interiors.`,
+    },
+    {
+      title: "Care & placement",
+      body:
+        product.careNote?.trim() ||
+        (product.type === "rug"
+          ? "Professional cleaning is recommended for one-of-one rugs. Product-specific care notes can be added here as the final catalog is published."
+          : "Spot clean or dry clean as appropriate for the material. Product-specific care notes can be added here as the final catalog is published."),
+    },
+    {
+      title: "Shipping & review",
+      body:
+        "Ships from Morocco with destination details confirmed before payment is captured. This section is structured to support final lead-time, customs, and delivery notes per product.",
     },
   ];
-
-  if (product.type === "rug") {
-    sections.push({
-      title: "Dimensions & care",
-      body: `${formatRugDimensions(product)}. Professional cleaning recommended for one-of-one launch rugs.`,
-    });
-  } else {
-    sections.push({
-      title: "Inventory & care",
-      body:
-        product.inventory > 0
-          ? `${product.inventory} units are currently allocated for launch. Spot clean or dry clean as appropriate for the material.`
-          : "This item is currently out of stock. Notify-me presentation remains visible while broader inventory workflows stay out of scope.",
-    });
-  }
-
-  sections.push({
-    title: "Shipping & returns",
-    body:
-      "Ships from Morocco with free shipping to the United States, Canada, Australia, and United Kingdom. Inquiries from other countries are reviewed case by case before payment is captured.",
-  });
 
   return sections;
 }
@@ -224,3 +331,16 @@ function getDisplayProductName(name: string) {
   }
 }
 
+function createInventoryStateLabel(product: Extract<Product, { type: "multiUnit" }>) {
+  const inventoryState = getInventoryState(product);
+
+  if (inventoryState === "lowStock") {
+    return "Low stock";
+  }
+
+  if (inventoryState === "outOfStock") {
+    return "Out of stock";
+  }
+
+  return "In stock";
+}
