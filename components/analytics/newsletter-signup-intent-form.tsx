@@ -57,15 +57,13 @@ export function NewsletterSignupIntentForm(props: NewsletterSignupIntentFormProp
         </p>
       ) : null}
       <div className={styles.newsletterDisclosure}>
-        <p>New arrivals, lookbook updates, and early access to new pieces.</p>
         <p>
-          By joining you agree to our {" "}
+          By joining you agree to our{" "}
           <Link className={styles.newsletterPolicyLink} href="/privacy-policy">
             Privacy Policy
           </Link>
-          .
+          . Unsubscribe any time via the link in our emails.
         </p>
-        <p>Unsubscribe any time via the link in our emails.</p>
       </div>
     </form>
   );

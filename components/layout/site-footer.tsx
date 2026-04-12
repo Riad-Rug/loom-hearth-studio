@@ -25,7 +25,8 @@ export async function SiteFooter() {
             <p className="site-footer__brand">{content.footer.introBody}</p>
             <p className="site-footer__meta">{content.footer.introMeta}</p>
             <p className="site-footer__trade">
-              Interior designers and trade professionals: use the <Link href="/trade">trade route</Link> for sourcing and project inquiries.
+              Interior designers, wholesalers, and trade professionals: our full inventory is larger than what is
+              listed online. Contact us for sourcing and project inquiries.
             </p>
             <div className="site-footer__legal">
               <p className="site-footer__legal-heading">Trader and contact details</p>

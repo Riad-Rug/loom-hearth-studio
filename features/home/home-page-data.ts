@@ -187,24 +187,24 @@ const defaultHomePageContent: HomePageContent = {
     tagline: siteConfig.tagline,
   },
   pageSeo: {
-    title: "Shop handcrafted Moroccan rugs, poufs, pillows, and decor.",
+    title: "Loom & Hearth Studio  Handcrafted Moroccan Rugs",
     description:
-      "Editorial storefront homepage for handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor.",
+      "Hand-knotted Moroccan rugs, poufs, cactus silk pillows, and decor sourced directly across Morocco. Family business. 80 years in the trade. Free shipping to the US, Canada, and Australia.",
   },
   sectionOrder: [...homepageSectionOrderKeys],
   hero: {
     visible: true,
     seo: {
-      seoTitle: "Shop handcrafted Moroccan rugs, poufs, pillows, and decor.",
+      seoTitle: "Loom & Hearth Studio  Handcrafted Moroccan Rugs",
       metaDescription:
-        "Shop handcrafted Moroccan rugs, vintage finds, poufs, pillows, and decor selected for wool texture, leather, and visible construction detail.",
+        "Hand-knotted Moroccan rugs, poufs, cactus silk pillows, and decor sourced directly across Morocco. Family business. 80 years in the trade. Free shipping to the US, Canada, and Australia.",
     },
     eyebrow: "Loom & Hearth Studio",
-    title: "Moroccan rugs sourced directly from Marrakech  not from a catalogue.",
+    title: "Hand-knotted Moroccan rugs from a family that has worked this trade for 80 years.",
     paragraph:
-      "Hand-knotted rugs, rug-made poufs, cactus silk pillows, and handcrafted decor  sourced in person in Morocco, not pulled from an export catalogue.",
+      "Hand-knotted rugs, poufs, cactus silk pillows, and handcrafted decor  selected in person across Morocco, not pulled from an export catalogue.",
     primaryCta: {
-      label: "SHOP NOW",
+      label: "SHOP RUGS",
       href: "/shop/rugs",
       visible: true,
     },
@@ -235,7 +235,7 @@ const defaultHomePageContent: HomePageContent = {
         label: "Free shipping to the United States, Canada, and Australia",
         visible: true,
       },
-      { id: "badge-3", label: "Destination confirmed before capture", visible: true },
+      { id: "badge-3", label: "Colour verified before payment is captured", visible: true },
       { id: "badge-4", label: "14-day returns", visible: true },
     ],
   },
@@ -247,9 +247,9 @@ const defaultHomePageContent: HomePageContent = {
         "Browse Moroccan rugs, vintage rugs, rug-made poufs, cactus silk pillows, and decor through a structured category section on the homepage.",
     },
     eyebrow: "SHOP BY CATEGORY",
-    title: "Moroccan rugs, poufs, pillows, decor, and vintage  the full collection.",
+    title: "The full collection  rugs, poufs, pillows, decor, and vintage finds.",
     paragraph:
-      "Start with the pieces at the center of the collection: handcrafted Moroccan rugs, one of one vintage rugs, rug-made poufs, cactus silk pillows, and decor selected for wool texture, visible construction, and colour contrast.",
+      "The collection is built around hand-knotted Moroccan rugs selected for construction quality, pile density, and weight. Supporting pieces  rug-made poufs, cactus silk pillows, and handcrafted decor  are chosen to work alongside them.",
     cards: [
       {
         id: "category-rugs",
@@ -257,7 +257,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/rugs",
         visible: true,
         description:
-          "Handcrafted Moroccan rugs chosen for texture, material depth, and lasting scale in the room.",
+          "Hand-knotted rugs selected for pile density, construction depth, and weight underfoot.",
         image: {
           src: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
           alt: "Handmade Moroccan rug in a warm neutral living room with soft natural light",
@@ -272,7 +272,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/poufs",
         visible: true,
         description:
-          "Rug-made and leather poufs. Functional seating with a softer, less formal footprint in the room.",
+          "Rug-made and leather poufs. Functional seating with a quieter footprint than upholstered furniture.",
         image: {
           src: "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
           alt: "Moroccan leather pouf styled in a tactile interior with warm linen textures",
@@ -287,7 +287,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/pillows",
         visible: true,
         description:
-          "Cactus silk and rug-based pillows for color, contrast, and woven texture.",
+          "Cactus silk and rug-based pillows. Flat-woven, low-shed, with strong colour saturation.",
         image: {
           src: "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
           alt: "Cactus silk pillows in Moroccan sunlight with woven textiles",
@@ -302,7 +302,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/decor",
         visible: true,
         description:
-          "Handcrafted Moroccan decor selected to finish shelves, consoles, tables, and quiet corners.",
+          "Handcrafted Moroccan objects selected for shelves, consoles, and flat surfaces.",
         image: {
           src: "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
           alt: "Moroccan decor with carved wood, ceramics, and woven textiles",
@@ -317,7 +317,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/vintage",
         visible: true,
         description:
-          "One of one vintage Moroccan rugs selected for construction quality, patina, and visible age.",
+          "One-of-one vintage Moroccan rugs. Selected for construction integrity, visible age, and pile condition.",
         image: {
           src: "https://images.pexels.com/photos/28582589/pexels-photo-28582589.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1600",
           alt: "Vintage Moroccan rugs displayed in a warm showroom with visible patina and texture",
@@ -335,11 +335,11 @@ const defaultHomePageContent: HomePageContent = {
       metaDescription:
         "Read how Loom & Hearth Studio builds the collection through direct sourcing in Morocco and a sharp point of view on craft and material quality.",
     },
-    eyebrow: "Brand story",
-    title: "Sourced directly in Marrakech. Selected in person.",
+    eyebrow: "WHO WE ARE",
+    title: "Sourced across Morocco. Selected in person. Shipped directly to you.",
     paragraph:
-      "Loom & Hearth Studio sources its collection directly through a family bazaar in Marrakech  a business with roots close to 80 years in the Semmarine souk. We select rugs, rug-made poufs, pillows, and decor in person. Not from export catalogues. Not through cooperatives.",
-    linkLabel: "Read the story",
+      "Loom & Hearth Studio is a family operation. My mother manages our bazaar in the Semmarine souk in Marrakech  a business with close to 80 years of history in the trade. We travel together across Morocco  to villages in the Atlas Mountains, to smaller workshops, to early morning markets where weavers and collectors trade before dawn  to find pieces that cannot be sourced from a catalogue. We work directly with the people who make them. We cut out the intermediaries who have historically taken the margin that should go to the artisans. That is the sourcing model. It is not scalable in the way a catalogue business is. That is the point.",
+    linkLabel: "Read the full story",
     href: "/about",
   },
   designDirection: {
@@ -349,11 +349,11 @@ const defaultHomePageContent: HomePageContent = {
       metaDescription:
         "See the design direction behind the collection: stacked textiles, wool, wood, quiet contrast, and handcrafted accents with lasting weight.",
     },
-    eyebrow: "Design direction",
-    title: "Pieces with weight. For rooms that do not look like a catalogue.",
+    eyebrow: "DESIGN DIRECTION",
+    title: "Pieces chosen for what they are made of. Not for how they photograph.",
     paragraph:
-      "The collection is focused: hand-knotted Moroccan rugs, rug-based poufs, pillows, and a small selection of supporting decor. Each piece is chosen for what it is made of and how it is made  not for how it photographs.",
-    linkLabel: "View the lookbook",
+      "The collection stays focused: hand-knotted Moroccan rugs, rug-based poufs, pillows, and a small selection of supporting decor. Every piece is evaluated on construction  pile density, knot structure, material weight, and colour consistency across the field. A rug that photographs well but sheds heavily or compresses under foot traffic within two years is not a piece we will sell.",
+    linkLabel: "VIEW THE LOOKBOOK",
     href: "/lookbook",
   },
   featured: {
@@ -363,8 +363,8 @@ const defaultHomePageContent: HomePageContent = {
       metaDescription:
         "Start with the signature homepage directions: Moroccan rugs, rug-made poufs, and cactus silk pillows selected for wool, leather, and woven texture.",
     },
-    eyebrow: "Featured directions",
-    title: "Start with the signature pieces of the collection.",
+    eyebrow: "FEATURED DIRECTIONS",
+    title: "Start with the three pieces at the centre of the collection.",
     paragraph:
       "Shop the three directions that define the launch: Moroccan rugs, rug-made poufs, and cactus silk pillows.",
     cards: [
@@ -372,7 +372,7 @@ const defaultHomePageContent: HomePageContent = {
         id: "featured-rugs",
         title: "Moroccan rugs",
         description:
-          "Hand-knotted Moroccan rugs selected for pile quality, construction, and performance underfoot.",
+          "Hand-knotted Moroccan rugs. Selected for pile density, knot count, and durability underfoot.",
         href: "/shop/rugs",
         visible: true,
         image: {
@@ -387,7 +387,7 @@ const defaultHomePageContent: HomePageContent = {
         id: "featured-poufs",
         title: "Poufs",
         description:
-          "Leather and rug-made poufs. Selected for construction quality and function.",
+          "Leather and rug-made poufs. Evaluated for construction quality and filling density.",
         href: "/shop/poufs",
         visible: true,
         image: {
@@ -402,7 +402,7 @@ const defaultHomePageContent: HomePageContent = {
         id: "featured-pillows",
         title: "Cactus silk pillows",
         description:
-          "Cactus silk pillows  flat-woven, low-shed, with good colour saturation and a quieter surface than wool pile.",
+          "Flat-woven cactus silk. Low-shed, with strong colour saturation and a quieter surface than wool pile.",
         href: "/shop/pillows",
         visible: true,
         image: {
@@ -422,10 +422,10 @@ const defaultHomePageContent: HomePageContent = {
       metaDescription:
         "Learn what makes Moroccan rugs distinctive, from handwoven texture and plush wool to vintage patina, movement, and visible age.",
     },
-    eyebrow: "Moroccan rugs guide",
+    eyebrow: "KNOW WHAT YOU ARE BUYING",
     title: "What separates a hand-knotted Moroccan rug from everything else on the market.",
     paragraph:
-      "A hand-knotted Moroccan rug is built knot by knot onto a warp structure. That process takes weeks for a single piece and produces a construction that holds up under foot traffic in a way machine-made and tufted rugs do not. Beni Ourain rugs are knotted by Amazigh weavers in the Middle Atlas Mountains using natural undyed wool. The ivory field and sparse geometric pattern are structural  a result of the wool's colour and the weaver's design, not dye. Pile height typically runs 1525mm. Vintage Moroccan rugs carry abrash: colour variation that occurs when natural dye interacts with light and use over time. It is not a defect. It is a visible record of how the piece was made.",
+      "A hand-knotted Moroccan rug is built knot by knot onto a warp structure. The weight of the finished piece reflects how densely it was knotted  and density is the primary indicator of how the rug will perform over time. Machine-made and tufted rugs use a backing adhesive to hold the pile. That adhesive degrades. The knot structure in a hand-knotted rug does not. A well-knotted piece bought today should still be in the room  and worth something  in thirty years.",
   },
   newsletter: {
     visible: true,
@@ -434,13 +434,13 @@ const defaultHomePageContent: HomePageContent = {
       metaDescription:
         "Join the Loom & Hearth Studio list for new Moroccan rugs, vintage finds, lookbook updates, and early access to handcrafted releases.",
     },
-    eyebrow: "Newsletter",
-    title: "Get first access to new Moroccan rugs, vintage finds, and studio releases.",
+    eyebrow: "JOIN THE LIST",
+    title: "New arrivals, sourcing stories, and first access to pieces before wider release.",
     paragraph:
-      "Join the list for new arrivals, lookbook updates, and early access to handcrafted pieces before wider release.",
+      "We publish twice a month. New pieces, what we found on the last sourcing trip, and guides on what to look for when buying a Moroccan rug. No filler.",
     inputLabel: "Email address",
-    inputPlaceholder: "name@example.com",
-    ctaLabel: "Join the list",
+    inputPlaceholder: "Your email address",
+    ctaLabel: "JOIN",
   },
   footer: {
     visible: true,
@@ -450,9 +450,9 @@ const defaultHomePageContent: HomePageContent = {
         "Structured footer content covering primary navigation, support links, and collection shortcuts for the Loom & Hearth Studio storefront.",
     },
     introTitle: siteConfig.name,
-    introBody: "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor  sourced directly from Marrakech.",
+    introBody: "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor  sourced directly across Morocco and shipped to the United States, Canada, and Australia.",
     introMeta:
-      "Free shipping to the United States, Canada, and Australia. Inquiries from other countries are reviewed case by case. Prices in USD. Destination and delivery conditions are confirmed before payment is captured.",
+      "Free shipping to all three markets. Inquiries from other countries are reviewed case by case. Prices in USD. Destination and delivery conditions are confirmed before payment is captured.",
     exploreHeading: "Explore",
     exploreLinks: siteConfig.primaryNav.map((item) => ({ ...item })),
     supportHeading: "Support",

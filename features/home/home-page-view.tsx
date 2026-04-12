@@ -205,7 +205,7 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent)
                 <h2>{content.guide.title}</h2>
                 <p className={styles.sectionBody}>{content.guide.paragraph}</p>
                 <Link className={styles.narrativeLinkLabel} href={"/blog" as Route}>
-                  Read the full guide
+                  READ THE FULL GUIDE
                 </Link>
               </div>
             </div>
@@ -243,6 +243,7 @@ function firstEditorialSection(content: HomePageContent) {
     (key) => (key === "guide" && content.guide.visible) || (key === "newsletter" && content.newsletter.visible),
   );
 }
+
 
 
 

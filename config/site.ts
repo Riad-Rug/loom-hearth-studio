@@ -7,10 +7,10 @@ export const siteConfig = {
   currency: "USD",
   market: "US",
   ogImagePath: "/og/default-placeholder.jpg",
-  tagline: "Handcrafted Moroccan rugs and home decor sourced in Marrakech",
+  tagline: "Handcrafted Moroccan rugs and home decor",
   announcementItems: [
     "FREE SHIPPING TO THE UNITED STATES, CANADA, AND AUSTRALIA",
-    "DESTINATION AND DELIVERY CONDITIONS CONFIRMED BEFORE PAYMENT IS CAPTURED",
+    "COLOUR VERIFIED BEFORE PAYMENT IS CAPTURED",
     "SHIPS FROM MOROCCO",
   ],
   primaryNav: [
@@ -33,3 +33,4 @@ export const siteConfig = {
     { href: "/accessibility-statement", label: "Accessibility" },
   ],
 } as const;
+
