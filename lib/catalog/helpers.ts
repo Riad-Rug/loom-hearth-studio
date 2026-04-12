@@ -85,7 +85,7 @@ export function getInventoryMessage(product: MultiUnitProduct) {
 export function formatRugDimensions(product: RugProduct) {
   const multiplicationSymbol = "\u00d7";
 
-  return `${product.dimensionsCm.length} ${multiplicationSymbol} ${product.dimensionsCm.width} cm (${formatFeetAndInches(product.dimensionsCm.length)} ${multiplicationSymbol} ${formatFeetAndInches(product.dimensionsCm.width)})`;
+  return `${product.dimensionsCm.length} ${multiplicationSymbol} ${product.dimensionsCm.width} cm (approx. ${formatFeetAndInches(product.dimensionsCm.length)} ${multiplicationSymbol} ${formatFeetAndInches(product.dimensionsCm.width)})`;
 }
 
 export function formatRugWeight(product: RugProduct) {
@@ -96,6 +96,11 @@ function formatFeetAndInches(valueCm: number) {
   const totalInches = Math.round(valueCm / 2.54);
   const feet = Math.floor(totalInches / 12);
   const inches = totalInches % 12;
+
+  // Merchant-facing rug dimensions read better when small remainders stay on the foot mark.
+  if (inches <= 4) {
+    return `${feet}'0"`;
+  }
 
   return `${feet}'${inches}"`;
 }
