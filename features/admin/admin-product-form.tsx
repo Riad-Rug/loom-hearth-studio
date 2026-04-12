@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import type { AdminProductActionState } from "@/lib/admin/product-actions-shared";
@@ -49,10 +49,16 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [description, setDescription] = useState(props.product.description);
   const [priceUsd, setPriceUsd] = useState(props.product.priceUsd);
   const [origin, setOrigin] = useState(props.product.origin);
+  const [status, setStatus] = useState(props.product.status);
+  const [seoTitle, setSeoTitle] = useState(props.product.seoTitle);
+  const [seoDescription, setSeoDescription] = useState(props.product.seoDescription);
   const [rugStyle, setRugStyle] = useState(props.product.rugStyle);
   const [dimensionsCmLength, setDimensionsCmLength] = useState(props.product.dimensionsCmLength);
   const [dimensionsCmWidth, setDimensionsCmWidth] = useState(props.product.dimensionsCmWidth);
   const [weightKg, setWeightKg] = useState(props.product.weightKg);
+  const [fixedQuantity, setFixedQuantity] = useState(props.product.fixedQuantity);
+  const [inventory, setInventory] = useState(props.product.inventory);
+  const [lowStockThreshold, setLowStockThreshold] = useState(props.product.lowStockThreshold);
   const [materials, setMaterials] = useState(
     props.product.materials.length ? props.product.materials : [""],
   );
@@ -89,6 +95,38 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const hasUrlChange = Boolean(
     props.product.routePath && routePreview && props.product.routePath !== routePreview,
   );
+
+  useEffect(() => {
+    setType(props.product.type);
+    setSlug(props.product.slug);
+    setName(props.product.name);
+    setCategory(props.product.category);
+    setDescription(props.product.description);
+    setPriceUsd(props.product.priceUsd);
+    setOrigin(props.product.origin);
+    setStatus(props.product.status);
+    setSeoTitle(props.product.seoTitle);
+    setSeoDescription(props.product.seoDescription);
+    setRugStyle(props.product.rugStyle);
+    setDimensionsCmLength(props.product.dimensionsCmLength);
+    setDimensionsCmWidth(props.product.dimensionsCmWidth);
+    setWeightKg(props.product.weightKg);
+    setFixedQuantity(props.product.fixedQuantity);
+    setInventory(props.product.inventory);
+    setLowStockThreshold(props.product.lowStockThreshold);
+    setMaterials(props.product.materials.length ? props.product.materials : [""]);
+    setImages(
+      props.product.images.length
+        ? props.product.images.map((image) => ({
+            ...image,
+            id: image.id || createImageRowId(),
+          }))
+        : [createEmptyImageRow({ sortOrder: 1, role: "hero" })],
+    );
+    setVariants(props.product.variants);
+    setNotifyMeEnabled(props.product.notifyMeEnabled);
+    setConfirmUrlChange(false);
+  }, [props.product]);
 
   function updateImage(index: number, patch: Partial<(typeof images)[number]>) {
     setImages((current) =>
@@ -332,7 +370,11 @@ export function AdminProductForm(props: AdminProductFormProps) {
           <p className={styles.cardEyebrow}>Publishing</p>
           <label className={styles.formField}>
             <span>Status</span>
-            <select defaultValue={props.product.status} name="status">
+            <select
+              name="status"
+              value={status}
+              onChange={(event) => setStatus(event.target.value as typeof status)}
+            >
               {adminProductStatusOptions.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -365,15 +407,21 @@ export function AdminProductForm(props: AdminProductFormProps) {
           <p className={styles.cardEyebrow}>SEO</p>
           <label className={styles.formField}>
             <span>SEO title</span>
-            <input defaultValue={props.product.seoTitle} name="seoTitle" type="text" />
+            <input
+              name="seoTitle"
+              type="text"
+              value={seoTitle}
+              onChange={(event) => setSeoTitle(event.target.value)}
+            />
             <em>{state.fieldErrors.seoTitle}</em>
           </label>
           <label className={styles.formField}>
             <span>SEO description</span>
             <textarea
-              defaultValue={props.product.seoDescription}
               name="seoDescription"
               rows={4}
+              value={seoDescription}
+              onChange={(event) => setSeoDescription(event.target.value)}
             />
             <em>{state.fieldErrors.seoDescription}</em>
           </label>
@@ -610,7 +658,12 @@ export function AdminProductForm(props: AdminProductFormProps) {
             </label>
             <label className={styles.formField}>
               <span>Fixed quantity</span>
-              <input defaultValue={props.product.fixedQuantity} name="fixedQuantity" type="number" />
+              <input
+                name="fixedQuantity"
+                type="number"
+                value={fixedQuantity}
+                onChange={(event) => setFixedQuantity(event.target.value)}
+              />
               <em>{state.fieldErrors.fixedQuantity}</em>
             </label>
           </section>
@@ -619,15 +672,21 @@ export function AdminProductForm(props: AdminProductFormProps) {
             <p className={styles.cardEyebrow}>Multi-unit details</p>
             <label className={styles.formField}>
               <span>Inventory</span>
-              <input defaultValue={props.product.inventory} name="inventory" type="number" />
+              <input
+                name="inventory"
+                type="number"
+                value={inventory}
+                onChange={(event) => setInventory(event.target.value)}
+              />
               <em>{state.fieldErrors.inventory}</em>
             </label>
             <label className={styles.formField}>
               <span>Low-stock threshold</span>
               <input
-                defaultValue={props.product.lowStockThreshold}
                 name="lowStockThreshold"
                 type="number"
+                value={lowStockThreshold}
+                onChange={(event) => setLowStockThreshold(event.target.value)}
               />
               <em>{state.fieldErrors.lowStockThreshold}</em>
             </label>
