@@ -232,7 +232,7 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
       ? product.shippingNotes.filter(Boolean)
       : [
           "Ships from Morocco.",
-          "Free shipping applies to the United States, Canada, Australia, and the United Kingdom.",
+          "Free shipping applies to the United States, Canada, and Australia.",
           "Destination and delivery conditions are confirmed before payment is captured.",
         ];
 

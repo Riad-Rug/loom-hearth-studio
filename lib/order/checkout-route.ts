@@ -143,7 +143,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
     },
     shipping: {
       optionTitle: "Standard shipping",
-      optionBody: "Available for the United States, Canada, Australia, and the United Kingdom",
+      optionBody: "Available for the United States, Canada, and Australia",
       optionPriceLabel: "$0.00",
       body:
         "Shipping and destination details are reviewed before payment is captured. If any delivery conditions need clarification, we confirm them by email before finalizing the order.",

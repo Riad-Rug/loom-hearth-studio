@@ -54,7 +54,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
     if (item.id === "badge-2") {
       return {
         ...item,
-        label: "Free shipping to the United States, Canada, Australia, and United Kingdom",
+        label: "Free shipping to the United States, Canada, and Australia",
       };
     }
     if (item.id === "badge-3") return { ...item, label: "Destination confirmed before capture" };
@@ -136,7 +136,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.footer.introBody =
     "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor — sourced directly from Marrakech.";
   next.footer.introMeta =
-    "Free shipping to the United States, Canada, Australia, and United Kingdom. Inquiries from other countries are reviewed case by case. Prices in USD. Destination and delivery conditions are confirmed before payment is captured.";
+    "Free shipping to the United States, Canada, and Australia. Inquiries from other countries are reviewed case by case. Prices in USD. Destination and delivery conditions are confirmed before payment is captured.";
 
   return next;
 }

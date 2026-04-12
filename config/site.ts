@@ -9,7 +9,7 @@ export const siteConfig = {
   ogImagePath: "/og/default-placeholder.jpg",
   tagline: "Handcrafted Moroccan rugs and home decor sourced in Marrakech",
   announcementItems: [
-    "FREE SHIPPING TO THE UNITED STATES, CANADA, AUSTRALIA, AND UNITED KINGDOM",
+    "FREE SHIPPING TO THE UNITED STATES, CANADA, AND AUSTRALIA",
     "DESTINATION AND DELIVERY CONDITIONS CONFIRMED BEFORE PAYMENT IS CAPTURED",
     "SHIPS FROM MOROCCO",
   ],

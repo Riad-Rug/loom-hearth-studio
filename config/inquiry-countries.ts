@@ -36,15 +36,6 @@ const baseSupportedInquiryCountries = {
     requiresPostalCode: true,
     shippingAvailabilityNote: null,
   },
-  GB: {
-    code: "GB",
-    label: "United Kingdom",
-    regionLabel: "County, region, or nation",
-    postalCodeLabel: "Postcode",
-    requiresRegion: true,
-    requiresPostalCode: true,
-    shippingAvailabilityNote: null,
-  },
   OTHER: {
     code: "OTHER",
     label: "Other country - reviewed case by case",

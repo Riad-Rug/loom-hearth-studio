@@ -170,7 +170,7 @@ export const faqItems: FaqItem[] = [
     group: "Shipping",
     question: "How long does shipping take?",
     answer:
-      "Orders ship from Morocco to the United States, Canada, Australia, and the United Kingdom. Delivery timing varies by destination, carrier availability, and customs processing, and we confirm destination timing with you before payment is captured. If you are outside these currently supported markets, you can still inquire and we will review shipping availability case by case before payment is captured. We send tracking when the order leaves Morocco.",
+      "Orders ship from Morocco to the United States, Canada, and Australia. Delivery timing varies by destination, carrier availability, and customs processing, and we confirm destination timing with you before payment is captured. If you are outside these currently supported markets, you can still inquire and we will review shipping availability case by case before payment is captured. We send tracking when the order leaves Morocco.",
     sortOrder: 12,
   },
   {
@@ -313,13 +313,13 @@ Every item in the Loom & Hearth Studio collection is sourced and stored in Moroc
 
 ## 2. Where we ship
 
-We currently ship to the **United States, Canada, Australia, and the United Kingdom**. Shipping is included in the product price for these currently supported markets. If you are outside these markets, you can still send an inquiry and we will review shipping availability case by case before payment is captured.
+We currently ship to the **United States, Canada, and Australia**. Shipping is included in the product price for these currently supported markets. If you are outside these markets, you can still send an inquiry and we will review shipping availability case by case before payment is captured.
 
 ---
 
 ## 3. Shipping cost
 
-Shipping is included in the price of every item for the United States, Canada, Australia, and the United Kingdom. What you see on the product page is what you pay for the item and shipping from Morocco to your delivery address in a currently supported market. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
+Shipping is included in the price of every item for the United States, Canada, and Australia. What you see on the product page is what you pay for the item and shipping from Morocco to your delivery address in a currently supported market. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
 
 ---
 
@@ -350,7 +350,7 @@ All delivery time estimates below are measured from the **date of dispatch**, no
 | Destination | Estimated delivery after dispatch |
 |---|---|
 | United States | 7 to 14 business days |
-| Canada, Australia, and United Kingdom | Confirmed before payment is captured based on destination, carrier availability, and customs processing |
+| Canada and Australia | Confirmed before payment is captured based on destination, carrier availability, and customs processing |
 | Other countries | Inquiry only. Shipping availability is reviewed case by case before payment is captured |
 
 These are estimates, not guarantees. International shipments from Morocco pass through customs clearance, which can add time outside our control. Carrier delays, public holidays, and weather events can also affect timelines. We will always provide you with a tracking number so you can monitor your shipment in real time.
@@ -909,7 +909,7 @@ If we cancel your order, we will notify you promptly by email and release any pa
 
 ### 4.1 Prices
 
-All prices are displayed in United States Dollars (USD). Prices include the cost of the item and shipping for the United States, Canada, Australia, and United Kingdom. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
+All prices are displayed in United States Dollars (USD). Prices include the cost of the item and shipping for the United States, Canada, and Australia. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
 
 We reserve the right to correct pricing errors on the site at any time. If an error is identified after you have placed an order, we will contact you to confirm whether you wish to proceed at the correct price, or cancel for a full release of any held funds.
 
@@ -960,7 +960,7 @@ We ship using DHL Express, FedEx International, or Aramex, selected based on des
 ### 6.3 Estimated delivery times
 
 - United States: 7 to 14 business days from dispatch
-- Canada, Australia, and United Kingdom: timing is confirmed before payment is captured based on destination, carrier availability, and customs processing
+- Canada and Australia: timing is confirmed before payment is captured based on destination, carrier availability, and customs processing
 - Other countries: inquiry only, with shipping availability reviewed case by case before payment is captured
 
 These are estimates, not guarantees. Customs clearance, carrier delays, and circumstances outside our control may extend delivery times. We will provide you with a tracking number when your order is dispatched so you can monitor progress.
