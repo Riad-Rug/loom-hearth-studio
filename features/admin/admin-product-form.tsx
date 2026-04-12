@@ -36,6 +36,10 @@ type AdminProductFormProps = {
   ) => Promise<AdminProductActionState>;
 };
 
+type ProductImageRow = AdminProductFormValues["images"][number] & {
+  id: string;
+};
+
 export function AdminProductForm(props: AdminProductFormProps) {
   const [state, formAction] = useActionState(props.action, initialAdminProductActionState);
   const [type, setType] = useState(props.product.type);
@@ -52,7 +56,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [materials, setMaterials] = useState(
     props.product.materials.length ? props.product.materials : [""],
   );
-  const [images, setImages] = useState(
+  const [images, setImages] = useState<ProductImageRow[]>(
     props.product.images.length
       ? props.product.images.map((image) => ({
           ...image,
@@ -66,9 +70,11 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [uploadState, setUploadState] = useState<{
     status: "idle" | "uploading" | "success" | "error";
     message: string | null;
+    imageId: string | null;
   }>({
     status: "idle",
     message: null,
+    imageId: null,
   });
   const routePreview = useMemo(
     () =>
@@ -100,7 +106,10 @@ export function AdminProductForm(props: AdminProductFormProps) {
     );
   }
 
-  async function handleImageFileSelection(event: ChangeEvent<HTMLInputElement>) {
+  async function handleImageFileSelection(
+    event: ChangeEvent<HTMLInputElement>,
+    imageId: string,
+  ) {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -110,6 +119,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setUploadState({
       status: "uploading",
       message: `Uploading ${file.name}...`,
+      imageId,
     });
 
     try {
@@ -163,40 +173,46 @@ export function AdminProductForm(props: AdminProductFormProps) {
 
       const uploadResult = (await uploadResponse.json()) as CloudinaryBrowserUploadResult;
 
-      setImages((current) => {
-        const blankImageIndex = current.findIndex(isBlankImageRow);
-        const nextSortOrder =
-          blankImageIndex >= 0 ? current[blankImageIndex]?.sortOrder ?? 1 : current.length + 1;
-        const nextImage = {
-          id: blankImageIndex >= 0 ? current[blankImageIndex].id : createImageRowId(),
-          publicId: uploadResult.public_id,
-          altText: createDefaultImageAltText(file.name, name, nextSortOrder),
-          sortOrder: nextSortOrder,
-          role: blankImageIndex >= 0 ? current[blankImageIndex].role : ("gallery" as const),
-          mediaType: "image" as const,
-          width: uploadResult.width,
-          height: uploadResult.height,
-        };
+      setImages((current) =>
+        current.map((image) => {
+          if (image.id !== imageId) {
+            return image;
+          }
 
-        if (blankImageIndex >= 0) {
-          return current.map((image, index) => (index === blankImageIndex ? nextImage : image));
-        }
-
-        return [...current, nextImage];
-      });
+          return {
+            ...image,
+            publicId: uploadResult.public_id,
+            altText:
+              image.altText.trim() || createDefaultImageAltText(file.name, name, image.sortOrder),
+            mediaType: "image" as const,
+            width: uploadResult.width,
+            height: uploadResult.height,
+          };
+        }),
+      );
 
       setUploadState({
         status: "success",
-        message: `${file.name} uploaded and appended to product images.`,
+        message: `${file.name} uploaded for this image slot.`,
+        imageId,
       });
     } catch (error) {
       setUploadState({
         status: "error",
         message: error instanceof Error ? error.message : "Image upload failed.",
+        imageId,
       });
     } finally {
       event.target.value = "";
     }
+  }
+
+  function getImageUploadMessage(imageId: string) {
+    return uploadState.imageId === imageId ? uploadState.message : null;
+  }
+
+  function isImageUploading(imageId: string) {
+    return uploadState.status === "uploading" && uploadState.imageId === imageId;
   }
 
   return (
@@ -409,23 +425,8 @@ export function AdminProductForm(props: AdminProductFormProps) {
             <div className={styles.sessionPanel}>
               <strong>Cloudinary upload</strong>
               <span>
-                Upload an image directly to Cloudinary, then fine-tune its metadata below.
+                Add an image slot, then upload directly into that slot and fine-tune its metadata below.
               </span>
-              <label className={styles.navLink}>
-                <span>
-                  {uploadState.status === "uploading" ? "Uploading image..." : "Upload image"}
-                </span>
-                <input
-                  accept="image/*"
-                  disabled={uploadState.status === "uploading"}
-                  hidden
-                  type="file"
-                  onChange={(event) => {
-                    void handleImageFileSelection(event);
-                  }}
-                />
-              </label>
-              {uploadState.message ? <span>{uploadState.message}</span> : null}
             </div>
             {images.map((image, index) => (
               <div key={image.id} className={styles.groupPanel}>
@@ -445,6 +446,21 @@ export function AdminProductForm(props: AdminProductFormProps) {
                     onChange={(event) => updateImage(index, { publicId: event.target.value })}
                   />
                 </label>
+                <label className={styles.navLink}>
+                  <span>
+                    {isImageUploading(image.id) ? "Uploading image..." : "Upload image to this slot"}
+                  </span>
+                  <input
+                    accept="image/*"
+                    disabled={uploadState.status === "uploading"}
+                    hidden
+                    type="file"
+                    onChange={(event) => {
+                      void handleImageFileSelection(event, image.id);
+                    }}
+                  />
+                </label>
+                {getImageUploadMessage(image.id) ? <span>{getImageUploadMessage(image.id)}</span> : null}
                 <label className={styles.formField}>
                   <span>Alt text</span>
                   <input
@@ -747,13 +763,6 @@ function createEmptyImageRow(input: {
 
 function createImageRowId() {
   return `image-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function isBlankImageRow(image: {
-  publicId: string;
-  altText: string;
-}) {
-  return !image.publicId.trim() && !image.altText.trim();
 }
 
 async function readUploadErrorMessage(response: Response) {
