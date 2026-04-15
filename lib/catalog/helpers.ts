@@ -97,12 +97,14 @@ function formatFeetAndInches(valueCm: number) {
   const feet = Math.floor(totalInches / 12);
   const inches = totalInches % 12;
 
-  // Merchant-facing rug dimensions read better when small remainders stay on the foot mark.
-  if (inches <= 4) {
+  // Merchant-facing long dimensions often read better on the foot mark,
+  // but smaller widths should keep their actual inch remainder.
+  if (feet >= 6 && inches <= 4) {
     return `${feet}'0"`;
   }
 
   return `${feet}'${inches}"`;
 }
+
 
 
