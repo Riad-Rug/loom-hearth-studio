@@ -1,4 +1,4 @@
-﻿export const launchProducts = [
+export const launchProducts = [
   {
     "id": "rug-atlas-morning",
     "type": "rug",
@@ -709,3 +709,6 @@
     "notifyMeEnabled": null
   }
 ];
+
+
+
