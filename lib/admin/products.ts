@@ -17,6 +17,8 @@ export type AdminProductListItem = {
   status: Product["status"];
   priceLabel: string;
   priceUsd: number;
+  homepageFeatured: boolean;
+  homepageRank: number | null;
   updatedAtLabel: string;
   updatedAt: string;
   createdAtLabel: string;
@@ -104,6 +106,8 @@ export function createEmptyAdminProductFormValues(type: Product["type"]): AdminP
     lowStockThreshold: "0",
     variants: [],
     notifyMeEnabled: false,
+    homepageFeatured: false,
+    homepageRank: "",
     routePath: "",
   };
 }
@@ -135,6 +139,8 @@ function createAdminProductListItem(
     status: product.status,
     priceLabel: formatProductPriceUsd(product.priceUsd),
     priceUsd: product.priceUsd,
+    homepageFeatured: product.homepageFeatured,
+    homepageRank: product.homepageRank,
     updatedAtLabel: formatAdminDateLabel(updatedAt),
     updatedAt: updatedAt.toISOString(),
     createdAtLabel: formatAdminDateLabel(createdAt),
@@ -192,6 +198,8 @@ function createAdminProductFormValues(product: Product): AdminProductFormValues 
       product.type === "multiUnit" ? String(product.lowStockThreshold) : "0",
     variants: product.type === "multiUnit" ? product.variants : [],
     notifyMeEnabled: product.type === "multiUnit" ? product.notifyMeEnabled : false,
+    homepageFeatured: product.homepageFeatured,
+    homepageRank: product.homepageRank === null ? "" : String(product.homepageRank),
     routePath:
       product.type === "rug"
         ? getProductRoutePreview({

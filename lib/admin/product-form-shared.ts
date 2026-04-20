@@ -28,6 +28,8 @@ export type AdminProductFormValues = {
   lowStockThreshold: string;
   variants: Extract<Product, { type: "multiUnit" }>["variants"];
   notifyMeEnabled: boolean;
+  homepageFeatured: boolean;
+  homepageRank: string;
   routePath: string;
 };
 

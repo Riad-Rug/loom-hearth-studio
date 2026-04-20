@@ -3,10 +3,12 @@ import { siteConfig } from "@/config/site";
 export const homepageSectionOrderKeys = [
   "hero",
   "badges",
+  "featured",
+  "proof",
+  "howItWorks",
   "categories",
   "brandStory",
   "designDirection",
-  "featured",
   "guide",
   "newsletter",
 ] as const;
@@ -43,6 +45,14 @@ export const homepageSectionDefinitions: Record<
   featured: {
     label: "Featured collections",
     description: "Three featured collection or product direction cards.",
+  },
+  proof: {
+    label: "Buyer proof",
+    description: "Comparison points that explain why shoppers should buy from this store.",
+  },
+  howItWorks: {
+    label: "How it works",
+    description: "Purchase flow and color-verification steps shown on the homepage.",
   },
   guide: {
     label: "Educational guide",
@@ -99,6 +109,8 @@ export type HomePageImageCard = {
   description: string;
   href: string;
   visible: boolean;
+  eyebrow?: string;
+  priceLabel?: string;
   image: HomePageImage;
 };
 
@@ -147,6 +159,8 @@ export type HomePageContent = {
     paragraph: string;
     cards: HomePageImageCard[];
   };
+  proof: HomePageSectionSettings;
+  howItWorks: HomePageSectionSettings;
   guide: HomePageSectionSettings & {
     eyebrow: string;
     title: string;
@@ -209,8 +223,8 @@ const defaultHomePageContent: HomePageContent = {
       visible: true,
     },
     secondaryCta: {
-      label: "Our Story",
-      href: "/about",
+      label: "Browse All Pieces",
+      href: "/shop",
       visible: true,
     },
     image: {
@@ -370,9 +384,11 @@ const defaultHomePageContent: HomePageContent = {
     cards: [
       {
         id: "featured-rugs",
-        title: "Moroccan rugs",
+        eyebrow: "New arrivals",
+        title: "One-of-one Moroccan rugs",
         description:
-          "Hand-knotted Moroccan rugs. Selected for pile density, knot count, and durability underfoot.",
+          "Hand-knotted Moroccan rugs selected for pile density, weight, and long-term durability.",
+        priceLabel: "Shop available pieces",
         href: "/shop/rugs",
         visible: true,
         image: {
@@ -385,9 +401,11 @@ const defaultHomePageContent: HomePageContent = {
       },
       {
         id: "featured-poufs",
-        title: "Poufs",
+        eyebrow: "Functional accents",
+        title: "Rug-made and leather poufs",
         description:
-          "Leather and rug-made poufs. Evaluated for construction quality and filling density.",
+          "Poufs selected for construction quality, filling density, and everyday use.",
+        priceLabel: "Browse poufs",
         href: "/shop/poufs",
         visible: true,
         image: {
@@ -400,9 +418,11 @@ const defaultHomePageContent: HomePageContent = {
       },
       {
         id: "featured-pillows",
+        eyebrow: "Layered texture",
         title: "Cactus silk pillows",
         description:
           "Flat-woven cactus silk. Low-shed, with strong colour saturation and a quieter surface than wool pile.",
+        priceLabel: "Browse pillows",
         href: "/shop/pillows",
         visible: true,
         image: {
@@ -414,6 +434,22 @@ const defaultHomePageContent: HomePageContent = {
         },
       },
     ],
+  },
+  proof: {
+    visible: true,
+    seo: {
+      seoTitle: "Why buy Moroccan rugs here | Loom & Hearth Studio",
+      metaDescription:
+        "Learn how Loom & Hearth Studio sources exact Moroccan pieces, verifies color before payment capture, and sells one-of-one handmade inventory.",
+    },
+  },
+  howItWorks: {
+    visible: true,
+    seo: {
+      seoTitle: "How ordering works | Loom & Hearth Studio",
+      metaDescription:
+        "See how Loom & Hearth Studio confirms color, destination details, and delivery conditions before capturing payment for handmade Moroccan pieces.",
+    },
   },
   guide: {
     visible: true,
@@ -550,6 +586,8 @@ export function sanitizeHomePageContent(input: unknown): HomePageContent {
         defaults.featured.cards,
       ),
     },
+    proof: readSectionSettings(source.proof, defaults.proof),
+    howItWorks: readSectionSettings(source.howItWorks, defaults.howItWorks),
     guide: {
       ...readSectionSettings(legacyGuide.title ? legacyGuide : source.guide, defaults.guide),
       eyebrow: readString(source.guide ?? source.moroccanRugsGuide, "eyebrow", defaults.guide.eyebrow),
@@ -737,6 +775,8 @@ function readImageCardArray(
       description: readString(card, "description", defaultCard.description),
       href: readString(card, "href", defaultCard.href),
       visible: readBoolean(card, "visible", defaultCard.visible),
+      eyebrow: readOptionalString(card, "eyebrow", defaultCard.eyebrow),
+      priceLabel: readOptionalString(card, "priceLabel", defaultCard.priceLabel),
       image: readImage(
         card.image,
         defaultCard.image,
@@ -765,6 +805,12 @@ function readString(source: unknown, key: string, fallback: string) {
   const value = asRecord(source)[key];
 
   return typeof value === "string" ? value.trim() : fallback;
+}
+
+function readOptionalString(source: unknown, key: string, fallback?: string) {
+  const value = asRecord(source)[key];
+
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
 function readBoolean(source: unknown, key: string, fallback: boolean) {

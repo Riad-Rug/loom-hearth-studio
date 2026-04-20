@@ -19,6 +19,8 @@ export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): 
     status: mapStatus(record.status),
     seoTitle: record.seoTitle,
     seoDescription: record.seoDescription,
+    homepageFeatured: record.homepageFeatured,
+    homepageRank: record.homepageRank,
   };
 
   if (record.type === "rug") {
@@ -72,6 +74,8 @@ export function mapProductMutationInputToCreateInput(
         ? (sanitizeJsonValue(input.variants) as Prisma.InputJsonValue)
         : Prisma.JsonNull,
     notifyMeEnabled: input.type === "multiUnit" ? input.notifyMeEnabled : null,
+    homepageFeatured: input.homepageFeatured,
+    homepageRank: input.homepageRank,
   };
 
   return input.id
@@ -112,6 +116,8 @@ export function mapProductMutationInputToUpdateInput(
         ? (sanitizeJsonValue(input.variants) as Prisma.InputJsonValue)
         : Prisma.JsonNull,
     notifyMeEnabled: input.type === "multiUnit" ? input.notifyMeEnabled : null,
+    homepageFeatured: input.homepageFeatured,
+    homepageRank: input.homepageRank,
   };
 }
 

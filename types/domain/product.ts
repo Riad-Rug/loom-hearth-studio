@@ -25,6 +25,8 @@ export type ProductBase = SeoFields & {
   verificationNotes?: string[];
   shippingNotes?: string[];
   careNote?: string;
+  homepageFeatured: boolean;
+  homepageRank: number | null;
 };
 
 export type RugProduct = ProductBase & {

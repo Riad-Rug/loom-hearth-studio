@@ -6,15 +6,17 @@ import { Section } from "@/components/layout/section";
 import type { HomePageContent, HomePageOrderedSectionKey } from "@/features/home/home-page-data";
 import { HowItWorksSection } from "@/features/home/how-it-works-section";
 import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
+import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
 import styles from "./home-page.module.css";
 
 type HomePageViewProps = {
   content: HomePageContent;
+  featuredProducts?: CatalogProductCardViewModel[];
 };
 
-export function HomePageView({ content }: HomePageViewProps) {
-  return <div className={styles.page}>{content.sectionOrder.map((key) => renderSection(key, content))}</div>;
+export function HomePageView({ content, featuredProducts = [] }: HomePageViewProps) {
+  return <div className={styles.page}>{content.sectionOrder.map((key) => renderSection(key, content, featuredProducts))}</div>;
 }
 
 function getMobileHeroParagraph(paragraph: string) {
@@ -23,7 +25,11 @@ function getMobileHeroParagraph(paragraph: string) {
   return sentences[0] || paragraph;
 }
 
-function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent) {
+function renderSection(
+  key: HomePageOrderedSectionKey,
+  content: HomePageContent,
+  featuredProducts: CatalogProductCardViewModel[],
+) {
   if (key === "hero" && content.hero.visible) {
     return (
       <Section key={key} width="wide">
@@ -73,16 +79,18 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent)
       return null;
     }
 
-    return [
+    return (
       <Section key={key} tone="muted" width="wide">
-        <div className={styles.trustBanner} aria-label="Trust highlights">
-          {items.map((item) => (
-            <p key={item.id}>{item.label}</p>
-          ))}
+        <div className={styles.buyerEntrySection}>
+          <div className={styles.trustBanner} aria-label="Trust highlights">
+            {items.map((item) => (
+              <p key={item.id}>{item.label}</p>
+            ))}
+          </div>
+          <ShoppingShortcuts />
         </div>
-      </Section>,
-      <HowItWorksSection key="how-it-works" />,
-    ];
+      </Section>
+    );
   }
 
   if (key === "categories" && content.categories.visible) {
@@ -149,8 +157,9 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent)
 
   if (key === "featured" && content.featured.visible) {
     const cards = content.featured.cards.filter((card) => card.visible);
+    const hasProductRail = featuredProducts.length > 0;
 
-    if (!cards.length) {
+    if (!cards.length && !hasProductRail) {
       return null;
     }
 
@@ -162,28 +171,18 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent)
             <h2>{content.featured.title}</h2>
             <p className={styles.sectionBody}>{content.featured.paragraph}</p>
           </div>
-          <div className={styles.featuredGrid}>
-            {cards.map((product) => (
-              <Link key={product.id} className={styles.productCard} href={product.href as Route}>
-                <div className={styles.productImagePlaceholder}>
-                  <Image
-                    alt={product.image.alt}
-                    className={styles.productImage}
-                    fill
-                    sizes="(max-width: 1100px) 100vw, 33vw"
-                    src={product.image.src}
-                  />
-                </div>
-                <div className={styles.productMeta}>
-                  <h3>{product.title}</h3>
-                  <p>{product.description}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {hasProductRail ? <LiveProductRail products={featuredProducts} /> : <FeaturedContentCards cards={cards} />}
         </div>
       </Section>
     );
+  }
+
+  if (key === "proof" && content.proof.visible) {
+    return <ProofComparisonSection key={key} />;
+  }
+
+  if (key === "howItWorks" && content.howItWorks.visible) {
+    return <HowItWorksSection key={key} />;
   }
 
   if ((key === "guide" && content.guide.visible) || (key === "newsletter" && content.newsletter.visible)) {
@@ -230,6 +229,136 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent)
   }
 
   return null;
+}
+
+function ShoppingShortcuts() {
+  const shortcuts = [
+    { label: "All rugs", href: "/shop/rugs" },
+    { label: "Vintage rugs", href: "/shop/vintage" },
+    { label: "Poufs", href: "/shop/poufs" },
+    { label: "Pillows", href: "/shop/pillows" },
+    { label: "Decor", href: "/shop/decor" },
+    { label: "Full shop", href: "/shop" },
+  ];
+
+  return (
+    <nav className={styles.shortcutNav} aria-label="Shop by need">
+      <span className={styles.shortcutLabel}>Shop by need</span>
+      <div className={styles.shortcutLinks}>
+        {shortcuts.map((shortcut) => (
+          <Link key={shortcut.href} className={styles.shortcutLink} href={shortcut.href as Route}>
+            {shortcut.label}
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+function ProofComparisonSection() {
+  const proofItems = [
+    {
+      title: "Selected in person",
+      body: "Pieces are sourced across Morocco by people who know the trade, not pulled from a generic export catalogue.",
+    },
+    {
+      title: "Exact-piece video check",
+      body: "Before payment is captured, you see the actual rug in natural, warm, and cool light.",
+    },
+    {
+      title: "One-of-one inventory",
+      body: "Rugs are individual pieces. When a rug sells, that exact piece does not come back in a restock batch.",
+    },
+    {
+      title: "Family trade history",
+      body: "The collection is connected to a Marrakech bazaar with close to 80 years in the Moroccan rug trade.",
+    },
+  ];
+
+  return (
+    <Section width="wide">
+      <div className={styles.proofSection}>
+        <div className={styles.sectionIntro}>
+          <p className={styles.eyebrow}>WHY BUY HERE</p>
+          <h2>Built for buyers who want the actual piece, not a catalogue approximation.</h2>
+        </div>
+        <div className={styles.proofGrid}>
+          {proofItems.map((item) => (
+            <article key={item.title} className={styles.proofCard}>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function LiveProductRail({ products }: { products: CatalogProductCardViewModel[] }) {
+  return (
+    <div className={styles.liveProductGrid}>
+      {products.map((product) => (
+        <Link key={product.id} className={styles.liveProductCard} href={product.href as Route}>
+          <div className={styles.liveProductImageWrap}>
+            {product.primaryImage ? (
+              <Image
+                alt={product.primaryImage.altText || product.name}
+                className={styles.productImage}
+                fill
+                sizes="(max-width: 768px) 86vw, (max-width: 1100px) 42vw, 21vw"
+                src={product.primaryImage.src}
+              />
+            ) : (
+              <div className={styles.liveProductFallback}>
+                <span>Loom & Hearth</span>
+              </div>
+            )}
+          </div>
+          <div className={styles.productMeta}>
+            <p className={styles.productEyebrow}>{product.badge}</p>
+            <h3>{product.name}</h3>
+            <p className={styles.productPrice}>{product.priceUsdLabel}</p>
+            <p>{getProductCardDescription(product)}</p>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function FeaturedContentCards({ cards }: { cards: HomePageContent["featured"]["cards"] }) {
+  return (
+    <div className={styles.featuredGrid}>
+      {cards.map((product) => (
+        <Link key={product.id} className={styles.productCard} href={product.href as Route}>
+          <div className={styles.productImagePlaceholder}>
+            <Image
+              alt={product.image.alt}
+              className={styles.productImage}
+              fill
+              sizes="(max-width: 1100px) 100vw, 33vw"
+              src={product.image.src}
+            />
+          </div>
+          <div className={styles.productMeta}>
+            {product.eyebrow ? <p className={styles.productEyebrow}>{product.eyebrow}</p> : null}
+            <h3>{product.title}</h3>
+            <p>{product.description}</p>
+            {product.priceLabel ? <span className={styles.productPriceLabel}>{product.priceLabel}</span> : null}
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function getProductCardDescription(product: CatalogProductCardViewModel) {
+  const candidate = product.description.trim() || product.merchandisingNote.trim();
+  const normalized = candidate.replace(/\s+/g, " ");
+  const firstSentence = normalized.match(/.+?[.!?](?:\s|$)/)?.[0] ?? normalized;
+
+  return firstSentence.length > 104 ? `${firstSentence.slice(0, 101).trimEnd()}...` : firstSentence;
 }
 
 function firstNarrativeSection(content: HomePageContent) {

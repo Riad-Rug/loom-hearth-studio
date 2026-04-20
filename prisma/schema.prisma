@@ -209,6 +209,8 @@ model CatalogProduct {
   lowStockThreshold Int?
   variants         Json?
   notifyMeEnabled  Boolean?
+  homepageFeatured Boolean         @default(false)
+  homepageRank     Int?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
@@ -216,6 +218,7 @@ model CatalogProduct {
   @@index([status])
   @@index([category, status])
   @@index([type, status])
+  @@index([homepageFeatured, homepageRank])
 }
 
 

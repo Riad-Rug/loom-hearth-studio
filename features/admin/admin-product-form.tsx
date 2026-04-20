@@ -72,6 +72,8 @@ export function AdminProductForm(props: AdminProductFormProps) {
   );
   const [variants, setVariants] = useState(props.product.variants);
   const [notifyMeEnabled, setNotifyMeEnabled] = useState(props.product.notifyMeEnabled);
+  const [homepageFeatured, setHomepageFeatured] = useState(props.product.homepageFeatured);
+  const [homepageRank, setHomepageRank] = useState(props.product.homepageRank);
   const [confirmUrlChange, setConfirmUrlChange] = useState(false);
   const [uploadState, setUploadState] = useState<{
     status: "idle" | "uploading" | "success" | "error";
@@ -125,6 +127,8 @@ export function AdminProductForm(props: AdminProductFormProps) {
     );
     setVariants(props.product.variants);
     setNotifyMeEnabled(props.product.notifyMeEnabled);
+    setHomepageFeatured(props.product.homepageFeatured);
+    setHomepageRank(props.product.homepageRank);
     setConfirmUrlChange(false);
   }, [props.product]);
 
@@ -262,6 +266,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
       <input name="originalRoutePath" type="hidden" value={props.product.routePath} />
       <input name="confirmUrlChange" type="hidden" value={confirmUrlChange ? "true" : "false"} />
       <input name="notifyMeEnabled" type="hidden" value={notifyMeEnabled ? "true" : "false"} />
+      <input name="homepageFeatured" type="hidden" value={homepageFeatured ? "true" : "false"} />
 
       <header className={styles.moduleHeader}>
         <p className={styles.eyebrow}>Admin products</p>
@@ -401,6 +406,30 @@ export function AdminProductForm(props: AdminProductFormProps) {
             </label>
           ) : null}
           <em>{state.fieldErrors.confirmUrlChange}</em>
+        </section>
+
+        <section className={styles.card}>
+          <p className={styles.cardEyebrow}>Homepage feature</p>
+          <label className={styles.checkboxRow}>
+            <input
+              checked={homepageFeatured}
+              type="checkbox"
+              onChange={(event) => setHomepageFeatured(event.target.checked)}
+            />
+            <span>Feature this product on the homepage product rail</span>
+          </label>
+          <label className={styles.formField}>
+            <span>Homepage rank</span>
+            <input
+              name="homepageRank"
+              min="1"
+              type="number"
+              value={homepageRank}
+              onChange={(event) => setHomepageRank(event.target.value)}
+            />
+            <em>Lower numbers appear first. Leave blank to sort after ranked products.</em>
+            <em>{state.fieldErrors.homepageRank}</em>
+          </label>
         </section>
 
         <section className={styles.card}>

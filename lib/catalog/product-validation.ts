@@ -90,6 +90,8 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     status: readString(formData, "status"),
     seoTitle: readString(formData, "seoTitle"),
     seoDescription: readString(formData, "seoDescription"),
+    homepageFeatured: readBoolean(formData, "homepageFeatured"),
+    homepageRank: readOptionalInteger(formData, "homepageRank"),
   };
 
   const urlState = getUrlState(formData, {
@@ -187,6 +189,13 @@ export function validateProductMutationInput(
 
   if (!input.seoDescription.trim()) {
     fieldErrors.seoDescription = "SEO description is required.";
+  }
+
+  if (
+    input.homepageRank !== null &&
+    (!Number.isInteger(input.homepageRank) || input.homepageRank < 1)
+  ) {
+    fieldErrors.homepageRank = "Homepage rank must be a whole number of 1 or greater.";
   }
 
   if (input.type === "rug") {
@@ -317,11 +326,20 @@ function readNumber(formData: FormData, key: string) {
 
 function readInteger(formData: FormData, key: string) {
   const value = readString(formData, key);
-  return value ? Number.parseInt(value, 10) : Number.NaN;
+  return readStrictInteger(value, Number.NaN);
+}
+
+function readOptionalInteger(formData: FormData, key: string) {
+  const value = readString(formData, key);
+  return value ? readStrictInteger(value, Number.NaN) : null;
 }
 
 function readBoolean(formData: FormData, key: string) {
   return readString(formData, key) === "true";
+}
+
+function readStrictInteger(value: string, fallback: number) {
+  return /^-?\d+$/u.test(value) ? Number(value) : fallback;
 }
 
 function parseMaterials(raw: string) {

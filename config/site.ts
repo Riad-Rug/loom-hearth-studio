@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Loom & Hearth Studio",
   description:
     "Premium Moroccan rugs, poufs, pillows, and home decor sourced in Marrakech and shipped from Morocco.",
-  siteUrl: "https://example.com",
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.loomandhearthstudio.com",
   locale: "en-US",
   currency: "USD",
   market: "US",

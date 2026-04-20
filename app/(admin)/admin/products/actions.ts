@@ -214,6 +214,8 @@ export async function duplicateAdminProductAction(productId: string) {
     name: `${product.name} Copy`,
     slug: createDuplicatedSlug(product.slug),
     status: "draft",
+    homepageFeatured: false,
+    homepageRank: null,
   });
 
   revalidateCatalogPaths({
@@ -260,6 +262,7 @@ function revalidateCatalogPaths(input: {
 }) {
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${input.productId}`);
+  revalidatePath("/");
   revalidatePath("/shop");
   revalidatePath(`/shop/${input.nextCategory}`);
 

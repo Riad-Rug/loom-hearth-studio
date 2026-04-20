@@ -53,7 +53,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.hero.paragraph =
     "Hand-knotted rugs, poufs, cactus silk pillows, and handcrafted decor selected in person across Morocco, not pulled from an export catalogue.";
   next.hero.primaryCta = { ...next.hero.primaryCta, label: "SHOP RUGS" };
-  next.hero.secondaryCta = { ...next.hero.secondaryCta, label: "Our Story", href: "/about" };
+  next.hero.secondaryCta = { ...next.hero.secondaryCta, label: "Browse All Pieces", href: "/shop" };
   next.hero.seo = {
     ...next.hero.seo,
     seoTitle: "Loom & Hearth Studio  Handcrafted Moroccan Rugs",
@@ -63,12 +63,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
 
   next.badges.items = next.badges.items.map((item) => {
     if (item.id === "badge-1") return { ...item, label: "Direct from Morocco" };
-    if (item.id === "badge-2") {
-      return {
-        ...item,
-        label: "Free shipping to the United States, Canada, and Australia",
-      };
-    }
+    if (item.id === "badge-2") return { ...item, label: "Free shipping to the US, Canada, and Australia" };
     if (item.id === "badge-3") return { ...item, label: "Colour verified before payment is captured" };
     if (item.id === "badge-4") return { ...item, label: "14-day returns" };
     return item;
@@ -120,38 +115,47 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.brandStory.eyebrow = "WHO WE ARE";
   next.brandStory.title = "Sourced across Morocco. Selected in person. Shipped directly to you.";
   next.brandStory.paragraph =
-    "Loom & Hearth Studio is a family operation. My mother manages our bazaar in the Semmarine souk in Marrakech  a business with close to 80 years of history in the trade. We travel together across Morocco  to villages in the Atlas Mountains, to smaller workshops, to early morning markets where weavers and collectors trade before dawn  to find pieces that cannot be sourced from a catalogue. We work directly with the people who make them. We cut out the intermediaries who have historically taken the margin that should go to the artisans. That is the sourcing model. It is not scalable in the way a catalogue business is. That is the point.";
+    "Loom & Hearth Studio is a family operation connected to a Marrakech bazaar with close to 80 years in the trade. We source in person across Morocco, working directly with the people who make and collect these pieces instead of buying from export catalogues.";
   next.brandStory.linkLabel = "Read the full story";
 
   next.designDirection.eyebrow = "DESIGN DIRECTION";
   next.designDirection.title = "Pieces chosen for what they are made of. Not for how they photograph.";
   next.designDirection.paragraph =
-    "The collection stays focused: hand-knotted Moroccan rugs, rug-based poufs, pillows, and a small selection of supporting decor. Every piece is evaluated on construction  pile density, knot structure, material weight, and colour consistency across the field. A rug that photographs well but sheds heavily or compresses under foot traffic within two years is not a piece we will sell.";
+    "Every piece is evaluated on construction: pile density, knot structure, material weight, and colour consistency across the field. A rug that photographs well but will not hold up under real foot traffic is not a piece we will sell.";
   next.designDirection.linkLabel = "VIEW THE LOOKBOOK";
 
-  next.featured.eyebrow = "FEATURED DIRECTIONS";
-  next.featured.title = "Start with the three pieces at the centre of the collection.";
+  next.featured.eyebrow = "SHOP FIRST";
+  next.featured.title = "Start with the pieces shoppers ask about first.";
   next.featured.paragraph =
-    "Shop the three directions that define the launch: Moroccan rugs, rug-made poufs, and cactus silk pillows.";
+    "Browse the highest-intent parts of the collection before reading deeper into the sourcing story.";
   next.featured.cards = next.featured.cards.map((card) => {
     if (card.id === "featured-rugs") {
       return {
         ...card,
-        description: "Hand-knotted Moroccan rugs. Selected for pile density, knot count, and durability underfoot.",
+        eyebrow: "New arrivals",
+        title: "One-of-one Moroccan rugs",
+        description: "Hand-knotted Moroccan rugs selected for pile density, weight, and long-term durability.",
+        priceLabel: "Shop available pieces",
       };
     }
 
     if (card.id === "featured-poufs") {
       return {
         ...card,
-        description: "Leather and rug-made poufs. Evaluated for construction quality and filling density.",
+        eyebrow: "Functional accents",
+        title: "Rug-made and leather poufs",
+        description: "Poufs selected for construction quality, filling density, and everyday use.",
+        priceLabel: "Browse poufs",
       };
     }
 
     if (card.id === "featured-pillows") {
       return {
         ...card,
+        eyebrow: "Layered texture",
+        title: "Cactus silk pillows",
         description: "Flat-woven cactus silk. Low-shed, with strong colour saturation and a quieter surface than wool pile.",
+        priceLabel: "Browse pillows",
       };
     }
 
@@ -161,7 +165,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.guide.eyebrow = "KNOW WHAT YOU ARE BUYING";
   next.guide.title = "What separates a hand-knotted Moroccan rug from everything else on the market.";
   next.guide.paragraph =
-    "A hand-knotted Moroccan rug is built knot by knot onto a warp structure. The weight of the finished piece reflects how densely it was knotted  and density is the primary indicator of how the rug will perform over time. Machine-made and tufted rugs use a backing adhesive to hold the pile. That adhesive degrades. The knot structure in a hand-knotted rug does not. A well-knotted piece bought today should still be in the room  and worth something  in thirty years.";
+    "A hand-knotted Moroccan rug is built knot by knot onto a warp structure. Dense knotting, material weight, and stable construction are the signs that a piece can keep performing for years instead of flattening, shedding, or relying on degrading adhesive backing.";
 
   next.newsletter.eyebrow = "JOIN THE LIST";
   next.newsletter.title = "New arrivals, sourcing stories, and first access to pieces before wider release.";

@@ -115,6 +115,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 className="site-header__mobile-link"
                 href={item.href as Route}
                 onClick={() => setIsMobileMenuOpen(false)}
+                tabIndex={isMobileMenuOpen ? undefined : -1}
               >
                 {item.label}
               </Link>
@@ -124,6 +125,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 className="site-header__mobile-link"
                 href="/account"
                 onClick={() => setIsMobileMenuOpen(false)}
+                tabIndex={isMobileMenuOpen ? undefined : -1}
               >
                 Account
               </Link>
@@ -132,6 +134,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 className="site-header__mobile-link"
                 href="/account/login"
                 onClick={() => setIsMobileMenuOpen(false)}
+                tabIndex={isMobileMenuOpen ? undefined : -1}
               >
                 Login
               </Link>

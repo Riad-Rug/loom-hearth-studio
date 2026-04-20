@@ -127,6 +127,7 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
                 <th>Name</th>
                 <th>Category</th>
                 <th>Status</th>
+                <th>Homepage</th>
                 <th>Price</th>
                 <th>Last updated</th>
                 <th>Created</th>
@@ -156,6 +157,7 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
                   <td>
                     <span className={getStatusBadgeClassName(item.status, styles)}>{formatStatusLabel(item.status)}</span>
                   </td>
+                  <td>{item.homepageFeatured ? `Featured${item.homepageRank ? ` #${item.homepageRank}` : ""}` : "Not featured"}</td>
                   <td className={styles.priceCell}>{item.priceLabel}</td>
                   <td>
                     <div className={styles.dateCell}>

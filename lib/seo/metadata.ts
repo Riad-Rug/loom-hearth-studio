@@ -92,17 +92,27 @@ export async function buildManagedMetadata({
   ogImageUrl,
 }: BuildManagedMetadataOptions): Promise<Metadata> {
   const setting = await getSeoSetting({ entityType, entityKey });
+  const managedTitle = cleanManagedString(setting?.title);
+  const managedDescription = cleanManagedString(setting?.description);
+  const managedCanonicalUrl = cleanManagedString(setting?.canonicalUrl);
+  const managedOgTitle = cleanManagedString(setting?.ogTitle);
+  const managedOgDescription = cleanManagedString(setting?.ogDescription);
+  const managedOgImageUrl = cleanManagedString(setting?.ogImageUrl);
 
   return buildMetadata({
-    title: setting?.title || title,
-    description: setting?.description || description,
+    title: managedTitle || title,
+    description: managedDescription || description,
     path,
     noIndex: setting?.robotsIndex === false ? true : noIndex,
     type,
-    canonicalUrl: setting?.canonicalUrl || canonicalUrl,
-    ogTitle: setting?.ogTitle || ogTitle || setting?.title || title,
+    canonicalUrl: managedCanonicalUrl || canonicalUrl,
+    ogTitle: managedOgTitle || ogTitle || managedTitle || title,
     ogDescription:
-      setting?.ogDescription || ogDescription || setting?.description || description,
-    ogImageUrl: setting?.ogImageUrl || ogImageUrl,
+      managedOgDescription || ogDescription || managedDescription || description,
+    ogImageUrl: managedOgImageUrl || ogImageUrl,
   });
+}
+
+function cleanManagedString(value: string | null | undefined) {
+  return typeof value === "string" && value.trim() ? value.trim() : "";
 }

@@ -34,6 +34,17 @@ export async function listCatalogProductCards(input?: {
   return products.map(createCatalogProductCardViewModel);
 }
 
+export async function listHomepageFeaturedProductCards(input?: {
+  limit?: number;
+  repository?: ProductRepository;
+}): Promise<CatalogProductCardViewModel[]> {
+  const repository = input?.repository ?? createProductRepository();
+  const limit = input?.limit ?? 4;
+  const products = await repository.listHomepageFeatured(limit);
+
+  return products.map(createCatalogProductCardViewModel);
+}
+
 export async function getRugProductDetailByParams(input: {
   style: string;
   slug: string;

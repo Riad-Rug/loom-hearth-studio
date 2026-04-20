@@ -9,6 +9,7 @@ import type { Product } from "@/types/domain";
 export interface ProductRepository {
   listAll(): Promise<Product[]>;
   listByCategory(category: Product["category"]): Promise<Product[]>;
+  listHomepageFeatured(limit: number): Promise<Product[]>;
   getBySlug(slug: string): Promise<Product | null>;
   listForAdmin(): Promise<Product[]>;
   getById(id: string): Promise<Product | null>;
@@ -43,6 +44,39 @@ export class PrismaProductRepository implements ProductRepository {
       orderBy: {
         updatedAt: "desc",
       },
+    });
+
+    return products.map(mapCatalogProductRecordToDomainProduct);
+  }
+
+  async listHomepageFeatured(limit: number) {
+    const products = await this.context.client.catalogProduct.findMany({
+      where: {
+        homepageFeatured: true,
+        status: "active",
+        OR: [
+          {
+            type: "rug",
+          },
+          {
+            inventory: {
+              gt: 0,
+            },
+          },
+        ],
+      },
+      orderBy: [
+        {
+          homepageRank: {
+            sort: "asc",
+            nulls: "last",
+          },
+        },
+        {
+          updatedAt: "desc",
+        },
+      ],
+      take: limit,
     });
 
     return products.map(mapCatalogProductRecordToDomainProduct);
