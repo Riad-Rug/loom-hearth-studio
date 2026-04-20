@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const blogEntries = blogPosts.map((post) => ({
     url: absoluteUrl(`/blog/${post.categorySlug}/${post.slug}`),
-    lastModified: post.publishedAt,
+    lastModified: readValidLastModified(post.updatedAt),
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
@@ -51,4 +51,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   return [...staticEntries, ...blogEntries, ...policyEntries, ...productEntries];
+}
+
+function readValidLastModified(value: string) {
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime()) ? undefined : date;
 }
