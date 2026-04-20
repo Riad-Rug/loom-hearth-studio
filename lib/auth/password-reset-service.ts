@@ -3,8 +3,8 @@ import "server-only";
 import { randomBytes, createHash } from "node:crypto";
 
 import { db } from "@/lib/db/client";
+import { normalizePublicSiteUrl, siteConfig } from "@/config/site";
 import { sendTransactionalEmailMessage } from "@/lib/email/service";
-import { getEnvSnapshot } from "@/lib/validation/env";
 import { hashPassword } from "@/lib/auth/password";
 import {
   createPasswordResetEmailMessage,
@@ -19,11 +19,15 @@ function hashPasswordResetToken(token: string) {
 }
 
 function createPasswordResetUrl(input: { token: string; origin?: string }) {
-  const env = getEnvSnapshot();
-  const baseUrl = input.origin ?? env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const requestedOrigin = input.origin ? normalizePublicSiteUrl(input.origin) : "";
+  const baseUrl = isLocalOrigin(requestedOrigin) ? requestedOrigin : siteConfig.siteUrl;
   const url = new URL("/account/forgot-password", baseUrl);
   url.searchParams.set("token", input.token);
   return url.toString();
+}
+
+function isLocalOrigin(value: string) {
+  return value.startsWith("http://localhost") || value.startsWith("http://127.0.0.1");
 }
 
 function formatResetExpirationLabel(expiresAt: Date) {

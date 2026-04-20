@@ -27,16 +27,20 @@ export default async function CategoryProductPage({
     notFound();
   }
 
+  const productPath = getCategoryProductPath(product);
+
   return (
     <>
       <JsonLd
         data={[
           productSchema({
+            id: product.id,
             name: product.name,
             description: product.description,
-            path: `/shop/${product.category}/${product.slug}`,
+            path: productPath,
             priceUsdLabel: product.priceUsdLabel,
             category: product.category,
+            imageUrls: product.gallery.map((image) => image.src),
           }),
           breadcrumbSchema([
             { name: "Home", path: "/" },
@@ -45,7 +49,7 @@ export default async function CategoryProductPage({
               name: product.category.charAt(0).toUpperCase() + product.category.slice(1),
               path: `/shop/${product.category}`,
             },
-            { name: product.name, path: `/shop/${product.category}/${product.slug}` },
+            { name: product.name, path: productPath },
           ]),
         ]}
       />
@@ -76,6 +80,10 @@ export async function generateMetadata({
     entityKey: product.id,
     title: product.seoTitle || product.name,
     description: product.seoDescription || product.description,
-    path: `/shop/${product.category}/${product.slug}`,
+    path: getCategoryProductPath(product),
   });
+}
+
+function getCategoryProductPath(product: { category: string; slug: string }) {
+  return `/shop/${product.category}/${product.slug}`;
 }

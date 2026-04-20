@@ -79,7 +79,6 @@ export function getStripeServerConfig(): StripeServerConfig {
 export function getStripeCheckoutServiceConfig(): StripeCheckoutServiceConfig {
   const publicConfig = getStripePublicConfig();
   const serverConfig = getStripeServerConfig();
-  const siteUrl = getPublicEnv().NEXT_PUBLIC_SITE_URL ?? siteConfig.siteUrl;
 
   return {
     mode: launchStripeIntegrationMode,
@@ -87,8 +86,8 @@ export function getStripeCheckoutServiceConfig(): StripeCheckoutServiceConfig {
     secretKey: serverConfig.secretKey,
     webhookSecret: serverConfig.webhookSecret,
     sessionEndpointPath: "/api/stripe/checkout-session",
-    successUrl: new URL("/checkout/success", siteUrl).toString(),
-    cancelUrl: new URL("/checkout/payment", siteUrl).toString(),
+    successUrl: new URL("/checkout/success", siteConfig.siteUrl).toString(),
+    cancelUrl: new URL("/checkout/payment", siteConfig.siteUrl).toString(),
     missingClientConfig: publicConfig.publishableKey
       ? []
       : ["NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"],

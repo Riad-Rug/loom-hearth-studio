@@ -32,6 +32,7 @@ type SiteHeaderClientProps = {
 
 export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openMenuLabel, setOpenMenuLabel] = useState<string | null>(null);
   const announcementText = props.announcementItems.join(" / ");
   const tickerItems = [...props.announcementItems, ...props.announcementItems];
 
@@ -79,19 +80,30 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
               "items" in item ? (
                 <div key={item.label} className="site-header__menu">
                   <button
+                    aria-controls={`site-header-submenu-${toDomId(item.label)}`}
+                    aria-expanded={openMenuLabel === item.label}
                     aria-haspopup="true"
                     className="site-header__link site-header__menu-trigger"
                     type="button"
+                    onClick={() =>
+                      setOpenMenuLabel((currentLabel) =>
+                        currentLabel === item.label ? null : item.label,
+                      )
+                    }
                   >
                     {item.label}
                     <span aria-hidden="true">v</span>
                   </button>
-                  <div className="site-header__submenu">
+                  <div
+                    id={`site-header-submenu-${toDomId(item.label)}`}
+                    className="site-header__submenu"
+                  >
                     {item.items.map((subItem) => (
                       <Link
                         key={subItem.href}
                         className="site-header__submenu-link"
                         href={subItem.href as Route}
+                        onClick={() => setOpenMenuLabel(null)}
                       >
                         {subItem.label}
                       </Link>
@@ -203,6 +215,10 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
       </Container>
     </header>
   );
+}
+
+function toDomId(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 function SearchIcon() {

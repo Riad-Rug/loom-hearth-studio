@@ -111,7 +111,7 @@ export async function getRugProductDetailByParams(input: {
     return null;
   }
 
-  if (normalizeSlug(product.rugStyle) !== input.style) {
+  if (normalizeSlug(product.rugStyle) !== normalizeSlug(input.style)) {
     return null;
   }
 
@@ -646,7 +646,7 @@ function createDisplayProductTitle(product: Product) {
 }
 
 function createCondensedRugTitle(product: Extract<Product, { type: "rug" }>, title: string) {
-  const color = getPrimaryColorFromTitle(title);
+  const color = removeConstructionFromColor(getPrimaryColorFromTitle(title));
   const construction = getRugConstructionLabel(product, title);
   const feature = getRugFeatureLabel(title);
 
@@ -723,6 +723,13 @@ function getPrimaryColorFromTitle(title: string) {
   )?.[1];
 
   return colorMatch ? toTitleCase(colorMatch) : "";
+}
+
+function removeConstructionFromColor(value: string) {
+  return value
+    .replace(/\b(?:Flatweave|Beni|Ourain|Kilim|Vintage|Moroccan|Rug)\b/giu, "")
+    .replace(/\s+/gu, " ")
+    .trim();
 }
 
 function getRugConstructionLabel(product: Extract<Product, { type: "rug" }>, title: string) {

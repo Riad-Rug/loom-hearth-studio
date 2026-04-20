@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-labelledby="title desc">
+  <title id="title">Loom and Hearth Studio logo</title>
+  <desc id="desc">Terracotta Loom and Hearth Studio wordmark with L ampersand H initials.</desc>
+  <rect width="500" height="500" fill="#f7f5f0"/>
+  <g fill="#c96f42">
+    <path d="M42 88h49c-10 14-15 27-15 41v215h56c43 0 67-15 80-53h4l-21 60H42c10-14 15-27 15-41V129c0-14-5-27-15-41z"/>
+    <path d="M262 88h49c-10 14-15 27-15 41v81h151v-81c0-14-5-27-15-41h49c-10 14-15 27-15 41v181c0 14 5 27 15 41h-49c10-14 15-27 15-41v-94H296v94c0 14 5 27 15 41h-49c10-14 15-27 15-41V129c0-14-5-27-15-41z"/>
+    <path d="M166 112c19 0 31 12 31 31 0 14-7 25-21 33l28 41c8 12 16 18 24 18 10 0 18-7 25-21h2c-7 23-20 35-39 35-13 0-24-7-35-22-13 14-29 21-50 21-31 0-50-17-50-44 0-20 11-33 34-42-5-10-8-19-8-27 0-14 6-23 16-30 10-8 25-12 43-12zm-38 64c-14 8-21 18-21 31 0 22 14 36 36 36 14 0 26-5 36-15l-51-52zm38-59c-17 0-25 8-25 25 0 8 4 18 11 29 14-7 21-17 21-31 0-15-2-23-7-23z"/>
+  </g>
+  <g fill="#c96f42" font-family="Georgia, serif" font-size="38" letter-spacing="27">
+    <text x="100" y="422">studio</text>
+  </g>
+</svg>

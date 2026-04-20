@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { siteConfig } from "@/config/site";
+import { normalizePublicUrl, siteConfig } from "@/config/site";
 import { getSeoSetting } from "@/lib/seo/settings";
 
 type BuildMetadataOptions = {
@@ -21,7 +21,7 @@ type BuildManagedMetadataOptions = BuildMetadataOptions & {
 };
 
 export function absoluteUrl(path: string) {
-  return new URL(path, siteConfig.siteUrl).toString();
+  return normalizePublicUrl(path);
 }
 
 export function buildMetadata({
@@ -35,9 +35,9 @@ export function buildMetadata({
   ogDescription,
   ogImageUrl,
 }: BuildMetadataOptions): Metadata {
-  const canonical = canonicalUrl || absoluteUrl(path);
+  const canonical = normalizePublicUrl(canonicalUrl || absoluteUrl(path));
   const defaultOgImage = absoluteUrl(siteConfig.ogImagePath);
-  const resolvedOgImage = ogImageUrl || defaultOgImage;
+  const resolvedOgImage = normalizePublicUrl(ogImageUrl || defaultOgImage);
   const resolvedTitle = normalizeTemplatedTitle(title);
   const resolvedOgTitle = normalizeTemplatedTitle(ogTitle || title);
   const resolvedOgDescription = ogDescription || description;

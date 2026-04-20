@@ -2,7 +2,8 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useId, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
@@ -198,16 +199,20 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               <p className={styles.valueLine}>{product.subtitle}</p>
             </div>
             <p className={styles.price}>{product.priceUsdLabel}</p>
+            <DecisionTrustStrip />
             {product.type === "rug" ? (
               <p className={styles.scarcityLine}>One-of-one. When sold, this exact rug does not return.</p>
             ) : null}
             <p className={styles.summary}>{product.description}</p>
             <div className={styles.descriptionAccordion}>
               {product.descriptionSections.map((section, index) => (
-                <details key={section.title} className={styles.descriptionPanel} open={index === 0}>
-                  <summary>{section.title}</summary>
-                  <p>{section.body}</p>
-                </details>
+                <PdpAccordionPanel
+                  key={section.title}
+                  body={section.body}
+                  defaultOpen={index === 0}
+                  title={section.title}
+                  variant="description"
+                />
               ))}
             </div>
 
@@ -331,21 +336,27 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 
       {product.supportPanels.length ? (
         <Section width="wide">
-          <div className={styles.supportGrid}>
-            {product.supportPanels.map((panel) => (
-              <article key={panel.id} className={styles.supportCard}>
-                <p className={styles.eyebrow}>{panel.eyebrow}</p>
-                <h2 className={styles.supportCardHeading}>{panel.title}</h2>
-                <p className={styles.supportCardBody}>{panel.body}</p>
-                {panel.items.length ? (
-                  <ul className={styles.supportList}>
-                    {panel.items.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </article>
-            ))}
+          <div className={styles.supportSection}>
+            <div className={styles.sectionIntro}>
+              <p className={styles.eyebrow}>How it works</p>
+              <h2>How this piece is verified and shipped.</h2>
+            </div>
+            <div className={styles.supportGrid}>
+              {product.supportPanels.map((panel) => (
+                <article key={panel.id} className={styles.supportCard}>
+                  <p className={styles.eyebrow}>{panel.eyebrow}</p>
+                  <h3 className={styles.supportCardHeading}>{panel.title}</h3>
+                  <p className={styles.supportCardBody}>{panel.body}</p>
+                  {panel.items.length ? (
+                    <ul className={styles.supportList}>
+                      {panel.items.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </article>
+              ))}
+            </div>
           </div>
         </Section>
       ) : null}
@@ -372,13 +383,19 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
       ) : null}
 
       <Section width="wide">
-        <div className={styles.detailsGrid}>
-          {product.detailSections.map((section) => (
-            <article key={section.title} className={styles.detailCard}>
-              <h2 className={styles.detailCardHeading}>{section.title}</h2>
-              <p>{section.body}</p>
-            </article>
-          ))}
+        <div className={styles.detailSection}>
+          <div className={styles.sectionIntro}>
+            <p className={styles.eyebrow}>Details</p>
+            <h2>Materials, construction, and condition notes.</h2>
+          </div>
+          <div className={styles.detailsGrid}>
+            {product.detailSections.map((section) => (
+              <article key={section.title} className={styles.detailCard}>
+                <h3 className={styles.detailCardHeading}>{section.title}</h3>
+                <p>{section.body}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </Section>
 
@@ -386,7 +403,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         <div className={styles.relatedSection}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Related</p>
-            <h2>Related products</h2>
+            <h3 className={styles.secondarySectionHeading}>Related products</h3>
           </div>
           <div className={styles.relatedGrid}>
             {product.related.map((item) => (
@@ -403,7 +420,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         <div className={styles.relatedSection}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Recently viewed</p>
-            <h2>More from the collection</h2>
+            <h3 className={styles.secondarySectionHeading}>More from the collection</h3>
           </div>
           <div className={styles.relatedGrid}>
             {product.recentlyViewed.map((item) => (
@@ -421,15 +438,66 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 
 function ShippingReturnsAccordion() {
   return (
-    <details className={styles.shippingPanel}>
-      <summary>Shipping & returns</summary>
-      <ul>
-        <li>Ships from Morocco in 5 to 7 business days.</li>
-        <li>DHL tracked delivery.</li>
-        <li>Duties included to US, CA, and AU.</li>
-        <li>14-day returns.</li>
-      </ul>
-    </details>
+    <PdpAccordionPanel
+      body={
+        <ul>
+          <li>Ships from Morocco in 5 to 7 business days.</li>
+          <li>DHL tracked delivery.</li>
+          <li>Duties included to US, CA, and AU.</li>
+          <li>14-day returns.</li>
+        </ul>
+      }
+      title="Shipping & returns"
+      variant="shipping"
+    />
+  );
+}
+
+function DecisionTrustStrip() {
+  const items = ["Ships in 5 to 7 business days", "DHL tracked", "Duties included", "14-day returns"];
+
+  return (
+    <ul className={styles.decisionTrustStrip} aria-label="Shipping and returns highlights">
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
+function PdpAccordionPanel({
+  body,
+  defaultOpen = false,
+  title,
+  variant,
+}: {
+  body: ReactNode;
+  defaultOpen?: boolean;
+  title: string;
+  variant: "description" | "shipping";
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const panelId = useId();
+  const headingId = useId();
+  const className = variant === "shipping" ? styles.shippingPanel : styles.descriptionPanel;
+
+  return (
+    <section className={className} aria-labelledby={headingId}>
+      <h3 id={headingId} className={styles.accordionHeading}>
+        <button
+          aria-controls={panelId}
+          aria-expanded={isOpen}
+          className={styles.accordionButton}
+          type="button"
+          onClick={() => setIsOpen((current) => !current)}
+        >
+          {title}
+        </button>
+      </h3>
+      <div id={panelId} hidden={!isOpen}>
+        {typeof body === "string" ? <p>{body}</p> : body}
+      </div>
+    </section>
   );
 }
 

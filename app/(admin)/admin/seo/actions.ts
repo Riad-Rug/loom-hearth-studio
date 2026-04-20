@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { normalizePublicUrl } from "@/config/site";
 import type { AdminSeoActionState } from "@/lib/admin/seo-actions-shared";
 import { requireAdminRoleForMutation } from "@/lib/auth/service";
 import { saveSeoSetting } from "@/lib/seo/settings";
@@ -108,7 +109,7 @@ function normalizeOptionalUrl(value: string) {
 
   try {
     const parsed = new URL(value);
-    return parsed.toString();
+    return normalizePublicUrl(parsed.toString());
   } catch {
     return null;
   }

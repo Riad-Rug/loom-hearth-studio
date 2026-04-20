@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import type { Route } from "next";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRugProductDetailByParams } from "@/lib/catalog/service";
+import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/schema";
@@ -25,22 +27,30 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
     notFound();
   }
 
+  const productPath = getRugProductPath(product);
+
+  if (`/shop/rugs/${resolvedParams.style}/${resolvedParams.slug}` !== productPath) {
+    permanentRedirect(productPath as Route);
+  }
+
   return (
     <>
       <JsonLd
         data={[
           productSchema({
+            id: product.id,
             name: product.name,
             description: product.description,
-            path: `/shop/rugs/${product.rugStyle}/${product.slug}`,
+            path: productPath,
             priceUsdLabel: product.priceUsdLabel,
             category: product.category,
+            imageUrls: product.gallery.map((image) => image.src),
           }),
           breadcrumbSchema([
             { name: "Home", path: "/" },
             { name: "Shop", path: "/shop" },
             { name: "Rugs", path: "/shop/rugs" },
-            { name: product.name, path: `/shop/rugs/${product.rugStyle}/${product.slug}` },
+            { name: product.name, path: productPath },
           ]),
         ]}
       />
@@ -71,6 +81,10 @@ export async function generateMetadata({
     entityKey: product.id,
     title: product.seoTitle || product.name,
     description: product.seoDescription || product.description,
-    path: `/shop/rugs/${product.rugStyle}/${product.slug}`,
+    path: getRugProductPath(product),
   });
+}
+
+function getRugProductPath(product: { rugStyle: string; slug: string }) {
+  return `/shop/rugs/${normalizeSlug(product.rugStyle)}/${product.slug}`;
 }
