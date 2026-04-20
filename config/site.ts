@@ -16,13 +16,18 @@ export const siteConfig = {
   primaryNav: [
     { href: "/shop", label: "Shop" },
     { href: "/lookbook", label: "Lookbook" },
-    { href: "/blog", label: "Journal" },
-    { href: "/about", label: "About" },
-    { href: "/sourcing", label: "Sourcing" },
+    {
+      label: "Story",
+      items: [
+        { href: "/about", label: "About" },
+        { href: "/sourcing", label: "Sourcing" },
+        { href: "/blog", label: "Journal" },
+      ],
+    },
     { href: "/trade", label: "Trade" },
-    { href: "/contact", label: "Contact" },
   ],
   supportNav: [
+    { href: "/contact", label: "Contact" },
     { href: "/faq", label: "FAQ" },
     { href: "/sourcing", label: "Sourcing" },
     { href: "/trade", label: "Trade" },

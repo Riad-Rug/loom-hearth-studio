@@ -10,11 +10,12 @@ export async function submitNewsletterSignupAction(
   formData: FormData,
 ): Promise<NewsletterSignupActionState> {
   const email = readString(formData.get("email"));
+  const source = normalizeSource(readString(formData.get("source")));
 
   const result = await subscribeToNewsletter({
     email,
-    source: "homepage",
-    tags: ["homepage"],
+    source,
+    tags: [source],
   });
 
   revalidatePath("/");
@@ -35,4 +36,12 @@ export async function submitNewsletterSignupAction(
 
 function readString(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeSource(value: string) {
+  if (value === "exit-intent") {
+    return value;
+  }
+
+  return "homepage";
 }

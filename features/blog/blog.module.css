@@ -51,7 +51,7 @@
 .lede {
   max-width: 50rem;
   margin: 0;
-  color: rgba(34, 33, 38, 0.78);
+  color: var(--color-text-body);
   line-height: 1.8;
 }
 
@@ -125,7 +125,7 @@
 .postBody p,
 .articleBody p {
   margin: 0;
-  color: rgba(34, 33, 38, 0.78);
+  color: var(--color-text-body);
   line-height: 1.75;
 }
 
@@ -264,7 +264,7 @@
 
 .authorCopy p:last-child {
   margin: 0;
-  color: rgba(34, 33, 38, 0.74);
+  color: var(--color-text-body);
   line-height: 1.7;
 }
 

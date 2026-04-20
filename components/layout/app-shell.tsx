@@ -3,6 +3,8 @@
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
+import { ExitIntentCapture } from "@/components/marketing/exit-intent-capture";
+
 type AppShellProps = {
   children: ReactNode;
   header: ReactNode;
@@ -24,6 +26,7 @@ export function AppShell({ children, header, footer, consentBanner }: AppShellPr
       <main className="site-main">{children}</main>
       {footer}
       {consentBanner}
+      <ExitIntentCapture />
     </div>
   );
 }

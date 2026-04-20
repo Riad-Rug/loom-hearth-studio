@@ -12,6 +12,12 @@ export const productCategoryOptions = [
 export const cloudinaryAssetRoleOptions = [
   "hero",
   "gallery",
+  "styled",
+  "detail",
+  "edge",
+  "back",
+  "scale",
+  "motif",
   "thumbnail",
   "featured",
   "og",
@@ -221,6 +227,20 @@ export function validateProductMutationInput(
 
     if (input.fixedQuantity !== 1) {
       fieldErrors.fixedQuantity = "Rugs must keep fixed quantity at 1.";
+    }
+
+    if (input.status === "active") {
+      const requiredRugImageRoles = ["hero", "styled", "detail", "edge", "back", "scale", "motif"] as const;
+      const imageRoles = new Set(
+        input.images
+          .filter((image) => image.mediaType === "image" && image.publicId.trim())
+          .map((image) => image.role),
+      );
+      const missingRoles = requiredRugImageRoles.filter((role) => !imageRoles.has(role));
+
+      if (missingRoles.length) {
+        fieldErrors.images = `Active rugs need seven product images: full flat-lay, in-room styled shot, knot density close-up, fringe/edge detail, reverse side, scale reference, and motif detail. Missing roles: ${missingRoles.join(", ")}.`;
+      }
     }
   }
 

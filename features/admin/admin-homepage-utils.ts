@@ -85,6 +85,7 @@ export function createSectionScoreMap(content: HomePageContent): Record<HomePage
     howItWorks: createSeoAudit("How it works", content.howItWorks.seo.seoTitle, content.howItWorks.seo.metaDescription),
     guide: createSeoAudit(content.guide.title, content.guide.seo.seoTitle, content.guide.seo.metaDescription),
     newsletter: createSeoAudit(content.newsletter.title, content.newsletter.seo.seoTitle, content.newsletter.seo.metaDescription),
+    faq: createSeoAudit(content.faq.title, content.faq.seo.seoTitle, content.faq.seo.metaDescription),
     footer: createSeoAudit(content.footer.introTitle, content.footer.seo.seoTitle, content.footer.seo.metaDescription),
   };
 }

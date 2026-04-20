@@ -68,7 +68,7 @@
 .testimonialMeta,
 .policyBody p {
   margin: 0;
-  color: rgba(34, 33, 38, 0.78);
+  color: var(--color-text-body);
   line-height: 1.8;
 }
 
@@ -133,16 +133,16 @@
 }
 
 .primaryAction {
-  border: 1px solid var(--color-clay-terracotta);
-  background: var(--color-clay-terracotta);
-  color: var(--color-white);
+  border: 1px solid var(--button-primary-bg);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
 }
 
 .secondaryAction,
 .contactLink {
-  border: 1px solid var(--color-border-strong);
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--color-charcoal-ink);
+  border: 1px solid var(--button-secondary-border);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
 }
 
 .primaryAction:hover,
@@ -164,8 +164,8 @@
 .secondaryAction:focus-visible,
 .contactLink:hover,
 .contactLink:focus-visible {
-  border-color: rgba(34, 33, 38, 0.18);
-  background: rgba(255, 255, 255, 0.88);
+  border-color: var(--button-secondary-border-hover);
+  background: var(--button-secondary-bg-hover);
 }
 
 .contactMeta {
@@ -198,7 +198,7 @@
 
 .contactFieldHint {
   margin: 0;
-  color: rgba(34, 33, 38, 0.66);
+  color: var(--color-text-muted);
   font-size: 0.92rem;
   line-height: 1.6;
 }
@@ -278,7 +278,7 @@
 }
 
 .contactSectionHeader p {
-  color: rgba(34, 33, 38, 0.66);
+  color: var(--color-text-body);
   line-height: 1.7;
 }
 

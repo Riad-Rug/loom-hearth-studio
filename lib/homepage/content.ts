@@ -53,7 +53,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.hero.paragraph =
     "Hand-knotted rugs, poufs, cactus silk pillows, and handcrafted decor selected in person across Morocco, not pulled from an export catalogue.";
   next.hero.primaryCta = { ...next.hero.primaryCta, label: "SHOP RUGS" };
-  next.hero.secondaryCta = { ...next.hero.secondaryCta, label: "Browse All Pieces", href: "/shop" };
+  next.hero.secondaryCta = { ...next.hero.secondaryCta, label: "View the Lookbook", href: "/lookbook" };
   next.hero.seo = {
     ...next.hero.seo,
     seoTitle: "Loom & Hearth Studio  Handcrafted Moroccan Rugs",
@@ -126,8 +126,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
 
   next.featured.eyebrow = "SHOP FIRST";
   next.featured.title = "Start with the pieces shoppers ask about first.";
-  next.featured.paragraph =
-    "Browse the highest-intent parts of the collection before reading deeper into the sourcing story.";
+  next.featured.paragraph = "The rugs, poufs, and pillows customers ask about most.";
   next.featured.cards = next.featured.cards.map((card) => {
     if (card.id === "featured-rugs") {
       return {
@@ -136,6 +135,11 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
         title: "One-of-one Moroccan rugs",
         description: "Hand-knotted Moroccan rugs selected for pile density, weight, and long-term durability.",
         priceLabel: "Shop available pieces",
+        image: {
+          ...card.image,
+          src: "https://images.pexels.com/photos/36202808/pexels-photo-36202808.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
+          alt: "Close crop of a colorful handwoven Moroccan rug showing its geometric pattern and wool texture",
+        },
       };
     }
 
@@ -146,6 +150,11 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
         title: "Rug-made and leather poufs",
         description: "Poufs selected for construction quality, filling density, and everyday use.",
         priceLabel: "Browse poufs",
+        image: {
+          ...card.image,
+          src: "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
+          alt: "A Moroccan leather pouf shown in full view with clean natural styling",
+        },
       };
     }
 
@@ -156,6 +165,11 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
         title: "Cactus silk pillows",
         description: "Flat-woven cactus silk. Low-shed, with strong colour saturation and a quieter surface than wool pile.",
         priceLabel: "Browse pillows",
+        image: {
+          ...card.image,
+          src: "https://images.pexels.com/photos/11537258/pexels-photo-11537258.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
+          alt: "Square crop of colorful Moroccan throw pillows and woven textiles in natural light",
+        },
       };
     }
 
@@ -170,9 +184,71 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.newsletter.eyebrow = "JOIN THE LIST";
   next.newsletter.title = "New arrivals, sourcing stories, and first access to pieces before wider release.";
   next.newsletter.paragraph =
-    "We publish twice a month. New pieces, what we found on the last sourcing trip, and guides on what to look for when buying a Moroccan rug. No filler.";
+    "Join for a free sourcing guide: 10 things to check before buying a Moroccan rug. You will also get new arrivals, sourcing stories, and first access to pieces before wider release. No filler.";
   next.newsletter.inputPlaceholder = "Your email address";
   next.newsletter.ctaLabel = "JOIN";
+
+  next.faq.eyebrow = "BEFORE YOU BUY";
+  next.faq.title = "Questions buyers ask before choosing a one-of-one rug.";
+  next.faq.paragraph =
+    "A rug is a considered purchase. These are the details we confirm before you commit.";
+  next.faq.items = next.faq.items.map((item) => {
+    if (item.id === "faq-exact-rug") {
+      return {
+        ...item,
+        question: "Is my rug really the exact one I will receive?",
+        answer:
+          "Yes. One-of-one rugs are listed as exact pieces, not representative samples. Before payment is captured, we confirm the actual rug with you through the inquiry and verification flow.",
+      };
+    }
+
+    if (item.id === "faq-space-fit") {
+      return {
+        ...item,
+        question: "What if it does not work in my space?",
+        answer:
+          "Ask before committing. We can review room photos, dimensions, light, and nearby finishes to help judge scale and color. If it still is not right after delivery, eligible pieces have a 14-day return window.",
+      };
+    }
+
+    if (item.id === "faq-shipping") {
+      return {
+        ...item,
+        question: "How long does shipping take?",
+        answer:
+          "Pieces ship from Morocco in 5 to 7 business days after final confirmation. Delivery is tracked through DHL for supported launch markets.",
+      };
+    }
+
+    if (item.id === "faq-price-included") {
+      return {
+        ...item,
+        question: "What is included in the price?",
+        answer:
+          "The listed price includes the piece, pre-shipment verification, DHL tracked delivery, and duties to the United States, Canada, and Australia. Prices are shown in USD.",
+      };
+    }
+
+    if (item.id === "faq-color") {
+      return {
+        ...item,
+        question: "How do I know the color is accurate?",
+        answer:
+          "We review color before payment is captured and can show the piece in natural, warm, and cool light so you are not relying on a single styled photograph.",
+      };
+    }
+
+    if (item.id === "faq-handmade-variation") {
+      return {
+        ...item,
+        question: "Will a handmade rug have irregularities?",
+        answer:
+          "Yes, and that is part of the value when the structure is sound. Handmade and vintage pieces can show variation in edge line, pile height, tone, and age. Condition notes are reviewed against the exact piece.",
+      };
+    }
+
+    return item;
+  });
 
   next.footer.introBody =
     "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor  sourced directly across Morocco and shipped to the United States, Canada, and Australia.";

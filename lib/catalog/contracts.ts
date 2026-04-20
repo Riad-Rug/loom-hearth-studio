@@ -11,6 +11,7 @@ export type CatalogProductCardViewModel = {
   id: string;
   href: string;
   name: string;
+  subtitle: string;
   category: ProductCategory;
   type: Product["type"];
   priceUsdLabel: string;
@@ -19,6 +20,11 @@ export type CatalogProductCardViewModel = {
   routePattern: string;
   badge: string;
   primaryImage?: {
+    src: string;
+    publicId: string;
+    altText: string;
+  };
+  secondaryImage?: {
     src: string;
     publicId: string;
     altText: string;
@@ -53,8 +59,10 @@ type ProductDetailPageViewModelBase = {
   id: string;
   slug: string;
   name: string;
+  subtitle: string;
   category: ProductCategory;
   description: string;
+  descriptionSections: ProductDetailSectionViewModel[];
   seoTitle: string;
   seoDescription: string;
   type: Product["type"];
@@ -67,6 +75,7 @@ type ProductDetailPageViewModelBase = {
     publicId: string;
     altText: string;
     role: string;
+    isDerived?: boolean;
   }>;
   materialLabel: string;
   originLabel: string;
@@ -74,6 +83,7 @@ type ProductDetailPageViewModelBase = {
   specifications: ProductSpecificationViewModel[];
   supportPanels: ProductSupportPanelViewModel[];
   detailSections: ProductDetailSectionViewModel[];
+  similarRugs: CatalogProductCardViewModel[];
   related: ProductLinkViewModel[];
   recentlyViewed: ProductLinkViewModel[];
   sharePlatforms: string[];

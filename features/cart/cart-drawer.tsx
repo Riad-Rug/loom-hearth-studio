@@ -122,7 +122,7 @@ export function CartDrawer() {
         aria-controls="cart-mini-panel"
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        aria-label={isEmpty ? "Open cart" : `Open cart with ${itemCountLabel}`}
+        aria-label={`Open cart with ${itemCountLabel}`}
         className="site-header__cart-button"
         type="button"
         onClick={handleButtonClick}
@@ -133,7 +133,13 @@ export function CartDrawer() {
             fill="currentColor"
           />
         </svg>
-        {itemCount > 0 ? <span className="site-header__cart-count">{itemCount}</span> : null}
+        <span
+          className="site-header__cart-count"
+          data-empty={itemCount === 0 ? "true" : "false"}
+          aria-hidden="true"
+        >
+          {itemCount}
+        </span>
       </button>
 
       {isOpen ? (

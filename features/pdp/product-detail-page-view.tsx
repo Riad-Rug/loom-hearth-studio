@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
+import { ProductCard } from "@/features/catalog/product-card";
 import { trackViewItem } from "@/lib/analytics/gtag";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
 import type {
@@ -18,6 +19,43 @@ import styles from "./product-detail-page.module.css";
 type ProductDetailPageViewProps = {
   product: ProductDetailPageViewModel;
 };
+
+type GalleryItem = ProductDetailPageViewModel["gallery"][number];
+
+type GalleryImageProps = {
+  alt: string;
+  className: string;
+  fallbackClassName: string;
+  fallbackLabel: string;
+  item: GalleryItem;
+  src: string;
+};
+
+function GalleryImage(props: GalleryImageProps) {
+  const [hasFailed, setHasFailed] = useState(false);
+
+  useEffect(() => {
+    setHasFailed(false);
+  }, [props.src]);
+
+  if (hasFailed) {
+    return (
+      <div className={props.fallbackClassName}>
+        <span>{props.fallbackLabel}</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      className={props.className}
+      alt={props.alt}
+      src={props.src}
+      title={props.item.label}
+      onError={() => setHasFailed(true)}
+    />
+  );
+}
 
 export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -77,7 +115,6 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   }, [isLightboxOpen, product.gallery.length]);
 
   const activeImage = product.gallery[activeImageIndex] ?? product.gallery[0] ?? null;
-  const valueLine = createProductValueLine(product);
 
   function selectImage(index: number) {
     setActiveImageIndex(index);
@@ -109,11 +146,14 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             >
               <div className={styles.primaryMedia}>
                 {activeImage ? (
-                  <img
+                  <GalleryImage
                     key={activeImage.id}
                     alt={activeImage.altText || product.name}
+                    className={styles.primaryImage}
+                    fallbackClassName={styles.primaryImageFallback}
+                    fallbackLabel="Image unavailable"
+                    item={activeImage}
                     src={activeImage.src}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
                 ) : (
                   <PlaceholderMedia
@@ -135,11 +175,15 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                   }`}
                   type="button"
                   aria-pressed={activeImageIndex === index}
+                  aria-label={`Show ${item.label}`}
                   onClick={() => selectImage(index)}
                 >
-                  <img
+                  <GalleryImage
                     className={styles.thumbnailImage}
                     alt={item.altText || `${product.name} ${item.label}`}
+                    fallbackClassName={styles.thumbnailFallback}
+                    fallbackLabel={item.label}
+                    item={item}
                     src={item.src}
                   />
                 </button>
@@ -151,16 +195,29 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             <p className={styles.eyebrow}>{getCategoryLabel(product.category)}</p>
             <div className={styles.titleBlock}>
               <h1>{product.name}</h1>
-              <p className={styles.valueLine}>{valueLine}</p>
+              <p className={styles.valueLine}>{product.subtitle}</p>
             </div>
             <p className={styles.price}>{product.priceUsdLabel}</p>
+            {product.type === "rug" ? (
+              <p className={styles.scarcityLine}>One-of-one. When sold, this exact rug does not return.</p>
+            ) : null}
             <p className={styles.summary}>{product.description}</p>
+            <div className={styles.descriptionAccordion}>
+              {product.descriptionSections.map((section, index) => (
+                <details key={section.title} className={styles.descriptionPanel} open={index === 0}>
+                  <summary>{section.title}</summary>
+                  <p>{section.body}</p>
+                </details>
+              ))}
+            </div>
 
             {product.type === "rug" ? (
               <RugPurchaseShell product={product} />
             ) : (
               <MultiUnitPurchaseShell product={product} />
             )}
+
+            <ShippingReturnsAccordion />
 
             <div className={styles.metaGrid}>
               {product.specifications.map((spec) => (
@@ -220,11 +277,14 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               ) : null}
 
               <div className={styles.lightboxMedia}>
-                <img
+                <GalleryImage
                   key={`${activeImage.id}-lightbox`}
                   alt={activeImage.altText || product.name}
+                  className={styles.lightboxImage}
+                  fallbackClassName={styles.lightboxImageFallback}
+                  fallbackLabel="Image unavailable"
+                  item={activeImage}
                   src={activeImage.src}
-                  style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
                 />
               </div>
 
@@ -250,11 +310,15 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                     }`}
                     type="button"
                     aria-pressed={activeImageIndex === index}
+                    aria-label={`Show ${item.label}`}
                     onClick={() => selectImage(index)}
                   >
-                    <img
+                    <GalleryImage
                       className={styles.thumbnailImage}
                       alt={item.altText || `${product.name} ${item.label}`}
+                      fallbackClassName={styles.thumbnailFallback}
+                      fallbackLabel={item.label}
+                      item={item}
                       src={item.src}
                     />
                   </button>
@@ -282,6 +346,27 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                 ) : null}
               </article>
             ))}
+          </div>
+        </Section>
+      ) : null}
+
+      {product.similarRugs.length ? (
+        <Section tone="muted" width="wide">
+          <div className={styles.recommendationSection}>
+            <div className={styles.sectionIntro}>
+              <p className={styles.eyebrow}>You may also like</p>
+              <h2>Similar rugs to keep in view.</h2>
+            </div>
+            <div
+              className={styles.recommendationCarousel}
+              aria-label="Similar rug recommendations"
+            >
+              {product.similarRugs.map((item) => (
+                <div key={item.id} className={styles.recommendationSlide}>
+                  <ProductCard product={item} />
+                </div>
+              ))}
+            </div>
           </div>
         </Section>
       ) : null}
@@ -334,14 +419,18 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   );
 }
 
-function createProductValueLine(product: ProductDetailPageViewModel) {
-  if (product.type === "rug") {
-    return `${product.materialLabel} | ${product.originLabel} | One-of-one piece`;
-  }
-
-  return `${product.materialLabel} | ${product.originLabel} | ${
-    product.inventoryState === "outOfStock" ? "Currently unavailable" : "Made for project review"
-  }`;
+function ShippingReturnsAccordion() {
+  return (
+    <details className={styles.shippingPanel}>
+      <summary>Shipping & returns</summary>
+      <ul>
+        <li>Ships from Morocco in 5 to 7 business days.</li>
+        <li>DHL tracked delivery.</li>
+        <li>Duties included to US, CA, and AU.</li>
+        <li>14-day returns.</li>
+      </ul>
+    </details>
+  );
 }
 
 function RugPurchaseShell({
@@ -352,11 +441,15 @@ function RugPurchaseShell({
   return (
     <div className={styles.purchaseCard}>
       <p className={styles.purchaseNote}>
-        This is a one-of-one piece. Before your payment is taken, we review the actual rug with
-        you so you can confirm the color, texture, and scale for your space.
+        This is a one-of-one piece. We hold it while you review the exact rug on video and confirm
+        the color, texture, and scale for your space.
       </p>
+      <div className={styles.purchasePromise}>
+        <p>No payment taken until you approve the video.</p>
+        <p>We reply within 24 hours.</p>
+      </div>
       <Link className={styles.primaryAction} href={buildInquiryHref(product, { quantity: 1 }) as Route}>
-        Start rug inquiry
+        Reserve this rug
       </Link>
       <Link className={styles.secondaryAction} href="/trade">
         Trade and project inquiries

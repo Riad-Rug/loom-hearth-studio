@@ -38,11 +38,12 @@ export function buildMetadata({
   const canonical = canonicalUrl || absoluteUrl(path);
   const defaultOgImage = absoluteUrl(siteConfig.ogImagePath);
   const resolvedOgImage = ogImageUrl || defaultOgImage;
-  const resolvedOgTitle = ogTitle || title;
+  const resolvedTitle = normalizeTemplatedTitle(title);
+  const resolvedOgTitle = normalizeTemplatedTitle(ogTitle || title);
   const resolvedOgDescription = ogDescription || description;
 
   return {
-    title,
+    title: resolvedTitle,
     description,
     alternates: {
       canonical,
@@ -115,4 +116,20 @@ export async function buildManagedMetadata({
 
 function cleanManagedString(value: string | null | undefined) {
   return typeof value === "string" && value.trim() ? value.trim() : "";
+}
+
+function normalizeTemplatedTitle(value: string) {
+  const brandName = escapeRegExp(siteConfig.name);
+  const brandSuffixPattern = new RegExp(`\\s*(?:[|\\-–—:]\\s*)${brandName}\\s*$`, "iu");
+  let next = value.trim();
+
+  while (brandSuffixPattern.test(next)) {
+    next = next.replace(brandSuffixPattern, "").trim();
+  }
+
+  return next || siteConfig.name;
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

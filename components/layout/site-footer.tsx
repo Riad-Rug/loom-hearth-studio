@@ -11,6 +11,9 @@ export async function SiteFooter() {
   const introTitle = /homepage manager studio/i.test(content.footer.introTitle)
     ? siteConfig.name
     : content.footer.introTitle;
+  const exploreLinks = dedupeFooterLinks(content.footer.exploreLinks);
+  const supportLinks = dedupeFooterLinks(content.footer.supportLinks);
+  const collectionLinks = dedupeFooterLinks(content.footer.collectionLinks);
 
   if (!content.footer.visible) {
     return null;
@@ -29,9 +32,10 @@ export async function SiteFooter() {
               listed online. Contact us for sourcing and project inquiries.
             </p>
             <div className="site-footer__legal">
-              <p className="site-footer__legal-heading">Trader and contact details</p>
+              <p className="site-footer__legal-heading">Studio and contact details</p>
               <p>{publicBusinessDetails.legalName}</p>
-              <p>{publicBusinessDetails.address}</p>
+              <p>Atelier &amp; sourcing: Marrakech, Morocco</p>
+              <p>Registered office: Wyoming, USA</p>
               <p>{publicBusinessDetails.email}</p>
               <p>{publicBusinessDetails.complaintsLine}</p>
             </div>
@@ -39,7 +43,7 @@ export async function SiteFooter() {
           <div className="site-footer__nav-group">
             <p className="site-footer__heading">{content.footer.exploreHeading}</p>
             <nav aria-label="Footer primary" className="site-footer__nav">
-              {content.footer.exploreLinks.map((item) => (
+              {exploreLinks.map((item) => (
                 <Link key={item.href} className="site-footer__link" href={item.href as Route}>
                   {item.label}
                 </Link>
@@ -49,7 +53,7 @@ export async function SiteFooter() {
           <div className="site-footer__nav-group">
             <p className="site-footer__heading">{content.footer.supportHeading}</p>
             <nav aria-label="Footer support" className="site-footer__nav">
-              {content.footer.supportLinks.map((item) => (
+              {supportLinks.map((item) => (
                 <Link key={item.href} className="site-footer__link" href={item.href as Route}>
                   {item.label}
                 </Link>
@@ -59,7 +63,7 @@ export async function SiteFooter() {
           <div className="site-footer__nav-group">
             <p className="site-footer__heading">{content.footer.collectionsHeading}</p>
             <nav aria-label="Footer collections" className="site-footer__nav">
-              {content.footer.collectionLinks.map((item) => (
+              {collectionLinks.map((item) => (
                 <Link key={item.href} className="site-footer__link" href={item.href as Route}>
                   {item.label}
                 </Link>
@@ -70,4 +74,20 @@ export async function SiteFooter() {
       </Container>
     </footer>
   );
+}
+
+function dedupeFooterLinks<T extends { href: string; label: string }>(links: T[]) {
+  const seen = new Set<string>();
+
+  return links.filter((link) => {
+    const key = `${link.href.trim().toLowerCase()}|${link.label.trim().toLowerCase()}`;
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+
+    return true;
+  });
 }

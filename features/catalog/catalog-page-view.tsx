@@ -79,10 +79,10 @@ export function CatalogPageView({ category, products }: CatalogPageViewProps) {
             </p>
           </div>
           <div className={styles.tradePanelActions}>
-            <Link className={styles.categoryChip} href="/trade">
+            <Link className={styles.secondaryAction} href="/trade">
               View trade support
             </Link>
-            <Link className={styles.categoryChip} href="/contact?inquiryType=trade-request">
+            <Link className={styles.primaryAction} href="/contact?inquiryType=trade-request">
               Start a trade inquiry
             </Link>
           </div>

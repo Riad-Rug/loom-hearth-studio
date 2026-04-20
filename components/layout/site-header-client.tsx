@@ -8,16 +8,25 @@ import { useState } from "react";
 import { Container } from "@/components/layout/container";
 import { CartDrawer } from "@/features/cart/cart-drawer";
 
+type SiteHeaderNavLink = {
+  href: string;
+  label: string;
+};
+
+type SiteHeaderNavItem =
+  | SiteHeaderNavLink
+  | {
+      label: string;
+      items: readonly SiteHeaderNavLink[];
+    };
+
 type SiteHeaderClientProps = {
   announcementItems: readonly string[];
   brandName: string;
   logoImageUrl: string;
   logoImageAlt: string;
   tagline: string;
-  primaryNav: ReadonlyArray<{
-    href: string;
-    label: string;
-  }>;
+  primaryNav: readonly SiteHeaderNavItem[];
   isAuthenticated: boolean;
 };
 
@@ -64,16 +73,42 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 props.brandName
               )}
             </Link>
-            <p className="site-header__tagline">{props.tagline}</p>
           </div>
           <nav aria-label="Primary" className="site-header__nav">
             {props.primaryNav.map((item) => (
-              <Link key={item.href} className="site-header__link" href={item.href as Route}>
-                {item.label}
-              </Link>
+              "items" in item ? (
+                <div key={item.label} className="site-header__menu">
+                  <button
+                    aria-haspopup="true"
+                    className="site-header__link site-header__menu-trigger"
+                    type="button"
+                  >
+                    {item.label}
+                    <span aria-hidden="true">v</span>
+                  </button>
+                  <div className="site-header__submenu">
+                    {item.items.map((subItem) => (
+                      <Link
+                        key={subItem.href}
+                        className="site-header__submenu-link"
+                        href={subItem.href as Route}
+                      >
+                        {subItem.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Link key={item.href} className="site-header__link" href={item.href as Route}>
+                  {item.label}
+                </Link>
+              )
             ))}
           </nav>
           <div className="site-header__actions">
+            <Link className="site-header__icon-link" href="/search" aria-label="Search products">
+              <SearchIcon />
+            </Link>
             <div className="site-header__account-links">
               {props.isAuthenticated ? (
                 <Link className="site-header__link" href="/account">
@@ -107,19 +142,43 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
             isMobileMenuOpen ? "site-header__mobile-menu--open" : ""
           }`}
         >
-          <p className="site-header__mobile-tagline">{props.tagline}</p>
           <nav aria-label="Mobile primary" className="site-header__mobile-nav">
             {props.primaryNav.map((item) => (
-              <Link
-                key={`mobile-${item.href}`}
-                className="site-header__mobile-link"
-                href={item.href as Route}
-                onClick={() => setIsMobileMenuOpen(false)}
-                tabIndex={isMobileMenuOpen ? undefined : -1}
-              >
-                {item.label}
-              </Link>
+              "items" in item ? (
+                <div key={`mobile-${item.label}`} className="site-header__mobile-group">
+                  <p className="site-header__mobile-group-label">{item.label}</p>
+                  {item.items.map((subItem) => (
+                    <Link
+                      key={`mobile-${subItem.href}`}
+                      className="site-header__mobile-link"
+                      href={subItem.href as Route}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      tabIndex={isMobileMenuOpen ? undefined : -1}
+                    >
+                      {subItem.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <Link
+                  key={`mobile-${item.href}`}
+                  className="site-header__mobile-link"
+                  href={item.href as Route}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  tabIndex={isMobileMenuOpen ? undefined : -1}
+                >
+                  {item.label}
+                </Link>
+              )
             ))}
+            <Link
+              className="site-header__mobile-link"
+              href="/search"
+              onClick={() => setIsMobileMenuOpen(false)}
+              tabIndex={isMobileMenuOpen ? undefined : -1}
+            >
+              Search
+            </Link>
             {props.isAuthenticated ? (
               <Link
                 className="site-header__mobile-link"
@@ -143,6 +202,15 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
         </div>
       </Container>
     </header>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+      <circle cx="10.8" cy="10.8" r="6.2" />
+      <path d="m15.4 15.4 4.2 4.2" />
+    </svg>
   );
 }
 

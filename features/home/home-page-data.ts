@@ -11,6 +11,7 @@ export const homepageSectionOrderKeys = [
   "designDirection",
   "guide",
   "newsletter",
+  "faq",
 ] as const;
 
 export const homepageSectionKeys = [...homepageSectionOrderKeys, "footer"] as const;
@@ -62,6 +63,10 @@ export const homepageSectionDefinitions: Record<
     label: "Newsletter",
     description: "Signup prompt with editable copy and call to action.",
   },
+  faq: {
+    label: "FAQ",
+    description: "Pre-purchase questions that reduce buyer hesitation before the footer.",
+  },
   footer: {
     label: "Footer",
     description: "Structured footer intro and navigation groups used site-wide.",
@@ -112,6 +117,13 @@ export type HomePageImageCard = {
   eyebrow?: string;
   priceLabel?: string;
   image: HomePageImage;
+};
+
+export type HomePageFaqItem = {
+  id: string;
+  question: string;
+  answer: string;
+  visible: boolean;
 };
 
 export type HomePageNarrativeSection = HomePageSectionSettings & {
@@ -174,6 +186,12 @@ export type HomePageContent = {
     inputPlaceholder: string;
     ctaLabel: string;
   };
+  faq: HomePageSectionSettings & {
+    eyebrow: string;
+    title: string;
+    paragraph: string;
+    items: HomePageFaqItem[];
+  };
   footer: HomePageSectionSettings & {
     introTitle: string;
     introBody: string;
@@ -223,8 +241,8 @@ const defaultHomePageContent: HomePageContent = {
       visible: true,
     },
     secondaryCta: {
-      label: "Browse All Pieces",
-      href: "/shop",
+      label: "View the Lookbook",
+      href: "/lookbook",
       visible: true,
     },
     image: {
@@ -379,8 +397,7 @@ const defaultHomePageContent: HomePageContent = {
     },
     eyebrow: "FEATURED DIRECTIONS",
     title: "Start with the three pieces at the centre of the collection.",
-    paragraph:
-      "Shop the three directions that define the launch: Moroccan rugs, rug-made poufs, and cactus silk pillows.",
+    paragraph: "The rugs, poufs, and pillows customers ask about most.",
     cards: [
       {
         id: "featured-rugs",
@@ -392,8 +409,8 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/rugs",
         visible: true,
         image: {
-          src: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-          alt: "A plush cream rug with black Beni Ourain style patterning in a calm neutral interior",
+          src: "https://images.pexels.com/photos/36202808/pexels-photo-36202808.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
+          alt: "Close crop of a colorful handwoven Moroccan rug showing its geometric pattern and wool texture",
           publicId: "",
           width: null,
           height: null,
@@ -409,8 +426,8 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/poufs",
         visible: true,
         image: {
-          src: "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
-          alt: "A brown leather pouf styled in a light, tactile interior with soft linen textures",
+          src: "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
+          alt: "A Moroccan leather pouf shown in full view with clean natural styling",
           publicId: "",
           width: null,
           height: null,
@@ -426,8 +443,8 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/pillows",
         visible: true,
         image: {
-          src: "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          alt: "Handmade Moroccan cushions in sunlight with woven textiles and soft neutral tones",
+          src: "https://images.pexels.com/photos/11537258/pexels-photo-11537258.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
+          alt: "Square crop of colorful Moroccan throw pillows and woven textiles in natural light",
           publicId: "",
           width: null,
           height: null,
@@ -468,15 +485,71 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Newsletter signup | Loom & Hearth Studio",
       metaDescription:
-        "Join the Loom & Hearth Studio list for new Moroccan rugs, vintage finds, lookbook updates, and early access to handcrafted releases.",
+        "Join for a free Moroccan rug sourcing guide, plus new arrivals, vintage finds, lookbook updates, and early access to handcrafted releases.",
     },
     eyebrow: "JOIN THE LIST",
     title: "New arrivals, sourcing stories, and first access to pieces before wider release.",
     paragraph:
-      "We publish twice a month. New pieces, what we found on the last sourcing trip, and guides on what to look for when buying a Moroccan rug. No filler.",
+      "Join for a free sourcing guide: 10 things to check before buying a Moroccan rug. You will also get new arrivals, sourcing stories, and first access to pieces before wider release. No filler.",
     inputLabel: "Email address",
     inputPlaceholder: "Your email address",
     ctaLabel: "JOIN",
+  },
+  faq: {
+    visible: true,
+    seo: {
+      seoTitle: "Moroccan rug buying questions | Loom & Hearth Studio",
+      metaDescription:
+        "Answers to common questions about exact-piece Moroccan rugs, room fit, shipping, duties, returns, and what is included in the price.",
+    },
+    eyebrow: "BEFORE YOU BUY",
+    title: "Questions buyers ask before choosing a one-of-one rug.",
+    paragraph:
+      "A rug is a considered purchase. These are the details we confirm before you commit.",
+    items: [
+      {
+        id: "faq-exact-rug",
+        question: "Is my rug really the exact one I will receive?",
+        answer:
+          "Yes. One-of-one rugs are listed as exact pieces, not representative samples. Before payment is captured, we confirm the actual rug with you through the inquiry and verification flow.",
+        visible: true,
+      },
+      {
+        id: "faq-space-fit",
+        question: "What if it does not work in my space?",
+        answer:
+          "Ask before committing. We can review room photos, dimensions, light, and nearby finishes to help judge scale and color. If it still is not right after delivery, eligible pieces have a 14-day return window.",
+        visible: true,
+      },
+      {
+        id: "faq-shipping",
+        question: "How long does shipping take?",
+        answer:
+          "Pieces ship from Morocco in 5 to 7 business days after final confirmation. Delivery is tracked through DHL for supported launch markets.",
+        visible: true,
+      },
+      {
+        id: "faq-price-included",
+        question: "What is included in the price?",
+        answer:
+          "The listed price includes the piece, pre-shipment verification, DHL tracked delivery, and duties to the United States, Canada, and Australia. Prices are shown in USD.",
+        visible: true,
+      },
+      {
+        id: "faq-color",
+        question: "How do I know the color is accurate?",
+        answer:
+          "We review color before payment is captured and can show the piece in natural, warm, and cool light so you are not relying on a single styled photograph.",
+        visible: true,
+      },
+      {
+        id: "faq-handmade-variation",
+        question: "Will a handmade rug have irregularities?",
+        answer:
+          "Yes, and that is part of the value when the structure is sound. Handmade and vintage pieces can show variation in edge line, pile height, tone, and age. Condition notes are reviewed against the exact piece.",
+        visible: true,
+      },
+    ],
   },
   footer: {
     visible: true,
@@ -490,7 +563,14 @@ const defaultHomePageContent: HomePageContent = {
     introMeta:
       "Free shipping to all three markets. Inquiries from other countries are reviewed case by case. Prices in USD. Destination and delivery conditions are confirmed before payment is captured.",
     exploreHeading: "Explore",
-    exploreLinks: siteConfig.primaryNav.map((item) => ({ ...item })),
+    exploreLinks: [
+      { href: "/shop", label: "Shop" },
+      { href: "/lookbook", label: "Lookbook" },
+      { href: "/about", label: "About" },
+      { href: "/sourcing", label: "Sourcing" },
+      { href: "/blog", label: "Journal" },
+      { href: "/trade", label: "Trade" },
+    ],
     supportHeading: "Support",
     supportLinks: siteConfig.supportNav.map((item) => ({ ...item })),
     collectionsHeading: "Collections",
@@ -603,17 +683,24 @@ export function sanitizeHomePageContent(input: unknown): HomePageContent {
       inputPlaceholder: readString(source.newsletter, "inputPlaceholder", defaults.newsletter.inputPlaceholder),
       ctaLabel: readString(source.newsletter, "ctaLabel", defaults.newsletter.ctaLabel),
     },
+    faq: {
+      ...readSectionSettings(source.faq, defaults.faq),
+      eyebrow: readString(source.faq, "eyebrow", defaults.faq.eyebrow),
+      title: readString(source.faq, "title", defaults.faq.title),
+      paragraph: readString(source.faq, "paragraph", defaults.faq.paragraph),
+      items: readFaqArray(source.faq, "items", defaults.faq.items),
+    },
     footer: {
       ...readSectionSettings(source.footer, defaults.footer),
       introTitle: readString(source.footer, "introTitle", defaults.footer.introTitle),
       introBody: readString(source.footer, "introBody", defaults.footer.introBody),
       introMeta: readString(source.footer, "introMeta", defaults.footer.introMeta),
       exploreHeading: readString(source.footer, "exploreHeading", defaults.footer.exploreHeading),
-      exploreLinks: readLinkArray(source.footer, "exploreLinks", defaults.footer.exploreLinks),
+      exploreLinks: dedupeLinks(readLinkArray(source.footer, "exploreLinks", defaults.footer.exploreLinks)),
       supportHeading: readString(source.footer, "supportHeading", defaults.footer.supportHeading),
-      supportLinks: readLinkArray(source.footer, "supportLinks", defaults.footer.supportLinks),
+      supportLinks: dedupeLinks(readLinkArray(source.footer, "supportLinks", defaults.footer.supportLinks)),
       collectionsHeading: readString(source.footer, "collectionsHeading", defaults.footer.collectionsHeading),
-      collectionLinks: readLinkArray(source.footer, "collectionLinks", defaults.footer.collectionLinks),
+      collectionLinks: dedupeLinks(readLinkArray(source.footer, "collectionLinks", defaults.footer.collectionLinks)),
     },
   };
 }
@@ -798,6 +885,42 @@ function readLinkArray(value: unknown, key: string, fallback: HomePageLink[]) {
       label: readString(link, "label", defaultLink.label),
       href: readString(link, "href", defaultLink.href),
     };
+  });
+}
+
+function readFaqArray(
+  value: unknown,
+  key: string,
+  fallback: HomePageFaqItem[],
+): HomePageFaqItem[] {
+  const source = asRecord(value)[key];
+  const items = Array.isArray(source) ? source : [];
+
+  return fallback.map((defaultItem, index) => {
+    const item = asRecord(items[index]);
+
+    return {
+      id: readString(item, "id", defaultItem.id),
+      question: readString(item, "question", defaultItem.question),
+      answer: readString(item, "answer", defaultItem.answer),
+      visible: readBoolean(item, "visible", defaultItem.visible),
+    };
+  });
+}
+
+function dedupeLinks(links: HomePageLink[]) {
+  const seen = new Set<string>();
+
+  return links.filter((link) => {
+    const key = `${link.href.trim().toLowerCase()}|${link.label.trim().toLowerCase()}`;
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+
+    return true;
   });
 }
 

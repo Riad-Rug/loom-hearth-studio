@@ -8,12 +8,16 @@ export type SeoFields = {
 export type CloudinaryAssetRole =
   | "hero"
   | "gallery"
+  | "styled"
   | "thumbnail"
   | "featured"
   | "og"
   | "lookbook"
   | "detail"
-  | "back";
+  | "edge"
+  | "back"
+  | "scale"
+  | "motif";
 
 export type MediaAsset = {
   id: string;
