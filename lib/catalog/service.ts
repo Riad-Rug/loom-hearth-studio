@@ -2,6 +2,7 @@ import {
   formatProductPriceUsd,
   formatRugDimensions,
   formatRugWeight,
+  getCategoryLabel,
   getInventoryMessage,
   getInventoryState,
   getProductBadgeLabel,
@@ -224,6 +225,7 @@ function createProductDetailPageViewModel(
       rugStyle: product.rugStyle,
       quantityLabel: "1",
       dimensionsLabel: formatRugDimensions(product),
+      placementNote: createRugPlacementNote(product),
       weightLabel: formatRugWeight(product),
       cartProduct: product,
     };
@@ -277,12 +279,16 @@ function createProductSpecifications(product: Product): ProductSpecificationView
 }
 
 function createProductSupportPanels(product: Product): ProductSupportPanelViewModel[] {
+  const region = product.attributionRegion?.trim() || product.origin;
+  const confidence = product.attributionConfidence?.trim() || "confirmed in person";
+  const tradition =
+    product.type === "rug"
+      ? createRugTraditionLabel(product)
+      : `${getCategoryLabel(product.category)} sourced in Morocco`;
   const provenanceItems = [
-    ...(product.attributionRegion?.trim() ? [`Region: ${product.attributionRegion.trim()}`] : []),
-    ...(product.attributionConfidence?.trim()
-      ? [`Attribution: ${product.attributionConfidence.trim()}`]
-      : []),
-    `Origin noted as ${product.origin}.`,
+    `Region: ${region} (${confidence})`,
+    `Tradition: ${tradition}`,
+    "Sourcing: Direct from weaver or partner cooperative",
   ];
 
   const verificationItems =
@@ -434,19 +440,34 @@ function getDisplayProductName(name: string) {
 
 function createProductDescriptionLead(product: Product) {
   if (product.type === "rug") {
-    const construction = getRugConstructionLabel(product, product.name)
-      .replace(/\s+Rug$/u, "")
-      .toLowerCase();
-    const motifText = /pile\s+motifs?/iu.test(`${product.name} ${product.description}`)
-      ? " with 40+ hand-knotted pile motifs"
-      : getRugFeatureLabel(product.name).toLowerCase();
-
-    return normalizeDimensionSeparators(
-      `A one-of-one ${construction}${motifText ? ` ${motifText.replace(/^with\s+/u, "with ")}` : ""}.`,
-    ).replace(/\s+/gu, " ");
+    return createRugHeroDescription(product);
   }
 
   return getFirstSentence(product.description) || `${getDisplayProductName(product.name)} from Morocco.`;
+}
+
+function createRugHeroDescription(product: Extract<Product, { type: "rug" }>) {
+  const titleAndDescription = `${product.name} ${product.description}`;
+  const construction = getRugConstructionLabel(product, product.name)
+    .replace(/\s+Rug$/u, "")
+    .toLowerCase();
+  const color = removeConstructionFromColor(getPrimaryColorFromTitle(product.name)).toLowerCase();
+  const ground = color ? `${color} ground` : "wool ground";
+
+  if (/pile\s+motifs?/iu.test(titleAndDescription)) {
+    return normalizeDimensionSeparators(
+      `A one-of-one Moroccan ${construction} with 40+ individually hand-knotted pile motifs raised above the surface, each motif sitting as a small three-dimensional object on a warm ${ground}. The field reads quiet from across the room and detailed up close.`,
+    ).replace(/\s+/gu, " ");
+  }
+
+  const firstSentence = getFirstSentence(product.description);
+  const material = product.materials.join(", ").toLowerCase();
+  const feature = getRugFeatureLabel(product.name).toLowerCase().replace(/^with\s+/u, "");
+  const featureText = feature ? ` with ${feature}` : "";
+
+  return normalizeDimensionSeparators(
+    `${firstSentence || `A one-of-one Moroccan ${construction}${featureText} in ${material}.`} Selected for texture, scale, and exact-piece character, with final color confirmed by video before payment is captured.`,
+  ).replace(/\s+/gu, " ");
 }
 
 function createProductDescriptionSections(product: Product): ProductDetailSectionViewModel[] {
@@ -454,7 +475,7 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
     return [
       {
         title: "Materials",
-        body: `${product.materials.join(", ")} from ${product.origin}. ${getFirstSentence(product.description)}`,
+        body: `${product.materials.join(", ")} from ${product.origin}.`,
       },
       {
         title: "Construction",
@@ -462,13 +483,15 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
       },
       {
         title: "Condition",
-        body:
-          normalizeDimensionSeparators(product.conditionNote?.trim() || "") ||
-          "One-of-one handmade rugs can show natural variation in pile height, edge line, and color. Any condition notes are reviewed against the exact piece before payment is captured.",
+        body: createConditionDescription(product),
       },
       {
         title: "Provenance",
         body: createProvenanceDescription(product),
+      },
+      {
+        title: "Care",
+        body: createCareDescription(product),
       },
       {
         title: "What to expect",
@@ -489,13 +512,15 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
     },
     {
       title: "Condition",
-      body:
-        normalizeDimensionSeparators(product.conditionNote?.trim() || "") ||
-        "Handmade pieces can show natural variation in color, texture, and finish.",
+      body: createConditionDescription(product),
     },
     {
       title: "Provenance",
       body: createProvenanceDescription(product),
+    },
+    {
+      title: "Care",
+      body: createCareDescription(product),
     },
     {
       title: "What to expect",
@@ -518,15 +543,68 @@ function createRugConstructionDescription(product: Extract<Product, { type: "rug
 
 function createProvenanceDescription(product: Product) {
   const provenance = normalizeDimensionSeparators(product.provenanceNote?.trim() || "");
-  const region = product.attributionRegion?.trim();
-  const confidence = product.attributionConfidence?.trim();
+  const region = product.attributionRegion?.trim() || product.origin;
+  const confidence = product.attributionConfidence?.trim() || "confirmed in person";
+  const tradition =
+    product.type === "rug"
+      ? createRugTraditionLabel(product)
+      : `${getCategoryLabel(product.category)} sourced in Morocco`;
   const parts = [
-    provenance || `Sourced across Morocco and listed with origin noted as ${product.origin}.`,
-    region ? `Region: ${region}.` : "",
-    confidence ? `Attribution: ${confidence}.` : "",
+    provenance,
+    `Region: ${region} (${confidence})`,
+    `Tradition: ${tradition}`,
+    "Sourcing: Direct from weaver or partner cooperative",
   ].filter(Boolean);
 
-  return parts.join(" ");
+  return parts.join("\n");
+}
+
+function createConditionDescription(product: Product) {
+  const conditionNote = normalizeDimensionSeparators(product.conditionNote?.trim() || "");
+  const general =
+    product.type === "rug"
+      ? "One-of-one handmade rugs can show natural variation in pile height, edge line, and color."
+      : "Handmade pieces can show natural variation in color, texture, and finish.";
+  const thisPiece = conditionNote || "No additional condition issue is listed for this piece.";
+
+  return [`General: ${general}`, `This piece: ${thisPiece}`, "Final condition is confirmed in the exact-piece video before payment."].join(
+    "\n",
+  );
+}
+
+function createCareDescription(product: Product) {
+  const careNote = normalizeDimensionSeparators(product.careNote?.trim() || "");
+
+  if (careNote) {
+    return careNote;
+  }
+
+  if (product.type === "rug") {
+    return "Vacuum without a beater bar. Rotate every 6 months. Spot clean with cold water and mild wool soap. Professional wool cleaning recommended for set-in stains. Avoid prolonged direct sunlight.";
+  }
+
+  return "Dust or vacuum gently. Spot clean with cold water and mild soap. Avoid harsh chemical cleaners and prolonged direct sunlight.";
+}
+
+function createRugPlacementNote(product: Extract<Product, { type: "rug" }>) {
+  const longestSideCm = Math.max(product.dimensionsCm.length, product.dimensionsCm.width);
+
+  if (longestSideCm <= 180) {
+    return "Size reads as an accent rug - works entryway, bedside, under a console, or layered over a larger flatweave.";
+  }
+
+  if (longestSideCm <= 240) {
+    return "Size works well in a compact sitting area, beside a bed, in an entry, or layered where a full-room rug would feel heavy.";
+  }
+
+  return "Size can anchor a seating area, bedroom, or dining zone; confirm exact placement against your room measurements before payment is captured.";
+}
+
+function createRugTraditionLabel(product: Extract<Product, { type: "rug" }>) {
+  const construction = getRugConstructionLabel(product, product.name).replace(/\s+Rug$/u, "");
+  const feature = getRugFeatureLabel(product.name).replace(/^with\s+/iu, "");
+
+  return feature ? `${construction} with ${feature}` : construction;
 }
 
 function getFirstSentence(value: string) {
@@ -703,12 +781,21 @@ function limitProductTitle(title: string) {
 
   const truncated = normalizedTitle.slice(0, productTitleMaxLength + 1);
   const lastSpaceIndex = truncated.lastIndexOf(" ");
+  const candidate =
+    lastSpaceIndex > 36 ? truncated.slice(0, lastSpaceIndex) : normalizedTitle.slice(0, productTitleMaxLength);
 
-  return (
-    lastSpaceIndex > 36
-      ? truncated.slice(0, lastSpaceIndex)
-      : normalizedTitle.slice(0, productTitleMaxLength)
-  ).trim();
+  return removeDanglingTitleEnding(candidate);
+}
+
+function removeDanglingTitleEnding(title: string) {
+  const danglingWords = new Set(["and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"]);
+  const words = title.trim().split(/\s+/u);
+
+  while (words.length > 1 && danglingWords.has(words[words.length - 1].toLowerCase())) {
+    words.pop();
+  }
+
+  return words.join(" ");
 }
 
 function getPrimaryColorFromTitle(title: string) {

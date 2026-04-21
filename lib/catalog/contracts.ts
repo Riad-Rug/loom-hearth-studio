@@ -94,6 +94,7 @@ export type RugProductDetailPageViewModel = ProductDetailPageViewModelBase & {
   rugStyle: RugProduct["rugStyle"];
   quantityLabel: "1";
   dimensionsLabel: string;
+  placementNote: string;
   weightLabel: string;
   cartProduct: RugProduct;
 };

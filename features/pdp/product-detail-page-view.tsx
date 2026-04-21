@@ -194,23 +194,28 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 
           <div className={styles.infoColumn}>
             <ProductBreadcrumb product={product} />
-            <p className={styles.eyebrow}>{getCategoryLabel(product.category)}</p>
+            <Link className={`${styles.eyebrow} ${styles.categoryLink}`} href={getProductCategoryHref(product)}>
+              {getCategoryLabel(product.category)}
+            </Link>
             <div className={styles.titleBlock}>
               <h1>{product.name}</h1>
               <p className={styles.valueLine}>{product.subtitle}</p>
             </div>
-            <p className={styles.price}>{product.priceUsdLabel}</p>
+            <p className={styles.price}>
+              {product.priceUsdLabel} <span>USD</span>
+            </p>
             <DecisionTrustStrip />
             {product.type === "rug" ? (
               <p className={styles.scarcityLine}>One-of-one. When sold, this exact rug does not return.</p>
             ) : null}
             <p className={styles.summary}>{product.description}</p>
+            {product.type === "rug" ? <p className={styles.placementNote}>{product.placementNote}</p> : null}
             <div className={styles.descriptionAccordion}>
               {product.descriptionSections.map((section, index) => (
                 <PdpAccordionPanel
                   key={section.title}
                   body={section.body}
-                  defaultOpen={index === 0}
+                  defaultOpen={index <= 1}
                   title={section.title}
                   variant="description"
                 />
@@ -224,6 +229,12 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             )}
 
             <ShippingReturnsAccordion />
+            <CustomerProofQuote />
+            {product.type === "rug" ? (
+              <Link className={styles.secondaryAction} href="/trade">
+                Trade and project inquiries
+              </Link>
+            ) : null}
 
             <div className={styles.metaGrid}>
               {product.specifications.map((spec) => (
@@ -383,23 +394,6 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         </Section>
       ) : null}
 
-      <Section width="wide">
-        <div className={styles.detailSection}>
-          <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>Details</p>
-            <h2>Materials, Construction, and Condition Notes.</h2>
-          </div>
-          <div className={styles.detailsGrid}>
-            {product.detailSections.map((section) => (
-              <article key={section.title} className={styles.detailCard}>
-                <h3 className={styles.detailCardHeading}>{section.title}</h3>
-                <p>{section.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </Section>
-
       <Section tone="muted" width="wide">
         <div className={styles.relatedSection}>
           <div className={styles.sectionIntro}>
@@ -438,7 +432,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 }
 
 function ProductBreadcrumb({ product }: { product: ProductDetailPageViewModel }) {
-  const categoryPath = product.type === "rug" ? "/shop/rugs" : `/shop/${product.category}`;
+  const categoryPath = getProductCategoryHref(product);
   const items: Array<{ label: string; href?: Route }> = [
     { label: "Home", href: "/" },
     { label: "Shop", href: "/shop" },
@@ -457,6 +451,10 @@ function ProductBreadcrumb({ product }: { product: ProductDetailPageViewModel })
       </ol>
     </nav>
   );
+}
+
+function getProductCategoryHref(product: ProductDetailPageViewModel): Route {
+  return (product.type === "rug" ? "/shop/rugs" : `/shop/${product.category}`) as Route;
 }
 
 function ShippingReturnsAccordion() {
@@ -485,6 +483,17 @@ function DecisionTrustStrip() {
         <li key={item}>{item}</li>
       ))}
     </ul>
+  );
+}
+
+function CustomerProofQuote() {
+  return (
+    <figure className={styles.customerProof}>
+      <blockquote>
+        You now have friends in Zurich. Thank you again for everything - we really appreciated it.
+      </blockquote>
+      <figcaption>Priyanka, Zurich</figcaption>
+    </figure>
   );
 }
 
@@ -518,9 +527,41 @@ function PdpAccordionPanel({
         </button>
       </h3>
       <div id={panelId} hidden={!isOpen}>
-        {typeof body === "string" ? <p>{body}</p> : body}
+        {typeof body === "string" ? renderAccordionBody(title, body) : body}
       </div>
     </section>
+  );
+}
+
+function renderAccordionBody(title: string, body: string) {
+  if (title !== "Provenance" && title !== "Condition") {
+    return <p>{body}</p>;
+  }
+
+  const rows = body
+    .split(/\n+/u)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [label, ...valueParts] = line.split(":");
+
+      return {
+        label: valueParts.length ? label.trim() : "",
+        value: valueParts.length ? valueParts.join(":").trim() : line,
+      };
+    });
+
+  return (
+    <dl className={styles.provenanceList}>
+      {rows.map((row) => (
+        <div key={`${row.label}-${row.value}`}>
+          {row.label ? (
+            <dt>{row.label === "Sourcing" ? <Link href="/sourcing">Sourcing</Link> : row.label}</dt>
+          ) : null}
+          <dd>{row.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -538,9 +579,6 @@ function RugPurchaseShell({
         This is a one-of-one piece. Reserve holds it for you - we film the exact rug, you approve the
         video, and only then is payment captured. 24-hour reply.
       </p>
-      <Link className={styles.secondaryAction} href="/trade">
-        Trade and project inquiries
-      </Link>
     </div>
   );
 }

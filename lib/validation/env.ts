@@ -9,6 +9,21 @@ export const envDefinitions = {
     required: false,
     description: "GA4 measurement ID for consent-aware storefront analytics.",
   },
+  NEXT_PUBLIC_GOOGLE_ADS_ID: {
+    scope: "public",
+    required: false,
+    description: "Google Ads conversion ID such as AW-123456789 for consent-aware marketing tags.",
+  },
+  NEXT_PUBLIC_META_PIXEL_ID: {
+    scope: "public",
+    required: false,
+    description: "Meta Pixel ID for consent-aware marketing tags.",
+  },
+  NEXT_PUBLIC_PINTEREST_TAG_ID: {
+    scope: "public",
+    required: false,
+    description: "Pinterest tag ID for consent-aware marketing tags.",
+  },
   DATABASE_URL: {
     scope: "server",
     required: false,
@@ -84,7 +99,13 @@ export const envDefinitions = {
 export type EnvKey = keyof typeof envDefinitions;
 
 export const envGroups = {
-  site: ["NEXT_PUBLIC_SITE_URL", "NEXT_PUBLIC_GA_MEASUREMENT_ID"],
+  site: [
+    "NEXT_PUBLIC_SITE_URL",
+    "NEXT_PUBLIC_GA_MEASUREMENT_ID",
+    "NEXT_PUBLIC_GOOGLE_ADS_ID",
+    "NEXT_PUBLIC_META_PIXEL_ID",
+    "NEXT_PUBLIC_PINTEREST_TAG_ID",
+  ],
   database: ["DATABASE_URL"],
   auth: ["AUTH_SECRET"],
   stripe: [

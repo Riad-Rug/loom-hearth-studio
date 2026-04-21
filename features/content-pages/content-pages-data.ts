@@ -703,7 +703,7 @@ We collect only what is necessary to operate this store and communicate with you
 | Session token | Keeping you logged in during your visit | Legitimate interest (security) |
 | Hashed login identifier (a one-way SHA-256 hash derived from your email address, IP address, and the login surface  the raw IP and raw email are never stored in this record) | Preventing automated login abuse and brute-force attacks | Legitimate interest (security) |
 
-We do not run third-party analytics, advertising pixels, session recording tools, or behavioral tracking on this site. No Google Analytics, Meta Pixel, Pinterest tag, PostHog, or equivalent service is currently installed.
+We may run consent-based analytics and advertising tags, including Google Analytics, Google Ads, Meta Pixel, and Pinterest tag. These optional tags stay off unless you accept optional tracking. We do not use session recording tools unless this policy is updated first.
 
 ---
 
@@ -720,7 +720,7 @@ We do not run third-party analytics, advertising pixels, session recording tools
 
 Your shopping cart and temporary checkout state are saved in your browser's local storage, not in cookies. This data remains on your device unless and until you proceed with an order after direct confirmation with us.
 
-We do not set any advertising, analytics, or third-party tracking cookies. If this changes, this policy will be updated before any new cookie is activated.
+Analytics and marketing cookies stay off unless you accept optional tracking in the cookie banner. If accepted, Google Analytics, Google Ads, Meta Pixel, and Pinterest tag may set third-party cookies or similar identifiers for measurement, attribution, and advertising audience functions.
 
 ---
 

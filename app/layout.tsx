@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { MarketingPixels } from "@/components/analytics/marketing-pixels";
 import { CookieConsentBanner } from "@/components/compliance/cookie-consent-banner";
 import { CookieConsentProvider } from "@/components/compliance/cookie-consent-provider";
 import { AppShell } from "@/components/layout/app-shell";
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <CartProvider>
           <CookieConsentProvider>
             <GoogleAnalytics />
+            <MarketingPixels />
             <AppShell
               header={<SiteHeader />}
               footer={<SiteFooter />}

@@ -72,6 +72,44 @@
   color: var(--color-text-body);
 }
 
+.provenanceList {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+}
+
+.provenanceList div {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.provenanceList dt {
+  color: var(--color-olive-thread);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.provenanceList dd {
+  margin: 0;
+  color: var(--color-text-body);
+  line-height: 1.65;
+}
+
+.provenanceList a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.provenanceList a:hover,
+.provenanceList a:focus-visible {
+  color: var(--color-charcoal-ink);
+}
+
 .primaryMediaButton {
   display: block;
   width: 100%;
@@ -238,6 +276,18 @@
   text-transform: uppercase;
 }
 
+.categoryLink {
+  width: fit-content;
+  text-decoration: none;
+  text-underline-offset: 0.18em;
+}
+
+.categoryLink:hover,
+.categoryLink:focus-visible {
+  color: var(--color-charcoal-ink);
+  text-decoration: underline;
+}
+
 .infoColumn h1,
 .detailCardHeading,
 .sectionIntro h2,
@@ -276,6 +326,13 @@
   font-size: clamp(1.3rem, 2vw, 1.85rem);
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+.price span {
+  color: var(--color-olive-thread);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 .decisionTrustStrip {
@@ -327,6 +384,13 @@
   font-size: 1.08rem;
   font-weight: 600;
   line-height: 1.55;
+}
+
+.placementNote {
+  margin: -0.25rem 0 0;
+  color: var(--color-text-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 .descriptionAccordion {
@@ -408,6 +472,32 @@
 
 .shippingPanel li::marker {
   color: var(--color-clay-terracotta);
+}
+
+.customerProof {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 1.05rem 1.15rem;
+  border: 1px solid rgba(122, 122, 82, 0.22);
+  border-radius: var(--radius-md);
+  background: rgba(217, 201, 168, 0.24);
+}
+
+.customerProof blockquote {
+  margin: 0;
+  color: var(--color-charcoal-ink);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.18rem;
+  line-height: 1.35;
+}
+
+.customerProof figcaption {
+  color: var(--color-olive-thread);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .metaGrid {
