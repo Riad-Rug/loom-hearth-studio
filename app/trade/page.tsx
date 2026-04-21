@@ -15,29 +15,12 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-const tradeSections = [
-  {
-    eyebrow: "Trade support",
-    title: "A clear starting point for designers, specifiers, and project sourcing.",
-    body:
-      "The trade route now acts as the framework for project-based buying. It is designed for studios that need direct communication, client-review support, and a clean path into sourcing questions before the final catalog is loaded.",
-    items: [
-      "Project and sourcing inquiries routed through a dedicated trade intake",
-      "Support for image requests, project timing, and piece review questions",
-      "A stable starting point for future hold policies, tear sheets, and project workflows",
-    ],
-  },
-  {
-    eyebrow: "How to use it",
-    title: "Use the trade inquiry flow for client-facing requests now.",
-    body:
-      "If you are sourcing for a client, start here instead of the general contact path. Include the project location, desired size, target timing, and whether you need high-resolution imagery or a short hold discussion.",
-    items: [
-      "Request project support before presenting a one-of-one piece",
-      "Ask for imagery and review materials for client decks",
-      "Use the same route for sourcing-led questions and custom requests",
-    ],
-  },
+const tradeIncludes = [
+  "Professional discount on all inventory",
+  "Complimentary piece holds during client review",
+  "High-resolution imagery for tear sheets and client decks",
+  "Direct line to the studio - not the general inquiry queue",
+  "Priority access to vintage pieces before public listing",
 ] as const;
 
 const tradeWorkflow = [
@@ -65,46 +48,39 @@ export default function TradePage() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
-        <p className={styles.eyebrow}>Trade</p>
-        <h1>For designers, decorators, and project-based sourcing.</h1>
+        <p className={styles.eyebrow}>Trade program / professional discount / dedicated contact</p>
+        <h1>Trade pricing and project support for interior designers.</h1>
         <div className={styles.heroBody}>
           <p className={styles.lede}>
-            Loom & Hearth Studio now has a dedicated trade entry point for project inquiries. The
-            workflow is intentionally lightweight for now, but it already supports trade-specific
-            questions, image requests, and project context before payment or product approval.
+            Trade discount on all rugs, poufs, and pillows.
+            <br />
+            Complimentary piece holds during client review.
+            <br />
+            Direct contact with the studio - no retail queue.
           </p>
         </div>
         <div className={styles.contactActions}>
           <Link className={styles.primaryAction} href="/contact?inquiryType=trade-request">
             Start a trade inquiry
           </Link>
-          <Link
-            className={styles.secondaryAction}
-            href="/contact?inquiryType=trade-request&requestHold=yes&requestImages=yes"
-          >
-            Request project support
-          </Link>
-          <Link className={styles.secondaryAction} href="/shop/rugs">
-            Browse rugs
+        </div>
+        <div>
+          <Link className={styles.textAction} href="/shop">
+            Browse the collection
           </Link>
         </div>
       </section>
 
-      <section className={styles.twoColumn}>
-        {tradeSections.map((section) => (
-          <article key={section.title} className={styles.card}>
-            <p className={styles.eyebrow}>{section.eyebrow}</p>
-            <h2>{section.title}</h2>
-            <div className={styles.cardBody}>
-              <p>{section.body}</p>
-              <ul>
-                {section.items.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          </article>
-        ))}
+      <section className={styles.card}>
+        <p className={styles.eyebrow}>What trade includes</p>
+        <h2>Built for client-facing sourcing, not retail browsing.</h2>
+        <div className={styles.cardBody}>
+          <ul>
+            {tradeIncludes.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <section className={styles.sectionHeader}>
