@@ -10,7 +10,7 @@ export function organizationSchema() {
     url: absoluteUrl("/"),
     logo: {
       "@type": "ImageObject",
-      url: absoluteUrl("/brand/loom-hearth-logo.svg"),
+      url: absoluteUrl("/brand/logo.png"),
     },
     sameAs: [
       "https://www.instagram.com/loomandhearthstudio/",

@@ -43,6 +43,8 @@ export async function saveHomepageContent(content: HomePageContent) {
 function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   const next = structuredClone(content);
 
+  next.brand.logoImageUrl = "/brand/logo.png";
+  next.brand.logoImageAlt = "Loom & Hearth Studio logo";
   next.brand.tagline = "Handcrafted Moroccan rugs and home decor";
 
   next.pageSeo.title = "Loom & Hearth Studio  Handcrafted Moroccan Rugs";

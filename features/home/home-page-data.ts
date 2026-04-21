@@ -213,7 +213,7 @@ const allowedImageHosts = new Set([
 const defaultHomePageContent: HomePageContent = {
   brand: {
     logoText: siteConfig.name,
-    logoImageUrl: "",
+    logoImageUrl: "/brand/logo.png",
     logoImageAlt: `${siteConfig.name} logo`,
     tagline: siteConfig.tagline,
   },
