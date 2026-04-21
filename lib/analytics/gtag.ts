@@ -1,5 +1,3 @@
-export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || "";
-
 export type AnalyticsItem = {
   item_id: string;
   item_name: string;
@@ -13,22 +11,29 @@ declare global {
   interface Window {
     dataLayer: unknown[];
     gtag?: (...args: unknown[]) => void;
+    loomHearthGaMeasurementId?: string;
   }
 }
 
 function canTrack() {
-  return typeof window !== "undefined" && typeof window.gtag === "function" && Boolean(GA_MEASUREMENT_ID);
+  return typeof window !== "undefined" && typeof window.gtag === "function";
 }
 
-export function trackPageView(input: { path: string; title?: string | null }) {
+function getMeasurementId(input?: string) {
+  return input?.trim() || window.loomHearthGaMeasurementId?.trim() || "";
+}
+
+export function trackPageView(input: { measurementId?: string; path: string; title?: string | null }) {
   if (!canTrack()) {
     return;
   }
 
+  const measurementId = getMeasurementId(input.measurementId);
+
   window.gtag!("event", "page_view", {
     page_path: input.path,
     page_title: input.title || undefined,
-    send_to: GA_MEASUREMENT_ID,
+    send_to: measurementId || undefined,
   });
 }
 

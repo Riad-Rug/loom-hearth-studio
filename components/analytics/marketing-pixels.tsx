@@ -3,19 +3,28 @@
 import Script from "next/script";
 
 import { ConsentGate } from "@/components/compliance/cookie-consent-provider";
-import { GOOGLE_ADS_ID, META_PIXEL_ID, PINTEREST_TAG_ID } from "@/lib/analytics/pixels";
 
-export function MarketingPixels() {
-  if (!GOOGLE_ADS_ID && !META_PIXEL_ID && !PINTEREST_TAG_ID) {
+type MarketingPixelsProps = {
+  googleAdsId: string;
+  metaPixelId: string;
+  pinterestTagId: string;
+};
+
+export function MarketingPixels({
+  googleAdsId,
+  metaPixelId,
+  pinterestTagId,
+}: MarketingPixelsProps) {
+  if (!googleAdsId && !metaPixelId && !pinterestTagId) {
     return null;
   }
 
   return (
     <ConsentGate category="marketing">
       <>
-        {GOOGLE_ADS_ID ? <GoogleAdsTag conversionId={GOOGLE_ADS_ID} /> : null}
-        {META_PIXEL_ID ? <MetaPixel pixelId={META_PIXEL_ID} /> : null}
-        {PINTEREST_TAG_ID ? <PinterestTag tagId={PINTEREST_TAG_ID} /> : null}
+        {googleAdsId ? <GoogleAdsTag conversionId={googleAdsId} /> : null}
+        {metaPixelId ? <MetaPixel pixelId={metaPixelId} /> : null}
+        {pinterestTagId ? <PinterestTag tagId={pinterestTagId} /> : null}
       </>
     </ConsentGate>
   );

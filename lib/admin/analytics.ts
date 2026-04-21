@@ -1,5 +1,4 @@
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
-import { GA_MEASUREMENT_ID } from "@/lib/analytics/gtag";
 import type { Order } from "@/types/domain";
 
 export type AdminAnalyticsMetric = {
@@ -86,7 +85,9 @@ export async function getAdminAnalyticsPageData(): Promise<AdminAnalyticsPageDat
       status: `${capitalize(order.status)} / ${capitalize(order.paymentStatus)}`,
     })),
     setupPills: [
-      GA_MEASUREMENT_ID ? `GA4 configured: ${GA_MEASUREMENT_ID}` : "GA4 measurement ID missing",
+      process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim()
+        ? `GA4 configured: ${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID.trim()}`
+        : "GA4 measurement ID missing",
       "Search Console setup remains external to admin",
       "Consent-aware analytics loading is active",
     ],

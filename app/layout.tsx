@@ -15,6 +15,13 @@ import { organizationSchema, websiteSchema } from "@/lib/seo/schema";
 
 import "./globals.css";
 
+const marketingPixelIds = {
+  googleAdsId: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID?.trim() || "",
+  metaPixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim() || "",
+  pinterestTagId: process.env.NEXT_PUBLIC_PINTEREST_TAG_ID?.trim() || "",
+};
+const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || "";
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
   title: {
@@ -61,8 +68,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <JsonLd data={websiteSchema()} />
         <CartProvider>
           <CookieConsentProvider>
-            <GoogleAnalytics />
-            <MarketingPixels />
+            <GoogleAnalytics measurementId={gaMeasurementId} />
+            <MarketingPixels {...marketingPixelIds} />
             <AppShell
               header={<SiteHeader />}
               footer={<SiteFooter />}

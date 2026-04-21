@@ -5,39 +5,44 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 import { ConsentGate } from "@/components/compliance/cookie-consent-provider";
-import { GA_MEASUREMENT_ID, trackPageView } from "@/lib/analytics/gtag";
+import { trackPageView } from "@/lib/analytics/gtag";
 
-export function GoogleAnalytics() {
-  if (!GA_MEASUREMENT_ID) {
+type GoogleAnalyticsProps = {
+  measurementId: string;
+};
+
+export function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
+  if (!measurementId) {
     return null;
   }
 
   return (
     <ConsentGate category="analytics">
       <>
-        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`} strategy="afterInteractive" />
         <Script id="loom-hearth-ga4" strategy="afterInteractive">
           {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 window.gtag = gtag;
+window.loomHearthGaMeasurementId = '${measurementId}';
 gtag('js', new Date());
-gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });`}
+gtag('config', '${measurementId}', { send_page_view: false });`}
         </Script>
-        <PageViewTracker />
+        <PageViewTracker measurementId={measurementId} />
       </>
     </ConsentGate>
   );
 }
 
-function PageViewTracker() {
+function PageViewTracker({ measurementId }: GoogleAnalyticsProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const query = searchParams?.toString();
     const path = query ? `${pathname}?${query}` : pathname;
-    trackPageView({ path, title: document.title });
-  }, [pathname, searchParams]);
+    trackPageView({ measurementId, path, title: document.title });
+  }, [measurementId, pathname, searchParams]);
 
   return null;
 }
