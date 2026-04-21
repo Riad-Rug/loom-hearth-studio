@@ -190,35 +190,6 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                 </button>
               ))}
             </div>
-            {product.gallery.length > 1 ? (
-              <div className={styles.galleryStack} aria-label={`${product.name} image story`}>
-                {product.gallery.map((item, index) => (
-                  <button
-                    key={`${item.id}-story`}
-                    className={`${styles.galleryStackCard} ${
-                      activeImageIndex === index ? styles.galleryStackCardActive : ""
-                    }`}
-                    type="button"
-                    aria-pressed={activeImageIndex === index}
-                    aria-label={`Open ${item.label}`}
-                    onClick={() => {
-                      selectImage(index);
-                      setIsLightboxOpen(true);
-                    }}
-                  >
-                    <GalleryImage
-                      className={styles.galleryStackImage}
-                      alt={item.altText || `${product.name} ${item.label}`}
-                      fallbackClassName={styles.galleryStackFallback}
-                      fallbackLabel={item.label}
-                      item={item}
-                      src={item.src}
-                    />
-                    <span className={styles.galleryStackLabel}>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
           </div>
 
           <div className={styles.infoColumn}>
@@ -239,51 +210,106 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             ) : null}
             <p className={styles.summary}>{product.description}</p>
             {product.type === "rug" ? <p className={styles.placementNote}>{product.placementNote}</p> : null}
-            <div className={styles.descriptionAccordion}>
-              {product.descriptionSections.map((section, index) => (
-                <PdpAccordionPanel
-                  key={section.title}
-                  body={section.body}
-                  defaultOpen={index <= 1}
-                  title={section.title}
-                  variant="description"
-                />
-              ))}
-            </div>
 
             {product.type === "rug" ? (
               <RugPurchaseShell product={product} />
             ) : (
               <MultiUnitPurchaseShell product={product} />
             )}
+          </div>
+        </div>
 
-            <ShippingReturnsAccordion />
-            <CustomerProofQuote />
-            {product.type === "rug" ? (
-              <Link className={styles.secondaryAction} href="/trade">
-                Trade and project inquiries
-              </Link>
-            ) : null}
-
-            <div className={styles.metaGrid}>
-              {product.specifications.map((spec) => (
-                <div key={spec.label} className={styles.metaItem}>
-                  <span className={styles.metaLabel}>{spec.label}</span>
-                  <p className={styles.metaValue}>{spec.value}</p>
-                </div>
-              ))}
+        {product.gallery.length > 1 ? (
+          <div className={styles.galleryStoryPanel}>
+            <div className={styles.productDetailsIntro}>
+              <p className={styles.eyebrow}>Exact-piece gallery</p>
+              <h2>More ways to read the rug before you reserve.</h2>
             </div>
+            <div className={styles.galleryStack} aria-label={`${product.name} image story`}>
+              {product.gallery.slice(1).map((item, offset) => {
+                const imageIndex = offset + 1;
 
-            <div className={styles.shareBlock}>
-              <span className={styles.metaLabel}>Share</span>
-              <div className={styles.shareList}>
-                {product.sharePlatforms.map((item) => (
-                  <button key={item} className={styles.shareButton} type="button">
-                    {item}
+                return (
+                  <button
+                    key={`${item.id}-story`}
+                    className={`${styles.galleryStackCard} ${
+                      activeImageIndex === imageIndex ? styles.galleryStackCardActive : ""
+                    }`}
+                    type="button"
+                    aria-pressed={activeImageIndex === imageIndex}
+                    aria-label={`Open ${item.label}`}
+                    onClick={() => {
+                      selectImage(imageIndex);
+                      setIsLightboxOpen(true);
+                    }}
+                  >
+                    <GalleryImage
+                      className={styles.galleryStackImage}
+                      alt={item.altText || `${product.name} ${item.label}`}
+                      fallbackClassName={styles.galleryStackFallback}
+                      fallbackLabel={item.label}
+                      item={item}
+                      src={item.src}
+                    />
+                    <span className={styles.galleryStackLabel}>{item.label}</span>
                   </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        <div className={styles.productDetailsPanel}>
+          <div className={styles.productDetailsIntro}>
+            <p className={styles.eyebrow}>Piece notes</p>
+            <h2>Materials, construction, and buying details.</h2>
+          </div>
+
+          <div className={styles.productDetailsGrid}>
+            <div className={styles.productDetailsColumn}>
+              <div className={styles.descriptionAccordion}>
+                {product.descriptionSections.map((section, index) => (
+                  <PdpAccordionPanel
+                    key={section.title}
+                    body={section.body}
+                    defaultOpen={index <= 1}
+                    title={section.title}
+                    variant="description"
+                  />
                 ))}
               </div>
             </div>
+
+            <aside className={styles.productDetailsAside} aria-label="Product specifications and sharing">
+              <ShippingReturnsAccordion />
+              <CustomerProofQuote />
+
+              <div className={styles.metaGrid}>
+                {product.specifications.map((spec) => (
+                  <div key={spec.label} className={styles.metaItem}>
+                    <span className={styles.metaLabel}>{spec.label}</span>
+                    <p className={styles.metaValue}>{spec.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {product.type === "rug" ? (
+                <Link className={styles.secondaryAction} href="/trade">
+                  Trade and project inquiries
+                </Link>
+              ) : null}
+
+              <div className={styles.shareBlock}>
+                <span className={styles.metaLabel}>Share</span>
+                <div className={styles.shareList}>
+                  {product.sharePlatforms.map((item) => (
+                    <button key={item} className={styles.shareButton} type="button">
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </aside>
           </div>
         </div>
       </Section>
