@@ -190,6 +190,35 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                 </button>
               ))}
             </div>
+            {product.gallery.length > 1 ? (
+              <div className={styles.galleryStack} aria-label={`${product.name} image story`}>
+                {product.gallery.map((item, index) => (
+                  <button
+                    key={`${item.id}-story`}
+                    className={`${styles.galleryStackCard} ${
+                      activeImageIndex === index ? styles.galleryStackCardActive : ""
+                    }`}
+                    type="button"
+                    aria-pressed={activeImageIndex === index}
+                    aria-label={`Open ${item.label}`}
+                    onClick={() => {
+                      selectImage(index);
+                      setIsLightboxOpen(true);
+                    }}
+                  >
+                    <GalleryImage
+                      className={styles.galleryStackImage}
+                      alt={item.altText || `${product.name} ${item.label}`}
+                      fallbackClassName={styles.galleryStackFallback}
+                      fallbackLabel={item.label}
+                      item={item}
+                      src={item.src}
+                    />
+                    <span className={styles.galleryStackLabel}>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div className={styles.infoColumn}>
