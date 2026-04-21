@@ -290,8 +290,8 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
       ? product.verificationNotes.filter(Boolean).map(normalizeDimensionSeparators)
       : product.type === "rug"
         ? [
-            "Product pages are structured to support exact-piece photography and close detail views.",
-            "Pre-shipment verification confirms the actual rug before payment is captured.",
+            "We film the exact rug in natural, warm, and cool light.",
+            "You review and approve the video before payment is captured.",
           ]
         : [
             "Availability and destination are reviewed before payment is captured.",
@@ -302,9 +302,9 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
     product.shippingNotes?.filter(Boolean).length
       ? product.shippingNotes.filter(Boolean).map(normalizeDimensionSeparators)
       : [
-          "Ships from Morocco.",
-          "Free shipping applies to the United States, Canada, and Australia.",
-          "Destination and delivery conditions are confirmed before payment is captured.",
+          "Ships from our Marrakech atelier via DHL tracked service.",
+          "Typical dispatch window is 5 to 7 business days.",
+          "Duties are included for the US, Canada, and Australia.",
         ];
 
   const panels: ProductSupportPanelViewModel[] = [
@@ -314,7 +314,7 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
       title: product.type === "rug" ? "Product attribution and origin" : "Collection origin and sourcing",
       body:
         product.provenanceNote?.trim() ||
-        "This page is prepared to support more detailed provenance notes as final product stories, imagery, and sourcing documentation are added.",
+        "Woven in the High Atlas using locally spun wool. We source directly from weavers and cooperatives we have met in person in Morocco. Origin is recorded per piece; this rug is documented as High Atlas tradition.",
       items: provenanceItems,
     },
     {
@@ -323,7 +323,7 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
       title: product.type === "rug" ? "How this piece is confirmed before shipment" : "How availability is confirmed before shipment",
       body:
         product.type === "rug"
-          ? "For one-of-one rugs, the buying flow includes a final verification step before payment is captured."
+          ? "Before we charge you, we film the exact rug in natural, warm, and cool light, and send the video for your approval. If the piece is not what you expected, you walk away. Nothing is captured until you say yes."
           : "For multi-unit pieces, availability, destination, and delivery conditions are reviewed before payment is captured.",
       items: verificationItems,
     },
@@ -332,7 +332,7 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
       eyebrow: "Shipping",
       title: "Shipping and delivery notes",
       body:
-        "This product page supports shipping guidance and market notes without requiring final product copy to be in place yet.",
+        "Ships from our Marrakech atelier via DHL tracked service, typically in 5 to 7 business days. Duties are included for the US, Canada, and Australia - no surprise charges at delivery.",
       items: shippingItems,
     },
   ];

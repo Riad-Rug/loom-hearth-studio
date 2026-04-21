@@ -193,6 +193,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           </div>
 
           <div className={styles.infoColumn}>
+            <ProductBreadcrumb product={product} />
             <p className={styles.eyebrow}>{getCategoryLabel(product.category)}</p>
             <div className={styles.titleBlock}>
               <h1>{product.name}</h1>
@@ -436,6 +437,28 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   );
 }
 
+function ProductBreadcrumb({ product }: { product: ProductDetailPageViewModel }) {
+  const categoryPath = product.type === "rug" ? "/shop/rugs" : `/shop/${product.category}`;
+  const items: Array<{ label: string; href?: Route }> = [
+    { label: "Home", href: "/" },
+    { label: "Shop", href: "/shop" },
+    { label: product.type === "rug" ? "Rugs" : getCategoryLabel(product.category), href: categoryPath as Route },
+    { label: product.name },
+  ];
+
+  return (
+    <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+      <ol>
+        {items.map((item) => (
+          <li key={item.label}>
+            {item.href ? <Link href={item.href}>{item.label}</Link> : <span aria-current="page">{item.label}</span>}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
 function ShippingReturnsAccordion() {
   return (
     <PdpAccordionPanel
@@ -508,17 +531,13 @@ function RugPurchaseShell({
 }) {
   return (
     <div className={styles.purchaseCard}>
-      <p className={styles.purchaseNote}>
-        This is a one-of-one piece. We hold it while you review the exact rug on video and confirm
-        the color, texture, and scale for your space.
-      </p>
-      <div className={styles.purchasePromise}>
-        <p>No payment taken until you approve the video.</p>
-        <p>We reply within 24 hours.</p>
-      </div>
       <Link className={styles.primaryAction} href={buildInquiryHref(product, { quantity: 1 }) as Route}>
-        Reserve this rug
+        Reserve - no payment yet
       </Link>
+      <p className={styles.purchaseReassurance}>
+        This is a one-of-one piece. Reserve holds it for you - we film the exact rug, you approve the
+        video, and only then is payment captured. 24-hour reply.
+      </p>
       <Link className={styles.secondaryAction} href="/trade">
         Trade and project inquiries
       </Link>

@@ -8,11 +8,14 @@ type BuildMetadataOptions = {
   description: string;
   path: string;
   noIndex?: boolean;
-  type?: "website" | "article";
+  type?: "website" | "article" | "product";
   canonicalUrl?: string;
   ogTitle?: string;
   ogDescription?: string;
   ogImageUrl?: string;
+  ogImageAlt?: string;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
 };
 
 type BuildManagedMetadataOptions = BuildMetadataOptions & {
@@ -34,6 +37,9 @@ export function buildMetadata({
   ogTitle,
   ogDescription,
   ogImageUrl,
+  ogImageAlt,
+  ogImageWidth,
+  ogImageHeight,
 }: BuildMetadataOptions): Metadata {
   const canonical = normalizePublicUrl(canonicalUrl || absoluteUrl(path));
   const defaultOgImage = absoluteUrl(siteConfig.ogImagePath);
@@ -62,11 +68,13 @@ export function buildMetadata({
       url: canonical,
       siteName: siteConfig.name,
       locale: siteConfig.locale,
-      type,
+      type: type === "product" ? undefined : type,
       images: [
         {
           url: resolvedOgImage,
-          alt: siteConfig.name,
+          alt: ogImageAlt || siteConfig.name,
+          width: ogImageWidth,
+          height: ogImageHeight,
         },
       ],
     },
@@ -76,6 +84,7 @@ export function buildMetadata({
       description: resolvedOgDescription,
       images: [resolvedOgImage],
     },
+    other: type === "product" ? { "og:type": "product" } : undefined,
   };
 }
 
@@ -91,6 +100,9 @@ export async function buildManagedMetadata({
   ogTitle,
   ogDescription,
   ogImageUrl,
+  ogImageAlt,
+  ogImageWidth,
+  ogImageHeight,
 }: BuildManagedMetadataOptions): Promise<Metadata> {
   const setting = await getSeoSetting({ entityType, entityKey });
   const managedTitle = cleanManagedString(setting?.title);
@@ -99,6 +111,9 @@ export async function buildManagedMetadata({
   const managedOgTitle = cleanManagedString(setting?.ogTitle);
   const managedOgDescription = cleanManagedString(setting?.ogDescription);
   const managedOgImageUrl = cleanManagedString(setting?.ogImageUrl);
+  const resolvedManagedOgImageUrl = isDefaultOgImage(managedOgImageUrl)
+    ? ""
+    : managedOgImageUrl;
 
   return buildMetadata({
     title: managedTitle || title,
@@ -110,12 +125,23 @@ export async function buildManagedMetadata({
     ogTitle: managedOgTitle || ogTitle || managedTitle || title,
     ogDescription:
       managedOgDescription || ogDescription || managedDescription || description,
-    ogImageUrl: managedOgImageUrl || ogImageUrl,
+    ogImageUrl: resolvedManagedOgImageUrl || ogImageUrl,
+    ogImageAlt,
+    ogImageWidth,
+    ogImageHeight,
   });
 }
 
 function cleanManagedString(value: string | null | undefined) {
   return typeof value === "string" && value.trim() ? value.trim() : "";
+}
+
+function isDefaultOgImage(value: string) {
+  if (!value) {
+    return false;
+  }
+
+  return normalizePublicUrl(value) === absoluteUrl(siteConfig.ogImagePath);
 }
 
 function normalizeTemplatedTitle(value: string) {

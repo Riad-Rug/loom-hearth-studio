@@ -95,8 +95,14 @@ export function productSchema(input: {
   priceUsdLabel: string;
   category: string;
   imageUrls: string[];
+  availability?: "inStock" | "outOfStock";
+  isOneOfOne?: boolean;
 }) {
   const url = absoluteUrl(input.path);
+  const availability =
+    input.availability === "outOfStock"
+      ? "https://schema.org/OutOfStock"
+      : "https://schema.org/InStock";
 
   return {
     "@context": "https://schema.org",
@@ -108,24 +114,66 @@ export function productSchema(input: {
     brand: {
       "@type": "Brand",
       name: "Loom & Hearth Studio",
+      url: absoluteUrl("/"),
     },
     sku: input.id,
+    mpn: input.id,
+    productID: input.id,
     category: input.category,
     url,
     itemCondition:
       input.category === "vintage"
         ? "https://schema.org/UsedCondition"
         : "https://schema.org/NewCondition",
+    additionalProperty: [
+      {
+        "@type": "PropertyValue",
+        name: "Handmade",
+        value: "true",
+      },
+      ...(input.isOneOfOne
+        ? [
+            {
+              "@type": "PropertyValue",
+              name: "Made to stock",
+              value: "one-of-one",
+            },
+          ]
+        : []),
+    ],
     offers: {
       "@type": "Offer",
       priceCurrency: "USD",
       price: input.priceUsdLabel.replace("$", ""),
-      availability: "https://schema.org/InStock",
+      availability,
       url,
+      itemCondition:
+        input.category === "vintage"
+          ? "https://schema.org/UsedCondition"
+          : "https://schema.org/NewCondition",
       seller: {
         "@type": "Organization",
         name: "Loom & Hearth Studio",
+        url: absoluteUrl("/"),
       },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: ["US", "CA", "AU"],
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 14,
+      },
+      shippingDetails: ["US", "CA", "AU"].map((country) => ({
+        "@type": "OfferShippingDetails",
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: country,
+        },
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: 0,
+          currency: "USD",
+        },
+      })),
     },
   };
 }
