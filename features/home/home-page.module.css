@@ -289,15 +289,9 @@
   color: var(--color-clay-terracotta);
   font-size: 0.6875rem;
   font-weight: 700;
+  line-height: 1.35;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.howItWorksCard h3 {
-  font-size: clamp(1.35rem, 1.8vw, 1.5rem);
-  font-weight: 400;
-  letter-spacing: -0.018em;
-  line-height: 1.18;
 }
 
 .howItWorksCard p:last-child {

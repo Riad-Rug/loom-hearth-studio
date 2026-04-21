@@ -42,8 +42,9 @@ export function HowItWorksSection() {
         <div className={styles.howItWorksGrid}>
           {steps.map((step) => (
             <article key={step.number} className={styles.howItWorksCard}>
-              <p className={styles.howItWorksStep}>{step.number}</p>
-              <h3>{step.title}</h3>
+              <p className={styles.howItWorksStep}>
+                {step.number} {step.title}
+              </p>
               <p>{step.description}</p>
             </article>
           ))}
