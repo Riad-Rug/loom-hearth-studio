@@ -88,7 +88,14 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                     }
                   >
                     {item.label}
-                    <span aria-hidden="true">v</span>
+                    <svg
+                      aria-hidden="true"
+                      fill="none"
+                      focusable="false"
+                      viewBox="0 0 12 8"
+                    >
+                      <path d="M1.5 1.5L6 6l4.5-4.5" />
+                    </svg>
                   </button>
                   <div
                     id={`site-header-submenu-${toDomId(item.label)}`}
