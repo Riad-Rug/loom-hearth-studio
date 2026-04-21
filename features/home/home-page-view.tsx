@@ -26,11 +26,7 @@ function getMobileHeroParagraph(paragraph: string) {
   return sentences[0] || paragraph;
 }
 
-function renderSection(
-  key: HomePageOrderedSectionKey,
-  content: HomePageContent,
-  featuredProducts: CatalogProductCardViewModel[],
-) {
+function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent, featuredProducts: CatalogProductCardViewModel[]) {
   if (key === "hero" && content.hero.visible) {
     const heroGalleryImages = getHeroGalleryImages(content);
 
@@ -108,45 +104,6 @@ function renderSection(
     );
   }
 
-  if (key === "categories" && content.categories.visible) {
-    const cards = content.categories.cards.filter((card) => card.visible);
-
-    if (!cards.length) {
-      return null;
-    }
-
-    return (
-      <Section key={key} width="wide">
-        <div className={styles.categorySection}>
-          <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>{content.categories.eyebrow}</p>
-            <h2>{content.categories.title}</h2>
-            <p className={styles.sectionBody}>{content.categories.paragraph}</p>
-          </div>
-          <div className={styles.categoryGrid}>
-            {cards.map((category) => (
-              <Link key={category.id} className={styles.categoryCard} href={category.href as Route}>
-                <div className={styles.categoryImageWrap}>
-                  <Image
-                    alt={category.image.alt}
-                    className={styles.categoryImage}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 20vw"
-                    src={category.image.src}
-                  />
-                </div>
-                <div className={styles.categoryCardContent}>
-                  <h3>{category.title}</h3>
-                  <p>{category.description}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </Section>
-    );
-  }
-
   if ((key === "brandStory" && content.brandStory.visible) || (key === "designDirection" && content.designDirection.visible)) {
     const sections = [content.brandStory, content.designDirection].filter((section) => section.visible);
 
@@ -172,9 +129,8 @@ function renderSection(
 
   if (key === "featured" && content.featured.visible) {
     const cards = content.featured.cards.filter((card) => card.visible);
-    const hasProductRail = featuredProducts.length > 0;
 
-    if (!cards.length && !hasProductRail) {
+    if (!cards.length) {
       return null;
     }
 
@@ -186,7 +142,7 @@ function renderSection(
             <h2>{content.featured.title}</h2>
             <p className={styles.sectionBody}>{content.featured.paragraph}</p>
           </div>
-          {hasProductRail ? <LiveProductRail products={featuredProducts} /> : <FeaturedContentCards cards={cards} />}
+          <FeaturedContentCards cards={cards} />
         </div>
       </Section>
     );
@@ -200,44 +156,30 @@ function renderSection(
     return <HowItWorksSection key={key} />;
   }
 
-  if ((key === "guide" && content.guide.visible) || (key === "newsletter" && content.newsletter.visible)) {
-    if (!content.guide.visible && !content.newsletter.visible) {
-      return null;
-    }
-
-    if (key !== firstEditorialSection(content)) {
-      return null;
-    }
+  if (key === "guide" && content.guide.visible) {
+    const guideImage =
+      content.categories.cards.find((card) => card.visible && card.id === "category-rugs")?.image ?? content.hero.image;
 
     return (
       <Section key={key} width="wide">
-        <div className={styles.editorialPair}>
-          {content.guide.visible ? (
-            <div className={styles.seoCard}>
-              <div className={styles.sectionIntro}>
-                <p className={styles.eyebrow}>{content.guide.eyebrow}</p>
-                <h2>{content.guide.title}</h2>
-                <p className={styles.sectionBody}>{content.guide.paragraph}</p>
-                <Link className={styles.narrativeLinkLabel} href={"/blog" as Route}>
-                  READ THE FULL GUIDE
-                </Link>
-              </div>
-            </div>
-          ) : null}
-          {content.newsletter.visible ? (
-            <div className={styles.newsletterCard}>
-              <div className={styles.sectionIntro}>
-                <p className={styles.eyebrow}>{content.newsletter.eyebrow}</p>
-                <h2>{content.newsletter.title}</h2>
-                <p className={styles.sectionBody}>{content.newsletter.paragraph}</p>
-              </div>
-              <NewsletterSignupIntentForm
-                ctaLabel={content.newsletter.ctaLabel}
-                inputLabel={content.newsletter.inputLabel}
-                inputPlaceholder={content.newsletter.inputPlaceholder}
-              />
-            </div>
-          ) : null}
+        <div className={styles.guideEditorial}>
+          <div className={styles.sectionIntro}>
+            <p className={styles.eyebrow}>{content.guide.eyebrow}</p>
+            <h2>{content.guide.title}</h2>
+            <p className={styles.sectionBody}>{content.guide.paragraph}</p>
+            <Link className={styles.narrativeLinkLabel} href={"/blog" as Route}>
+              READ THE FULL GUIDE
+            </Link>
+          </div>
+          <div className={styles.guideMedia}>
+            <Image
+              alt={guideImage.alt}
+              className={styles.guideImage}
+              fill
+              sizes="(max-width: 900px) 100vw, 42vw"
+              src={guideImage.src}
+            />
+          </div>
         </div>
       </Section>
     );
@@ -266,6 +208,25 @@ function renderSection(
               </details>
             ))}
           </div>
+        </div>
+      </Section>
+    );
+  }
+
+  if (key === "newsletter" && content.newsletter.visible) {
+    return (
+      <Section key={key} width="wide">
+        <div className={styles.newsletterBand}>
+          <div className={styles.sectionIntro}>
+            <p className={styles.eyebrow}>{content.newsletter.eyebrow}</p>
+            <h2>{content.newsletter.title}</h2>
+            <p className={styles.sectionBody}>{content.newsletter.paragraph}</p>
+          </div>
+          <NewsletterSignupIntentForm
+            ctaLabel={content.newsletter.ctaLabel}
+            inputLabel={content.newsletter.inputLabel}
+            inputPlaceholder={content.newsletter.inputPlaceholder}
+          />
         </div>
       </Section>
     );
@@ -303,19 +264,19 @@ function getHeroGalleryImages(content: HomePageContent) {
 function ProofComparisonSection() {
   const proofItems = [
     {
-      title: "Selected in person",
+      title: "Selected in Person",
       body: "Pieces are sourced across Morocco by people who know the trade, not pulled from a generic export catalogue.",
     },
     {
-      title: "Exact-piece video check",
+      title: "Exact-Piece Video Check",
       body: "Before payment is captured, you see the actual rug in natural, warm, and cool light.",
     },
     {
-      title: "One-of-one inventory",
+      title: "One-of-One Inventory",
       body: "Rugs are individual pieces. When a rug sells, that exact piece does not come back in a restock batch.",
     },
     {
-      title: "Family trade history",
+      title: "Family Trade History",
       body: "The collection is connected to a Marrakech bazaar with close to 80 years in the Moroccan rug trade.",
     },
   ];
@@ -325,7 +286,7 @@ function ProofComparisonSection() {
       <div className={styles.proofSection}>
         <div className={styles.sectionIntro}>
           <p className={styles.eyebrow}>What makes a Loom & Hearth piece different</p>
-          <h2>Built for buyers who want the actual piece, not a catalogue approximation.</h2>
+          <h2>Built for Buyers Who Want the Actual Piece, Not a Catalogue Approximation.</h2>
         </div>
         <div className={styles.proofGrid}>
           {proofItems.map((item) => (
@@ -436,12 +397,11 @@ function FeaturedContentCards({ cards }: { cards: HomePageContent["featured"]["c
               alt={product.image.alt}
               className={styles.productImage}
               fill
-              sizes="(max-width: 1100px) 100vw, 33vw"
+              sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 20vw"
               src={product.image.src}
             />
           </div>
           <div className={styles.productMeta}>
-            {product.eyebrow ? <p className={styles.productEyebrow}>{product.eyebrow}</p> : null}
             <h3>{product.title}</h3>
             <p>{product.description}</p>
             {product.priceLabel ? <span className={styles.productPriceLabel}>{product.priceLabel}</span> : null}
@@ -463,12 +423,6 @@ function getProductCardDescription(product: CatalogProductCardViewModel) {
 function firstNarrativeSection(content: HomePageContent) {
   return content.sectionOrder.find(
     (key) => (key === "brandStory" && content.brandStory.visible) || (key === "designDirection" && content.designDirection.visible),
-  );
-}
-
-function firstEditorialSection(content: HomePageContent) {
-  return content.sectionOrder.find(
-    (key) => (key === "guide" && content.guide.visible) || (key === "newsletter" && content.newsletter.visible),
   );
 }
 

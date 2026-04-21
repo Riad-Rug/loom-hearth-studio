@@ -2,7 +2,7 @@ import type { ProductCategory } from "@/types/domain";
 
 export const catalogLanding = {
   eyebrow: "Collection",
-  title: "The full collection",
+  title: "The Full Collection",
   description:
     "Handcrafted Moroccan rugs, poufs, pillows, and decor \u2014 sourced directly from Marrakech. Every rug is one of one. When a piece sells, it does not return.",
   bullets: [
@@ -90,13 +90,13 @@ export const catalogCategories = [
 export const catalogSortOptions = [
   "Featured",
   "Newest",
-  "Price: low to high",
-  "Price: high to low",
+  "Price: Low to High",
+  "Price: High to Low",
 ] as const;
 
 export const catalogFilterLabels = [
   "Handwoven",
-  "One of one",
+  "One of One",
   "Decor",
-  "Fresh arrivals",
+  "Fresh Arrivals",
 ] as const;

@@ -50,10 +50,11 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
     "Hand-knotted Moroccan rugs, poufs, cactus silk pillows, and decor sourced directly across Morocco. Family business. 80 years in the trade. Free shipping to the US, Canada, and Australia.";
 
   next.hero.title = "Hand-knotted Moroccan rugs from a family that has worked this trade for 80 years.";
+  next.hero.eyebrow = "COLOUR VERIFIED BEFORE PAYMENT";
   next.hero.paragraph =
     "Hand-knotted rugs, poufs, cactus silk pillows, and handcrafted decor selected in person across Morocco, not pulled from an export catalogue.";
   next.hero.primaryCta = { ...next.hero.primaryCta, label: "SHOP RUGS" };
-  next.hero.secondaryCta = { ...next.hero.secondaryCta, label: "View the Lookbook", href: "/lookbook" };
+  next.hero.secondaryCta = { ...next.hero.secondaryCta, label: "VIEW THE LOOKBOOK", href: "/lookbook" };
   next.hero.seo = {
     ...next.hero.seo,
     seoTitle: "Loom & Hearth Studio  Handcrafted Moroccan Rugs",
@@ -116,7 +117,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.brandStory.title = "Sourced across Morocco. Selected in person. Shipped directly to you.";
   next.brandStory.paragraph =
     "Loom & Hearth Studio is a family operation connected to a Marrakech bazaar with close to 80 years in the trade. We source in person across Morocco, working directly with the people who make and collect these pieces instead of buying from export catalogues.";
-  next.brandStory.linkLabel = "Read the full story";
+  next.brandStory.linkLabel = "READ THE FULL STORY";
 
   next.designDirection.eyebrow = "DESIGN DIRECTION";
   next.designDirection.title = "Pieces chosen for what they are made of. Not for how they photograph.";
@@ -125,56 +126,79 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.designDirection.linkLabel = "VIEW THE LOOKBOOK";
 
   next.featured.eyebrow = "SHOP FIRST";
-  next.featured.title = "Start with the pieces shoppers ask about first.";
-  next.featured.paragraph = "The rugs, poufs, and pillows customers ask about most.";
-  next.featured.cards = next.featured.cards.map((card) => {
-    if (card.id === "featured-rugs") {
-      return {
-        ...card,
-        eyebrow: "New arrivals",
-        title: "One-of-one Moroccan rugs",
-        description: "Hand-knotted Moroccan rugs selected for pile density, weight, and long-term durability.",
-        priceLabel: "Shop available pieces",
-        image: {
-          ...card.image,
-          src: "https://images.pexels.com/photos/36202808/pexels-photo-36202808.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
-          alt: "Close crop of a colorful handwoven Moroccan rug showing its geometric pattern and wool texture",
-        },
-      };
-    }
-
-    if (card.id === "featured-poufs") {
-      return {
-        ...card,
-        eyebrow: "Functional accents",
-        title: "Rug-made and leather poufs",
-        description: "Poufs selected for construction quality, filling density, and everyday use.",
-        priceLabel: "Browse poufs",
-        image: {
-          ...card.image,
-          src: "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
-          alt: "A Moroccan leather pouf shown in full view with clean natural styling",
-        },
-      };
-    }
-
-    if (card.id === "featured-pillows") {
-      return {
-        ...card,
-        eyebrow: "Layered texture",
-        title: "Cactus silk pillows",
-        description: "Flat-woven cactus silk. Low-shed, with strong colour saturation and a quieter surface than wool pile.",
-        priceLabel: "Browse pillows",
-        image: {
-          ...card.image,
-          src: "https://images.pexels.com/photos/11537258/pexels-photo-11537258.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
-          alt: "Square crop of colorful Moroccan throw pillows and woven textiles in natural light",
-        },
-      };
-    }
-
-    return card;
-  });
+  next.featured.title = "Choose the category first, then the exact piece.";
+  next.featured.paragraph = "Rugs, poufs, pillows, decor, and vintage finds in one edited collection.";
+  next.featured.cards = [
+    {
+      ...(next.featured.cards.find((card) => card.id === "featured-rugs") ?? next.featured.cards[0]),
+      id: "featured-rugs",
+      title: "One-of-One Moroccan Rugs",
+      description: "Hand-knotted Moroccan rugs selected for pile density, weight, and long-term durability.",
+      priceLabel: "SHOP RUGS",
+      href: "/shop/rugs",
+      visible: true,
+      image: {
+        ...(next.featured.cards.find((card) => card.id === "featured-rugs")?.image ?? next.hero.image),
+        src: "https://images.pexels.com/photos/36202808/pexels-photo-36202808.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
+        alt: "Close crop of a colorful handwoven Moroccan rug showing its geometric pattern and wool texture",
+      },
+    },
+    {
+      ...(next.featured.cards.find((card) => card.id === "featured-poufs") ?? next.featured.cards[0]),
+      id: "featured-poufs",
+      title: "Rug-Made and Leather Poufs",
+      description: "Poufs selected for construction quality, filling density, and everyday use.",
+      priceLabel: "SHOP POUFS",
+      href: "/shop/poufs",
+      visible: true,
+      image: {
+        ...(next.featured.cards.find((card) => card.id === "featured-poufs")?.image ?? next.hero.image),
+        src: "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
+        alt: "A Moroccan leather pouf shown in full view with clean natural styling",
+      },
+    },
+    {
+      ...(next.featured.cards.find((card) => card.id === "featured-pillows") ?? next.featured.cards[0]),
+      id: "featured-pillows",
+      title: "Cactus Silk Pillows",
+      description: "Flat-woven cactus silk. Low-shed, with strong colour saturation and a quieter surface than wool pile.",
+      priceLabel: "SHOP PILLOWS",
+      href: "/shop/pillows",
+      visible: true,
+      image: {
+        ...(next.featured.cards.find((card) => card.id === "featured-pillows")?.image ?? next.hero.image),
+        src: "https://images.pexels.com/photos/11537258/pexels-photo-11537258.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
+        alt: "Square crop of colorful Moroccan throw pillows and woven textiles in natural light",
+      },
+    },
+    {
+      ...(next.featured.cards.find((card) => card.id === "featured-decor") ?? next.categories.cards.find((card) => card.id === "category-decor") ?? next.featured.cards[0]),
+      id: "featured-decor",
+      title: "Handcrafted Decor",
+      description: "Handcrafted Moroccan objects selected for shelves, consoles, and flat surfaces.",
+      priceLabel: "SHOP DECOR",
+      href: "/shop/decor",
+      visible: true,
+      image:
+        next.featured.cards.find((card) => card.id === "featured-decor")?.image ??
+        next.categories.cards.find((card) => card.id === "category-decor")?.image ??
+        next.hero.image,
+    },
+    {
+      ...(next.featured.cards.find((card) => card.id === "featured-vintage") ?? next.categories.cards.find((card) => card.id === "category-vintage") ?? next.featured.cards[0]),
+      id: "featured-vintage",
+      title: "Vintage Moroccan Rugs",
+      description:
+        "One-of-one vintage Moroccan rugs selected for construction integrity, visible age, and pile condition.",
+      priceLabel: "SHOP VINTAGE",
+      href: "/shop/vintage",
+      visible: true,
+      image:
+        next.featured.cards.find((card) => card.id === "featured-vintage")?.image ??
+        next.categories.cards.find((card) => card.id === "category-vintage")?.image ??
+        next.hero.image,
+    },
+  ];
 
   next.guide.eyebrow = "KNOW WHAT YOU ARE BUYING";
   next.guide.title = "What separates a hand-knotted Moroccan rug from everything else on the market.";

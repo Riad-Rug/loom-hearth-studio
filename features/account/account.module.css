@@ -16,7 +16,7 @@
 .requestFeedback {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.82);
+  background: #faf7f0;
   box-shadow: var(--shadow-soft);
 }
 
@@ -27,15 +27,16 @@
   gap: var(--space-5);
   padding: var(--space-7);
   background:
-    radial-gradient(circle at top right, rgba(184, 94, 59, 0.14), transparent 34%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 228, 0.96));
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.14), transparent 34%),
+    linear-gradient(135deg, #faf7f0, var(--color-wool-cream));
 }
 
 .eyebrow {
   margin: 0 0 var(--space-2);
   color: var(--color-clay-terracotta);
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -50,8 +51,9 @@
 
 .authIntro h1,
 .dashboardHero h1 {
-  font-size: clamp(2.6rem, 4vw, 4rem);
-  line-height: 0.97;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.032em;
 }
 
 .formIntro h2,
@@ -66,7 +68,7 @@
 .formIntro p,
 .formReassurance {
   margin: 0;
-  color: rgba(34, 33, 38, 0.78);
+  color: var(--color-text-body);
   line-height: 1.8;
 }
 
@@ -87,8 +89,12 @@
   padding: 0.85rem 1.05rem;
   border: 1px solid var(--color-border-strong);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--button-secondary-bg);
   color: var(--color-charcoal-ink);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-decoration: none;
   transition:
@@ -107,7 +113,7 @@
 .formSupportLinks a:focus-visible {
   transform: translateY(-1px);
   border-color: rgba(34, 33, 38, 0.18);
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--button-secondary-bg-hover);
   box-shadow: var(--shadow-soft);
   outline: none;
 }
@@ -148,7 +154,7 @@
 .authSupportNote span,
 .requestFeedback span {
   margin: 0;
-  color: rgba(34, 33, 38, 0.78);
+  color: var(--color-text-body);
   line-height: 1.7;
 }
 
@@ -182,7 +188,7 @@
 }
 
 .field span {
-  color: rgba(34, 33, 38, 0.72);
+  color: var(--color-olive-thread);
   font-size: 0.82rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -194,7 +200,7 @@
   padding: 0 1rem;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--color-wool-cream);
   color: var(--color-charcoal-ink);
   font: inherit;
   font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -205,7 +211,7 @@
 }
 
 .field input::placeholder {
-  color: rgba(34, 33, 38, 0.44);
+  color: var(--color-olive-thread);
 }
 
 .field input:hover {
@@ -213,9 +219,9 @@
 }
 
 .field input:focus-visible {
-  border-color: rgba(184, 94, 59, 0.5);
-  box-shadow: 0 0 0 4px rgba(184, 94, 59, 0.12);
-  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(198, 106, 61, 0.5);
+  box-shadow: 0 0 0 4px rgba(198, 106, 61, 0.12);
+  background: #faf7f0;
   outline: none;
 }
 
@@ -228,10 +234,14 @@
   border: 1px solid var(--color-clay-terracotta);
   border-radius: 999px;
   background: var(--color-clay-terracotta);
-  color: var(--color-white);
+  color: var(--color-wool-cream);
   cursor: pointer;
   font: inherit;
   font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   transition:
     transform 150ms ease,
     box-shadow 150ms ease,
@@ -242,7 +252,7 @@
 .primaryAction:hover,
 .primaryAction:focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 1rem 1.8rem rgba(184, 94, 59, 0.22);
+  box-shadow: 0 1rem 1.8rem rgba(198, 106, 61, 0.22);
   outline: none;
 }
 
@@ -252,7 +262,7 @@
 
 .loginSecondaryGrid,
 .inlineSwitch {
-  color: rgba(34, 33, 38, 0.76);
+  color: var(--color-text-body);
   line-height: 1.7;
 }
 
@@ -281,8 +291,11 @@
 .inlineSwitch a,
 .inlineSecondaryLink {
   color: var(--color-clay-terracotta);
-  font-weight: 600;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-decoration: none;
+  text-transform: uppercase;
 }
 
 .loginSecondaryGrid a:hover,
@@ -291,7 +304,7 @@
 .inlineSwitch a:focus-visible,
 .inlineSecondaryLink:hover,
 .inlineSecondaryLink:focus-visible {
-  color: rgba(184, 94, 59, 0.82);
+  color: rgba(198, 106, 61, 0.82);
   text-decoration: underline;
   outline: none;
 }
@@ -309,7 +322,7 @@
 }
 
 .requestFeedbackFailure {
-  border-color: rgba(184, 94, 59, 0.24);
+  border-color: rgba(198, 106, 61, 0.24);
   background: rgba(255, 248, 246, 0.96);
 }
 
@@ -348,11 +361,11 @@
   padding: var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.68);
+  background: var(--color-wool-cream);
 }
 
 .orderHistoryItem span {
-  color: rgba(34, 33, 38, 0.72);
+  color: var(--color-olive-thread);
   line-height: 1.6;
 }
 
@@ -369,12 +382,12 @@
 }
 
 .profileSummaryItem span {
-  color: rgba(34, 33, 38, 0.72);
+  color: var(--color-olive-thread);
   font-size: 0.92rem;
 }
 
 .mutedSummaryValue {
-  color: rgba(34, 33, 38, 0.58);
+  color: var(--color-olive-thread);
 }
 
 @media (max-width: 1100px) {

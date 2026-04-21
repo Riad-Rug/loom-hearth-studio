@@ -8,18 +8,18 @@ import styles from "./home-page.module.css";
 const steps = [
   {
     number: "Step 1",
-    title: "Browse and place an order",
+    title: "Browse and Place an Order",
     description: "Find a piece that interests you and place an order or send us a direct inquiry.",
   },
   {
     number: "Step 2",
-    title: "We send you a video",
+    title: "We Send You a Video",
     description:
       "You receive a video of the actual rug  texture, colour in natural light, colour under warm and cool indoor light, and size in context. Before any payment is taken.",
   },
   {
     number: "Step 3",
-    title: "Confirm and we ship",
+    title: "Confirm and We Ship",
     description: "Once you are satisfied, payment is captured and your piece ships from Morocco with full tracking.",
   },
 ] as const;
@@ -49,7 +49,7 @@ export function HowItWorksSection() {
           ))}
         </div>
 
-        <Link className={styles.primaryAction} href={"/contact" as Route}>
+        <Link className={`${styles.primaryAction} ${styles.howItWorksCta}`} href={"/contact" as Route}>
           INQUIRE ABOUT A PIECE
         </Link>
       </div>

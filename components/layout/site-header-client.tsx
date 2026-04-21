@@ -33,25 +33,21 @@ type SiteHeaderClientProps = {
 export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMenuLabel, setOpenMenuLabel] = useState<string | null>(null);
+  const [primaryAnnouncement, ...supportingAnnouncements] = props.announcementItems;
   const announcementText = props.announcementItems.join(" / ");
-  const tickerItems = [...props.announcementItems, ...props.announcementItems];
 
 
   return (
     <header className="site-header">
       <div className="site-header__announcement">
         <Container width="wide">
-          <p className="site-header__announcement-copy">{announcementText}</p>
+          <p className="site-header__announcement-copy">
+            <strong>{primaryAnnouncement}</strong>
+            {supportingAnnouncements.length ? (
+              <span>{supportingAnnouncements.join(" / ")}</span>
+            ) : null}
+          </p>
           <span className="site-header__sr-only">{announcementText}</span>
-          <div aria-hidden="true" className="site-header__announcement-marquee">
-            <div className="site-header__announcement-track">
-              {tickerItems.map((item, index) => (
-                <span key={item + "-" + index} className="site-header__announcement-item">
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
         </Container>
       </div>
       <Container width="wide">

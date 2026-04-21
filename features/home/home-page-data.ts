@@ -6,15 +6,14 @@ export const homepageSectionOrderKeys = [
   "featured",
   "proof",
   "howItWorks",
-  "categories",
   "brandStory",
   "designDirection",
   "guide",
-  "newsletter",
   "faq",
+  "newsletter",
 ] as const;
 
-export const homepageSectionKeys = [...homepageSectionOrderKeys, "footer"] as const;
+export const homepageSectionKeys = [...homepageSectionOrderKeys, "categories", "footer"] as const;
 
 export type HomePageSectionKey = (typeof homepageSectionKeys)[number];
 export type HomePageOrderedSectionKey = (typeof homepageSectionOrderKeys)[number];
@@ -231,7 +230,7 @@ const defaultHomePageContent: HomePageContent = {
       metaDescription:
         "Hand-knotted Moroccan rugs, poufs, cactus silk pillows, and decor sourced directly across Morocco. Family business. 80 years in the trade. Free shipping to the US, Canada, and Australia.",
     },
-    eyebrow: "Loom & Hearth Studio",
+    eyebrow: "COLOUR VERIFIED BEFORE PAYMENT",
     title: "Hand-knotted Moroccan rugs from a family that has worked this trade for 80 years.",
     paragraph:
       "Hand-knotted rugs, poufs, cactus silk pillows, and handcrafted decor  selected in person across Morocco, not pulled from an export catalogue.",
@@ -241,7 +240,7 @@ const defaultHomePageContent: HomePageContent = {
       visible: true,
     },
     secondaryCta: {
-      label: "View the Lookbook",
+      label: "VIEW THE LOOKBOOK",
       href: "/lookbook",
       visible: true,
     },
@@ -371,7 +370,7 @@ const defaultHomePageContent: HomePageContent = {
     title: "Sourced across Morocco. Selected in person. Shipped directly to you.",
     paragraph:
       "Loom & Hearth Studio is a family operation. My mother manages our bazaar in the Semmarine souk in Marrakech  a business with close to 80 years of history in the trade. We travel together across Morocco  to villages in the Atlas Mountains, to smaller workshops, to early morning markets where weavers and collectors trade before dawn  to find pieces that cannot be sourced from a catalogue. We work directly with the people who make them. We cut out the intermediaries who have historically taken the margin that should go to the artisans. That is the sourcing model. It is not scalable in the way a catalogue business is. That is the point.",
-    linkLabel: "Read the full story",
+    linkLabel: "READ THE FULL STORY",
     href: "/about",
   },
   designDirection: {
@@ -393,19 +392,18 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Featured Moroccan collections | Loom & Hearth Studio",
       metaDescription:
-        "Start with the signature homepage directions: Moroccan rugs, rug-made poufs, and cactus silk pillows selected for wool, leather, and woven texture.",
+        "Start with the signature homepage categories: Moroccan rugs, rug-made poufs, cactus silk pillows, handcrafted decor, and vintage finds.",
     },
-    eyebrow: "FEATURED DIRECTIONS",
-    title: "Start with the three pieces at the centre of the collection.",
-    paragraph: "The rugs, poufs, and pillows customers ask about most.",
+    eyebrow: "SHOP FIRST",
+    title: "Choose the category first, then the exact piece.",
+    paragraph: "Rugs, poufs, pillows, decor, and vintage finds in one edited collection.",
     cards: [
       {
         id: "featured-rugs",
-        eyebrow: "New arrivals",
-        title: "One-of-one Moroccan rugs",
+        title: "One-of-One Moroccan Rugs",
         description:
           "Hand-knotted Moroccan rugs selected for pile density, weight, and long-term durability.",
-        priceLabel: "Shop available pieces",
+        priceLabel: "SHOP RUGS",
         href: "/shop/rugs",
         visible: true,
         image: {
@@ -418,11 +416,10 @@ const defaultHomePageContent: HomePageContent = {
       },
       {
         id: "featured-poufs",
-        eyebrow: "Functional accents",
-        title: "Rug-made and leather poufs",
+        title: "Rug-Made and Leather Poufs",
         description:
           "Poufs selected for construction quality, filling density, and everyday use.",
-        priceLabel: "Browse poufs",
+        priceLabel: "SHOP POUFS",
         href: "/shop/poufs",
         visible: true,
         image: {
@@ -435,16 +432,46 @@ const defaultHomePageContent: HomePageContent = {
       },
       {
         id: "featured-pillows",
-        eyebrow: "Layered texture",
-        title: "Cactus silk pillows",
+        title: "Cactus Silk Pillows",
         description:
           "Flat-woven cactus silk. Low-shed, with strong colour saturation and a quieter surface than wool pile.",
-        priceLabel: "Browse pillows",
+        priceLabel: "SHOP PILLOWS",
         href: "/shop/pillows",
         visible: true,
         image: {
           src: "https://images.pexels.com/photos/11537258/pexels-photo-11537258.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
           alt: "Square crop of colorful Moroccan throw pillows and woven textiles in natural light",
+          publicId: "",
+          width: null,
+          height: null,
+        },
+      },
+      {
+        id: "featured-decor",
+        title: "Handcrafted Decor",
+        description: "Handcrafted Moroccan objects selected for shelves, consoles, and flat surfaces.",
+        priceLabel: "SHOP DECOR",
+        href: "/shop/decor",
+        visible: true,
+        image: {
+          src: "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+          alt: "Moroccan decor with carved wood, ceramics, and woven textiles",
+          publicId: "",
+          width: null,
+          height: null,
+        },
+      },
+      {
+        id: "featured-vintage",
+        title: "Vintage Moroccan Rugs",
+        description:
+          "One-of-one vintage Moroccan rugs selected for construction integrity, visible age, and pile condition.",
+        priceLabel: "SHOP VINTAGE",
+        href: "/shop/vintage",
+        visible: true,
+        image: {
+          src: "https://images.pexels.com/photos/28582589/pexels-photo-28582589.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1600",
+          alt: "Vintage Moroccan rugs displayed in a warm showroom with visible patina and texture",
           publicId: "",
           width: null,
           height: null,

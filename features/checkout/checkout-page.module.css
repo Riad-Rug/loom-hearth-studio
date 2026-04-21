@@ -16,15 +16,16 @@
   border-radius: var(--radius-xl);
   background:
     radial-gradient(circle at top right, rgba(109, 113, 88, 0.12), transparent 34%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 228, 0.96));
+    linear-gradient(135deg, var(--color-card), var(--color-wool-cream));
   box-shadow: var(--shadow-panel);
 }
 
 .eyebrow {
   margin: 0 0 var(--space-2);
   color: var(--color-clay-terracotta);
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -38,14 +39,14 @@
 }
 
 .header h1 {
-  font-size: clamp(2.5rem, 4vw, 3.8rem);
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
   line-height: 0.97;
 }
 
 .lede {
   max-width: 50rem;
   margin: 0;
-  color: rgba(34, 33, 38, 0.78);
+  color: var(--color-text-body);
   line-height: 1.8;
 }
 
@@ -60,8 +61,8 @@
   padding: 0.7rem 0.95rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
-  color: rgba(34, 33, 38, 0.78);
+  background: var(--color-card);
+  color: var(--color-text-body);
 }
 
 .steps {
@@ -79,12 +80,12 @@
   padding: var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.78);
+  background: var(--color-card);
 }
 
 .stepActive {
-  border-color: rgba(184, 94, 59, 0.28);
-  background: rgba(184, 94, 59, 0.1);
+  border-color: rgba(198, 106, 61, 0.28);
+  background: rgba(198, 106, 61, 0.1);
 }
 
 .stepComplete {
@@ -111,7 +112,7 @@
 }
 
 .stepCopy span {
-  color: rgba(34, 33, 38, 0.6);
+  color: var(--color-olive-thread);
   font-size: 0.84rem;
 }
 
@@ -129,7 +130,7 @@
 .linkCard {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-card);
   box-shadow: var(--shadow-soft);
 }
 
@@ -153,7 +154,7 @@
 
 .panelHeader h2,
 .summaryHeader h2 {
-  font-size: clamp(2rem, 3vw, 2.7rem);
+  font-size: clamp(2rem, 3vw, 2.5rem);
   line-height: 1;
 }
 
@@ -161,7 +162,7 @@
 .reviewCard p,
 .confirmationCard p {
   margin: 0;
-  color: rgba(34, 33, 38, 0.78);
+  color: var(--color-text-body);
   line-height: 1.75;
 }
 
@@ -184,7 +185,7 @@
 .linkCard span,
 .itemType,
 .itemQty {
-  color: rgba(34, 33, 38, 0.6);
+  color: var(--color-olive-thread);
 }
 
 .formGrid {
@@ -200,8 +201,11 @@
 
 .field span,
 .sortLabel {
-  color: rgba(34, 33, 38, 0.72);
-  font-size: 0.92rem;
+  color: var(--color-olive-thread);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .field input,
@@ -210,7 +214,7 @@
   padding: 0 1rem;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--color-white);
   color: var(--color-charcoal-ink);
   font: inherit;
 }
@@ -223,6 +227,10 @@
   justify-content: center;
   padding: 0.95rem 1.3rem;
   border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .primaryAction {
@@ -232,8 +240,9 @@
 }
 
 .primaryAction:disabled {
-  border-color: rgba(184, 94, 59, 0.28);
-  background: rgba(184, 94, 59, 0.35);
+  border-color: var(--color-sand);
+  background: var(--color-sand);
+  color: var(--color-text-muted);
   cursor: not-allowed;
 }
 
@@ -260,7 +269,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
-  background: rgba(245, 239, 228, 0.54);
+  background: var(--color-wool-cream);
 }
 
 .cardPreview {
@@ -270,16 +279,16 @@
   justify-content: center;
   border-radius: var(--radius-lg);
   background:
-    linear-gradient(135deg, rgba(34, 33, 38, 0.12), rgba(184, 94, 59, 0.16)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(245, 239, 228, 0.4));
+    linear-gradient(135deg, rgba(47, 47, 47, 0.12), rgba(198, 106, 61, 0.16)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(245, 241, 232, 0.4));
 }
 
 .cardPreview span {
   padding: 0.8rem 1rem;
-  border: 1px solid rgba(34, 33, 38, 0.12);
+  border: 1px solid rgba(47, 47, 47, 0.12);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.76);
-  color: rgba(34, 33, 38, 0.8);
+  background: var(--color-card);
+  color: var(--color-charcoal-ink);
 }
 
 .itemList,
@@ -294,7 +303,7 @@
   padding: var(--space-4);
   border: 1px dashed var(--color-border-strong);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.64);
+  background: var(--color-card);
 }
 
 .emptySummaryState strong,
@@ -304,7 +313,7 @@
 
 .summaryNote {
   margin: 0;
-  color: rgba(34, 33, 38, 0.62);
+  color: var(--color-text-body);
   font-size: 0.9rem;
   line-height: 1.7;
 }
@@ -374,13 +383,14 @@
   display: grid;
   gap: 0.65rem;
   padding: 0.9rem 0;
-  border-top: 1px solid rgba(34, 33, 38, 0.08);
-  border-bottom: 1px solid rgba(34, 33, 38, 0.08);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .promoLabel {
-  font-size: 0.82rem;
-  color: rgba(34, 33, 38, 0.72);
+  color: var(--color-olive-thread);
+  font-size: 0.6875rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -394,10 +404,10 @@
 .promoInput {
   width: 100%;
   min-height: 2.8rem;
-  border: 1px solid rgba(34, 33, 38, 0.12);
+  border: 1px solid var(--color-border-strong);
   border-radius: 999px;
   padding: 0.75rem 0.95rem;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--color-white);
   color: var(--color-charcoal-ink);
   font: inherit;
 }
@@ -406,16 +416,20 @@
 .promoRemoveButton {
   min-height: 2.8rem;
   border-radius: 999px;
-  border: 1px solid rgba(34, 33, 38, 0.14);
+  border: 1px solid var(--button-secondary-border);
   padding: 0.75rem 0.95rem;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--color-charcoal-ink);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
   font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .promoApplied,
 .promoFeedback {
   margin: 0;
   font-size: 0.92rem;
-  color: rgba(34, 33, 38, 0.78);
+  color: var(--color-text-body);
 }

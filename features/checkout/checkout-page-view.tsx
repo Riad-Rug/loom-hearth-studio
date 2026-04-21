@@ -237,7 +237,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
           <aside className={styles.summaryCard}>
             <div className={styles.summaryHeader}>
               <p className={styles.eyebrow}>Order summary</p>
-              <h2>Checkout summary</h2>
+              <h2>Checkout Summary</h2>
             </div>
 
             <div className={styles.itemList}>
@@ -254,7 +254,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
                 ))
               ) : (
                 <div className={styles.emptySummaryState}>
-                  <strong>Your cart is empty.</strong>
+                  <strong>Your Cart Is Empty.</strong>
                   <p>Add a product to see a real checkout summary.</p>
                   <Link className={styles.secondaryAction} href="/shop">
                     Continue shopping
@@ -275,7 +275,7 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
               <div className={styles.freeShippingLine}>Shipping fixed at $0.00</div>
               <form className={styles.promoForm} onSubmit={handlePromoSubmit}>
                 <label className={styles.promoLabel} htmlFor="checkout-promo-code">
-                  Promo code
+                  Promo Code
                 </label>
                 <div className={styles.promoControls}>
                   <input
@@ -719,10 +719,10 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           </div>
           <p className={styles.summaryNote}>{props.nonConfirmationRouteViewModel.information.note}</p>
           <div className={styles.reviewCard}>
-            <h3>Need help before you continue?</h3>
+            <h3>Need Help Before You Continue?</h3>
             <p>If you are checking out a one-of-one rug and want guidance before payment, use the inquiry flow and we will review the piece with you directly.</p>
             <Link className={styles.secondaryAction} href="/contact">
-              Contact the studio
+              Contact the Studio
             </Link>
           </div>
           <button
@@ -751,7 +751,7 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           </div>
           <p className={styles.panelBody}>{props.nonConfirmationRouteViewModel.shipping.body}</p>
           <div className={styles.reviewCard}>
-            <h3>Shipping review</h3>
+            <h3>Shipping Review</h3>
             <p>We review the destination and shipping conditions before payment is captured. If anything needs clarification, we contact you before moving forward.</p>
           </div>
           <button
@@ -771,11 +771,11 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             <h2>Payment</h2>
           </div>
           <div className={styles.reviewCard}>
-            <h3>Secure payment</h3>
+            <h3>Secure Payment</h3>
             <p>{props.nonConfirmationRouteViewModel.payment.body}</p>
           </div>
           <div className={styles.reviewCard}>
-            <h3>What happens next</h3>
+            <h3>What Happens Next</h3>
             <p>
               You will be redirected to Stripe Checkout to review your payment details. After
               checkout, we confirm your order details, destination, and next steps by email before
@@ -783,15 +783,15 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             </p>
           </div>
           <div className={styles.reviewCard}>
-            <h3>Prefer a reviewed buying path?</h3>
+            <h3>Prefer a Reviewed Buying Path?</h3>
             <p>For one-of-one rugs or project purchases, you can contact the studio instead of continuing through checkout.</p>
             <Link className={styles.secondaryAction} href="/contact?inquiryType=product-inquiry">
-              Start an inquiry instead
+              Start an Inquiry Instead
             </Link>
           </div>
           {props.checkoutExecutionAttempt.message ? (
             <div className={styles.reviewCard}>
-              <h3>Checkout update</h3>
+              <h3>Checkout Update</h3>
               <p>{props.checkoutExecutionAttempt.message}</p>
             </div>
           ) : null}
@@ -826,7 +826,7 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             <h2>Review</h2>
           </div>
           <div className={styles.reviewCard}>
-            <h3>Shipping address</h3>
+            <h3>Shipping Address</h3>
             {props.reviewViewModel.shippingAddressLines ? (
               <>
                 {props.reviewViewModel.shippingAddressLines.map((line) => (
@@ -838,7 +838,7 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             )}
           </div>
           <div className={styles.reviewCard}>
-            <h3>Shipping method</h3>
+            <h3>Shipping Method</h3>
             <p>{props.reviewViewModel.shippingMethodLabel}</p>
           </div>
           <div className={styles.reviewCard}>
@@ -850,12 +850,12 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             destination, and next steps by email before payment is captured.
           </p>
           <div className={styles.reviewCard}>
-            <h3>Final review</h3>
+            <h3>Final Review</h3>
             <p>This step confirms your checkout details in our system. If you need to switch to a more guided inquiry flow, contact the studio before proceeding.</p>
           </div>
           {props.reviewViewModel.submissionAttempt.failureMessage ? (
             <div className={styles.reviewCard}>
-              <h3>Checkout update</h3>
+              <h3>Checkout Update</h3>
               <p>{props.reviewViewModel.submissionAttempt.failureMessage}</p>
             </div>
           ) : null}
@@ -895,15 +895,15 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
             ) : null}
           </div>
           <div className={styles.reviewCard}>
-            <h3>Next step support</h3>
+            <h3>Next Step Support</h3>
             <p>If you need to clarify delivery timing, product questions, or project details after checkout, reply to the confirmation email or contact the studio directly.</p>
           </div>
           <div className={styles.formGrid}>
             <Link className={styles.secondaryAction} href="/shop">
-              Return to shop
+              Return to Shop
             </Link>
             <Link className={styles.secondaryAction} href="/contact?inquiryType=order-question">
-              Contact the studio
+              Contact the Studio
             </Link>
           </div>
         </div>

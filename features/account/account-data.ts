@@ -57,13 +57,13 @@ export const accountDashboardSections = [
   },
   {
     id: "orders",
-    title: "Order history",
+    title: "Order History",
     body:
       "Orders linked to this account email appear here.",
   },
   {
     id: "profile",
-    title: "Profile details",
+    title: "Profile Details",
     body:
       "Update the contact details tied to this account.",
   },

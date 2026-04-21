@@ -112,7 +112,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
   return {
     shell: {
       eyebrow: "Checkout",
-      title: "Secure checkout",
+      title: "Secure Checkout",
       body:
         "Review your order details, confirm your shipping information, and continue to secure payment. Final delivery details are confirmed before payment is captured.",
     },
@@ -129,7 +129,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
       isComplete: input.step !== "start" && currentStepIndex > index,
     })),
     start: {
-      title: input.hasCartItems ? "Ready to check out" : "Your cart is empty",
+      title: input.hasCartItems ? "Ready to Check Out" : "Your Cart Is Empty",
       body: input.hasCartItems
         ? "Continue to checkout to confirm your details, review delivery information, and move to secure payment."
         : "Add a product to your cart before starting checkout.",
@@ -142,7 +142,7 @@ export function createCheckoutNonConfirmationRouteViewModel(input: {
       actionLabel: "Continue to shipping",
     },
     shipping: {
-      optionTitle: "Standard shipping",
+      optionTitle: "Standard Shipping",
       optionBody: "Available for the United States, Canada, and Australia",
       optionPriceLabel: "$0.00",
       body:

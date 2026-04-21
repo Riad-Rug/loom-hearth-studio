@@ -26,7 +26,7 @@ export function CartPageView() {
         </div>
 
         <div className={styles.emptyState}>
-          <h2>Ask about any piece you're considering.</h2>
+          <h2>Ask About Any Piece You're Considering.</h2>
           <p>
             Product pages now route into the contact experience so customers can request details,
             confirm availability, and discuss next steps without being sent into a dead-end cart or

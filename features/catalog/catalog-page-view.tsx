@@ -72,7 +72,7 @@ export function CatalogPageView({ category, products }: CatalogPageViewProps) {
         <div className={styles.tradePanel}>
           <div className={styles.tradePanelCopy}>
             <p className={styles.heroPanelLabel}>Trade and project support</p>
-            <h2>Working on a client project?</h2>
+            <h2>Working on a Client Project?</h2>
             <p>
               Use the trade route for sourcing questions, image requests, and project-specific
               inquiries before you present a piece or move into checkout.

@@ -110,15 +110,15 @@ export const rugPlaceholders: RugPlaceholderProduct[] = [
     ],
     detailSections: [
       {
-        title: "Materials & origin",
+        title: "Materials & Origin",
         body: "Reserved for PRD-supported material and origin details. This content is static placeholder copy only.",
       },
       {
-        title: "Dimensions & care",
+        title: "Dimensions & Care",
         body: "Reserved for rug-specific measurements, care guidance, and handling notes without adding real catalog logic.",
       },
       {
-        title: "Shipping & returns",
+        title: "Shipping & Returns",
         body: "Reserved for policy-aware PDP details. Launch shipping remains US-only and free at launch.",
       },
     ],
@@ -149,15 +149,15 @@ export const rugPlaceholders: RugPlaceholderProduct[] = [
     ],
     detailSections: [
       {
-        title: "Materials & origin",
+        title: "Materials & Origin",
         body: "Reserved for provenance and construction notes in the rug template.",
       },
       {
-        title: "Dimensions & care",
+        title: "Dimensions & Care",
         body: "Reserved for size and care presentation only. No CMS or product retrieval is wired yet.",
       },
       {
-        title: "Shipping & returns",
+        title: "Shipping & Returns",
         body: "Reserved for launch-policy messaging on the PDP.",
       },
     ],
@@ -192,15 +192,15 @@ export const multiUnitPlaceholders: MultiUnitPlaceholderProduct[] = [
     ],
     detailSections: [
       {
-        title: "Materials & origin",
+        title: "Materials & Origin",
         body: "Reserved for content about construction, origin, and styling notes.",
       },
       {
-        title: "Sizing & care",
+        title: "Sizing & Care",
         body: "Reserved for multi-unit dimensions and care instructions.",
       },
       {
-        title: "Shipping & returns",
+        title: "Shipping & Returns",
         body: "Reserved for policy-aware PDP information at launch.",
       },
     ],
@@ -232,15 +232,15 @@ export const multiUnitPlaceholders: MultiUnitPlaceholderProduct[] = [
     ],
     detailSections: [
       {
-        title: "Materials & origin",
+        title: "Materials & Origin",
         body: "Reserved for soft-furnishing composition and origin details.",
       },
       {
-        title: "Sizing & care",
+        title: "Sizing & Care",
         body: "Reserved for size and care content in the multi-unit template.",
       },
       {
-        title: "Shipping & returns",
+        title: "Shipping & Returns",
         body: "Reserved for launch-policy details.",
       },
     ],
@@ -271,15 +271,15 @@ export const multiUnitPlaceholders: MultiUnitPlaceholderProduct[] = [
     ],
     detailSections: [
       {
-        title: "Materials & origin",
+        title: "Materials & Origin",
         body: "Reserved for decor-specific composition and origin details.",
       },
       {
-        title: "Sizing & care",
+        title: "Sizing & Care",
         body: "Reserved for measurement and care guidance.",
       },
       {
-        title: "Shipping & returns",
+        title: "Shipping & Returns",
         body: "Reserved for launch-policy details.",
       },
     ],

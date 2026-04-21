@@ -16,11 +16,11 @@
   gap: var(--space-4);
   width: min(100%, 34rem);
   padding: clamp(var(--space-5), 5vw, var(--space-7));
-  border: 1px solid rgba(184, 94, 59, 0.22);
+  border: 1px solid rgba(198, 106, 61, 0.22);
   border-radius: var(--radius-xl);
   background:
-    radial-gradient(circle at top right, rgba(184, 94, 59, 0.15), transparent 36%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(245, 239, 228, 0.98));
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.15), transparent 36%),
+    linear-gradient(145deg, #faf7f0, var(--color-wool-cream));
   box-shadow: 0 1.6rem 4rem rgba(34, 33, 38, 0.28);
   color: var(--color-charcoal-ink);
   animation: riseIn 220ms ease both;
@@ -37,7 +37,7 @@
   justify-content: center;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-wool-cream);
   color: var(--color-charcoal-ink);
   cursor: pointer;
   transition:
@@ -47,7 +47,7 @@
 
 .closeButton:hover,
 .closeButton:focus-visible {
-  border-color: rgba(184, 94, 59, 0.45);
+  border-color: rgba(198, 106, 61, 0.45);
   outline: none;
   transform: translateY(-1px);
 }
@@ -55,9 +55,9 @@
 .eyebrow {
   margin: 0;
   color: var(--color-clay-terracotta);
-  font-size: 0.74rem;
+  font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -100,13 +100,13 @@
   padding: 0 1rem;
   border: 1px solid var(--color-border-strong);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.84);
+  background: var(--color-wool-cream);
   color: var(--color-charcoal-ink);
   font: inherit;
 }
 
 .input::placeholder {
-  color: rgba(34, 33, 38, 0.48);
+  color: var(--color-olive-thread);
 }
 
 .submitButton {
@@ -119,8 +119,11 @@
   border-radius: 999px;
   background: var(--button-primary-bg);
   color: var(--button-primary-text);
-  font-weight: 600;
-  box-shadow: 0 0.75rem 1.5rem rgba(184, 94, 59, 0.18);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 0.75rem 1.5rem rgba(198, 106, 61, 0.18);
   cursor: pointer;
   transition:
     box-shadow 150ms ease,
@@ -129,7 +132,7 @@
 
 .submitButton:hover,
 .submitButton:focus-visible {
-  box-shadow: 0 1rem 1.8rem rgba(184, 94, 59, 0.22);
+  box-shadow: 0 1rem 1.8rem rgba(198, 106, 61, 0.22);
   outline: none;
   transform: translateY(-1px);
 }

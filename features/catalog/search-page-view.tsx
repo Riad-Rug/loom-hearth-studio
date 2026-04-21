@@ -78,7 +78,7 @@ export function SearchPageView({ query, results, totalCount }: SearchPageViewPro
         ) : (
           <div className={styles.emptySearch}>
             <p className={styles.heroPanelLabel}>No matching pieces</p>
-            <h2>Try a broader term or browse the main collection.</h2>
+            <h2>Try a Broader Term or Browse the Main Collection.</h2>
             <div className={styles.tradePanelActions}>
               <Link className={styles.primaryAction} href="/shop">
                 Shop all pieces

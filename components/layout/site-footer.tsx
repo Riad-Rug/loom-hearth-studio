@@ -25,6 +25,7 @@ export async function SiteFooter() {
         <div className="site-footer__grid">
           <div className="site-footer__intro">
             <p className="site-footer__eyebrow">{introTitle}</p>
+            <p className="site-footer__statement">Sourced across Morocco. Selected in person.</p>
             <p className="site-footer__brand">{content.footer.introBody}</p>
             <p className="site-footer__meta">{content.footer.introMeta}</p>
             <p className="site-footer__trade">

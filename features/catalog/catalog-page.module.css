@@ -12,7 +12,7 @@
   border-radius: var(--radius-xl);
   background:
     radial-gradient(circle at top right, rgba(109, 113, 88, 0.16), transparent 34%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(245, 239, 228, 0.95));
+    linear-gradient(135deg, #faf7f0, var(--color-wool-cream));
   box-shadow: var(--shadow-panel);
 }
 
@@ -23,17 +23,18 @@
 .eyebrow {
   margin: 0 0 var(--space-3);
   color: var(--color-clay-terracotta);
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .heroCopy h1 {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(2.6rem, 4.6vw, 4.15rem);
-  line-height: 0.98;
-  letter-spacing: -0.04em;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.032em;
 }
 
 .lede {
@@ -58,9 +59,10 @@
 .heroPanelLabel,
 .sidebarHeading {
   margin: 0;
-  color: rgba(245, 239, 228, 0.72);
-  font-size: 0.76rem;
-  letter-spacing: 0.18em;
+  color: var(--color-sand);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -80,8 +82,8 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   background:
-    radial-gradient(circle at top right, rgba(184, 94, 59, 0.14), transparent 34%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(245, 239, 228, 0.95));
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.14), transparent 34%),
+    linear-gradient(135deg, #faf7f0, var(--color-wool-cream));
   box-shadow: var(--shadow-panel);
 }
 
@@ -92,16 +94,16 @@
   border: 1px solid rgba(34, 33, 38, 0.08);
   border-radius: var(--radius-lg);
   background:
-    linear-gradient(135deg, rgba(255, 250, 244, 0.94), rgba(245, 239, 228, 0.74)),
-    linear-gradient(135deg, rgba(184, 94, 59, 0.12), transparent);
+    linear-gradient(135deg, #faf7f0, var(--color-wool-cream)),
+    linear-gradient(135deg, rgba(198, 106, 61, 0.12), transparent);
   box-shadow: var(--shadow-soft);
 }
 
 .searchLabel {
   color: var(--color-clay-terracotta);
-  font-size: 0.72rem;
+  font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -112,7 +114,7 @@
   padding: 0.45rem;
   border: 1px solid rgba(34, 33, 38, 0.12);
   border-radius: 999px;
-  background: #fffaf4;
+  background: var(--color-wool-cream);
 }
 
 .searchInputShell svg {
@@ -121,7 +123,7 @@
   margin-left: 0.7rem;
   flex: 0 0 auto;
   fill: none;
-  stroke: rgba(34, 33, 38, 0.58);
+  stroke: var(--color-olive-thread);
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.9;
@@ -138,7 +140,7 @@
 }
 
 .searchInput::placeholder {
-  color: rgba(34, 33, 38, 0.46);
+  color: var(--color-olive-thread);
 }
 
 .searchSubmit {
@@ -163,7 +165,7 @@
 .searchSubmit:focus-visible {
   border-color: var(--button-primary-bg-hover);
   background: var(--button-primary-bg-hover);
-  box-shadow: 0 0.75rem 1.5rem rgba(184, 94, 59, 0.18);
+  box-shadow: 0 0.75rem 1.5rem rgba(198, 106, 61, 0.18);
   outline: none;
   transform: translateY(-1px);
 }
@@ -188,7 +190,7 @@
   padding: var(--space-5);
   border: 1px solid rgba(34, 33, 38, 0.08);
   border-radius: var(--radius-lg);
-  background: rgba(245, 239, 228, 0.42);
+  background: rgba(245, 241, 232, 0.42);
 }
 
 .emptySearch h2 {
@@ -215,7 +217,7 @@
   padding: var(--space-4) var(--space-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.74);
+  background: #faf7f0;
 }
 
 .tradePanelCopy {
@@ -253,7 +255,10 @@
   justify-content: center;
   padding: 0.95rem 1.25rem;
   border-radius: 999px;
-  font-weight: 600;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   transition:
     transform 150ms ease,
     box-shadow 150ms ease,
@@ -266,7 +271,7 @@
   border: 1px solid var(--button-primary-bg);
   background: var(--button-primary-bg);
   color: var(--button-primary-text);
-  box-shadow: 0 0.75rem 1.5rem rgba(184, 94, 59, 0.18);
+  box-shadow: 0 0.75rem 1.5rem rgba(198, 106, 61, 0.18);
 }
 
 .secondaryAction {
@@ -284,7 +289,10 @@
     linear-gradient(90deg, var(--button-tertiary-underline), var(--button-tertiary-underline)) 0 100% / 100% 0.32rem no-repeat,
     transparent;
   color: var(--color-charcoal-ink);
-  font-weight: 600;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   transition:
     background-size 150ms ease,
     color 150ms ease,
@@ -305,7 +313,7 @@
 .primaryAction:focus-visible {
   border-color: var(--button-primary-bg-hover);
   background: var(--button-primary-bg-hover);
-  box-shadow: 0 1rem 1.8rem rgba(184, 94, 59, 0.22);
+  box-shadow: 0 1rem 1.8rem rgba(198, 106, 61, 0.22);
 }
 
 .secondaryAction:hover,
@@ -319,7 +327,7 @@
   background:
     linear-gradient(90deg, var(--button-tertiary-underline-hover), var(--button-tertiary-underline-hover)) 0 100% / 100% 0.46rem no-repeat,
     transparent;
-  color: rgba(34, 33, 38, 0.92);
+  color: var(--color-charcoal-ink);
 }
 
 .categoryChip {
@@ -329,8 +337,8 @@
   padding: 0.85rem 1.15rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.68);
-  color: rgba(34, 33, 38, 0.82);
+  background: var(--color-wool-cream);
+  color: var(--color-charcoal-ink);
   transition:
     border-color 150ms ease,
     background-color 150ms ease,
@@ -342,16 +350,16 @@
 .categoryChip:hover,
 .categoryChip:focus-visible {
   border-color: rgba(34, 33, 38, 0.16);
-  background: rgba(184, 94, 59, 0.12);
+  background: rgba(198, 106, 61, 0.12);
   color: var(--color-charcoal-ink);
   outline: none;
 }
 
 .categoryChipActive {
-  border-color: rgba(184, 94, 59, 0.32);
-  background: rgba(184, 94, 59, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(184, 94, 59, 0.08);
-  color: rgba(34, 33, 38, 0.96);
+  border-color: rgba(198, 106, 61, 0.32);
+  background: rgba(198, 106, 61, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(198, 106, 61, 0.08);
+  color: var(--color-charcoal-ink);
 }
 
 .catalogShell {
@@ -370,8 +378,8 @@
   padding: 0.55rem 0.8rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(245, 239, 228, 0.8);
-  color: rgba(34, 33, 38, 0.74);
+  background: var(--color-wool-cream);
+  color: var(--color-olive-thread);
   font-size: 0.78rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -390,7 +398,7 @@
   padding: var(--space-4) var(--space-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.74);
+  background: #faf7f0;
 }
 
 .toolbarIntro {
@@ -411,7 +419,7 @@
 }
 
 .sortShell label {
-  color: rgba(34, 33, 38, 0.78);
+  color: var(--color-text-body);
 }
 
 .sortSelect {
@@ -419,7 +427,7 @@
   padding: 0.75rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-wool-cream);
   color: var(--color-charcoal-ink);
   font: inherit;
 }
@@ -436,7 +444,7 @@
   cursor: pointer;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.82);
+  background: #faf7f0;
   color: inherit;
   text-decoration: none;
   box-shadow: var(--shadow-soft);
@@ -459,7 +467,7 @@
   aspect-ratio: 4 / 5;
   background:
     linear-gradient(135deg, rgba(34, 33, 38, 0.08), rgba(109, 113, 88, 0.16)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(245, 239, 228, 0.4));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(245, 241, 232, 0.4));
   overflow: hidden;
 }
 
@@ -485,7 +493,7 @@
   border: 1px solid rgba(255, 255, 255, 0.34);
   border-radius: 999px;
   background: rgba(34, 33, 38, 0.72);
-  color: var(--color-white);
+  color: var(--color-wool-cream);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -601,14 +609,15 @@
 }
 
 .productFallbackEyebrow {
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
+  color: var(--color-sand);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .productFallbackTitle {
-  color: var(--color-white);
+  color: var(--color-wool-cream);
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.25rem;
   line-height: 1.05;
@@ -616,8 +625,9 @@
 }
 
 .productFallbackNote {
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 0.72rem;
+  color: var(--color-wool-cream);
+  font-size: 0.6875rem;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -634,7 +644,7 @@
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(34, 33, 38, 0.52);
+  color: var(--color-olive-thread);
 }
 
 .productPrice {
@@ -646,7 +656,7 @@
 
 .productSubtitle {
   margin: 0;
-  color: rgba(34, 33, 38, 0.58);
+  color: var(--color-olive-thread);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.08em;

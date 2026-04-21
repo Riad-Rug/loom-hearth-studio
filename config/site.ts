@@ -55,22 +55,22 @@ export const siteConfig = {
   ogImagePath: "/og/default-placeholder.jpg",
   tagline: "Handcrafted Moroccan rugs and home decor",
   announcementItems: [
-    "FREE SHIPPING TO THE UNITED STATES, CANADA, AND AUSTRALIA",
     "COLOUR VERIFIED BEFORE PAYMENT IS CAPTURED",
+    "FREE SHIPPING TO THE UNITED STATES, CANADA, AND AUSTRALIA",
     "SHIPS FROM MOROCCO",
   ],
   primaryNav: [
-    { href: "/shop", label: "Shop" },
-    { href: "/lookbook", label: "Lookbook" },
+    { href: "/shop", label: "SHOP" },
+    { href: "/lookbook", label: "LOOKBOOK" },
     {
-      label: "Story",
+      label: "STORY",
       items: [
         { href: "/about", label: "About" },
         { href: "/sourcing", label: "Sourcing" },
         { href: "/blog", label: "Journal" },
       ],
     },
-    { href: "/trade", label: "Trade" },
+    { href: "/trade", label: "TRADE" },
   ],
   supportNav: [
     { href: "/contact", label: "Contact" },

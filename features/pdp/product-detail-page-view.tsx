@@ -339,7 +339,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           <div className={styles.supportSection}>
             <div className={styles.sectionIntro}>
               <p className={styles.eyebrow}>How it works</p>
-              <h2>How this piece is verified and shipped.</h2>
+              <h2>How This Piece Is Verified and Shipped.</h2>
             </div>
             <div className={styles.supportGrid}>
               {product.supportPanels.map((panel) => (
@@ -366,7 +366,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           <div className={styles.recommendationSection}>
             <div className={styles.sectionIntro}>
               <p className={styles.eyebrow}>You may also like</p>
-              <h2>Similar rugs to keep in view.</h2>
+              <h2>Similar Rugs to Keep in View.</h2>
             </div>
             <div
               className={styles.recommendationCarousel}
@@ -386,7 +386,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         <div className={styles.detailSection}>
           <div className={styles.sectionIntro}>
             <p className={styles.eyebrow}>Details</p>
-            <h2>Materials, construction, and condition notes.</h2>
+            <h2>Materials, Construction, and Condition Notes.</h2>
           </div>
           <div className={styles.detailsGrid}>
             {product.detailSections.map((section) => (
@@ -447,7 +447,7 @@ function ShippingReturnsAccordion() {
           <li>14-day returns.</li>
         </ul>
       }
-      title="Shipping & returns"
+      title="Shipping & Returns"
       variant="shipping"
     />
   );

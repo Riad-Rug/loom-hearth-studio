@@ -153,7 +153,7 @@ export function CartDrawer() {
             <div className={styles.header}>
               <div>
                 <p className={styles.eyebrow}>Cart</p>
-                <h2>Mini cart</h2>
+                <h2>Mini Cart</h2>
                 <p className={styles.headerMeta}>
                   {isEmpty ? "No pieces added yet." : `${itemCountLabel} ready to review.`}
                 </p>
