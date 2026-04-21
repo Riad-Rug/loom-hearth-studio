@@ -336,8 +336,6 @@
   align-self: start;
   gap: var(--space-4);
   padding: var(--space-6);
-  position: sticky;
-  top: 1.5rem;
   min-width: 0;
 }
 
@@ -993,10 +991,6 @@
 
   .recommendationCarousel {
     grid-auto-columns: minmax(17rem, 78vw);
-  }
-
-  .infoColumn {
-    position: static;
   }
 
   .galleryStack {
