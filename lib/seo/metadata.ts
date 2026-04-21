@@ -48,6 +48,23 @@ export function buildMetadata({
   const resolvedOgTitle = normalizeTemplatedTitle(ogTitle || title);
   const resolvedOgDescription = ogDescription || description;
 
+  const openGraph: NonNullable<Metadata["openGraph"]> = {
+    title: resolvedOgTitle,
+    description: resolvedOgDescription,
+    url: canonical,
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
+    ...(type === "product" ? {} : { type }),
+    images: [
+      {
+        url: resolvedOgImage,
+        alt: ogImageAlt || siteConfig.name,
+        width: ogImageWidth,
+        height: ogImageHeight,
+      },
+    ],
+  };
+
   return {
     title: resolvedTitle,
     description,
@@ -62,22 +79,7 @@ export function buildMetadata({
         follow: !noIndex,
       },
     },
-    openGraph: {
-      title: resolvedOgTitle,
-      description: resolvedOgDescription,
-      url: canonical,
-      siteName: siteConfig.name,
-      locale: siteConfig.locale,
-      type: type === "product" ? undefined : type,
-      images: [
-        {
-          url: resolvedOgImage,
-          alt: ogImageAlt || siteConfig.name,
-          width: ogImageWidth,
-          height: ogImageHeight,
-        },
-      ],
-    },
+    openGraph,
     twitter: {
       card: "summary_large_image",
       title: resolvedOgTitle,
