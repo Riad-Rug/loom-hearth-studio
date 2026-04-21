@@ -253,8 +253,8 @@ p {
 }
 
 .site-header__announcement-copy span {
-  color: var(--color-text-muted);
-  font-weight: 600;
+  color: var(--color-charcoal-ink);
+  font-weight: 400;
   letter-spacing: 0.08em;
 }
 
