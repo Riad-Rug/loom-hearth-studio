@@ -541,7 +541,7 @@ p {
   max-width: 20rem;
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(1.6rem, 2.55vw, 2.1rem);
+  font-size: clamp(1.5rem, 2vw, 1.75rem);
   line-height: 1.05;
   letter-spacing: -0.032em;
 }
@@ -557,6 +557,14 @@ p {
   color: var(--color-text-body);
 }
 
+.site-footer__trade a {
+  color: var(--color-charcoal-ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--color-sand);
+  text-underline-offset: 0.18em;
+}
+
 .site-footer__legal {
   display: grid;
   gap: 0.2rem;
@@ -568,7 +576,7 @@ p {
 
 .site-footer__legal-heading {
   color: var(--color-olive-thread);
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;

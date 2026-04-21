@@ -26,11 +26,13 @@ export async function SiteFooter() {
           <div className="site-footer__intro">
             <p className="site-footer__eyebrow">{introTitle}</p>
             <p className="site-footer__statement">Sourced across Morocco. Selected in person.</p>
-            <p className="site-footer__brand">{content.footer.introBody}</p>
+            {content.footer.introBody ? (
+              <p className="site-footer__brand">{content.footer.introBody}</p>
+            ) : null}
             <p className="site-footer__meta">{content.footer.introMeta}</p>
             <p className="site-footer__trade">
-              Interior designers, wholesalers, and trade professionals: our full inventory is larger than what is
-              listed online. Contact us for sourcing and project inquiries.
+              <Link href="/trade">Trade &amp; interior designers</Link> - our full inventory is larger than what is
+              shown online.
             </p>
             <div className="site-footer__legal">
               <p className="site-footer__legal-heading">Studio and contact details</p>
@@ -38,7 +40,6 @@ export async function SiteFooter() {
               <p>Atelier &amp; sourcing: Marrakech, Morocco</p>
               <p>Registered office: Wyoming, USA</p>
               <p>{publicBusinessDetails.email}</p>
-              <p>{publicBusinessDetails.complaintsLine}</p>
             </div>
           </div>
           <div className="site-footer__nav-group">

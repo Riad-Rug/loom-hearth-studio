@@ -274,10 +274,8 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
     return item;
   });
 
-  next.footer.introBody =
-    "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor  sourced directly across Morocco and shipped to the United States, Canada, and Australia.";
-  next.footer.introMeta =
-    "Free shipping to all three markets. Inquiries from other countries are reviewed case by case. Prices in USD. Destination and delivery conditions are confirmed before payment is captured.";
+  next.footer.introBody = "";
+  next.footer.introMeta = "Prices in USD. Free shipping to the US, Canada, and Australia.";
 
   return next;
 }

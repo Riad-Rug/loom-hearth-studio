@@ -586,9 +586,8 @@ const defaultHomePageContent: HomePageContent = {
         "Structured footer content covering primary navigation, support links, and collection shortcuts for the Loom & Hearth Studio storefront.",
     },
     introTitle: siteConfig.name,
-    introBody: "Handcrafted Moroccan rugs, vintage rugs, poufs, pillows, and home decor  sourced directly across Morocco and shipped to the United States, Canada, and Australia.",
-    introMeta:
-      "Free shipping to all three markets. Inquiries from other countries are reviewed case by case. Prices in USD. Destination and delivery conditions are confirmed before payment is captured.",
+    introBody: "",
+    introMeta: "Prices in USD. Free shipping to the US, Canada, and Australia.",
     exploreHeading: "Explore",
     exploreLinks: [
       { href: "/shop", label: "Shop" },
