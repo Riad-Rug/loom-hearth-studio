@@ -27,13 +27,15 @@ import type { MediaAsset, Product, ProductCategory, RugProduct } from "@/types/d
 
 const productTitleMaxLength = 60;
 const dimensionSeparator = " × ";
+const defaultRugPalette = ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"] as const;
+const paletteLabelsByHex = new Map([
+  ["#F1E8D6", "Ivory ground"],
+  ["#3A5F3A", "Forest green"],
+  ["#C89B2A", "Mustard"],
+  ["#B9562A", "Burnt orange"],
+  ["#7A2B2B", "Burgundy"],
+]);
 const rugGalleryShotPlan = [
-  {
-    role: "hero",
-    label: "Full flat-lay",
-    altSuffix: "shown as a full flat-lay",
-    transformation: { c: "fill", g: "auto", w: 1600, h: 1200, q: "auto", f: "auto" },
-  },
   {
     role: "styled",
     label: "Styled in room",
@@ -53,6 +55,12 @@ const rugGalleryShotPlan = [
     transformation: { c: "fill", g: "auto", w: 1400, h: 1050, q: "auto", f: "auto" },
   },
   {
+    role: "motif",
+    label: "Motif detail",
+    altSuffix: "detail of one woven motif",
+    transformation: { c: "fill", g: "auto", w: 1400, h: 1050, q: "auto", f: "auto" },
+  },
+  {
     role: "back",
     label: "Reverse side",
     altSuffix: "reverse side construction detail",
@@ -65,10 +73,10 @@ const rugGalleryShotPlan = [
     transformation: { c: "fill", g: "auto", w: 1600, h: 1200, q: "auto", f: "auto" },
   },
   {
-    role: "motif",
-    label: "Motif detail",
-    altSuffix: "detail of one woven motif",
-    transformation: { c: "fill", g: "auto", w: 1400, h: 1050, q: "auto", f: "auto" },
+    role: "hero",
+    label: "Full flat-lay",
+    altSuffix: "shown as a full flat-lay",
+    transformation: { c: "fill", g: "auto", w: 1600, h: 1200, q: "auto", f: "auto" },
   },
 ] as const satisfies ReadonlyArray<{
   role: MediaAsset["role"];
@@ -206,6 +214,7 @@ function createProductDetailPageViewModel(
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
     gallery: createProductGallery(product),
+    palette: createProductPalette(product),
     materialLabel: product.materials.join(", "),
     originLabel: product.origin,
     techniqueLabel: product.type === "rug" ? "Handwoven" : undefined,
@@ -493,11 +502,6 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
         title: "Care",
         body: createCareDescription(product),
       },
-      {
-        title: "What to expect",
-        body:
-          "After inquiry, the studio confirms the actual rug with you in natural, warm, and cool light before payment is captured. Shipping details, destination fit, and any final questions are reviewed first.",
-      },
     ];
   }
 
@@ -521,11 +525,6 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
     {
       title: "Care",
       body: createCareDescription(product),
-    },
-    {
-      title: "What to expect",
-      body:
-        "Use the inquiry flow to confirm availability, destination, lead time, and delivery conditions before payment is captured.",
     },
   ];
 }
@@ -661,6 +660,20 @@ function createProductGallery(product: Product) {
     .filter((image) => !plannedIds.has(image.id));
 
   return [...plannedGallery, ...additionalImages];
+}
+
+function createProductPalette(product: Product) {
+  const palette =
+    product.type === "rug" && product.palette.length ? product.palette : [...defaultRugPalette];
+
+  return palette.slice(0, 5).map((hex, index) => {
+    const normalizedHex = hex.toUpperCase();
+
+    return {
+      hex: normalizedHex,
+      label: paletteLabelsByHex.get(normalizedHex) ?? `Accent ${index + 1}`,
+    };
+  });
 }
 
 function createGalleryItem(image: MediaAsset, index: number) {

@@ -199,6 +199,7 @@ model CatalogProduct {
   status           String
   images           Json
   materials        Json
+  palette          Json?
   seoTitle         String
   seoDescription   String          @db.Text
   rugStyle         String?

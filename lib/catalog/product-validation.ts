@@ -92,6 +92,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     priceUsd: readNumber(formData, "priceUsd"),
     images: parseImages(readString(formData, "imagesJson")),
     materials: parseMaterials(readString(formData, "materialsJson")),
+    palette: parsePalette(readString(formData, "paletteJson")),
     origin: readString(formData, "origin"),
     status: readString(formData, "status"),
     seoTitle: readString(formData, "seoTitle"),
@@ -227,6 +228,10 @@ export function validateProductMutationInput(
 
     if (input.fixedQuantity !== 1) {
       fieldErrors.fixedQuantity = "Rugs must keep fixed quantity at 1.";
+    }
+
+    if (input.palette.length !== 5) {
+      fieldErrors.palette = "Rugs need exactly five palette colors.";
     }
 
     if (input.status === "active") {
@@ -376,6 +381,27 @@ function parseMaterials(raw: string) {
   } catch {
     return [];
   }
+}
+
+function parsePalette(raw: string) {
+  try {
+    const value = JSON.parse(raw) as unknown;
+
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((item) => (typeof item === "string" ? normalizeHexColor(item) : ""))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function normalizeHexColor(value: string) {
+  const trimmedValue = value.trim();
+  return /^#[0-9a-f]{6}$/iu.test(trimmedValue) ? trimmedValue.toUpperCase() : "";
 }
 
 function parseImages(raw: string): MediaAsset[] {

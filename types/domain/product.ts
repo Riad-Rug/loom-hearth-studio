@@ -16,6 +16,7 @@ export type ProductBase = SeoFields & {
   priceUsd: number;
   images: MediaAsset[];
   materials: string[];
+  palette: string[];
   origin: string;
   status: EntityStatus;
   provenanceNote?: string;

@@ -62,6 +62,9 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [materials, setMaterials] = useState(
     props.product.materials.length ? props.product.materials : [""],
   );
+  const [palette, setPalette] = useState(
+    props.product.palette.length ? props.product.palette : ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"],
+  );
   const [images, setImages] = useState<ProductImageRow[]>(
     props.product.images.length
       ? props.product.images.map((image) => ({
@@ -117,6 +120,9 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setInventory(props.product.inventory);
     setLowStockThreshold(props.product.lowStockThreshold);
     setMaterials(props.product.materials.length ? props.product.materials : [""]);
+    setPalette(
+      props.product.palette.length ? props.product.palette : ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"],
+    );
     setImages(
       props.product.images.length
         ? props.product.images.map((image) => ({
@@ -145,6 +151,12 @@ export function AdminProductForm(props: AdminProductFormProps) {
       current.map((variant, variantIndex) =>
         variantIndex === index ? { ...variant, ...patch } : variant,
       ),
+    );
+  }
+
+  function updatePaletteColor(index: number, value: string) {
+    setPalette((current) =>
+      current.map((color, colorIndex) => (colorIndex === index ? value : color)),
     );
   }
 
@@ -262,6 +274,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
       <input name="id" type="hidden" value={props.product.id ?? ""} />
       <input name="imagesJson" type="hidden" value={JSON.stringify(images)} />
       <input name="materialsJson" type="hidden" value={JSON.stringify(materials)} />
+      <input name="paletteJson" type="hidden" value={JSON.stringify(palette)} />
       <input name="variantsJson" type="hidden" value={JSON.stringify(variants)} />
       <input name="originalRoutePath" type="hidden" value={props.product.routePath} />
       <input name="confirmUrlChange" type="hidden" value={confirmUrlChange ? "true" : "false"} />
@@ -685,6 +698,26 @@ export function AdminProductForm(props: AdminProductFormProps) {
               />
               <em>{state.fieldErrors.weightKg}</em>
             </label>
+            <div className={styles.stack}>
+              <p className={styles.cardEyebrow}>Palette</p>
+              {palette.map((color, index) => (
+                <div key={`palette-${index + 1}`} className={styles.inlineGroup}>
+                  <input
+                    aria-label={`Palette color ${index + 1}`}
+                    type="color"
+                    value={color}
+                    onChange={(event) => updatePaletteColor(index, event.target.value)}
+                  />
+                  <input
+                    aria-label={`Palette hex ${index + 1}`}
+                    type="text"
+                    value={color}
+                    onChange={(event) => updatePaletteColor(index, event.target.value)}
+                  />
+                </div>
+              ))}
+              <em>{state.fieldErrors.palette}</em>
+            </div>
             <label className={styles.formField}>
               <span>Fixed quantity</span>
               <input

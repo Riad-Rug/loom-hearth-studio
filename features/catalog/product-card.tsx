@@ -4,7 +4,6 @@ import { useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 
-import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
 
@@ -64,17 +63,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </>
         ) : (
           <div className={styles.productFallback}>
-            <PlaceholderMedia
-              alt={product.name}
-              aspectRatio="4 / 5"
-              label="Loom & Hearth"
-              sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 33vw"
-            />
-            <div className={styles.productFallbackCopy}>
-              <span className={styles.productFallbackEyebrow}>{getCategoryLabel(product.category)}</span>
-              <strong className={styles.productFallbackTitle}>{product.name}</strong>
-              <span className={styles.productFallbackNote}>Image preview coming soon</span>
-            </div>
+            <span className={styles.productFallbackNote}>Image coming soon</span>
           </div>
         )}
       </div>

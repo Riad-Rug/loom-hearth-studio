@@ -160,6 +160,7 @@ function mapLaunchProductToCatalogProduct(product) {
     status: product.status,
     images: product.images,
     materials: product.materials,
+    palette: product.palette ?? null,
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
     rugStyle: product.type === "rug" ? product.rugStyle : null,

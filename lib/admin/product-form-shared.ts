@@ -15,6 +15,7 @@ export type AdminProductFormValues = {
   priceUsd: string;
   images: Product["images"];
   materials: string[];
+  palette: string[];
   origin: string;
   status: Product["status"];
   seoTitle: string;

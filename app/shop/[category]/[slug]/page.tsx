@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { getCategoryProductDetailByParams } from "@/lib/catalog/service";
+import { getCategoryLabel } from "@/lib/catalog/helpers";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { buildProductMetaDescription } from "@/lib/seo/product-metadata";
@@ -53,7 +54,7 @@ export default async function CategoryProductPage({
           { name: "Home", path: "/" },
           { name: "Shop", path: "/shop" },
           {
-            name: product.category.charAt(0).toUpperCase() + product.category.slice(1),
+            name: getCategoryLabel(product.category),
             path: `/shop/${product.category}`,
           },
           { name: product.name, path: productPath },

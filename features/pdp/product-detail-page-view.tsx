@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useId, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
@@ -190,6 +190,19 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                 </button>
               ))}
             </div>
+            {product.type === "rug" ? (
+              <div className={styles.paletteStrip} aria-label={`${product.name} color palette`}>
+                {product.palette.map((swatch) => (
+                  <div
+                    key={`${swatch.hex}-${swatch.label}`}
+                    className={styles.swatch}
+                    style={{ "--c": swatch.hex } as CSSProperties}
+                  >
+                    <span>{swatch.label}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div className={styles.infoColumn}>
@@ -219,16 +232,26 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           </div>
         </div>
 
+        <section className={styles.testimonialBand} aria-label="Customer note">
+          <blockquote>
+            You now have friends in Zurich. Thank you again for everything - we really appreciated it.
+          </blockquote>
+          <cite>Priyanka, Zurich - after receiving her rug</cite>
+        </section>
+
         {product.gallery.length > 1 ? (
           <div className={styles.galleryStoryPanel}>
-            <div className={styles.productDetailsIntro}>
-              <p className={styles.eyebrow}>Exact-piece gallery</p>
-              <h2>More ways to read the rug before you reserve.</h2>
+            <div className={styles.sectionHeader}>
+              <div>
+                <p className={styles.eyebrow}>Exact-piece gallery</p>
+                <h2>More ways to read the rug before you reserve.</h2>
+              </div>
+              <p className={styles.sectionHeaderIntro}>
+                Seven views of this exact piece — in room, up close, from behind, and at scale — so you can tell exactly what you're reserving.
+              </p>
             </div>
             <div className={styles.galleryStack} aria-label={`${product.name} image story`}>
-              {product.gallery.slice(1).map((item, offset) => {
-                const imageIndex = offset + 1;
-
+              {product.gallery.slice(0, 7).map((item, imageIndex) => {
                 return (
                   <button
                     key={`${item.id}-story`}
@@ -260,9 +283,14 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         ) : null}
 
         <div className={styles.productDetailsPanel}>
-          <div className={styles.productDetailsIntro}>
-            <p className={styles.eyebrow}>Piece notes</p>
-            <h2>Materials, construction, and buying details.</h2>
+          <div className={styles.sectionHeader}>
+            <div>
+              <p className={styles.eyebrow}>Piece notes</p>
+              <h2>Materials, construction, and buying details.</h2>
+            </div>
+            <p className={styles.sectionHeaderIntro}>
+              The technical facts, in plain language. Expand any section for more detail.
+            </p>
           </div>
 
           <div className={styles.productDetailsGrid}>
@@ -280,35 +308,9 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               </div>
             </div>
 
-            <aside className={styles.productDetailsAside} aria-label="Product specifications and sharing">
+            <aside className={styles.productDetailsAside} aria-label="Shipping and care notes">
               <ShippingReturnsAccordion />
-              <CustomerProofQuote />
-
-              <div className={styles.metaGrid}>
-                {product.specifications.map((spec) => (
-                  <div key={spec.label} className={styles.metaItem}>
-                    <span className={styles.metaLabel}>{spec.label}</span>
-                    <p className={styles.metaValue}>{spec.value}</p>
-                  </div>
-                ))}
-              </div>
-
-              {product.type === "rug" ? (
-                <Link className={styles.secondaryAction} href="/trade">
-                  Trade and project inquiries
-                </Link>
-              ) : null}
-
-              <div className={styles.shareBlock}>
-                <span className={styles.metaLabel}>Share</span>
-                <div className={styles.shareList}>
-                  {product.sharePlatforms.map((item) => (
-                    <button key={item} className={styles.shareButton} type="button">
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <CareAtAGlance />
             </aside>
           </div>
         </div>
@@ -402,11 +404,16 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
       ) : null}
 
       {product.supportPanels.length ? (
-        <Section width="wide">
+        <Section className={styles.standardBandGap} width="wide">
           <div className={styles.supportSection}>
-            <div className={styles.sectionIntro}>
-              <p className={styles.eyebrow}>How it works</p>
-              <h2>How This Piece Is Verified and Shipped.</h2>
+            <div className={styles.sectionHeader}>
+              <div>
+                <p className={styles.eyebrow}>How it works</p>
+                <h2>How This Piece Is Verified and Shipped.</h2>
+              </div>
+              <p className={styles.sectionHeaderIntro}>
+                Every one-of-one goes through the same three-step verification before we take payment.
+              </p>
             </div>
             <div className={styles.supportGrid}>
               {product.supportPanels.map((panel) => (
@@ -429,7 +436,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
       ) : null}
 
       {product.similarRugs.length ? (
-        <Section tone="muted" width="wide">
+        <Section className={styles.standardBandGap} tone="muted" width="wide">
           <div className={styles.recommendationSection}>
             <div className={styles.sectionIntro}>
               <p className={styles.eyebrow}>You may also like</p>
@@ -449,38 +456,8 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         </Section>
       ) : null}
 
-      <Section tone="muted" width="wide">
-        <div className={styles.relatedSection}>
-          <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>Related</p>
-            <h3 className={styles.secondarySectionHeading}>Related products</h3>
-          </div>
-          <div className={styles.relatedGrid}>
-            {product.related.map((item) => (
-              <Link key={item.href} className={styles.relatedCard} href={item.href as Route}>
-                <span>{item.categoryLabel}</span>
-                <strong>{item.title}</strong>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      <Section width="wide">
-        <div className={styles.relatedSection}>
-          <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>Recently viewed</p>
-            <h3 className={styles.secondarySectionHeading}>More from the collection</h3>
-          </div>
-          <div className={styles.relatedGrid}>
-            {product.recentlyViewed.map((item) => (
-              <Link key={item.href} className={styles.relatedCard} href={item.href as Route}>
-                <span>{item.categoryLabel}</span>
-                <strong>{item.title}</strong>
-              </Link>
-            ))}
-          </div>
-        </div>
+      <Section className={styles.standardBandGap} width="wide">
+        <ClosingBand product={product} />
       </Section>
     </div>
   );
@@ -541,17 +518,6 @@ function DecisionTrustStrip() {
   );
 }
 
-function CustomerProofQuote() {
-  return (
-    <figure className={styles.customerProof}>
-      <blockquote>
-        You now have friends in Zurich. Thank you again for everything - we really appreciated it.
-      </blockquote>
-      <figcaption>Priyanka, Zurich</figcaption>
-    </figure>
-  );
-}
-
 function PdpAccordionPanel({
   body,
   defaultOpen = false,
@@ -585,6 +551,25 @@ function PdpAccordionPanel({
         {typeof body === "string" ? renderAccordionBody(title, body) : body}
       </div>
     </section>
+  );
+}
+
+function CareAtAGlance() {
+  const items = [
+    "Vacuum on low suction without a beater bar.",
+    "Rotate seasonally so sunlight and foot traffic wear evenly.",
+    "Blot spills immediately and use a professional rug cleaner for deep cleaning.",
+  ];
+
+  return (
+    <aside className={styles.careCallout} aria-label="Care at a glance">
+      <p className={styles.metaLabel}>Care at a glance</p>
+      <ul>
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </aside>
   );
 }
 
@@ -635,6 +620,22 @@ function RugPurchaseShell({
         video, and only then is payment captured. 24-hour reply.
       </p>
     </div>
+  );
+}
+
+function ClosingBand({ product }: { product: ProductDetailPageViewModel }) {
+  return (
+    <section className={styles.closingBand} aria-label="Reserve or ask about this piece">
+      <p className={styles.closingBandPrompt}>Ready to reserve this piece, or have a question first?</p>
+      <div className={styles.closingBandActions}>
+        <Link className={styles.primaryAction} href={buildInquiryHref(product, { quantity: 1 }) as Route}>
+          Reserve - no payment yet
+        </Link>
+        <Link className={styles.secondaryAction} href="/trade">
+          Trade &amp; project inquiries
+        </Link>
+      </div>
+    </section>
   );
 }
 

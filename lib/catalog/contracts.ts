@@ -77,6 +77,10 @@ type ProductDetailPageViewModelBase = {
     role: string;
     isDerived?: boolean;
   }>;
+  palette: Array<{
+    hex: string;
+    label: string;
+  }>;
   materialLabel: string;
   originLabel: string;
   techniqueLabel?: string;
