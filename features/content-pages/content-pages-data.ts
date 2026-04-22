@@ -53,28 +53,14 @@ export const aboutBridge = {
 } as const;
 
 export const contactData = {
-  eyebrow: "Contact",
-  title: "Contact Loom & Hearth Studio",
+  title: "Get in touch",
   body:
-    "Questions about a specific piece, a trade project, your order, or a sourcing request? We review every message personally. If you are asking about a rug, include the product name, room dimensions, or any project timing you already know.\n\nEvery rug inquiry includes a review of the exact piece before payment is taken.",
-  formTitle: "Send an inquiry",
-  formBody:
-    "Share the details you already have. We use them to reply with practical next steps instead of a generic response.",
-  ctaLabel: "Send inquiry",
-  supportTitle: "Studio support",
-  supportBody:
-    "Reach us directly for the fastest response. Public trader and legal contact details are below.",
-  reassuranceLabel: "Support note",
-  reassuranceText:
-    "For rug inquiries, we review the exact piece before payment is taken and follow up with the right next step for your request, whether that is a video review, project hold discussion, or shipping guidance.",
-  responseTimeLabel: "Response timing",
-  responseTimeText: "Within 24 hours",
+    "Tell us what you're looking for and we'll reply personally within 24 hours - usually with photos or a short video of the actual piece.",
   legalNameLabel: publicBusinessDetails.legalName,
-  addressLabel: publicBusinessDetails.address,
   emailLabel: publicBusinessDetails.email,
-  complaintsLabel: publicBusinessDetails.complaintsLine,
-  hoursLabel: "Monday to Friday, 9am - 6pm CET (GMT+1)",
-  locationLabel: "Morocco sourcing studio - serving current supported markets",
+  whatsappLabel: publicBusinessDetails.whatsappLabel,
+  whatsappUrl: publicBusinessDetails.whatsappUrl,
+  hoursLabel: "Mon-Fri, 9am-6pm CET",
 } as const;
 
 export const faqItems: FaqItem[] = [

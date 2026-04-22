@@ -573,7 +573,7 @@ function RugPurchaseShell({
 }) {
   return (
     <div className={styles.purchaseCard}>
-      <Link className={styles.primaryAction} href={buildInquiryHref(product, { quantity: 1 }) as Route}>
+      <Link className={styles.primaryAction} href={buildInquiryHref(product) as Route}>
         Reserve - no payment yet
       </Link>
       <p className={styles.purchaseReassurance}>
@@ -589,7 +589,7 @@ function ClosingBand({ product }: { product: ProductDetailPageViewModel }) {
     <section className={styles.closingBand} aria-label="Reserve or ask about this piece">
       <p className={styles.closingBandPrompt}>Ready to reserve this piece, or have a question first?</p>
       <div className={styles.closingBandActions}>
-        <Link className={styles.primaryAction} href={buildInquiryHref(product, { quantity: 1 }) as Route}>
+        <Link className={styles.primaryAction} href={buildInquiryHref(product) as Route}>
           Reserve - no payment yet
         </Link>
         <Link className={styles.secondaryAction} href="/trade">
@@ -679,7 +679,7 @@ function MultiUnitPurchaseShell({
 
       <Link
         className={isOutOfStock ? styles.secondaryAction : styles.primaryAction}
-        href={buildInquiryHref(product, { quantity, variantName: selectedVariant }) as Route}
+        href={buildInquiryHref(product) as Route}
       >
         {isOutOfStock ? "Ask about availability" : "Request details"}
       </Link>
@@ -687,25 +687,11 @@ function MultiUnitPurchaseShell({
   );
 }
 
-function buildInquiryHref(
-  product: ProductDetailPageViewModel,
-  options?: {
-    quantity?: number;
-    variantName?: string;
-  },
-) {
+function buildInquiryHref(product: ProductDetailPageViewModel) {
   const params = new URLSearchParams({
     inquiryType: "product-inquiry",
     productName: product.name,
   });
-
-  if (options?.quantity) {
-    params.set("quantity", String(options.quantity));
-  }
-
-  if (options?.variantName) {
-    params.set("variant", options.variantName);
-  }
 
   return `/contact?${params.toString()}`;
 }

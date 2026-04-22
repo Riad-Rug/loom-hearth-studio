@@ -1,62 +1,86 @@
 "use server";
 
-import { redirect } from "next/navigation";
-
-import { getSupportedInquiryCountry } from "@/config/inquiry-countries";
 import { contactData } from "@/features/content-pages/content-pages-data";
 import { sendTransactionalEmailMessage } from "@/lib/email/service";
 
 const inquiryTypeLabels = {
-  "product-inquiry": "Product inquiry",
-  "trade-request": "Trade or project request",
-  "sourcing-request": "Sourcing request",
-  "order-question": "Order question",
+  "product-inquiry": "Product",
+  "trade-request": "Trade / project",
+  "order-question": "Order help",
 } as const;
 
-type InquiryDestination = {
-  countryCode: string;
-  countryLabel: string;
-  city: string;
-  region: string | null;
-  postalCode: string | null;
-  address1: string | null;
-  shippingAvailabilityNote: string | null;
+type InquiryType = keyof typeof inquiryTypeLabels;
+
+type ContactSubmissionState = {
+  tone: "success" | "error";
+  message: string;
+  name?: string;
+  email?: string;
+  values?: ContactFormValues;
+};
+
+type ContactFormValues = {
+  inquiryType?: InquiryType;
+  name?: string;
+  email?: string;
+  studioName?: string;
+  message?: string;
+  productName?: string;
 };
 
 type InquiryProjectContext = {
   studioName: string | null;
   productName: string | null;
-  variantName: string | null;
-  quantity: string | null;
-  roomType: string | null;
-  desiredSize: string | null;
-  projectTimeline: string | null;
-  requestFlags: string[];
 };
 
-export async function submitContactInquiry(formData: FormData) {
+export async function submitContactInquiry(
+  _state: ContactSubmissionState | null,
+  formData: FormData,
+): Promise<ContactSubmissionState> {
+  const honeypot = sanitizeContactField(formData.get("ref_40"), 120);
+
+  if (honeypot) {
+    return {
+      tone: "success",
+      message: "Thanks. We will reply personally within 24 hours.",
+    };
+  }
+
   const name = sanitizeContactField(formData.get("name"), 120);
   const email = sanitizeContactField(formData.get("email"), 160);
   const inquiryType = sanitizeInquiryType(formData.get("inquiryType"));
-  const destination = sanitizeInquiryDestination(formData);
   const projectContext = sanitizeProjectContext(formData);
   const message = sanitizeContactField(formData.get("message"), 2000);
+  const submittedValues = createSubmittedValues({
+    inquiryType: inquiryType ?? undefined,
+    name: name ?? undefined,
+    email: email ?? undefined,
+    studioName: projectContext.studioName ?? undefined,
+    message: message ?? undefined,
+    productName: projectContext.productName ?? undefined,
+  });
 
-  if (!name || !email || !inquiryType || !destination || !message || !isValidEmail(email)) {
-    redirect("/contact?status=error&reason=validation");
+  if (!name || !email || !inquiryType || !message || message.length < 10 || !isValidEmail(email)) {
+    return {
+      tone: "error",
+      message:
+        "Please add your name, a valid email, and a short message before sending.",
+      name: name ?? undefined,
+      email: email ?? undefined,
+      values: submittedValues,
+    };
   }
 
   const requestNumber = createContactRequestNumber();
-
-  const deliveryResult = await sendTransactionalEmailMessage({
+  const inquiryTypeLabel = inquiryTypeLabels[inquiryType];
+  const studioDeliveryResult = await sendTransactionalEmailMessage({
     to: contactData.emailLabel,
-    subject: `Contact inquiry ${requestNumber}: ${inquiryTypeLabels[inquiryType]} from ${name}`,
+    subject: `Contact message ${requestNumber}: ${inquiryTypeLabel} from ${name}`,
     html: createContactInquiryHtml({
       requestNumber,
       name,
       email,
-      inquiryTypeLabel: inquiryTypeLabels[inquiryType],
-      destination,
+      inquiryTypeLabel,
       projectContext,
       message,
     }),
@@ -64,22 +88,49 @@ export async function submitContactInquiry(formData: FormData) {
       requestNumber,
       name,
       email,
-      inquiryTypeLabel: inquiryTypeLabels[inquiryType],
-      destination,
+      inquiryTypeLabel,
       projectContext,
       message,
     }),
   });
 
-  if (deliveryResult.status === "sent") {
-    redirect(`/contact?status=sent&request=${encodeURIComponent(requestNumber)}`);
+  if (studioDeliveryResult.status !== "sent") {
+    return {
+      tone: "error",
+      message:
+        studioDeliveryResult.status === "configuration-error"
+          ? `The contact form is not configured to send yet. Please email ${contactData.emailLabel} directly.`
+          : `Something went wrong on our end. Please try again, or email ${contactData.emailLabel}.`,
+      name,
+      email,
+      values: submittedValues,
+    };
   }
 
-  redirect(
-    deliveryResult.status === "configuration-error"
-      ? "/contact?status=error&reason=configuration"
-      : "/contact?status=error&reason=delivery",
-  );
+  const confirmationDeliveryResult = await sendTransactionalEmailMessage({
+    to: email,
+    subject: `We received your Loom & Hearth Studio message (${requestNumber})`,
+    html: createContactConfirmationHtml({ name, email, message, requestNumber }),
+    text: createContactConfirmationText({ name, email, message, requestNumber }),
+  });
+
+  const firstName = name.split(/\s+/)[0] ?? name;
+
+  if (confirmationDeliveryResult.status !== "sent") {
+    return {
+      tone: "success",
+      message: `Thanks, ${firstName}. We received your message and will reply personally within 24 hours - usually with photos or a short video of the piece you asked about.`,
+      name,
+      email,
+    };
+  }
+
+  return {
+    tone: "success",
+    message: `Thanks, ${firstName}. We've sent a confirmation to ${email} and will reply personally within 24 hours - usually with photos or a short video of the piece you asked about.`,
+    name,
+    email,
+  };
 }
 
 function sanitizeContactField(value: FormDataEntryValue | null, maxLength: number) {
@@ -92,83 +143,27 @@ function sanitizeContactField(value: FormDataEntryValue | null, maxLength: numbe
   return sanitized ? sanitized : null;
 }
 
-function sanitizeInquiryType(value: FormDataEntryValue | null) {
+function sanitizeInquiryType(value: FormDataEntryValue | null): InquiryType | null {
   if (typeof value !== "string") {
     return null;
   }
 
-  return value in inquiryTypeLabels ? (value as keyof typeof inquiryTypeLabels) : null;
-}
-
-function sanitizeInquiryDestination(formData: FormData): InquiryDestination | null {
-  const countryCodeValue = formData.get("country");
-
-  if (typeof countryCodeValue !== "string") {
-    return null;
-  }
-
-  const countryCode = countryCodeValue.trim();
-  const country = getSupportedInquiryCountry(countryCode);
-
-  if (!country) {
-    return null;
-  }
-
-  const city = sanitizeContactField(formData.get("city"), 120);
-  const region = sanitizeContactField(formData.get("region"), 120);
-  const postalCode = sanitizeContactField(formData.get("postalCode"), 40);
-  const address1 = sanitizeContactField(formData.get("address1"), 160);
-
-  if (!city) {
-    return null;
-  }
-
-  if (country.requiresRegion && !region) {
-    return null;
-  }
-
-  if (country.requiresPostalCode && !postalCode) {
-    return null;
-  }
-
-  return {
-    countryCode: country.code,
-    countryLabel: country.label,
-    city,
-    region,
-    postalCode,
-    address1,
-    shippingAvailabilityNote: country.shippingAvailabilityNote,
-  };
+  return value in inquiryTypeLabels ? (value as InquiryType) : null;
 }
 
 function sanitizeProjectContext(formData: FormData): InquiryProjectContext {
-  const requestFlags = [
-    formData.get("requestVideoReview") === "yes" ? "Video review requested" : null,
-    formData.get("requestHold") === "yes" ? "Hold request" : null,
-    formData.get("requestImages") === "yes" ? "High-resolution image request" : null,
-  ].filter((value): value is string => Boolean(value));
-
   return {
     studioName: sanitizeContactField(formData.get("studioName"), 160),
     productName: sanitizeContactField(formData.get("productName"), 160),
-    variantName: sanitizeContactField(formData.get("variantName"), 120),
-    quantity: sanitizeNumericField(formData.get("quantity")),
-    roomType: sanitizeContactField(formData.get("roomType"), 120),
-    desiredSize: sanitizeContactField(formData.get("desiredSize"), 120),
-    projectTimeline: sanitizeContactField(formData.get("projectTimeline"), 120),
-    requestFlags,
   };
 }
 
-function sanitizeNumericField(value: FormDataEntryValue | null) {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const sanitized = value.trim();
-
-  return /^[0-9]{1,3}$/.test(sanitized) ? sanitized : null;
+function createSubmittedValues(values: ContactFormValues): ContactFormValues {
+  return Object.fromEntries(
+    Object.entries(values).filter((entry): entry is [string, string] =>
+      Boolean(entry[1]),
+    ),
+  ) as ContactFormValues;
 }
 
 function isValidEmail(value: string) {
@@ -180,7 +175,6 @@ function createContactInquiryHtml(input: {
   name: string;
   email: string;
   inquiryTypeLabel: string;
-  destination: InquiryDestination;
   projectContext: InquiryProjectContext;
   message: string;
 }) {
@@ -189,13 +183,12 @@ function createContactInquiryHtml(input: {
     .join("<br />");
 
   return [
-    "<p>A new contact inquiry was submitted from loomandhearthstudio.com.</p>",
+    "<p>A new contact message was submitted from loomandhearthstudio.com.</p>",
     `<p><strong>Request number:</strong> ${escapeHtml(input.requestNumber)}</p>`,
     `<p><strong>Name:</strong> ${escapeHtml(input.name)}<br />`,
     `<strong>Email:</strong> ${escapeHtml(input.email)}<br />`,
     `<strong>Inquiry type:</strong> ${escapeHtml(input.inquiryTypeLabel)}</p>`,
-    `<p><strong>Destination</strong><br />${escapeHtml(formatDestinationLabel(input.destination)).replace(/\n/g, "<br />")}</p>`,
-    projectContextHtml ? `<p><strong>Project details</strong><br />${projectContextHtml}</p>` : "",
+    projectContextHtml ? `<p><strong>Context</strong><br />${projectContextHtml}</p>` : "",
     `<p><strong>Message</strong><br />${escapeHtml(input.message).replace(/\n/g, "<br />")}</p>`,
   ].join("");
 }
@@ -205,26 +198,59 @@ function createContactInquiryText(input: {
   name: string;
   email: string;
   inquiryTypeLabel: string;
-  destination: InquiryDestination;
   projectContext: InquiryProjectContext;
   message: string;
 }) {
   const projectContextLines = createProjectContextLines(input.projectContext);
 
   return [
-    "A new contact inquiry was submitted from loomandhearthstudio.com.",
+    "A new contact message was submitted from loomandhearthstudio.com.",
     "",
     `Request number: ${input.requestNumber}`,
     "",
     `Name: ${input.name}`,
     `Email: ${input.email}`,
     `Inquiry type: ${input.inquiryTypeLabel}`,
-    "",
-    "Destination",
-    formatDestinationLabel(input.destination),
-    ...(projectContextLines.length ? ["", "Project details", ...projectContextLines] : []),
+    ...(projectContextLines.length ? ["", "Context", ...projectContextLines] : []),
     "",
     "Message",
+    input.message,
+  ].join("\n");
+}
+
+function createContactConfirmationHtml(input: {
+  requestNumber: string;
+  name: string;
+  email: string;
+  message: string;
+}) {
+  return [
+    `<p>Hi ${escapeHtml(input.name.split(/\s+/)[0] ?? input.name)},</p>`,
+    "<p>We received your message and will reply personally within 24 hours.</p>",
+    "<p>For rug inquiries, colour is confirmed before payment is taken. We may reply with photos or a short video of the actual piece.</p>",
+    `<p><strong>Reference:</strong> ${escapeHtml(input.requestNumber)}</p>`,
+    `<p><strong>Your message</strong><br />${escapeHtml(input.message).replace(/\n/g, "<br />")}</p>`,
+  ].join("");
+}
+
+function createContactConfirmationText(input: {
+  requestNumber: string;
+  name: string;
+  email: string;
+  message: string;
+}) {
+  const firstName = input.name.split(/\s+/)[0] ?? input.name;
+
+  return [
+    `Hi ${firstName},`,
+    "",
+    "We received your message and will reply personally within 24 hours.",
+    "",
+    "For rug inquiries, colour is confirmed before payment is taken. We may reply with photos or a short video of the actual piece.",
+    "",
+    `Reference: ${input.requestNumber}`,
+    "",
+    "Your message",
     input.message,
   ].join("\n");
 }
@@ -232,27 +258,8 @@ function createContactInquiryText(input: {
 function createProjectContextLines(projectContext: InquiryProjectContext) {
   return [
     projectContext.productName ? `Product: ${projectContext.productName}` : null,
-    projectContext.variantName ? `Variant: ${projectContext.variantName}` : null,
-    projectContext.quantity ? `Quantity: ${projectContext.quantity}` : null,
     projectContext.studioName ? `Studio or company: ${projectContext.studioName}` : null,
-    projectContext.roomType ? `Room type: ${projectContext.roomType}` : null,
-    projectContext.desiredSize ? `Desired size: ${projectContext.desiredSize}` : null,
-    projectContext.projectTimeline ? `Timeline: ${projectContext.projectTimeline}` : null,
-    ...projectContext.requestFlags,
   ].filter((value): value is string => Boolean(value));
-}
-
-function formatDestinationLabel(destination: InquiryDestination) {
-  return [
-    destination.countryLabel,
-    destination.city,
-    destination.region,
-    destination.postalCode,
-    destination.address1,
-    destination.shippingAvailabilityNote,
-  ]
-    .filter(Boolean)
-    .join("\n");
 }
 
 function escapeHtml(value: string) {

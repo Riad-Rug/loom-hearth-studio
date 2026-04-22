@@ -3,6 +3,7 @@
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { Container } from "@/components/layout/container";
@@ -31,25 +32,29 @@ type SiteHeaderClientProps = {
 };
 
 export function SiteHeaderClient(props: SiteHeaderClientProps) {
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMenuLabel, setOpenMenuLabel] = useState<string | null>(null);
   const [primaryAnnouncement, ...supportingAnnouncements] = props.announcementItems;
   const announcementText = props.announcementItems.join(" / ");
+  const showAnnouncement = pathname !== "/contact";
 
 
   return (
     <header className="site-header">
-      <div className="site-header__announcement">
-        <Container width="wide">
-          <p className="site-header__announcement-copy">
-            <strong>{primaryAnnouncement}</strong>
-            {supportingAnnouncements.length ? (
-              <span>{supportingAnnouncements.join(" / ")}</span>
-            ) : null}
-          </p>
-          <span className="site-header__sr-only">{announcementText}</span>
-        </Container>
-      </div>
+      {showAnnouncement ? (
+        <div className="site-header__announcement">
+          <Container width="wide">
+            <p className="site-header__announcement-copy">
+              <strong>{primaryAnnouncement}</strong>
+              {supportingAnnouncements.length ? (
+                <span>{supportingAnnouncements.join(" / ")}</span>
+              ) : null}
+            </p>
+            <span className="site-header__sr-only">{announcementText}</span>
+          </Container>
+        </div>
+      ) : null}
       <Container width="wide">
         <div className="site-header__bar">
           <div className="site-header__identity">

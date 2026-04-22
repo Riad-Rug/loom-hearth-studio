@@ -12,7 +12,7 @@ export function CartPageView() {
             <h1>Direct checkout is currently paused</h1>
             <p className={styles.lede}>
               The storefront catalog remains visible, but orders are currently handled through the
-              studio inquiry flow so availability and shipping details can be confirmed directly.
+              studio inquiry flow so availability and next steps can be confirmed directly.
             </p>
           </div>
           <div className={styles.headerActions}>
