@@ -6,6 +6,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useId, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
+import { CustomerReviewCarousel } from "@/components/reviews/customer-review-carousel";
 import { Section } from "@/components/layout/section";
 import { ProductCard } from "@/features/catalog/product-card";
 import { trackViewItem } from "@/lib/analytics/gtag";
@@ -14,6 +15,7 @@ import type {
   MultiUnitProductDetailPageViewModel,
   ProductDetailPageViewModel,
 } from "@/lib/catalog/contracts";
+import { customerReviews } from "@/lib/reviews/customer-reviews";
 
 import styles from "./product-detail-page.module.css";
 
@@ -265,12 +267,14 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           </div>
         </div>
 
-        <section className={styles.testimonialBand} aria-label="Customer note">
-          <blockquote>
-            You now have friends in Zurich. Thank you again for everything - we really appreciated it.
-          </blockquote>
-          <cite>Priyanka, Zurich - after receiving her rug</cite>
-        </section>
+        <div className={styles.reviewBand}>
+          <CustomerReviewCarousel
+            reviews={customerReviews}
+            variant="pdp"
+            eyebrow="Customer reviews"
+            title="Notes from buyers after the piece arrived."
+          />
+        </div>
       </Section>
 
       {isLightboxOpen && activeImage ? (

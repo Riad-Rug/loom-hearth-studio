@@ -4,10 +4,12 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 
 import { Section } from "@/components/layout/section";
+import { CustomerReviewCarousel } from "@/components/reviews/customer-review-carousel";
 import type { HomePageContent, HomePageOrderedSectionKey } from "@/features/home/home-page-data";
 import { HowItWorksSection } from "@/features/home/how-it-works-section";
 import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
+import { customerReviews } from "@/lib/reviews/customer-reviews";
 
 import styles from "./home-page.module.css";
 
@@ -288,13 +290,20 @@ function ProofComparisonSection() {
           <p className={styles.eyebrow}>What makes a Loom & Hearth piece different</p>
           <h2>Built for Buyers Who Want the Actual Piece, Not a Catalogue Approximation.</h2>
         </div>
-        <div className={styles.proofGrid}>
-          {proofItems.map((item) => (
-            <article key={item.title} className={styles.proofCard}>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-            </article>
-          ))}
+        <div className={styles.proofContent}>
+          <div className={styles.proofGrid}>
+            {proofItems.map((item) => (
+              <article key={item.title} className={styles.proofCard}>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))}
+          </div>
+          <CustomerReviewCarousel
+            reviews={customerReviews}
+            eyebrow="Customer reviews"
+            title="Pieces that felt right once they were home."
+          />
         </div>
       </div>
     </Section>

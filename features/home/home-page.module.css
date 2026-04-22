@@ -483,6 +483,12 @@
   gap: var(--space-4);
 }
 
+.proofContent {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
 .proofCard {
   display: grid;
   gap: 0.65rem;
