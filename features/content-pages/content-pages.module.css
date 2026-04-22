@@ -275,6 +275,7 @@
 
 .contactInput,
 .contactTextarea {
+  box-sizing: border-box;
   width: 100%;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
@@ -319,8 +320,13 @@
 
 .contactIdentityGrid {
   display: grid;
+  align-items: start;
   gap: var(--space-4);
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.contactIdentityGrid .contactFieldGroup {
+  min-width: 0;
 }
 
 .contactSegmentGroup {

@@ -354,10 +354,6 @@ function ContactSupportCard() {
       >
         WhatsApp {contactData.whatsappLabel}
       </a>
-
-      <Link className={styles.textAction} href="/trade">
-        Interior designer or trade buyer? See trade enquiries {"->"}
-      </Link>
     </aside>
   );
 }
