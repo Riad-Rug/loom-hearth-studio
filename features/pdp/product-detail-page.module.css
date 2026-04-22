@@ -19,7 +19,6 @@
 
 .galleryColumn,
 .infoColumn,
-.galleryStoryPanel,
 .productDetailsPanel,
 .purchaseCard,
 .detailCard,
@@ -38,27 +37,20 @@
   min-width: 0;
 }
 
-.galleryStoryPanel,
 .productDetailsPanel {
   display: grid;
   gap: var(--space-5);
   padding: var(--space-6);
 }
 
-.galleryStoryPanel {
-  margin-top: var(--pdp-feature-band-gap);
-}
-
 .productDetailsPanel {
   margin-top: var(--pdp-standard-band-gap);
 }
 
-.galleryStoryPanel,
 .productDetailsPanel {
   padding-inline: 0;
 }
 
-.galleryStoryPanel .sectionHeader,
 .productDetailsPanel .sectionHeader {
   width: calc(100% + 2px);
   margin-inline: -1px;
@@ -263,8 +255,7 @@
 
 .primaryImageFallback,
 .lightboxImageFallback,
-.thumbnailFallback,
-.galleryStackFallback {
+.thumbnailFallback {
   display: grid;
   width: 100%;
   height: 100%;
@@ -293,96 +284,6 @@
   gap: var(--space-2);
   overflow-x: auto;
   padding-bottom: 0.25rem;
-}
-
-.galleryStack {
-  display: grid;
-  width: calc(100% + 2px);
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: 314px;
-  gap: 12px;
-  margin-inline: -1px;
-}
-
-.galleryStack > :nth-child(1) {
-  grid-column: span 2;
-  grid-row: span 2;
-}
-
-.galleryStack > :nth-child(2),
-.galleryStack > :nth-child(5),
-.galleryStack > :nth-child(6) {
-  grid-column: span 2;
-}
-
-.galleryStack > :nth-child(7) {
-  grid-column: 1 / -1;
-}
-
-.galleryStackCard {
-  position: relative;
-  display: block;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  border: 1px solid rgba(34, 33, 38, 0.08);
-  border-radius: calc(var(--radius-lg) + 0.15rem);
-  background: rgba(245, 241, 232, 0.44);
-  cursor: zoom-in;
-  overflow: hidden;
-  box-shadow: 0 1rem 2rem rgba(34, 33, 38, 0.08);
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
-}
-
-.galleryStackImage {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 420ms ease;
-}
-
-.galleryStackFallback {
-  min-height: 18rem;
-}
-
-.galleryStackLabel {
-  position: absolute;
-  right: 0.65rem;
-  bottom: 0.65rem;
-  max-width: calc(100% - 1.3rem);
-  padding: 0.38rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(245, 241, 232, 0.9);
-  color: var(--color-charcoal-ink);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-
-.galleryStackCard:hover,
-.galleryStackCard:focus-visible {
-  border-color: rgba(198, 106, 61, 0.2);
-  box-shadow: 0 1.35rem 2.5rem rgba(34, 33, 38, 0.12);
-  outline: none;
-  transform: translateY(-1px);
-}
-
-.galleryStackCard:hover .galleryStackImage,
-.galleryStackCard:focus-visible .galleryStackImage {
-  transform: scale(1.025);
-}
-
-.galleryStackCardActive {
-  border-color: rgba(198, 106, 61, 0.36);
-  box-shadow:
-    inset 0 0 0 1px rgba(198, 106, 61, 0.18),
-    0 1.35rem 2.5rem rgba(34, 33, 38, 0.1);
 }
 
 .lightboxThumbnails {
@@ -1141,10 +1042,6 @@
     grid-auto-columns: minmax(17rem, 78vw);
   }
 
-  .galleryStoryPanel {
-    display: none;
-  }
-
   .infoColumn {
     position: static;
   }
@@ -1157,19 +1054,15 @@
 
   .galleryColumn,
   .infoColumn,
-  .galleryStoryPanel,
   .productDetailsPanel {
     padding: var(--space-5);
   }
 
-  .galleryStoryPanel,
   .productDetailsPanel {
     padding-inline: var(--space-5);
   }
 
-  .galleryStoryPanel .sectionHeader,
   .productDetailsPanel .sectionHeader,
-  .galleryStack,
   .productDetailsGrid {
     width: 100%;
     margin-inline: 0;

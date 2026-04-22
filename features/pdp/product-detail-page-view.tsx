@@ -239,49 +239,6 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           <cite>Priyanka, Zurich - after receiving her rug</cite>
         </section>
 
-        {product.gallery.length > 1 ? (
-          <div className={styles.galleryStoryPanel}>
-            <div className={styles.sectionHeader}>
-              <div>
-                <p className={styles.eyebrow}>Exact-piece gallery</p>
-                <h2>More ways to read the rug before you reserve.</h2>
-              </div>
-              <p className={styles.sectionHeaderIntro}>
-                Seven views of this exact piece — in room, up close, from behind, and at scale — so you can tell exactly what you're reserving.
-              </p>
-            </div>
-            <div className={styles.galleryStack} aria-label={`${product.name} image story`}>
-              {product.gallery.slice(0, 7).map((item, imageIndex) => {
-                return (
-                  <button
-                    key={`${item.id}-story`}
-                    className={`${styles.galleryStackCard} ${
-                      activeImageIndex === imageIndex ? styles.galleryStackCardActive : ""
-                    }`}
-                    type="button"
-                    aria-pressed={activeImageIndex === imageIndex}
-                    aria-label={`Open ${item.label}`}
-                    onClick={() => {
-                      selectImage(imageIndex);
-                      setIsLightboxOpen(true);
-                    }}
-                  >
-                    <GalleryImage
-                      className={styles.galleryStackImage}
-                      alt={item.altText || `${product.name} ${item.label}`}
-                      fallbackClassName={styles.galleryStackFallback}
-                      fallbackLabel={item.label}
-                      item={item}
-                      src={item.src}
-                    />
-                    <span className={styles.galleryStackLabel}>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
-
         <div className={styles.productDetailsPanel}>
           <div className={styles.sectionHeader}>
             <div>
