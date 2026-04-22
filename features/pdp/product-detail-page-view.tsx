@@ -232,13 +232,6 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           </div>
         </div>
 
-        <section className={styles.testimonialBand} aria-label="Customer note">
-          <blockquote>
-            You now have friends in Zurich. Thank you again for everything - we really appreciated it.
-          </blockquote>
-          <cite>Priyanka, Zurich - after receiving her rug</cite>
-        </section>
-
         <div className={styles.productDetailsPanel}>
           <div className={styles.sectionHeader}>
             <div>
@@ -271,6 +264,13 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             </aside>
           </div>
         </div>
+
+        <section className={styles.testimonialBand} aria-label="Customer note">
+          <blockquote>
+            You now have friends in Zurich. Thank you again for everything - we really appreciated it.
+          </blockquote>
+          <cite>Priyanka, Zurich - after receiving her rug</cite>
+        </section>
       </Section>
 
       {isLightboxOpen && activeImage ? (

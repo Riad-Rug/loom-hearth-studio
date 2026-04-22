@@ -47,15 +47,6 @@
   margin-top: var(--pdp-standard-band-gap);
 }
 
-.productDetailsPanel {
-  padding-inline: 0;
-}
-
-.productDetailsPanel .sectionHeader {
-  width: calc(100% + 2px);
-  margin-inline: -1px;
-}
-
 .sectionHeader {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 656px));
@@ -91,12 +82,15 @@
 
 .productDetailsGrid {
   display: grid;
-  width: calc(100% + 2px);
   grid-template-columns: repeat(2, minmax(0, 656px));
   gap: var(--space-6);
   align-items: start;
   justify-content: center;
-  margin-inline: -1px;
+}
+
+.productDetailsPanel .sectionHeader,
+.productDetailsGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .testimonialBand {
@@ -1030,6 +1024,11 @@
     grid-template-columns: 1fr;
   }
 
+  .productDetailsPanel .sectionHeader,
+  .productDetailsGrid {
+    grid-template-columns: 1fr;
+  }
+
   .sectionHeader {
     margin-bottom: var(--space-4);
   }
@@ -1056,16 +1055,6 @@
   .infoColumn,
   .productDetailsPanel {
     padding: var(--space-5);
-  }
-
-  .productDetailsPanel {
-    padding-inline: var(--space-5);
-  }
-
-  .productDetailsPanel .sectionHeader,
-  .productDetailsGrid {
-    width: 100%;
-    margin-inline: 0;
   }
 
   .infoColumn {
