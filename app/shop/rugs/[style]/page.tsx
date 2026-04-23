@@ -66,6 +66,7 @@ export default async function RugStylePage({ params }: RugStylePageProps) {
           title: collection.title,
           description: collection.description,
           bullets: collection.bullets,
+          href: `/shop/rugs/${style}`,
         }}
         products={products}
       />

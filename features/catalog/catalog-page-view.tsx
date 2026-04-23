@@ -16,6 +16,7 @@ type CatalogPageViewProps = {
     title: string;
     description: string;
     bullets: readonly string[];
+    href?: string;
   };
 };
 
@@ -62,7 +63,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
             All categories
           </Link>
           {catalogCategories.map((item) => {
-            const isActive = item.key === category;
+            const isActive = collection?.href ? item.href === collection.href : item.key === category;
 
             return (
               <Link
