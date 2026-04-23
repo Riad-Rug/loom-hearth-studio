@@ -29,6 +29,9 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const heroCopy = collection?.description ?? (categoryMeta ? categoryMeta.description : catalogLanding.description);
   const heroBullets = collection?.bullets ?? (categoryMeta ? categoryMeta.bullets : catalogLanding.bullets);
   const heroParagraphs = heroCopy.split("\n\n");
+  const hasExactCategoryLink = collection?.href
+    ? catalogCategories.some((item) => item.href === collection.href)
+    : false;
 
   return (
     <div className={styles.page}>
@@ -63,7 +66,10 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
             All categories
           </Link>
           {catalogCategories.map((item) => {
-            const isActive = collection?.href ? item.href === collection.href : item.key === category;
+            const isActive =
+              collection?.href && hasExactCategoryLink
+                ? item.href === collection.href
+                : item.key === category;
 
             return (
               <Link
