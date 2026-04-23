@@ -98,6 +98,39 @@ export function itemListSchema(input: {
   };
 }
 
+export function imageGallerySchema(input: {
+  path: string;
+  name: string;
+  description: string;
+  images: Array<{
+    name: string;
+    description: string;
+    image: string;
+    altText: string;
+  }>;
+}) {
+  const url = absoluteUrl(input.path);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ImageGallery",
+    "@id": `${url}#image-gallery`,
+    name: input.name,
+    description: input.description,
+    url,
+    image: input.images.map((image, index) => ({
+      "@type": "ImageObject",
+      "@id": `${url}#lookbook-image-${index + 1}`,
+      position: index + 1,
+      name: image.name,
+      caption: image.description,
+      description: image.altText,
+      contentUrl: image.image,
+      url: image.image,
+    })),
+  };
+}
+
 export function articleSchema(input: {
   title: string;
   description: string;
