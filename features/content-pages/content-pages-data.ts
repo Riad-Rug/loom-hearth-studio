@@ -251,15 +251,15 @@ export const lookbookItems: LookbookItem[] = [
   },
   {
     id: "lookbook-2",
-    title: "Hand-knotted Rug Texture Detail",
+    title: "Layered rugs in a low Moroccan sitting room.",
     description:
-      "Close view of a hand-knotted Moroccan pile rug. Individual knots visible in the warp structure, natural wool, pile depth varying across the field.",
+      "A low sitting area with layered Moroccan rugs, floor cushions, leather chairs, and a small tray table. Pattern, pile, and tile work hold the room together.",
     ctaLabel: "Shop the rugs",
     href: "/shop/rugs",
     imageSrc:
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+      "https://images.pexels.com/photos/2827401/pexels-photo-2827401.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
     imageAlt:
-      "A close, textural view of a handmade Moroccan rug in a softly lit interior setting.",
+      "A Moroccan sitting room with layered rugs, floor cushions, leather chairs, and a small tray table.",
   },
   {
     id: "lookbook-4",
