@@ -4,7 +4,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { lookbookItems } from "@/features/content-pages/content-pages-data";
 import { LookbookPageView } from "@/features/content-pages/lookbook-page-view";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
-import { imageGallerySchema, itemListSchema } from "@/lib/seo/schema";
+import { breadcrumbSchema, imageGallerySchema, itemListSchema } from "@/lib/seo/schema";
 
 const lookbookOgImage = "/lookbook/opengraph-image";
 const lookbookOgImageAlt =
@@ -51,6 +51,10 @@ export default function LookbookPage() {
               altText: item.imageAlt,
             })),
           }),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Lookbook", path: "/lookbook" },
+          ]),
         ]}
       />
       <LookbookPageView />
