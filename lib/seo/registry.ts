@@ -64,7 +64,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/lookbook",
     fallbackTitle: "Moroccan Interior Lookbook",
     fallbackDescription:
-      "See Moroccan rugs and decor in real interiors, and shop the pieces shown across rugs, vintage finds, and decor.",
+      "Hand-knotted rugs, vintage textiles, and Moroccan decor photographed in real interiors. Shop the collections they came from.",
   },
   {
     id: "static-sourcing",
