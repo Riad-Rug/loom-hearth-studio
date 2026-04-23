@@ -8,7 +8,7 @@ import { imageGallerySchema, itemListSchema } from "@/lib/seo/schema";
 
 const lookbookOgImage = "/lookbook/opengraph-image";
 const lookbookOgImageAlt =
-  "A low-furnished Moroccan living room anchored by an ivory Beni Ourain rug in natural light.";
+  "A low-furnished Moroccan living room anchored by a pale rug in natural light.";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({

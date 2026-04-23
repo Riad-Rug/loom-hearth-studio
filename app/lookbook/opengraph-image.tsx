@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 import { lookbookItems } from "@/features/content-pages/content-pages-data";
 
 export const alt =
-  "A low-furnished Moroccan living room anchored by an ivory Beni Ourain rug in natural light.";
+  "A low-furnished Moroccan living room anchored by a pale rug in natural light.";
 export const size = {
   width: 1200,
   height: 630,

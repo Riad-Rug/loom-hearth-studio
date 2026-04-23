@@ -229,7 +229,7 @@ export const lookbookItems: LookbookItem[] = [
     id: "lookbook-1",
     title: "A Beni Ourain rug in a low-furnished living room.",
     description:
-      "A living room with a hand-knotted Beni Ourain rug on a pale wood floor. Ivory field, sparse geometric pattern. Natural light from the north.",
+      "A low-furnished living room anchored by a pale Moroccan rug. Quiet seating, natural light, and a restrained palette keep the rug at the center.",
     ctaLabel: "Shop the rugs",
     href: "/shop/rugs/beni-ourain",
     imageSrc:
@@ -241,7 +241,7 @@ export const lookbookItems: LookbookItem[] = [
     id: "lookbook-3",
     title: "Moroccan Hallway with Vintage Textiles",
     description:
-      "A hallway with vintage Moroccan rugs and woven textiles. Warm terracotta tones, pendant lights, wall hangings in stacked arrangement.",
+      "A Moroccan interior with vintage rugs and woven textiles. Warm terracotta tones, pendant light, and layered natural materials.",
     ctaLabel: "Shop the vintage rugs",
     href: "/shop/rugs/vintage",
     imageSrc:
@@ -265,7 +265,7 @@ export const lookbookItems: LookbookItem[] = [
     id: "lookbook-4",
     title: "A sitting area, restrained.",
     description:
-      "A sitting area with pale pillows, a low wood table, and restrained Moroccan decor. Pale walls, natural light, no competing pattern.",
+      "A sunlit Moroccan sitting area with traditional cushions and restrained decor. Pale walls, warm shadows, no competing pattern.",
     ctaLabel: "Shop the decor",
     href: "/shop/decor",
     imageSrc:
