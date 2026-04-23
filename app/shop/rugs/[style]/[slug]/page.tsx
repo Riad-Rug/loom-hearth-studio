@@ -3,6 +3,7 @@ import type { Route } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
+import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
 import { getRugProductDetailByParams } from "@/lib/catalog/service";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
@@ -29,6 +30,8 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
   }
 
   const productPath = getRugProductPath(product);
+  const rugStyleSlug = normalizeSlug(product.rugStyle);
+  const collection = getRugStyleCollection(rugStyleSlug);
 
   if (`/shop/rugs/${resolvedParams.style}/${resolvedParams.slug}` !== productPath) {
     permanentRedirect(productPath as Route);
@@ -54,6 +57,14 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           { name: "Home", path: "/" },
           { name: "Shop", path: "/shop" },
           { name: "Rugs", path: "/shop/rugs" },
+          ...(collection
+            ? [
+                {
+                  name: collection.title,
+                  path: `/shop/rugs/${rugStyleSlug}`,
+                },
+              ]
+            : []),
           { name: product.name, path: productPath },
         ])}
       />
