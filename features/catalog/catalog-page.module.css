@@ -3,6 +3,22 @@
   gap: var(--space-7);
 }
 
+.mobileShopHeader {
+  display: none;
+}
+
+.collectionIntroSection {
+  order: 1;
+}
+
+.categoryTradeSection {
+  order: 2;
+}
+
+.productsSection {
+  order: 3;
+}
+
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.8fr);
@@ -673,14 +689,140 @@
 }
 
 @media (max-width: 768px) {
+  .page {
+    gap: var(--space-4);
+  }
+
+  .mobileShopHeader {
+    display: block;
+    order: 1;
+    padding: var(--space-3) 0;
+  }
+
+  .collectionIntroSection {
+    order: 3;
+  }
+
+  .categoryTradeSection {
+    order: 4;
+    padding-top: 0;
+  }
+
+  .productsSection {
+    order: 2;
+  }
+
+  .mobileTitleRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+
+  .mobileTitleRow h1,
+  .mobileTitleRow p {
+    margin: 0;
+  }
+
+  .mobileTitleRow h1 {
+    min-width: 0;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: clamp(1.9rem, 9vw, 2.6rem);
+    line-height: 0.98;
+    letter-spacing: -0.032em;
+  }
+
+  .mobileTitleRow p {
+    flex: 0 0 auto;
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .mobileShopHeader .categoryRail {
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+    margin-inline: -1rem;
+    padding: 0 1rem var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .mobileShopHeader .categoryRail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobileShopHeader .allCategoriesChip {
+    display: none;
+  }
+
+  .mobileShopHeader .categoryChip {
+    flex: 0 0 auto;
+    padding: 0.62rem 0.86rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .mobileCatalogToolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2);
+    align-items: center;
+    margin-top: var(--space-1);
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .mobileCatalogToolbar .filterList {
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .mobileCatalogToolbar .filterList::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobileCatalogToolbar .filterChip {
+    flex: 0 0 auto;
+    padding: 0.42rem 0.58rem;
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .mobileCatalogToolbar .sortShell {
+    width: auto;
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 0.45rem;
+  }
+
+  .mobileCatalogToolbar .sortShell label {
+    font-size: 0.76rem;
+  }
+
+  .mobileCatalogToolbar .sortSelect {
+    width: auto;
+    min-width: 7.4rem;
+    max-width: 7.4rem;
+    padding: 0.52rem 0.62rem;
+    font-size: 0.78rem;
+  }
+
   .hero,
   .searchHero {
     padding: var(--space-6);
   }
 
-  .catalogToolbar {
-    flex-direction: column;
-    align-items: flex-start;
+  .categoryTradeSection .categoryRail,
+  .catalogContent > .catalogToolbar {
+    display: none;
   }
 
   .toolbarIntro {

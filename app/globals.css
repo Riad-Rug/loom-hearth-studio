@@ -921,9 +921,16 @@ p {
 
 .site-header__brand-logo {
   width: auto;
-  max-width: 11rem;
-  height: 2.6rem;
+  max-width: 13rem;
+  height: 3.05rem;
   object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .site-header__brand-logo {
+    max-width: 10.75rem;
+    height: 2.55rem;
+  }
 }
 
 .site-header__sr-only {

@@ -29,13 +29,115 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const heroCopy = collection?.description ?? (categoryMeta ? categoryMeta.description : catalogLanding.description);
   const heroBullets = collection?.bullets ?? (categoryMeta ? categoryMeta.bullets : catalogLanding.bullets);
   const heroParagraphs = heroCopy.split("\n\n");
+  const productCountLabel = `${products.length} ${products.length === 1 ? "piece" : "pieces"}`;
+  const mobileFilterLabels = catalogFilterLabels.filter((label) => label !== "Decor");
   const hasExactCategoryLink = collection?.href
     ? catalogCategories.some((item) => item.href === collection.href)
     : false;
+  const renderCategoryRail = () => (
+    <div className={styles.categoryRail}>
+      <Link
+        className={`${styles.categoryChip} ${styles.allCategoriesChip} ${
+          !category ? styles.categoryChipActive : ""
+        }`}
+        href="/shop"
+      >
+        All categories
+      </Link>
+      {catalogCategories.map((item) => {
+        const isActive =
+          collection?.href && hasExactCategoryLink
+            ? item.href === collection.href
+            : item.key === category;
+
+        return (
+          <Link
+            key={item.href}
+            className={`${styles.categoryChip} ${isActive ? styles.categoryChipActive : ""}`}
+            href={item.href}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+  const filterAndSortControls = (
+    <div className={styles.catalogToolbar}>
+      <div className={styles.toolbarIntro}>
+        <p className={styles.toolbarCount}>{productCountLabel}</p>
+        <div className={styles.filterList} aria-label="Collection highlights">
+          {catalogFilterLabels.map((label) => (
+            <span key={label} className={styles.filterChip}>
+              {label}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className={styles.sortShell}>
+        <label htmlFor="catalog-sort">Sort</label>
+        <select id="catalog-sort" className={styles.sortSelect} defaultValue="Featured">
+          {catalogSortOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+  const mobileFilterAndSortControls = (
+    <div className={`${styles.catalogToolbar} ${styles.mobileCatalogToolbar}`}>
+      <div className={styles.filterList} aria-label="Collection highlights">
+        {mobileFilterLabels.map((label) => (
+          <span key={label} className={styles.filterChip}>
+            {label}
+          </span>
+        ))}
+      </div>
+      <div className={styles.sortShell}>
+        <label htmlFor="catalog-sort-mobile">Sort</label>
+        <select
+          id="catalog-sort-mobile"
+          className={styles.sortSelect}
+          defaultValue="Featured"
+        >
+          {catalogSortOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
 
   return (
     <div className={styles.page}>
-      <Section width="wide">
+      <Section className={styles.mobileShopHeader} tone="muted" width="wide">
+        <div className={styles.mobileTitleRow}>
+          <h1>{heroTitle}</h1>
+          <p>{productCountLabel}</p>
+        </div>
+        {renderCategoryRail()}
+        {mobileFilterAndSortControls}
+      </Section>
+
+      <Section className={styles.productsSection} width="wide">
+        <div className={styles.catalogShell}>
+          <div className={styles.catalogContent}>
+            {filterAndSortControls}
+
+            <div className={styles.productGrid}>
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <Section className={styles.collectionIntroSection} width="wide">
         <div className={styles.hero}>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>{heroEyebrow}</p>
@@ -57,31 +159,8 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         </div>
       </Section>
 
-      <Section tone="muted" width="wide">
-        <div className={styles.categoryRail}>
-          <Link
-            className={`${styles.categoryChip} ${!category ? styles.categoryChipActive : ""}`}
-            href="/shop"
-          >
-            All categories
-          </Link>
-          {catalogCategories.map((item) => {
-            const isActive =
-              collection?.href && hasExactCategoryLink
-                ? item.href === collection.href
-                : item.key === category;
-
-            return (
-              <Link
-                key={item.href}
-                className={`${styles.categoryChip} ${isActive ? styles.categoryChipActive : ""}`}
-                href={item.href}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
+      <Section className={styles.categoryTradeSection} tone="muted" width="wide">
+        {renderCategoryRail()}
         <div className={styles.tradePanel}>
           <div className={styles.tradePanelCopy}>
             <p className={styles.heroPanelLabel}>Trade and project support</p>
@@ -98,43 +177,6 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
             <Link className={styles.primaryAction} href="/contact?inquiryType=trade-request">
               Start a trade inquiry
             </Link>
-          </div>
-        </div>
-      </Section>
-
-      <Section width="wide">
-        <div className={styles.catalogShell}>
-          <div className={styles.catalogContent}>
-            <div className={styles.catalogToolbar}>
-              <div className={styles.toolbarIntro}>
-                <p className={styles.toolbarCount}>
-                  {products.length} {products.length === 1 ? "piece" : "pieces"}
-                </p>
-                <div className={styles.filterList} aria-label="Collection highlights">
-                  {catalogFilterLabels.map((label) => (
-                    <span key={label} className={styles.filterChip}>
-                      {label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className={styles.sortShell}>
-                <label htmlFor="catalog-sort">Sort</label>
-                <select id="catalog-sort" className={styles.sortSelect} defaultValue="Featured">
-                  {catalogSortOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className={styles.productGrid}>
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
           </div>
         </div>
       </Section>
