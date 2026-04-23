@@ -1,4 +1,5 @@
 import { blogPosts } from "@/features/blog/blog-post-data";
+import { rugStyleCollections } from "@/features/catalog/rug-style-collections";
 import { getProductRoutePath } from "@/lib/catalog/helpers";
 import { createProductRepository } from "@/lib/db/repositories/product-repository";
 
@@ -163,6 +164,15 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
       "Browse handcrafted Moroccan rugs sourced in Marrakech, including one-of-one pieces prepared for review-first buying.",
   },
   {
+    id: "category-rugs-beni-ourain",
+    label: rugStyleCollections["beni-ourain"].title,
+    entityType: "category",
+    entityKey: "rugs-beni-ourain",
+    path: "/shop/rugs/beni-ourain",
+    fallbackTitle: rugStyleCollections["beni-ourain"].title,
+    fallbackDescription: rugStyleCollections["beni-ourain"].description,
+  },
+  {
     id: "category-poufs",
     label: "Poufs",
     entityType: "category",
@@ -194,13 +204,12 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
   },
   {
     id: "category-rugs-vintage",
-    label: "Vintage Rugs",
+    label: rugStyleCollections.vintage.title,
     entityType: "category",
     entityKey: "rugs-vintage",
     path: "/shop/rugs/vintage",
-    fallbackTitle: "Vintage Rugs",
-    fallbackDescription:
-      "Browse vintage Moroccan pieces with collected character, condition notes, and a review-first buying path.",
+    fallbackTitle: rugStyleCollections.vintage.title,
+    fallbackDescription: rugStyleCollections.vintage.description,
   },
 ];
 
