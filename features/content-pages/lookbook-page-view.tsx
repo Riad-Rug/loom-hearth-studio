@@ -13,7 +13,8 @@ export function LookbookPageView() {
         <p className={styles.eyebrow}>Lookbook</p>
         <h1>Moroccan rugs and decor in real interiors.</h1>
         <p className={styles.body}>
-          Photographs of Moroccan rugs, poufs, pillows, and decor in interior contexts. Each image links to the pieces shown, where available.
+          Interiors built around hand-knotted rugs, woven textiles, and pieces brought
+          back from Morocco. Each scene links into the collection it came from.
         </p>
       </section>
 
@@ -21,6 +22,7 @@ export function LookbookPageView() {
         {lookbookItems.map((item) => (
           <Link
             key={item.id}
+            aria-label={`${item.ctaLabel} - ${item.title}`}
             className={styles.lookbookTile}
             href={item.href as Route}
           >
@@ -32,9 +34,6 @@ export function LookbookPageView() {
                 sizes="(max-width: 1100px) 100vw, 50vw"
                 src={item.imageSrc}
               />
-              <div className={styles.lookbookOverlay}>
-                <span className={styles.lookbookOverlayCta}>{item.ctaLabel}</span>
-              </div>
             </div>
             <div className={styles.lookbookBody}>
               <h2>{item.title}</h2>
@@ -43,6 +42,21 @@ export function LookbookPageView() {
             </div>
           </Link>
         ))}
+      </section>
+
+      <section className={styles.lookbookExit}>
+        <div>
+          <p className={styles.eyebrow}>Shop next</p>
+          <h2>Start with the rugs.</h2>
+        </div>
+        <div className={styles.policyActions}>
+          <Link className={styles.primaryAction} href="/shop/rugs">
+            Browse all rugs
+          </Link>
+          <Link className={styles.secondaryAction} href="/shop/rugs/vintage">
+            Browse vintage
+          </Link>
+        </div>
       </section>
     </div>
   );

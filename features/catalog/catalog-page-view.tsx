@@ -11,16 +11,22 @@ import styles from "./catalog-page.module.css";
 type CatalogPageViewProps = {
   category?: ProductCategory;
   products: CatalogProductCardViewModel[];
+  collection?: {
+    eyebrow?: string;
+    title: string;
+    description: string;
+    bullets: readonly string[];
+  };
 };
 
-export function CatalogPageView({ category, products }: CatalogPageViewProps) {
+export function CatalogPageView({ category, products, collection }: CatalogPageViewProps) {
   const categoryMeta = category
     ? catalogCategories.find((item) => item.key === category) ?? null
     : null;
-  const heroEyebrow = categoryMeta ? "Collection" : catalogLanding.eyebrow;
-  const heroTitle = categoryMeta ? categoryMeta.title : catalogLanding.title;
-  const heroCopy = categoryMeta ? categoryMeta.description : catalogLanding.description;
-  const heroBullets = categoryMeta ? categoryMeta.bullets : catalogLanding.bullets;
+  const heroEyebrow = collection?.eyebrow ?? (categoryMeta ? "Collection" : catalogLanding.eyebrow);
+  const heroTitle = collection?.title ?? (categoryMeta ? categoryMeta.title : catalogLanding.title);
+  const heroCopy = collection?.description ?? (categoryMeta ? categoryMeta.description : catalogLanding.description);
+  const heroBullets = collection?.bullets ?? (categoryMeta ? categoryMeta.bullets : catalogLanding.bullets);
   const heroParagraphs = heroCopy.split("\n\n");
 
   return (

@@ -227,22 +227,34 @@ export const faqItems: FaqItem[] = [
 export const lookbookItems: LookbookItem[] = [
   {
     id: "lookbook-1",
-    title: "Modern Moroccan Living Room with Beni Ourain Rug",
+    title: "A Beni Ourain rug in a low-furnished living room.",
     description:
       "A living room with a hand-knotted Beni Ourain rug on a pale wood floor. Ivory field, sparse geometric pattern. Natural light from the north.",
-    ctaLabel: "Shop Beni Ourain Rugs",
-    href: "/shop/rugs",
+    ctaLabel: "Shop the rugs",
+    href: "/shop/rugs/beni-ourain",
     imageSrc:
       "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
     imageAlt:
       "A Moroccan living room with low seating, natural light, and a visible handcrafted rug anchoring the floor.",
   },
   {
+    id: "lookbook-3",
+    title: "Moroccan Hallway with Vintage Textiles",
+    description:
+      "A hallway with vintage Moroccan rugs and woven textiles. Warm terracotta tones, pendant lights, wall hangings in stacked arrangement.",
+    ctaLabel: "Shop the vintage rugs",
+    href: "/shop/rugs/vintage",
+    imageSrc:
+      "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+    imageAlt:
+      "A Moroccan interior scene with textiles, a pouf, and terracotta, wood, and woven materials.",
+  },
+  {
     id: "lookbook-2",
-    title: "Handwoven Moroccan Rug Texture Detail",
+    title: "Hand-knotted Rug Texture Detail",
     description:
       "Close view of a hand-knotted Moroccan pile rug. Individual knots visible in the warp structure, natural wool, pile depth varying across the field.",
-    ctaLabel: "See the rug collection",
+    ctaLabel: "Shop the rugs",
     href: "/shop/rugs",
     imageSrc:
       "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
@@ -250,23 +262,11 @@ export const lookbookItems: LookbookItem[] = [
       "A close, textural view of a handmade Moroccan rug in a softly lit interior setting.",
   },
   {
-    id: "lookbook-3",
-    title: "Moroccan Hallway with Vintage Textiles",
-    description:
-      "A hallway with vintage Moroccan rugs and woven textiles. Warm terracotta tones, pendant lights, wall hangings in stacked arrangement.",
-    ctaLabel: "Shop Vintage Rugs",
-    href: "/shop/vintage",
-    imageSrc:
-      "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
-    imageAlt:
-      "A Moroccan interior scene with textiles, a pouf, and terracotta, wood, and woven materials.",
-  },
-  {
     id: "lookbook-4",
-    title: "Minimal Moroccan Styling with Neutral Decor",
+    title: "A sitting area, restrained.",
     description:
-      "A sitting area with cactus silk pillows, a low wood table, and neutral Moroccan decor. Pale walls, natural light, no competing pattern.",
-    ctaLabel: "See the decor collection",
+      "A sitting area with pale pillows, a low wood table, and restrained Moroccan decor. Pale walls, natural light, no competing pattern.",
+    ctaLabel: "Shop the decor",
     href: "/shop/decor",
     imageSrc:
       "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",

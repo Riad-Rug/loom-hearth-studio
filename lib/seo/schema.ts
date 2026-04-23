@@ -71,6 +71,33 @@ export function faqSchema(items: Array<{ question: string; answer: string }>) {
   };
 }
 
+export function itemListSchema(input: {
+  path: string;
+  name: string;
+  items: Array<{
+    name: string;
+    path: string;
+    image: string;
+  }>;
+}) {
+  const url = absoluteUrl(input.path);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${url}#item-list`,
+    name: input.name,
+    url,
+    itemListElement: input.items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      url: absoluteUrl(item.path),
+      image: item.image,
+    })),
+  };
+}
+
 export function articleSchema(input: {
   title: string;
   description: string;

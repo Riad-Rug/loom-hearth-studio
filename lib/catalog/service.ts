@@ -97,6 +97,27 @@ export async function listCatalogProductCards(input?: {
   return products.map(createCatalogProductCardViewModel);
 }
 
+export async function listRugStyleProductCards(input: {
+  style: string;
+  repository?: ProductRepository;
+}): Promise<CatalogProductCardViewModel[]> {
+  const repository = input.repository ?? createProductRepository();
+  const style = normalizeSlug(input.style);
+  const category = style === "vintage" ? "vintage" : "rugs";
+  const products = await repository.listByCategory(category);
+
+  if (style === "vintage") {
+    return products.map(createCatalogProductCardViewModel);
+  }
+
+  return products
+    .filter(
+      (product): product is RugProduct =>
+        product.type === "rug" && normalizeSlug(product.rugStyle) === style,
+    )
+    .map(createCatalogProductCardViewModel);
+}
+
 export async function listHomepageFeaturedProductCards(input?: {
   limit?: number;
   repository?: ProductRepository;
