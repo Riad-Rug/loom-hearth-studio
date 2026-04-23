@@ -14,7 +14,6 @@ const staticRoutes = [
   "/shop/poufs",
   "/shop/pillows",
   "/shop/decor",
-  "/shop/vintage",
   "/blog",
   "/about",
   "/sourcing",

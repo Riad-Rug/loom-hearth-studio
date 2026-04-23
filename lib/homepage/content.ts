@@ -193,7 +193,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
       description:
         "One-of-one vintage Moroccan rugs selected for construction integrity, visible age, and pile condition.",
       priceLabel: "SHOP VINTAGE",
-      href: "/shop/vintage",
+      href: "/shop/rugs/vintage",
       visible: true,
       image:
         next.featured.cards.find((card) => card.id === "featured-vintage")?.image ??

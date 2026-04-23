@@ -193,12 +193,12 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
       "Browse supporting Moroccan decor pieces selected to sit alongside rugs, poufs, and collected textile interiors.",
   },
   {
-    id: "category-vintage",
-    label: "Vintage",
+    id: "category-rugs-vintage",
+    label: "Vintage Rugs",
     entityType: "category",
-    entityKey: "vintage",
-    path: "/shop/vintage",
-    fallbackTitle: "Vintage",
+    entityKey: "rugs-vintage",
+    path: "/shop/rugs/vintage",
+    fallbackTitle: "Vintage Rugs",
     fallbackDescription:
       "Browse vintage Moroccan pieces with collected character, condition notes, and a review-first buying path.",
   },

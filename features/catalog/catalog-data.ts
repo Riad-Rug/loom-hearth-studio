@@ -69,7 +69,7 @@ export const catalogCategories = [
     key: "vintage",
     label: "Vintage",
     title: "Vintage Rugs",
-    href: "/shop/vintage",
+    href: "/shop/rugs/vintage",
     description:
       "Vintage Moroccan rugs selected for structural integrity, patina, and visible age. Each piece is assessed for warp and weft tension, pile density, and condition before entering the collection. Visible age is not enough \u2014 the construction has to hold.\n\nEvery piece is one of one.",
     bullets: [
