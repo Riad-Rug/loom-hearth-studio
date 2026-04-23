@@ -7,7 +7,7 @@ import { getRugStyleCollection } from "@/features/catalog/rug-style-collections"
 import { listRugStyleProductCards } from "@/lib/catalog/service";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
-import { breadcrumbSchema } from "@/lib/seo/schema";
+import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
 type RugStylePageProps = {
   params: Promise<{
@@ -52,12 +52,23 @@ export default async function RugStylePage({ params }: RugStylePageProps) {
   return (
     <>
       <JsonLd
-        data={breadcrumbSchema([
-          { name: "Home", path: "/" },
-          { name: "Shop", path: "/shop" },
-          { name: "Rugs", path: "/shop/rugs" },
-          { name: collection.title, path: `/shop/rugs/${style}` },
-        ])}
+        data={[
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Shop", path: "/shop" },
+            { name: "Rugs", path: "/shop/rugs" },
+            { name: collection.title, path: `/shop/rugs/${style}` },
+          ]),
+          itemListSchema({
+            path: `/shop/rugs/${style}`,
+            name: collection.title,
+            items: products.map((product) => ({
+              name: product.name,
+              path: product.href,
+              image: product.primaryImage?.src,
+            })),
+          }),
+        ]}
       />
       <CatalogPageView
         category={collection.category}

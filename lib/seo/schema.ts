@@ -77,7 +77,7 @@ export function itemListSchema(input: {
   items: Array<{
     name: string;
     path: string;
-    image: string;
+    image?: string;
   }>;
 }) {
   const url = absoluteUrl(input.path);
@@ -93,7 +93,7 @@ export function itemListSchema(input: {
       position: index + 1,
       name: item.name,
       url: absoluteUrl(item.path),
-      image: item.image,
+      ...(item.image ? { image: item.image } : {}),
     })),
   };
 }
