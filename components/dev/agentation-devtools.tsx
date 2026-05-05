@@ -12,5 +12,5 @@ export function AgentationDevtools() {
     return null;
   }
 
-  return <Agentation />;
+  return <Agentation className="agentation-devtools" />;
 }
