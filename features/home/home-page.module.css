@@ -1,6 +1,20 @@
 .page {
   display: grid;
   gap: var(--space-5);
+  padding: var(--space-6);
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, #f7ebdb, #ead8c1);
+  color: var(--color-text-body);
+  font-family: var(--font-display), Georgia, serif;
+  box-shadow: var(--shadow-panel);
+}
+
+.page button,
+.page input,
+.page textarea,
+.page select {
+  font-family: inherit;
 }
 
 .hero {

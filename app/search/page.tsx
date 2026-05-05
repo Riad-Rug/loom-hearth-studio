@@ -40,20 +40,67 @@ function filterProducts(products: CatalogProductCardViewModel[], query: string) 
     .split(/\s+/u)
     .filter(Boolean);
 
-  return products.filter((product) => {
-    const haystack = [
-      product.name,
-      product.subtitle,
-      product.category,
-      product.type,
-      product.priceUsdLabel,
-      product.description,
-      product.merchandisingNote,
-      product.badge,
-    ]
-      .join(" ")
-      .toLowerCase();
+  const normalizedQuery = query.toLowerCase();
 
-    return terms.every((term) => haystack.includes(term));
-  });
+  return products
+    .map((product) => ({
+      product,
+      score: getProductSearchScore(product, terms, normalizedQuery),
+    }))
+    .filter((entry) => entry.score > 0)
+    .sort((left, right) => right.score - left.score)
+    .map((entry) => entry.product);
+}
+
+function getProductSearchScore(
+  product: CatalogProductCardViewModel,
+  terms: string[],
+  normalizedQuery: string,
+) {
+  const title = product.name.toLowerCase();
+  const description = product.description.toLowerCase();
+  const subtitle = product.subtitle.toLowerCase();
+  const supportingText = [
+    product.merchandisingNote,
+    product.badge,
+    product.category,
+    product.type,
+    product.priceUsdLabel,
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  let score = 0;
+
+  if (title.includes(normalizedQuery)) {
+    score += 120;
+  }
+
+  if (description.includes(normalizedQuery)) {
+    score += 80;
+  }
+
+  if (subtitle.includes(normalizedQuery)) {
+    score += 45;
+  }
+
+  for (const term of terms) {
+    if (title.includes(term)) {
+      score += 40;
+    }
+
+    if (description.includes(term)) {
+      score += 24;
+    }
+
+    if (subtitle.includes(term)) {
+      score += 14;
+    }
+
+    if (supportingText.includes(term)) {
+      score += 6;
+    }
+  }
+
+  return score;
 }

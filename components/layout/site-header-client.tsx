@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { Container } from "@/components/layout/container";
@@ -33,10 +33,13 @@ type SiteHeaderClientProps = {
 
 export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const headerRef = useRef<HTMLElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMenuLabel, setOpenMenuLabel] = useState<string | null>(null);
   const [openMobileGroupLabel, setOpenMobileGroupLabel] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [primaryAnnouncement, ...supportingAnnouncements] = props.announcementItems;
   const announcementText = props.announcementItems.join(" / ");
   const showAnnouncement = pathname !== "/contact";
@@ -73,6 +76,18 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const nextQuery = searchQuery.trim();
+    if (!nextQuery) {
+      router.push("/search");
+      return;
+    }
+
+    router.push(`/search?q=${encodeURIComponent(nextQuery)}`);
+  }
 
   return (
     <header ref={headerRef} className="site-header">
@@ -179,9 +194,35 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
             ))}
           </nav>
           <div className="site-header__actions">
-            <Link className="site-header__icon-link" href="/search" aria-label="Search products">
-              <SearchIcon />
-            </Link>
+            <form
+              className="site-header__search-shell"
+              role="search"
+              aria-label="Site search"
+              onSubmit={handleSearchSubmit}
+            >
+              <label className="site-header__sr-only" htmlFor="site-header-search">
+                Search products
+              </label>
+              <input
+                ref={searchInputRef}
+                id="site-header-search"
+                className="site-header__search-input"
+                name="q"
+                placeholder="Search"
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                onFocus={() => setOpenMenuLabel(null)}
+              />
+              <button
+                className="site-header__icon-link site-header__search-button"
+                type="submit"
+                aria-label="Search products"
+                onMouseEnter={() => searchInputRef.current?.focus()}
+              >
+                <SearchIcon />
+              </button>
+            </form>
             <div className="site-header__account-links">
               {props.isAuthenticated ? (
                 <Link className="site-header__link" href="/account">
