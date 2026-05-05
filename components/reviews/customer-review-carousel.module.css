@@ -47,14 +47,17 @@
 
 .carouselStage {
   position: relative;
+  min-width: 0;
 }
 
 .reviewTrack {
-  display: grid;
-  grid-auto-columns: 100%;
-  grid-auto-flow: column;
+  display: flex;
+  width: 100%;
+  min-width: 0;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -65,7 +68,10 @@
 
 .reviewCard {
   display: grid;
+  flex: 0 0 100%;
   gap: var(--space-3);
+  width: 100%;
+  min-width: 100%;
   min-height: 11rem;
   align-content: center;
   margin: 0;
