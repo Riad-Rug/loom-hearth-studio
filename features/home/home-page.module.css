@@ -714,7 +714,7 @@
 
 .proofCardHeritage {
   grid-area: heritage;
-  background: linear-gradient(180deg, rgba(239, 224, 202, 0.9), rgba(234, 216, 193, 0.62));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(245, 241, 232, 0.18));
 }
 
 .proofCard h3 {
