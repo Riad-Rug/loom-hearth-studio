@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
+import { BackToTopButton } from "@/components/layout/back-to-top-button";
 import { ExitIntentCapture } from "@/components/marketing/exit-intent-capture";
 
 type AppShellProps = {
@@ -25,6 +26,7 @@ export function AppShell({ children, header, footer, consentBanner }: AppShellPr
       {header}
       <main className="site-main">{children}</main>
       {footer}
+      <BackToTopButton />
       {consentBanner}
       <ExitIntentCapture />
     </div>
