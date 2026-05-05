@@ -27,6 +27,7 @@ export function ProductCard({ product }: ProductCardProps) {
     secondaryImage !== undefined &&
     secondaryImage.publicId !== primaryImage.publicId &&
     !secondaryImageFailed;
+  const availabilityLabel = product.type === "rug" ? "One of one" : "In studio";
 
   return (
     <Link className={styles.productCard} href={product.href as Route}>
@@ -60,6 +61,10 @@ export function ProductCard({ product }: ProductCardProps) {
               />
             ) : null}
             <div className={styles.productMediaOverlay} aria-hidden="true" />
+            <div className={styles.productMetaOverlay} aria-hidden="true">
+              <p className={styles.productOverlaySubtitle}>{product.subtitle}</p>
+              <p className={styles.productOverlaySummary}>{descriptor}</p>
+            </div>
           </>
         ) : (
           <div className={styles.productFallback}>
@@ -68,11 +73,12 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
       <div className={styles.productContent}>
-        <p className={styles.productCategory}>{getCategoryLabel(product.category)}</p>
+        <div className={styles.productCardTopline}>
+          <p className={styles.productCategory}>{getCategoryLabel(product.category)}</p>
+          <span className={styles.productAvailability}>{availabilityLabel}</span>
+        </div>
         <h3>{product.name}</h3>
         <p className={styles.productPrice}>{product.priceUsdLabel}</p>
-        <p className={styles.productSubtitle}>{product.subtitle}</p>
-        <p className={styles.productSummary}>{descriptor}</p>
       </div>
     </Link>
   );

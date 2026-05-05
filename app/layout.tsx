@@ -5,6 +5,7 @@ import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { MarketingPixels } from "@/components/analytics/marketing-pixels";
 import { CookieConsentBanner } from "@/components/compliance/cookie-consent-banner";
 import { CookieConsentProvider } from "@/components/compliance/cookie-consent-provider";
+import { AgentationDevtools } from "@/components/dev/agentation-devtools";
 import { AppShell } from "@/components/layout/app-shell";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -77,6 +78,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             >
               {children}
             </AppShell>
+            <AgentationDevtools />
           </CookieConsentProvider>
         </CartProvider>
       </body>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Section } from "@/components/layout/section";
+import { CatalogHistoryRecorder } from "@/features/catalog/catalog-history-recorder";
 import { ProductCard } from "@/features/catalog/product-card";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
@@ -17,6 +18,10 @@ export function SearchPageView({ query, results, totalCount }: SearchPageViewPro
 
   return (
     <div className={styles.page}>
+      <CatalogHistoryRecorder
+        query={query}
+        resultCategories={results.map((product) => product.category)}
+      />
       <Section width="wide">
         <div className={styles.searchHero}>
           <div className={styles.heroCopy}>

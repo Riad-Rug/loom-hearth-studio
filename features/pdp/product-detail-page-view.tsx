@@ -11,11 +11,17 @@ import { Section } from "@/components/layout/section";
 import { ProductCard } from "@/features/catalog/product-card";
 import { trackViewItem } from "@/lib/analytics/gtag";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
+import {
+  getTopRecommendationHistoryCategory,
+  recordCategoryInterest,
+} from "@/lib/catalog/recommendation-history";
 import type {
   MultiUnitProductDetailPageViewModel,
   ProductDetailPageViewModel,
 } from "@/lib/catalog/contracts";
+import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { customerReviews } from "@/lib/reviews/customer-reviews";
+import type { ProductCategory } from "@/types/domain";
 
 import styles from "./product-detail-page.module.css";
 
@@ -63,10 +69,15 @@ function GalleryImage(props: GalleryImageProps) {
 export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [preferredHistoryCategory, setPreferredHistoryCategory] = useState<ProductCategory | null>(null);
 
   useEffect(() => {
     setActiveImageIndex(0);
     setIsLightboxOpen(false);
+  }, [product.id]);
+
+  useEffect(() => {
+    setPreferredHistoryCategory(getTopRecommendationHistoryCategory());
   }, [product.id]);
 
   useEffect(() => {
@@ -83,6 +94,8 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         },
       ],
     });
+
+    recordCategoryInterest(product.category);
   }, [product.category, product.id, product.name, product.priceUsd]);
 
   useEffect(() => {
@@ -118,6 +131,25 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   }, [isLightboxOpen, product.gallery.length]);
 
   const activeImage = product.gallery[activeImageIndex] ?? product.gallery[0] ?? null;
+  const displayedRecommendations = getDisplayedRecommendations(
+    product.similarRugs,
+    preferredHistoryCategory,
+  );
+  const displayedCrossSellRecommendations = getDisplayedCrossSellRecommendations(
+    product.crossSellRecommendations,
+    displayedRecommendations,
+    preferredHistoryCategory,
+  );
+  const recommendationPresentation = getRecommendationPresentation(
+    product,
+    displayedRecommendations,
+    preferredHistoryCategory,
+  );
+  const crossSellPresentation = getCrossSellPresentation(
+    product,
+    displayedCrossSellRecommendations,
+    preferredHistoryCategory,
+  );
 
   function selectImage(index: number) {
     setActiveImageIndex(index);
@@ -179,7 +211,9 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                   type="button"
                   aria-pressed={activeImageIndex === index}
                   aria-label={`Show ${item.label}`}
+                  onFocus={() => selectImage(index)}
                   onClick={() => selectImage(index)}
+                  onMouseEnter={() => selectImage(index)}
                 >
                   <GalleryImage
                     className={styles.thumbnailImage}
@@ -346,7 +380,9 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                     type="button"
                     aria-pressed={activeImageIndex === index}
                     aria-label={`Show ${item.label}`}
+                    onFocus={() => selectImage(index)}
                     onClick={() => selectImage(index)}
+                    onMouseEnter={() => selectImage(index)}
                   >
                     <GalleryImage
                       className={styles.thumbnailImage}
@@ -396,18 +432,39 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         </Section>
       ) : null}
 
-      {product.similarRugs.length ? (
+      {displayedRecommendations.length ? (
         <Section className={styles.standardBandGap} tone="muted" width="wide">
           <div className={styles.recommendationSection}>
             <div className={styles.sectionIntro}>
-              <p className={styles.eyebrow}>You may also like</p>
-              <h2>Similar Rugs to Keep in View.</h2>
+              <p className={styles.eyebrow}>{recommendationPresentation.eyebrow}</p>
+              <h2>{recommendationPresentation.heading}</h2>
             </div>
             <div
               className={styles.recommendationCarousel}
-              aria-label="Similar rug recommendations"
+              aria-label={recommendationPresentation.ariaLabel}
             >
-              {product.similarRugs.map((item) => (
+              {displayedRecommendations.map((item) => (
+                <div key={item.id} className={styles.recommendationSlide}>
+                  <ProductCard product={item} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </Section>
+      ) : null}
+
+      {displayedCrossSellRecommendations.length ? (
+        <Section className={styles.standardBandGap} tone="muted" width="wide">
+          <div className={styles.recommendationSection}>
+            <div className={styles.sectionIntro}>
+              <p className={styles.eyebrow}>{crossSellPresentation.eyebrow}</p>
+              <h2>{crossSellPresentation.heading}</h2>
+            </div>
+            <div
+              className={styles.recommendationCarousel}
+              aria-label={crossSellPresentation.ariaLabel}
+            >
+              {displayedCrossSellRecommendations.map((item) => (
                 <div key={item.id} className={styles.recommendationSlide}>
                   <ProductCard product={item} />
                 </div>
@@ -422,6 +479,42 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
       </Section>
     </div>
   );
+}
+
+function getDisplayedRecommendations(
+  recommendations: CatalogProductCardViewModel[],
+  preferredHistoryCategory: ProductCategory | null,
+) {
+  if (!preferredHistoryCategory) {
+    return recommendations;
+  }
+
+  const matchingCategoryRecommendations = recommendations.filter(
+    (item) => item.category === preferredHistoryCategory,
+  );
+
+  return matchingCategoryRecommendations.length ? matchingCategoryRecommendations : recommendations;
+}
+
+function getDisplayedCrossSellRecommendations(
+  recommendations: CatalogProductCardViewModel[],
+  displayedRecommendations: CatalogProductCardViewModel[],
+  preferredHistoryCategory: ProductCategory | null,
+) {
+  const excludedIds = new Set(displayedRecommendations.map((item) => item.id));
+  const filteredRecommendations = recommendations.filter((item) => !excludedIds.has(item.id));
+
+  if (!preferredHistoryCategory) {
+    return filteredRecommendations;
+  }
+
+  const nonPrimaryCategoryRecommendations = filteredRecommendations.filter(
+    (item) => item.category !== preferredHistoryCategory,
+  );
+
+  return nonPrimaryCategoryRecommendations.length
+    ? nonPrimaryCategoryRecommendations
+    : filteredRecommendations;
 }
 
 function ProductBreadcrumb({ product }: { product: ProductDetailPageViewModel }) {
@@ -444,6 +537,131 @@ function ProductBreadcrumb({ product }: { product: ProductDetailPageViewModel })
       </ol>
     </nav>
   );
+}
+
+function getRecommendationHeading(product: ProductDetailPageViewModel) {
+  if (product.type === "rug") {
+    return "Similar Rugs to Keep in View.";
+  }
+
+  switch (product.category) {
+    case "poufs":
+      return "Similar Poufs to Keep in View.";
+    case "pillows":
+      return "Similar Pillows to Keep in View.";
+    case "decor":
+      return "Similar Pieces to Keep in View.";
+    case "vintage":
+      return "Similar Vintage Pieces to Keep in View.";
+    default:
+      return "Similar Pieces to Keep in View.";
+  }
+}
+
+function getRecommendationPresentation(
+  product: ProductDetailPageViewModel,
+  recommendations: CatalogProductCardViewModel[],
+  preferredHistoryCategory: ProductCategory | null,
+) {
+  const displayedCategory = recommendations[0]?.category;
+  const isHistoryLedCategory =
+    preferredHistoryCategory !== null &&
+    displayedCategory !== undefined &&
+    displayedCategory === preferredHistoryCategory &&
+    displayedCategory !== product.category;
+
+  if (isHistoryLedCategory) {
+    const categoryLabel = getCategoryLabel(displayedCategory);
+
+    return {
+      eyebrow: "Based on your browsing",
+      heading: `More ${categoryLabel} from Your Recent Browsing.`,
+      ariaLabel: `${categoryLabel} based on your recent browsing`,
+    };
+  }
+
+  return {
+    eyebrow: "You may also like",
+    heading: getRecommendationHeading(product),
+    ariaLabel: getRecommendationAriaLabel(product),
+  };
+}
+
+function getCrossSellPresentation(
+  product: ProductDetailPageViewModel,
+  recommendations: CatalogProductCardViewModel[],
+  preferredHistoryCategory: ProductCategory | null,
+) {
+  const displayedCategory = recommendations[0]?.category;
+  const isHistoryLedUpsell =
+    preferredHistoryCategory !== null &&
+    displayedCategory !== undefined &&
+    displayedCategory !== preferredHistoryCategory;
+
+  if (isHistoryLedUpsell) {
+    return {
+      eyebrow: "Then consider",
+      heading: `Add ${getCategoryLabel(displayedCategory)} as a Next Layer.`,
+      ariaLabel: `${getCategoryLabel(displayedCategory)} as companion pieces`,
+    };
+  }
+
+  return {
+    eyebrow: "Pair with",
+    heading: getCrossSellHeading(product),
+    ariaLabel: getCrossSellAriaLabel(product),
+  };
+}
+
+function getCrossSellHeading(product: ProductDetailPageViewModel) {
+  switch (product.category) {
+    case "rugs":
+    case "vintage":
+      return "Complete the Room with Pillows, Poufs, or Decor.";
+    case "poufs":
+      return "Add Pillows, Decor, or a Rug Around It.";
+    case "pillows":
+      return "Layer In a Pouf, Decor Piece, or Rug.";
+    case "decor":
+      return "Pair It with Textiles and Soft Goods.";
+    default:
+      return "Add a Complementary Piece.";
+  }
+}
+
+function getCrossSellAriaLabel(product: ProductDetailPageViewModel) {
+  switch (product.category) {
+    case "rugs":
+    case "vintage":
+      return "Complementary pillows, poufs, and decor";
+    case "poufs":
+      return "Complementary pillows, decor, and rugs";
+    case "pillows":
+      return "Complementary poufs, decor, and rugs";
+    case "decor":
+      return "Complementary textiles and decor pairings";
+    default:
+      return "Complementary pieces";
+  }
+}
+
+function getRecommendationAriaLabel(product: ProductDetailPageViewModel) {
+  if (product.type === "rug") {
+    return "Similar rug recommendations";
+  }
+
+  switch (product.category) {
+    case "poufs":
+      return "Similar pouf recommendations";
+    case "pillows":
+      return "Similar pillow recommendations";
+    case "decor":
+      return "Similar decor recommendations";
+    case "vintage":
+      return "Similar vintage recommendations";
+    default:
+      return "Similar product recommendations";
+  }
 }
 
 function getProductCategoryHref(product: ProductDetailPageViewModel): Route {
@@ -691,7 +909,12 @@ function buildInquiryHref(product: ProductDetailPageViewModel) {
   const params = new URLSearchParams({
     inquiryType: "product-inquiry",
     productName: product.name,
+    productHref: getProductPath(product),
   });
 
   return `/contact?${params.toString()}`;
+}
+
+function getProductPath(product: ProductDetailPageViewModel) {
+  return `/shop/${product.category}/${product.slug}`;
 }

@@ -60,7 +60,7 @@ export const contactData = {
   emailLabel: publicBusinessDetails.email,
   whatsappLabel: publicBusinessDetails.whatsappLabel,
   whatsappUrl: publicBusinessDetails.whatsappUrl,
-  hoursLabel: "Mon-Fri, 9am-6pm CET",
+  hoursLabel: "Mon-Fri, 9am-6pm Marrakech local time",
 } as const;
 
 export const faqItems: FaqItem[] = [

@@ -37,8 +37,12 @@ export function CustomerReviewCarousel({
   const activeMeta = useMemo(
     () =>
       activeReview
-        ? `${activeReview.customerName} - ${activeReview.country} - ${activeReview.productType}`
-        : "",
+        ? {
+            customerName: activeReview.customerName,
+            country: activeReview.country,
+            productType: activeReview.productType,
+          }
+        : null,
     [activeReview],
   );
 
@@ -85,7 +89,13 @@ export function CustomerReviewCarousel({
       <figure className={styles.reviewCard} aria-live="polite">
         <blockquote key={activeReview.id}>{activeReview.body}</blockquote>
         <figcaption>
-          <span>{activeMeta}</span>
+          {activeMeta ? (
+            <>
+              <span>{activeMeta.customerName}</span>
+              <span>{activeMeta.country}</span>
+              <span>{activeMeta.productType}</span>
+            </>
+          ) : null}
         </figcaption>
       </figure>
 
@@ -114,6 +124,14 @@ export function CustomerReviewCarousel({
             />
           ))}
         </div>
+        <button
+          className={styles.pauseButton}
+          type="button"
+          aria-pressed={isPaused}
+          onClick={() => setIsPaused((currentValue) => !currentValue)}
+        >
+          {isPaused ? "Play" : "Pause"}
+        </button>
         <button
           className={styles.arrowButton}
           type="button"

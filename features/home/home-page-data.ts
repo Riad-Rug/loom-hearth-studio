@@ -43,8 +43,8 @@ export const homepageSectionDefinitions: Record<
     description: "Editorial card that frames the visual point of view.",
   },
   featured: {
-    label: "Featured collections",
-    description: "Three featured collection or product direction cards.",
+    label: "Shop-first categories",
+    description: "Category-first shopping cards that lead buyers into one-of-one inventory.",
   },
   proof: {
     label: "Buyer proof",
@@ -233,15 +233,15 @@ const defaultHomePageContent: HomePageContent = {
     eyebrow: "COLOUR VERIFIED BEFORE PAYMENT",
     title: "Hand-knotted Moroccan rugs from a family that has worked this trade for 80 years.",
     paragraph:
-      "Hand-knotted rugs, poufs, cactus silk pillows, and handcrafted decor  selected in person across Morocco, not pulled from an export catalogue.",
+      "Before payment is captured, you see the exact piece in multiple light conditions. Then it ships directly from Morocco through a family trade built over 80 years.",
     primaryCta: {
       label: "SHOP RUGS",
       href: "/shop/rugs",
       visible: true,
     },
     secondaryCta: {
-      label: "VIEW THE LOOKBOOK",
-      href: "/lookbook",
+      label: "SHOP VINTAGE RUGS",
+      href: "/shop/rugs/vintage",
       visible: true,
     },
     image: {
@@ -260,13 +260,13 @@ const defaultHomePageContent: HomePageContent = {
         "Direct sourcing, launch-market shipping to the United States, Canada, and Australia, and a confirm-before-capture model shape the homepage value highlights.",
     },
     items: [
-      { id: "badge-1", label: "Direct from Morocco", visible: true },
+      { id: "badge-1", label: "Exact-piece verification", visible: true },
       {
         id: "badge-2",
-        label: "Free shipping to the United States, Canada, and Australia",
+        label: "Direct from Morocco",
         visible: true,
       },
-      { id: "badge-3", label: "Colour verified before payment is captured", visible: true },
+      { id: "badge-3", label: "Free shipping to the US, Canada, and Australia", visible: true },
       { id: "badge-4", label: "14-day returns", visible: true },
     ],
   },
@@ -394,9 +394,10 @@ const defaultHomePageContent: HomePageContent = {
       metaDescription:
         "Start with the signature homepage categories: Moroccan rugs, rug-made poufs, cactus silk pillows, handcrafted decor, and vintage finds.",
     },
-    eyebrow: "SHOP FIRST",
+    eyebrow: "",
     title: "Choose the category first, then the exact piece.",
-    paragraph: "Rugs, poufs, pillows, decor, and vintage finds in one edited collection.",
+    paragraph:
+      "Every listing is a one-of-one inventory decision. Start with the type of piece you need, then confirm the exact item.",
     cards: [
       {
         id: "featured-rugs",
@@ -407,8 +408,8 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/rugs",
         visible: true,
         image: {
-          src: "https://images.pexels.com/photos/36202808/pexels-photo-36202808.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
-          alt: "Close crop of a colorful handwoven Moroccan rug showing its geometric pattern and wool texture",
+          src: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+          alt: "Handmade Moroccan rug in a warm neutral living room with soft natural light",
           publicId: "",
           width: null,
           height: null,

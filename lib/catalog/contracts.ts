@@ -14,6 +14,7 @@ export type CatalogProductCardViewModel = {
   subtitle: string;
   category: ProductCategory;
   type: Product["type"];
+  priceUsd: number;
   priceUsdLabel: string;
   description: string;
   merchandisingNote: string;
@@ -88,6 +89,7 @@ type ProductDetailPageViewModelBase = {
   supportPanels: ProductSupportPanelViewModel[];
   detailSections: ProductDetailSectionViewModel[];
   similarRugs: CatalogProductCardViewModel[];
+  crossSellRecommendations: CatalogProductCardViewModel[];
   related: ProductLinkViewModel[];
   recentlyViewed: ProductLinkViewModel[];
   sharePlatforms: string[];

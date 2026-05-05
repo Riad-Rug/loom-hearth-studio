@@ -23,12 +23,14 @@ type ContactFormValues = {
   inquiryType?: InquiryType;
   name?: string;
   email?: string;
+  orderNumber?: string;
   studioName?: string;
   message?: string;
   productName?: string;
 };
 
 type InquiryProjectContext = {
+  orderNumber: string | null;
   studioName: string | null;
   productName: string | null;
 };
@@ -55,16 +57,30 @@ export async function submitContactInquiry(
     inquiryType: inquiryType ?? undefined,
     name: name ?? undefined,
     email: email ?? undefined,
+    orderNumber: projectContext.orderNumber ?? undefined,
     studioName: projectContext.studioName ?? undefined,
     message: message ?? undefined,
     productName: projectContext.productName ?? undefined,
   });
 
-  if (!name || !email || !inquiryType || !message || message.length < 10 || !isValidEmail(email)) {
+  const orderNumberIsRequired =
+    inquiryType === "order-question" && !projectContext.orderNumber;
+
+  if (
+    !name ||
+    !email ||
+    !inquiryType ||
+    !message ||
+    message.length < 10 ||
+    !isValidEmail(email) ||
+    orderNumberIsRequired
+  ) {
     return {
       tone: "error",
       message:
-        "Please add your name, a valid email, and a short message before sending.",
+        inquiryType === "order-question"
+          ? "Please add your name, a valid email, your order number, and a short message before sending."
+          : "Please add your name, a valid email, and a short message before sending.",
       name: name ?? undefined,
       email: email ?? undefined,
       values: submittedValues,
@@ -95,6 +111,20 @@ export async function submitContactInquiry(
   });
 
   if (studioDeliveryResult.status !== "sent") {
+    if (
+      process.env.NODE_ENV !== "production" &&
+      studioDeliveryResult.status === "configuration-error"
+    ) {
+      const firstName = name.split(/\s+/)[0] ?? name;
+
+      return {
+        tone: "success",
+        message: `Thanks, ${firstName}. Local development mode skipped email delivery because Postmark is not configured, but the contact success flow is working.`,
+        name,
+        email,
+      };
+    }
+
     return {
       tone: "error",
       message:
@@ -153,6 +183,7 @@ function sanitizeInquiryType(value: FormDataEntryValue | null): InquiryType | nu
 
 function sanitizeProjectContext(formData: FormData): InquiryProjectContext {
   return {
+    orderNumber: sanitizeContactField(formData.get("orderNumber"), 80),
     studioName: sanitizeContactField(formData.get("studioName"), 160),
     productName: sanitizeContactField(formData.get("productName"), 160),
   };
@@ -257,6 +288,7 @@ function createContactConfirmationText(input: {
 
 function createProjectContextLines(projectContext: InquiryProjectContext) {
   return [
+    projectContext.orderNumber ? `Order number: ${projectContext.orderNumber}` : null,
     projectContext.productName ? `Product: ${projectContext.productName}` : null,
     projectContext.studioName ? `Studio or company: ${projectContext.studioName}` : null,
   ].filter((value): value is string => Boolean(value));

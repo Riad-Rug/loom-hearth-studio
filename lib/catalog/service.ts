@@ -147,7 +147,10 @@ export async function getRugProductDetailByParams(input: {
 
   const allProducts = await repository.listAll();
 
-  return createProductDetailPageViewModel(product, allProducts) as RugProductDetailPageViewModel;
+  return createProductDetailPageViewModel(
+    product,
+    allProducts,
+  ) as RugProductDetailPageViewModel;
 }
 
 export async function getCategoryProductDetailByParams(input: {
@@ -181,6 +184,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     subtitle: createProductSubtitle(product),
     category: product.category,
     type: product.type,
+    priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
     description: normalizeDimensionSeparators(product.description),
     merchandisingNote: normalizeDimensionSeparators(getProductMerchandisingNote(product)),
@@ -219,7 +223,8 @@ function createProductDetailPageViewModel(
     allProducts.filter((candidate) => candidate.id !== product.id).slice().reverse(),
     2,
   );
-  const similarRugs = createSimilarRugCards(product, allProducts);
+  const similarRugs = createRecommendedProductCards(product, allProducts);
+  const crossSellRecommendations = createCrossSellRecommendationCards(product, allProducts);
 
   const baseViewModel = {
     id: product.id,
@@ -243,6 +248,7 @@ function createProductDetailPageViewModel(
     supportPanels: createProductSupportPanels(product),
     detailSections: createProductDetailSections(product),
     similarRugs,
+    crossSellRecommendations,
     related,
     recentlyViewed,
     sharePlatforms: ["Pinterest", "Instagram", "Email"],
@@ -412,35 +418,74 @@ function createProductLinks(products: Product[], count: number): ProductLinkView
   }));
 }
 
-function createSimilarRugCards(product: Product, allProducts: Product[]): CatalogProductCardViewModel[] {
-  const rugs = allProducts.filter(
-    (candidate): candidate is RugProduct => candidate.type === "rug" && candidate.id !== product.id,
-  );
-
-  if (!rugs.length) {
-    return [];
-  }
-
-  const rankedRugs = rugs
+function createRecommendedProductCards(
+  product: Product,
+  allProducts: Product[],
+): CatalogProductCardViewModel[] {
+  const rankedProducts = allProducts
+    .filter((candidate) => isRecommendableCandidate(product, candidate))
     .map((candidate) => ({
       product: candidate,
-      score: getSimilarityScore(product, candidate),
+      score: getRecommendationScore(product, candidate),
     }))
-    .sort((left, right) => right.score - left.score)
+    .sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+
+      return right.product.priceUsd - left.product.priceUsd;
+    })
+    .slice(0, 4)
     .map((item) => item.product);
 
-  return rankedRugs.slice(0, 4).map(createCatalogProductCardViewModel);
+  if (rankedProducts.length) {
+    return rankedProducts.map(createCatalogProductCardViewModel);
+  }
+
+  return createFallbackRecommendedProductCards(product, allProducts);
 }
 
-function getSimilarityScore(product: Product, candidate: RugProduct) {
+function isRecommendableCandidate(
+  product: Product,
+  candidate: Product,
+) {
+  if (candidate.id === product.id) {
+    return false;
+  }
+
+  if (candidate.type === "multiUnit" && candidate.inventory <= 0) {
+    return false;
+  }
+
+  return true;
+}
+
+function getRecommendationScore(
+  product: Product,
+  candidate: Product,
+) {
+  let score = getProductSimilarityScore(product, candidate);
+
+  if (product.type === "multiUnit" && candidate.category !== product.category) {
+    score += getCompanionCategoryBoost(product.category, candidate.category);
+  }
+
+  return score;
+}
+
+function getProductSimilarityScore(product: Product, candidate: Product) {
   let score = 0;
 
   if (product.category === candidate.category) {
-    score += 4;
+    score += 6;
   }
 
-  if (product.type === "rug" && product.rugStyle === candidate.rugStyle) {
-    score += 5;
+  if (product.type === "rug" && candidate.type === "rug" && product.rugStyle === candidate.rugStyle) {
+    score += 7;
+  }
+
+  if (product.type === candidate.type) {
+    score += 3;
   }
 
   if (product.origin === candidate.origin) {
@@ -448,9 +493,119 @@ function getSimilarityScore(product: Product, candidate: RugProduct) {
   }
 
   const materialOverlap = product.materials.filter((material) => candidate.materials.includes(material)).length;
-  score += materialOverlap;
+  score += materialOverlap * 2;
+
+  score += getPriceProximityBoost(product, candidate);
 
   return score;
+}
+
+function getPriceProximityBoost(product: Product, candidate: Product) {
+  if (product.priceUsd <= 0) {
+    return 0;
+  }
+
+  const priceDeltaRatio = Math.abs(product.priceUsd - candidate.priceUsd) / product.priceUsd;
+
+  if (priceDeltaRatio <= 0.15) {
+    return 2;
+  }
+
+  if (priceDeltaRatio <= 0.35) {
+    return 1;
+  }
+
+  return 0;
+}
+
+function getCompanionCategoryBoost(
+  currentCategory: ProductCategory,
+  candidateCategory: ProductCategory,
+) {
+  const companionRanks = getCompanionCategoryOrder(currentCategory);
+  const companionIndex = companionRanks.indexOf(candidateCategory);
+
+  if (companionIndex === -1) {
+    return 0;
+  }
+
+  return Math.max(3 - companionIndex, 1);
+}
+
+function createFallbackRecommendedProductCards(
+  product: Product,
+  allProducts: Product[],
+): CatalogProductCardViewModel[] {
+  const fallbackProducts = allProducts
+    .filter((candidate) => candidate.id !== product.id)
+    .filter((candidate) => candidate.category === product.category || candidate.type === product.type)
+    .slice(0, 4);
+
+  if (fallbackProducts.length) {
+    return fallbackProducts.map(createCatalogProductCardViewModel);
+  }
+
+  return allProducts
+    .filter((candidate) => candidate.id !== product.id)
+    .slice(0, 4)
+    .map(createCatalogProductCardViewModel);
+}
+
+function createCrossSellRecommendationCards(
+  product: Product,
+  allProducts: Product[],
+): CatalogProductCardViewModel[] {
+  const baseCategory = product.category;
+  const upsellCategoryOrder = getUpsellCategoryOrder(baseCategory);
+
+  const crossSellProducts = upsellCategoryOrder.flatMap((category) =>
+    allProducts.filter((candidate) => {
+      if (candidate.id === product.id) {
+        return false;
+      }
+
+      if (candidate.category !== category) {
+        return false;
+      }
+
+      if (candidate.type === "multiUnit" && candidate.inventory <= 0) {
+        return false;
+      }
+
+      return true;
+    }),
+  );
+
+  const uniqueProducts = crossSellProducts.filter(
+    (candidate, index, candidates) =>
+      candidates.findIndex((item) => item.id === candidate.id) === index,
+  );
+
+  return uniqueProducts.slice(0, 4).map(createCatalogProductCardViewModel);
+}
+
+function getCompanionCategoryOrder(category: ProductCategory) {
+  const categoryOrder: Record<ProductCategory, ProductCategory[]> = {
+    rugs: ["vintage", "poufs", "pillows", "decor"],
+    vintage: ["rugs", "poufs", "pillows", "decor"],
+    poufs: ["pillows", "decor", "rugs", "vintage"],
+    pillows: ["poufs", "decor", "rugs", "vintage"],
+    decor: ["pillows", "poufs", "rugs", "vintage"],
+  };
+
+  return categoryOrder[category];
+}
+
+function getUpsellCategoryOrder(category: ProductCategory) {
+  const categoryOrder: Record<ProductCategory, ProductCategory[]> = {
+    rugs: ["pillows", "poufs", "decor"],
+    vintage: ["pillows", "poufs", "decor"],
+    poufs: ["pillows", "decor", "rugs"],
+    pillows: ["poufs", "decor", "rugs"],
+    decor: ["pillows", "poufs", "rugs"],
+  };
+
+  return categoryOrder[category];
 }
 
 function createProductDetailSections(product: Product) {

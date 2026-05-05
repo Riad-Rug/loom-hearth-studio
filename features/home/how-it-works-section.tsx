@@ -32,26 +32,23 @@ export function HowItWorksSection() {
           <p className={styles.eyebrow}>HOW IT WORKS</p>
           <h2>See the exact piece in your light conditions before you pay.</h2>
           <p className={styles.sectionBody}>
-            Colour in a photograph and colour under your indoor light are not the same thing. Warm bulbs pull rugs
-            warmer. Cool white light flattens them. Natural light is different again. Before your payment is
-            captured, we send you a video of the actual piece in multiple light conditions so you can see how it
-            behaves before it ships. If it is not right for your space, you do not pay.
+            Before payment is captured, we send a video of the actual piece in natural, warm, and cool light. If the
+            rug is not right for your room, the order stops there.
           </p>
         </div>
 
         <div className={styles.howItWorksGrid}>
           {steps.map((step) => (
             <article key={step.number} className={styles.howItWorksCard}>
-              <p className={styles.howItWorksStep}>
-                {step.number} {step.title}
-              </p>
+              <p className={styles.howItWorksStep}>{step.number}</p>
+              <h3 className={styles.howItWorksTitle}>{step.title}</h3>
               <p>{step.description}</p>
             </article>
           ))}
         </div>
 
         <Link className={`${styles.primaryAction} ${styles.howItWorksCta}`} href={"/contact" as Route}>
-          INQUIRE ABOUT A PIECE
+          ASK ABOUT A SPECIFIC RUG
         </Link>
       </div>
     </Section>

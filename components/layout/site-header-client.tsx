@@ -4,7 +4,7 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Container } from "@/components/layout/container";
 import { CartDrawer } from "@/features/cart/cart-drawer";
@@ -33,15 +33,49 @@ type SiteHeaderClientProps = {
 
 export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const pathname = usePathname();
+  const headerRef = useRef<HTMLElement | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMenuLabel, setOpenMenuLabel] = useState<string | null>(null);
+  const [openMobileGroupLabel, setOpenMobileGroupLabel] = useState<string | null>(null);
   const [primaryAnnouncement, ...supportingAnnouncements] = props.announcementItems;
   const announcementText = props.announcementItems.join(" / ");
   const showAnnouncement = pathname !== "/contact";
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setOpenMenuLabel(null);
+    setOpenMobileGroupLabel(null);
+  }, [pathname]);
+
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      if (headerRef.current?.contains(event.target as Node)) {
+        return;
+      }
+
+      setOpenMenuLabel(null);
+      setIsMobileMenuOpen(false);
+      setOpenMobileGroupLabel(null);
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenMenuLabel(null);
+        setIsMobileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
-    <header className="site-header">
+    <header ref={headerRef} className="site-header">
       {showAnnouncement ? (
         <div className="site-header__announcement">
           <Container width="wide">
@@ -75,6 +109,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 props.brandName
               )}
             </Link>
+            <p className="site-header__tagline">{props.tagline}</p>
           </div>
           <nav aria-label="Primary" className="site-header__nav">
             {props.primaryNav.map((item) => (
@@ -84,8 +119,11 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                     aria-controls={`site-header-submenu-${toDomId(item.label)}`}
                     aria-expanded={openMenuLabel === item.label}
                     aria-haspopup="true"
-                    className="site-header__link site-header__menu-trigger"
+                    className={`site-header__link site-header__menu-trigger ${
+                      isMenuActive(pathname, item.items) ? "site-header__link--active" : ""
+                    } ${openMenuLabel === item.label ? "site-header__menu-trigger--open" : ""}`}
                     type="button"
+                    onMouseEnter={() => setOpenMenuLabel(item.label)}
                     onClick={() =>
                       setOpenMenuLabel((currentLabel) =>
                         currentLabel === item.label ? null : item.label,
@@ -104,12 +142,21 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                   </button>
                   <div
                     id={`site-header-submenu-${toDomId(item.label)}`}
-                    className="site-header__submenu"
+                    className={`site-header__submenu ${
+                      openMenuLabel === item.label ? "site-header__submenu--open" : ""
+                    }`}
                   >
+                    <div className="site-header__submenu-intro">
+                      <p className="site-header__submenu-label">{item.label}</p>
+                    </div>
                     {item.items.map((subItem) => (
                       <Link
                         key={subItem.href}
-                        className="site-header__submenu-link"
+                        className={`site-header__submenu-link ${
+                          isPathActive(pathname, subItem.href)
+                            ? "site-header__submenu-link--active"
+                            : ""
+                        }`}
                         href={subItem.href as Route}
                         onClick={() => setOpenMenuLabel(null)}
                       >
@@ -119,7 +166,13 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                   </div>
                 </div>
               ) : (
-                <Link key={item.href} className="site-header__link" href={item.href as Route}>
+                <Link
+                  key={item.href}
+                  className={`site-header__link ${
+                    isPathActive(pathname, item.href) ? "site-header__link--active" : ""
+                  }`}
+                  href={item.href as Route}
+                >
                   {item.label}
                 </Link>
               )
@@ -145,7 +198,9 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
               aria-controls="site-mobile-menu"
               aria-expanded={isMobileMenuOpen}
               aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-              className="site-header__menu-button"
+              className={`site-header__menu-button ${
+                isMobileMenuOpen ? "site-header__menu-button--open" : ""
+              }`}
               type="button"
               onClick={() => setIsMobileMenuOpen((current) => !current)}
             >
@@ -162,27 +217,77 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
             isMobileMenuOpen ? "site-header__mobile-menu--open" : ""
           }`}
         >
+          <p className="site-header__mobile-tagline">{props.tagline}</p>
           <nav aria-label="Mobile primary" className="site-header__mobile-nav">
             {props.primaryNav.map((item) => (
               "items" in item ? (
+                (() => {
+                  const isActiveGroup = isMenuActive(pathname, item.items);
+                  const isOpenGroup =
+                    openMobileGroupLabel === item.label ||
+                    (openMobileGroupLabel === null && isActiveGroup);
+
+                  return (
                 <div key={`mobile-${item.label}`} className="site-header__mobile-group">
-                  <p className="site-header__mobile-group-label">{item.label}</p>
-                  {item.items.map((subItem) => (
-                    <Link
-                      key={`mobile-${subItem.href}`}
-                      className="site-header__mobile-link"
-                      href={subItem.href as Route}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      tabIndex={isMobileMenuOpen ? undefined : -1}
+                  <button
+                    aria-controls={`site-mobile-group-${toDomId(item.label)}`}
+                    aria-expanded={isOpenGroup}
+                    className={`site-header__mobile-group-trigger ${
+                      isActiveGroup ? "site-header__mobile-group-trigger--active" : ""
+                    }`}
+                    type="button"
+                    onClick={() =>
+                      setOpenMobileGroupLabel((currentLabel) =>
+                        currentLabel === item.label ? null : item.label,
+                      )
+                    }
+                  >
+                    <span className="site-header__mobile-group-label">{item.label}</span>
+                    <svg
+                      aria-hidden="true"
+                      className={
+                        isOpenGroup
+                          ? "site-header__mobile-group-icon site-header__mobile-group-icon--open"
+                          : "site-header__mobile-group-icon"
+                      }
+                      fill="none"
+                      focusable="false"
+                      viewBox="0 0 12 8"
                     >
-                      {subItem.label}
-                    </Link>
-                  ))}
+                      <path d="M1.5 1.5L6 6l4.5-4.5" />
+                    </svg>
+                  </button>
+                  <div
+                    id={`site-mobile-group-${toDomId(item.label)}`}
+                    className={`site-header__mobile-group-links ${
+                      isOpenGroup ? "site-header__mobile-group-links--open" : ""
+                    }`}
+                  >
+                    {item.items.map((subItem) => (
+                      <Link
+                        key={`mobile-${subItem.href}`}
+                        className={`site-header__mobile-link ${
+                          isPathActive(pathname, subItem.href)
+                            ? "site-header__mobile-link--active"
+                            : ""
+                        }`}
+                        href={subItem.href as Route}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        tabIndex={isMobileMenuOpen ? undefined : -1}
+                      >
+                        {subItem.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
+                  );
+                })()
               ) : (
                 <Link
                   key={`mobile-${item.href}`}
-                  className="site-header__mobile-link"
+                  className={`site-header__mobile-link ${
+                    isPathActive(pathname, item.href) ? "site-header__mobile-link--active" : ""
+                  }`}
                   href={item.href as Route}
                   onClick={() => setIsMobileMenuOpen(false)}
                   tabIndex={isMobileMenuOpen ? undefined : -1}
@@ -192,7 +297,9 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
               )
             ))}
             <Link
-              className="site-header__mobile-link"
+              className={`site-header__mobile-link ${
+                isPathActive(pathname, "/search") ? "site-header__mobile-link--active" : ""
+              }`}
               href="/search"
               onClick={() => setIsMobileMenuOpen(false)}
               tabIndex={isMobileMenuOpen ? undefined : -1}
@@ -201,7 +308,9 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
             </Link>
             {props.isAuthenticated ? (
               <Link
-                className="site-header__mobile-link"
+                className={`site-header__mobile-link ${
+                  isPathActive(pathname, "/account") ? "site-header__mobile-link--active" : ""
+                }`}
                 href="/account"
                 onClick={() => setIsMobileMenuOpen(false)}
                 tabIndex={isMobileMenuOpen ? undefined : -1}
@@ -210,7 +319,11 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
               </Link>
             ) : (
               <Link
-                className="site-header__mobile-link"
+                className={`site-header__mobile-link ${
+                  isPathActive(pathname, "/account/login")
+                    ? "site-header__mobile-link--active"
+                    : ""
+                }`}
                 href="/account/login"
                 onClick={() => setIsMobileMenuOpen(false)}
                 tabIndex={isMobileMenuOpen ? undefined : -1}
@@ -227,6 +340,14 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
 
 function toDomId(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function isMenuActive(pathname: string, items: readonly SiteHeaderNavLink[]) {
+  return items.some((item) => isPathActive(pathname, item.href));
+}
+
+function isPathActive(pathname: string, href: string) {
+  return pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
 }
 
 function SearchIcon() {

@@ -44,9 +44,12 @@ export function NewsletterSignupIntentForm(props: NewsletterSignupIntentFormProp
           className={styles.newsletterInput}
           name="email"
           type="email"
-          placeholder={props.inputPlaceholder}
+          placeholder="name@example.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
+          autoCapitalize="none"
+          autoComplete="email"
+          spellCheck={false}
           required
         />
         <SubmitButton ctaLabel={props.ctaLabel} />
@@ -74,7 +77,7 @@ function SubmitButton({ ctaLabel }: { ctaLabel: string }) {
 
   return (
     <button className={styles.newsletterButton} type="submit" disabled={pending}>
-      {pending ? "Joining..." : ctaLabel}
+      {pending ? "Joining…" : ctaLabel}
     </button>
   );
 }

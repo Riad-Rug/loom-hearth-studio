@@ -1,7 +1,6 @@
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
 
 import { Section } from "@/components/layout/section";
 import { CustomerReviewCarousel } from "@/components/reviews/customer-review-carousel";
@@ -22,15 +21,9 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
   return <div className={styles.page}>{content.sectionOrder.map((key) => renderSection(key, content, featuredProducts))}</div>;
 }
 
-function getMobileHeroParagraph(paragraph: string) {
-  const sentences = paragraph.trim().split(/(?<=[.!?])\s+/);
-
-  return sentences[0] || paragraph;
-}
-
 function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent, featuredProducts: CatalogProductCardViewModel[]) {
   if (key === "hero" && content.hero.visible) {
-    const heroGalleryImages = getHeroGalleryImages(content);
+    const heroLeadImage = content.hero.image;
 
     return (
       <Section key={key} width="wide">
@@ -38,10 +31,7 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent,
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>{content.hero.eyebrow}</p>
             <h1>{content.hero.title}</h1>
-            <p className={styles.lede}>
-              <span className={styles.ledeDesktop}>{content.hero.paragraph}</span>
-              <span className={styles.ledeMobile}>{getMobileHeroParagraph(content.hero.paragraph)}</span>
-            </p>
+            <p className={styles.lede}>{content.hero.paragraph}</p>
             <div className={styles.heroActions}>
               {content.hero.primaryCta.visible ? (
                 <Link className={styles.primaryAction} href={content.hero.primaryCta.href as Route}>
@@ -58,22 +48,36 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent,
 
           <div className={styles.heroAside}>
             <div className={styles.heroMedia}>
-              {heroGalleryImages.map((image, index) => (
-                <div
-                  key={`${image.src}-${index}`}
-                  className={styles.heroImageFrame}
-                  style={{ "--hero-slide-index": index } as CSSProperties}
-                >
-                  <Image
-                    alt={image.alt}
-                    className={styles.heroImage}
-                    fill
-                    priority={index === 0}
-                    sizes="(max-width: 1100px) 100vw, 38vw"
-                    src={image.src}
-                  />
+              <div className={styles.heroImageFrameLead}>
+                <Image
+                  alt={heroLeadImage.alt}
+                  className={styles.heroImage}
+                  fill
+                  priority
+                  sizes="(max-width: 1100px) 100vw, 38vw"
+                  src={heroLeadImage.src}
+                />
+              </div>
+              <div className={styles.heroEvidenceCard}>
+                <div className={styles.heroEvidenceCopy}>
+                  <p className={styles.heroEvidenceEyebrow}>Color verification</p>
+                  <p className={styles.heroEvidenceTitle}>Light comparison before payment capture.</p>
+                  <p className={styles.heroEvidenceBody}>
+                    We review daylight, warm lamp, and cool lamp references so color reads honestly before any charge is finalized.
+                  </p>
                 </div>
-              ))}
+                <div className={styles.heroEvidenceComparison}>
+                  <div className={styles.heroEvidenceImageWrap}>
+                    <Image
+                      alt="Top-down product comparison showing the same Moroccan rug in daylight, warm light, and cool light."
+                      className={styles.heroEvidenceImage}
+                      fill
+                      sizes="(max-width: 1100px) 44vw, 16vw"
+                      src="/hero/verification-topdown-v1.png"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -91,16 +95,22 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent,
     return (
       <Section key={key} tone="muted" width="wide">
         <div className={styles.buyerEntrySection}>
-          <div className={styles.trustBanner} aria-label="Trust highlights">
-            {items.map((item, index) => (
-              <p key={item.id}>
+          <ul className={styles.trustBanner} aria-label="Trust highlights">
+            {items.map((item, index) => {
+              const descriptor = getTrustDescriptor(index);
+
+              return (
+              <li key={item.id} className={index === 0 ? styles.trustBannerLeadItem : undefined}>
                 <span className={styles.trustIcon} aria-hidden="true">
                   <TrustIcon index={index} />
                 </span>
-                <span>{item.label}</span>
-              </p>
-            ))}
-          </div>
+                <span className={styles.trustCopy}>
+                  <span className={styles.trustLabel}>{item.label}</span>
+                  <span className={styles.trustDescriptor}>{descriptor}</span>
+                </span>
+              </li>
+            )})}
+          </ul>
         </div>
       </Section>
     );
@@ -117,9 +127,14 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent,
       <Section key={key} width="wide">
         <div className={styles.narrativeGrid}>
           {sections.map((section) => (
-            <Link key={section.title} className={styles.narrativeCard} href={section.href as Route}>
+            <Link
+              key={section.title}
+              className={`${styles.narrativeCard} ${getNarrativeCardClassName(section.eyebrow)}`}
+              href={section.href as Route}
+            >
               <p className={styles.eyebrow}>{section.eyebrow}</p>
               <h2>{section.title}</h2>
+              <p className={styles.narrativeMeta}>{getNarrativeMeta(section.eyebrow)}</p>
               <p>{section.paragraph}</p>
               <span className={styles.narrativeLinkLabel}>{section.linkLabel}</span>
             </Link>
@@ -140,18 +155,32 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent,
       <Section key={key} width="wide">
         <div className={styles.featuredLayout}>
           <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>{content.featured.eyebrow}</p>
+            {content.featured.eyebrow ? (
+              <p className={styles.eyebrow}>{content.featured.eyebrow}</p>
+            ) : null}
             <h2>{content.featured.title}</h2>
             <p className={styles.sectionBody}>{content.featured.paragraph}</p>
           </div>
-          <FeaturedContentCards cards={cards} />
+          <ShopFirstCards cards={cards} />
+          {featuredProducts.length ? (
+            <div className={styles.liveProductSection}>
+              <div className={styles.liveProductIntro}>
+                <p className={styles.eyebrow}>Available now</p>
+                <h3>Current one-of-one pieces with live pricing.</h3>
+                <p className={styles.sectionBody}>
+                  Browse actual inventory first, then open the full catalog once a size, palette, or construction style starts to feel right.
+                </p>
+              </div>
+              <LiveProductRail products={featuredProducts} />
+            </div>
+          ) : null}
         </div>
       </Section>
     );
   }
 
   if (key === "proof" && content.proof.visible) {
-    return <ProofComparisonSection key={key} />;
+    return [<ProofComparisonSection key={key} />, <ReviewsHighlightSection key={`${key}-reviews`} />];
   }
 
   if (key === "howItWorks" && content.howItWorks.visible) {
@@ -169,8 +198,13 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent,
             <p className={styles.eyebrow}>{content.guide.eyebrow}</p>
             <h2>{content.guide.title}</h2>
             <p className={styles.sectionBody}>{content.guide.paragraph}</p>
+            <ul className={styles.guideChecklist}>
+              <li>Check knot density before color styling.</li>
+              <li>Look for weight and structure, not just surface pattern.</li>
+              <li>Confirm how the exact piece behaves in real light.</li>
+            </ul>
             <Link className={styles.narrativeLinkLabel} href={"/blog" as Route}>
-              READ THE FULL GUIDE
+              READ THE RUG BUYING GUIDE
             </Link>
           </div>
           <div className={styles.guideMedia}>
@@ -237,34 +271,13 @@ function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent,
   return null;
 }
 
-function getHeroGalleryImages(content: HomePageContent) {
-  const preferredCategoryIds = [
-    "category-rugs",
-    "category-vintage",
-    "category-pillows",
-    "category-poufs",
-  ];
-  const categoryImages = preferredCategoryIds
-    .map((id) => content.categories.cards.find((card) => card.visible && card.id === id)?.image)
-    .filter((image): image is HomePageContent["hero"]["image"] => Boolean(image?.src));
-  const images = [...categoryImages, content.hero.image];
-  const seen = new Set<string>();
-
-  return images
-    .filter((image) => {
-      if (!image.src.trim() || seen.has(image.src)) {
-        return false;
-      }
-
-      seen.add(image.src);
-
-      return true;
-    })
-    .slice(0, 4);
-}
-
 function ProofComparisonSection() {
   const proofItems = [
+    {
+      eyebrow: "Verification model",
+      title: "See the exact piece before payment is captured.",
+      body: "Every one-of-one rug is confirmed in natural, warm, and cool light before the order moves forward.",
+    },
     {
       title: "Selected in Person",
       body: "Pieces are sourced across Morocco by people who know the trade, not pulled from a generic export catalogue.",
@@ -283,31 +296,89 @@ function ProofComparisonSection() {
     },
   ];
 
+  const proofSignals = [
+    "Actual-piece confirmation before payment moves forward",
+    "One-of-one inventory instead of representative stock",
+    "Family-trade sourcing across Morocco",
+  ];
+
   return (
     <Section id="piece-difference" width="wide">
       <div className={styles.proofSection}>
-        <div className={styles.sectionIntro}>
+        <div className={`${styles.sectionIntro} ${styles.proofIntroPanel}`}>
           <p className={styles.eyebrow}>What makes a Loom & Hearth piece different</p>
           <h2>Built for Buyers Who Want the Actual Piece, Not a Catalogue Approximation.</h2>
+          <p className={styles.sectionBody}>
+            The collection is structured for buyers who want to confirm the exact item, not settle for a representative sample.
+          </p>
+          <ul className={styles.proofSignalList} aria-label="Key buyer proof points">
+            {proofSignals.map((signal) => (
+              <li key={signal}>{signal}</li>
+            ))}
+          </ul>
         </div>
         <div className={styles.proofContent}>
+          <article className={styles.proofLeadCard}>
+            <p className={styles.proofLeadEyebrow}>{proofItems[0].eyebrow}</p>
+            <h3>{proofItems[0].title}</h3>
+            <p>{proofItems[0].body}</p>
+          </article>
           <div className={styles.proofGrid}>
-            {proofItems.map((item) => (
-              <article key={item.title} className={styles.proofCard}>
+            {proofItems.slice(1).map((item, index) => (
+              <article key={item.title} className={`${styles.proofCard} ${getProofCardClassName(index)}`}>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
               </article>
             ))}
           </div>
-          <CustomerReviewCarousel
-            reviews={customerReviews}
-            eyebrow="Customer reviews"
-            title="Pieces that felt right once they were home."
-          />
         </div>
       </div>
     </Section>
   );
+}
+
+function getProofCardClassName(index: number) {
+  if (index === 0) {
+    return styles.proofCardSelected;
+  }
+
+  if (index === 1) {
+    return styles.proofCardVideo;
+  }
+
+  if (index === 2) {
+    return styles.proofCardInventory;
+  }
+
+  return styles.proofCardHeritage;
+}
+
+function ReviewsHighlightSection() {
+  return (
+    <Section width="wide">
+      <CustomerReviewCarousel
+        reviews={customerReviews}
+        eyebrow="Customer reviews"
+        title="Pieces that felt right once they were home."
+      />
+    </Section>
+  );
+}
+
+function getNarrativeCardClassName(eyebrow: string) {
+  if (eyebrow === "WHO WE ARE") {
+    return styles.narrativeCardStory;
+  }
+
+  return styles.narrativeCardDirection;
+}
+
+function getNarrativeMeta(eyebrow: string) {
+  if (eyebrow === "WHO WE ARE") {
+    return "Family trade | Marrakech sourcing";
+  }
+
+  return "Pile density | Knot structure | Material weight";
 }
 
 function TrustIcon({ index }: { index: number }) {
@@ -348,6 +419,21 @@ function TrustIcon({ index }: { index: number }) {
       <path d="M18 4v5h-5" />
     </svg>
   );
+}
+
+function getTrustDescriptor(index: number) {
+  switch (index) {
+    case 0:
+      return "See the actual piece before payment is finalized.";
+    case 1:
+      return "Family-trade sourcing and shipping from Morocco.";
+    case 2:
+      return "No separate delivery surcharge at checkout.";
+    case 3:
+      return "Fourteen days to decide once it arrives.";
+    default:
+      return "";
+  }
 }
 
 function LiveProductRail({ products }: { products: CatalogProductCardViewModel[] }) {
@@ -396,29 +482,84 @@ function LiveProductRail({ products }: { products: CatalogProductCardViewModel[]
   );
 }
 
-function FeaturedContentCards({ cards }: { cards: HomePageContent["featured"]["cards"] }) {
+function ShopFirstCards({ cards }: { cards: HomePageContent["featured"]["cards"] }) {
   return (
     <div className={styles.featuredGrid}>
-      {cards.map((product) => (
-        <Link key={product.id} className={styles.productCard} href={product.href as Route}>
+      {cards.map((product, index) => (
+        <Link
+          key={product.id}
+          className={`${styles.productCard} ${getFeaturedCardClassName(index)} ${getFeaturedRoleClassName(product.id)}`}
+          href={product.href as Route}
+        >
+          {(() => {
+            const image = getShopFirstCardImage(product);
+
+            return (
           <div className={styles.productImagePlaceholder}>
             <Image
-              alt={product.image.alt}
+              alt={image.alt}
               className={styles.productImage}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 20vw"
-              src={product.image.src}
+              src={image.src}
             />
           </div>
+            );
+          })()}
           <div className={styles.productMeta}>
+            {index === 0 ? <p className={styles.productEyebrow}>Start here</p> : null}
             <h3>{product.title}</h3>
             <p>{product.description}</p>
-            {product.priceLabel ? <span className={styles.productPriceLabel}>{product.priceLabel}</span> : null}
+            {product.priceLabel ? (
+              <div className={styles.productCardActionRow}>
+                <span className={styles.productPriceLabel}>{product.priceLabel}</span>
+              </div>
+            ) : null}
           </div>
         </Link>
       ))}
     </div>
   );
+}
+
+function getFeaturedCardClassName(index: number) {
+  if (index === 0) {
+    return styles.productCardLead;
+  }
+
+  if (index === 1 || index === 2) {
+    return styles.productCardMedium;
+  }
+
+  return styles.productCardCompact;
+}
+
+function getFeaturedRoleClassName(id: string) {
+  switch (id) {
+    case "featured-rugs":
+      return styles.productCardRugs;
+    case "featured-poufs":
+      return styles.productCardPoufs;
+    case "featured-pillows":
+      return styles.productCardPillows;
+    case "featured-decor":
+      return styles.productCardDecor;
+    case "featured-vintage":
+      return styles.productCardVintage;
+    default:
+      return "";
+  }
+}
+
+function getShopFirstCardImage(card: HomePageContent["featured"]["cards"][number]) {
+  if (card.id === "featured-rugs") {
+    return {
+      src: "https://res.cloudinary.com/dnyhdvqra/image/upload/v1774377734/loom-hearth/homepage/mnxu9y8lxhsvdqmlzgep.jpg",
+      alt: "Moroccan sitting room with a handmade rug, carved wood, and warm natural light",
+    };
+  }
+
+  return card.image;
 }
 
 function getProductCardDescription(product: CatalogProductCardViewModel) {

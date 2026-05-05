@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useId, useState } from "react";
+import { useActionState, useEffect, useId, useRef, useState } from "react";
 
-import { trackGenerateLead } from "@/lib/analytics/gtag";
 import { contactData } from "@/features/content-pages/content-pages-data";
+import { ProductCard } from "@/features/catalog/product-card";
+import { trackGenerateLead } from "@/lib/analytics/gtag";
+import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
 import styles from "./content-pages.module.css";
 
@@ -19,6 +21,7 @@ type ContactSubmissionState = {
     inquiryType?: InquiryType;
     name?: string;
     email?: string;
+    orderNumber?: string;
     studioName?: string;
     message?: string;
     productName?: string;
@@ -31,6 +34,11 @@ type ContactPageViewProps = {
     message?: string;
     productName?: string;
   };
+  recommendationContent?: {
+    title: string;
+    copy: string;
+  };
+  recommendedProducts: CatalogProductCardViewModel[];
   submitAction: (
     state: ContactSubmissionState | null,
     formData: FormData,
@@ -48,23 +56,25 @@ const messagePlaceholders: Record<InquiryType, string> = {
     "Which rug are you interested in? If you know your room size or a rough timeline, that helps us reply with something specific.",
   "trade-request":
     "Tell us about the project - rooms, sizes, timeline, and whether you'd like trade pricing.",
-  "order-question": "Share your order number and what you need.",
+  "order-question": "Share your order number, what happened, and what you need next.",
 };
 
 export function ContactPageView({
   defaults,
+  recommendationContent,
+  recommendedProducts,
   submitAction,
 }: ContactPageViewProps) {
   const defaultInquiryType = sanitizeInquiryType(defaults?.inquiryType);
+  const formRef = useRef<HTMLFormElement | null>(null);
   const nameErrorId = useId();
   const emailHintId = useId();
   const emailErrorId = useId();
+  const orderHintId = useId();
+  const orderErrorId = useId();
   const messageHintId = useId();
   const messageErrorId = useId();
-  const [state, formAction, isPending] = useActionState(
-    submitAction,
-    null,
-  );
+  const [state, formAction, isPending] = useActionState(submitAction, null);
   const [selectedInquiryType, setSelectedInquiryType] =
     useState<InquiryType>(defaultInquiryType);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -93,6 +103,10 @@ export function ContactPageView({
       }
     }
 
+    if (name === "orderNumber" && selectedInquiryType === "order-question" && !stringValue) {
+      return "Add your order number so we can look up the request quickly.";
+    }
+
     if (name === "message") {
       if (!stringValue) {
         return "Add a short message so we can reply with something useful.";
@@ -109,11 +123,13 @@ export function ContactPageView({
   function handleBlur(
     event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
-    const error = validateField(event.currentTarget.name, event.currentTarget.value);
+    const fieldName = event.currentTarget.name;
+    const fieldValue = event.currentTarget.value;
+    const error = validateField(fieldName, fieldValue);
 
     setFieldErrors((current) => ({
       ...current,
-      [event.currentTarget.name]: error,
+      [fieldName]: error,
     }));
   }
 
@@ -123,14 +139,20 @@ export function ContactPageView({
     const nextErrors = {
       name: validateField("name", formData.get("name")),
       email: validateField("email", formData.get("email")),
+      orderNumber: validateField("orderNumber", formData.get("orderNumber")),
       message: validateField("message", formData.get("message")),
     };
+    const firstInvalidField = Object.entries(nextErrors).find((entry) => Boolean(entry[1]))?.[0];
     const hasErrors = Object.values(nextErrors).some(Boolean);
 
     setFieldErrors(nextErrors);
 
     if (hasErrors) {
       event.preventDefault();
+      const invalidField = form.elements.namedItem(firstInvalidField ?? "");
+      if (invalidField instanceof HTMLElement) {
+        invalidField.focus();
+      }
       return;
     }
 
@@ -153,11 +175,30 @@ export function ContactPageView({
               <p className={styles.contactFormNoteTitle}>Message received.</p>
               <p className={styles.contactFormNoteMessage}>{state.message}</p>
               <div className={styles.contactSuccessLinks} aria-label="Suggested next steps">
-                <span>In the meantime:</span>
+                <span>Keep browsing while we reply:</span>
+                <Link href="/shop">See the full collection</Link>
                 <Link href="/lookbook">Browse the lookbook</Link>
-                <Link href="/shop">See new arrivals</Link>
               </div>
             </div>
+
+              {recommendedProducts.length ? (
+                <section className={styles.contactRecommendationSection}>
+                  <div className={styles.contactRecommendationIntro}>
+                    <p className={styles.contactFormNoteTitle}>
+                      {recommendationContent?.title ?? "Recommended pieces"}
+                    </p>
+                    <p className={styles.contactRecommendationCopy}>
+                      {recommendationContent?.copy ??
+                        "A few pieces to keep in view while the studio reviews your message."}
+                    </p>
+                  </div>
+                <div className={styles.contactRecommendationGrid}>
+                  {recommendedProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </section>
+            ) : null}
           </div>
         </section>
 
@@ -178,8 +219,20 @@ export function ContactPageView({
             <h2>Send a message</h2>
           </div>
 
-          <form action={formAction} className={styles.contactForm} noValidate onSubmit={handleSubmit}>
-            <input aria-hidden="true" className={styles.contactHoneypot} name="ref_40" tabIndex={-1} type="text" />
+          <form
+            ref={formRef}
+            action={formAction}
+            className={styles.contactForm}
+            noValidate
+            onSubmit={handleSubmit}
+          >
+            <input
+              aria-hidden="true"
+              className={styles.contactHoneypot}
+              name="ref_40"
+              tabIndex={-1}
+              type="text"
+            />
             {preservedValues?.productName || defaults?.productName ? (
               <input
                 name="productName"
@@ -210,15 +263,15 @@ export function ContactPageView({
             <div className={styles.contactIdentityGrid}>
               <ValidatedField error={fieldErrors.name} errorId={nameErrorId}>
                 <label className={styles.contactLabel} htmlFor="contact-name">
-                  Your name
+                  Your name <span className={styles.contactRequiredMarker}>*</span>
                 </label>
                 <input
                   aria-describedby={fieldErrors.name ? nameErrorId : undefined}
                   aria-invalid={Boolean(fieldErrors.name)}
-                  id="contact-name"
                   autoComplete="name"
                   className={styles.contactInput}
                   defaultValue={preservedValues?.name}
+                  id="contact-name"
                   name="name"
                   onBlur={handleBlur}
                   required
@@ -228,27 +281,58 @@ export function ContactPageView({
 
               <ValidatedField error={fieldErrors.email} errorId={emailErrorId}>
                 <label className={styles.contactLabel} htmlFor="contact-email">
-                  Email
+                  Email <span className={styles.contactRequiredMarker}>*</span>
                 </label>
                 <input
                   aria-describedby={
                     fieldErrors.email ? `${emailHintId} ${emailErrorId}` : emailHintId
                   }
                   aria-invalid={Boolean(fieldErrors.email)}
-                  id="contact-email"
                   autoComplete="email"
                   className={styles.contactInput}
                   defaultValue={preservedValues?.email}
+                  id="contact-email"
+                  inputMode="email"
                   name="email"
                   onBlur={handleBlur}
                   required
+                  spellCheck={false}
                   type="email"
                 />
                 <p className={styles.contactFieldHint} id={emailHintId}>
-                  We'll only use this to reply.
+                  Required. We only use this to reply.
                 </p>
               </ValidatedField>
             </div>
+
+            {selectedInquiryType === "order-question" ? (
+              <ValidatedField error={fieldErrors.orderNumber} errorId={orderErrorId}>
+                <label className={styles.contactLabel} htmlFor="contact-order-number">
+                  Order number <span className={styles.contactRequiredMarker}>*</span>
+                </label>
+                <input
+                  aria-describedby={
+                    fieldErrors.orderNumber
+                      ? `${orderHintId} ${orderErrorId}`
+                      : orderHintId
+                  }
+                  aria-invalid={Boolean(fieldErrors.orderNumber)}
+                  autoComplete="off"
+                  className={styles.contactInput}
+                  defaultValue={preservedValues?.orderNumber}
+                  id="contact-order-number"
+                  inputMode="text"
+                  name="orderNumber"
+                  onBlur={handleBlur}
+                  required
+                  spellCheck={false}
+                  type="text"
+                />
+                <p className={styles.contactFieldHint} id={orderHintId}>
+                  Required for order-help requests. Use the reference from your confirmation email.
+                </p>
+              </ValidatedField>
+            ) : null}
 
             {selectedInquiryType === "trade-request" ? (
               <ValidatedField>
@@ -256,9 +340,9 @@ export function ContactPageView({
                   Studio or company
                 </label>
                 <input
-                  id="contact-studio-name"
                   className={styles.contactInput}
                   defaultValue={preservedValues?.studioName}
+                  id="contact-studio-name"
                   name="studioName"
                   type="text"
                 />
@@ -267,25 +351,25 @@ export function ContactPageView({
 
             <ValidatedField error={fieldErrors.message} errorId={messageErrorId}>
               <label className={styles.contactLabel} htmlFor="contact-message">
-                How can we help?
+                How can we help? <span className={styles.contactRequiredMarker}>*</span>
               </label>
               <textarea
                 aria-describedby={
                   fieldErrors.message ? `${messageHintId} ${messageErrorId}` : messageHintId
                 }
                 aria-invalid={Boolean(fieldErrors.message)}
-                id="contact-message"
                 className={styles.contactTextarea}
-                name="message"
                 defaultValue={preservedValues?.message ?? defaults?.message}
+                id="contact-message"
+                name="message"
                 onBlur={handleBlur}
                 placeholder={messagePlaceholders[selectedInquiryType]}
                 required
                 rows={7}
               />
               <p className={styles.contactFieldHint} id={messageHintId}>
-                Mention the rug name, room size, and timeline if you know them. We can send
-                extra photos or a video before you decide.
+                Required. Mention the rug name, room size, timeline, or the delivery issue if you
+                already know it.
               </p>
             </ValidatedField>
 
@@ -303,14 +387,14 @@ export function ContactPageView({
                 {isPending ? (
                   <>
                     <span className={styles.contactSpinner} aria-hidden="true" />
-                    Sending
+                    Sending…
                   </>
                 ) : (
-                  "Send message"
+                  "Send Message"
                 )}
               </button>
               <p className={styles.contactFieldHint}>
-                Personal reply within 24h - Colour confirmed before payment
+                Required fields are marked in red. Personal reply within 24 hours.
               </p>
             </div>
           </form>
@@ -339,9 +423,8 @@ function ContactSupportCard() {
       <div className={styles.cardBody}>
         <h2>Prefer a direct message?</h2>
         <p className={styles.body}>
-          Write to{" "}
-          <a href={`mailto:${contactData.emailLabel}`}>{contactData.emailLabel}</a> and we'll
-          reply within 24 hours.
+          Write to <a href={`mailto:${contactData.emailLabel}`}>{contactData.emailLabel}</a> and
+          we&apos;ll reply within 24 hours.
         </p>
         <p className={styles.contactFieldHint}>Hours: {contactData.hoursLabel}</p>
       </div>
@@ -352,6 +435,7 @@ function ContactSupportCard() {
         rel="noopener noreferrer"
         target="_blank"
       >
+        <WhatsAppIcon />
         WhatsApp {contactData.whatsappLabel}
       </a>
     </aside>
@@ -391,4 +475,15 @@ function sanitizeInquiryType(value: string | undefined): InquiryType {
   return value === "trade-request" || value === "order-question"
     ? value
     : "product-inquiry";
+}
+
+function WhatsAppIcon() {
+  return (
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      <path
+        d="M12.02 2.4a9.61 9.61 0 0 0-8.33 14.4L2 22l5.38-1.62a9.62 9.62 0 1 0 4.64-17.98Zm0 17.45a7.97 7.97 0 0 1-4.06-1.11l-.29-.17-3.19.96.99-3.1-.19-.31a7.97 7.97 0 1 1 6.74 3.73Zm4.37-5.97c-.24-.12-1.43-.71-1.65-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1-.37-1.91-1.18-.7-.63-1.18-1.4-1.32-1.64-.14-.24-.02-.37.1-.49.1-.1.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.41-.41-.56-.42h-.48c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.68 2.57 4.08 3.6.57.25 1.02.4 1.37.51.58.18 1.1.15 1.51.09.46-.07 1.43-.58 1.63-1.14.2-.56.2-1.05.14-1.15-.06-.1-.22-.16-.46-.28Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
 }

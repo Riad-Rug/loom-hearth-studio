@@ -164,6 +164,7 @@
   width: fit-content;
   align-items: center;
   justify-content: center;
+  gap: 0.55rem;
   min-height: 2.9rem;
   padding: 0.8rem 1rem;
   border: 1px solid rgba(49, 104, 76, 0.24);
@@ -185,6 +186,12 @@
   background: rgba(49, 104, 76, 0.12);
   outline: none;
   transform: translateY(-1px);
+}
+
+.whatsappAction svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: 0 0 auto;
 }
 
 .primaryAction:hover,
@@ -242,7 +249,7 @@
 
 .contactFieldHint {
   margin: 0;
-  color: var(--color-text-muted);
+  color: var(--color-error);
   font-size: 0.92rem;
   line-height: 1.6;
 }
@@ -259,6 +266,11 @@
   font-size: 0.84rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.contactRequiredMarker {
+  color: var(--color-error);
+  font-weight: 700;
 }
 
 .contactSegmentLegend {
@@ -404,6 +416,30 @@
 
 .contactSuccessState {
   display: grid;
+  gap: var(--space-4);
+}
+
+.contactRecommendationSection {
+  display: grid;
+  gap: var(--space-4);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.contactRecommendationIntro {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.contactRecommendationCopy {
+  margin: 0;
+  color: var(--color-text-body);
+  line-height: 1.7;
+}
+
+.contactRecommendationGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
@@ -714,6 +750,10 @@
   }
 
   .contactFormFooter {
+    grid-template-columns: 1fr;
+  }
+
+  .contactRecommendationGrid {
     grid-template-columns: 1fr;
   }
 

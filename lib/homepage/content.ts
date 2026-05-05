@@ -54,9 +54,13 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.hero.title = "Hand-knotted Moroccan rugs from a family that has worked this trade for 80 years.";
   next.hero.eyebrow = "COLOUR VERIFIED BEFORE PAYMENT";
   next.hero.paragraph =
-    "Hand-knotted rugs, poufs, cactus silk pillows, and handcrafted decor selected in person across Morocco, not pulled from an export catalogue.";
+    "Before payment is captured, you see the exact piece in multiple light conditions. Then it ships directly from Morocco through a family trade built over 80 years.";
   next.hero.primaryCta = { ...next.hero.primaryCta, label: "SHOP RUGS" };
-  next.hero.secondaryCta = { ...next.hero.secondaryCta, label: "VIEW THE LOOKBOOK", href: "/lookbook" };
+  next.hero.secondaryCta = {
+    ...next.hero.secondaryCta,
+    label: "SHOP VINTAGE RUGS",
+    href: "/shop/rugs/vintage",
+  };
   next.hero.seo = {
     ...next.hero.seo,
     seoTitle: "Loom & Hearth Studio  Handcrafted Moroccan Rugs",
@@ -65,9 +69,9 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   };
 
   next.badges.items = next.badges.items.map((item) => {
-    if (item.id === "badge-1") return { ...item, label: "Direct from Morocco" };
-    if (item.id === "badge-2") return { ...item, label: "Free shipping to the US, Canada, and Australia" };
-    if (item.id === "badge-3") return { ...item, label: "Colour verified before payment is captured" };
+    if (item.id === "badge-1") return { ...item, label: "Exact-piece verification" };
+    if (item.id === "badge-2") return { ...item, label: "Direct from Morocco" };
+    if (item.id === "badge-3") return { ...item, label: "Free shipping to the US, Canada, and Australia" };
     if (item.id === "badge-4") return { ...item, label: "14-day returns" };
     return item;
   });
@@ -127,9 +131,10 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
     "Every piece is evaluated on construction: pile density, knot structure, material weight, and colour consistency across the field. A rug that photographs well but will not hold up under real foot traffic is not a piece we will sell.";
   next.designDirection.linkLabel = "VIEW THE LOOKBOOK";
 
-  next.featured.eyebrow = "SHOP FIRST";
+  next.featured.eyebrow = "";
   next.featured.title = "Choose the category first, then the exact piece.";
-  next.featured.paragraph = "Rugs, poufs, pillows, decor, and vintage finds in one edited collection.";
+  next.featured.paragraph =
+    "Every listing is a one-of-one inventory decision. Start with the type of piece you need, then confirm the exact item.";
   next.featured.cards = [
     {
       ...(next.featured.cards.find((card) => card.id === "featured-rugs") ?? next.featured.cards[0]),
