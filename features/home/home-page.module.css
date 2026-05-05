@@ -10,7 +10,9 @@
   padding: var(--space-8);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, #f7ebdb, #ead8c1);
+  background:
+    linear-gradient(180deg, #faf7f0, var(--color-wool-cream)),
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.08), transparent 44%);
   box-shadow: var(--shadow-panel);
 }
 
@@ -423,7 +425,7 @@
   border-radius: var(--radius-xl);
   background:
     linear-gradient(180deg, #faf7f0, var(--color-wool-cream)),
-    radial-gradient(circle at top right, rgba(198, 106, 61, 0.06), transparent 42%);
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.08), transparent 44%);
 }
 
 .categoryGrid {
@@ -536,7 +538,9 @@
   padding: var(--space-6);
   border: 1px solid rgba(34, 33, 38, 0.07);
   border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, #f7ebdb, #ead8c1);
+  background:
+    linear-gradient(180deg, #faf7f0, var(--color-wool-cream)),
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.08), transparent 44%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 0.9rem 1.8rem rgba(34, 33, 38, 0.06);
@@ -574,7 +578,9 @@
   padding: var(--space-6);
   border: 1px solid rgba(34, 33, 38, 0.08);
   border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, #f7ebdb, #ead8c1);
+  background:
+    linear-gradient(180deg, #faf7f0, var(--color-wool-cream)),
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.08), transparent 44%);
   color: var(--color-text-body);
   box-shadow: var(--shadow-panel);
 }
@@ -1055,14 +1061,16 @@
 .narrativeCardStory {
   padding: calc(var(--space-6) + 0.4rem);
   background:
-    linear-gradient(180deg, #f7ebdb, #ead8c1);
+    linear-gradient(180deg, #faf7f0, var(--color-wool-cream)),
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.08), transparent 44%);
 }
 
 .narrativeCardDirection {
   align-content: start;
   background:
-    linear-gradient(180deg, rgba(47, 47, 47, 0.96), rgba(72, 57, 45, 0.92));
-  color: var(--color-wool-cream);
+    linear-gradient(180deg, #faf7f0, var(--color-wool-cream)),
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.08), transparent 44%);
+  color: var(--color-text-body);
 }
 
 .narrativeCardDirection .eyebrow,
@@ -1137,8 +1145,8 @@
   border: 1px solid rgba(34, 33, 38, 0.08);
   border-radius: var(--radius-xl);
   background:
-    linear-gradient(135deg, var(--color-wool-cream), #faf7f0),
-    radial-gradient(circle at top left, rgba(198, 106, 61, 0.08), transparent 34%);
+    linear-gradient(180deg, #faf7f0, var(--color-wool-cream)),
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.08), transparent 44%);
   box-shadow: 0 0.9rem 1.8rem rgba(34, 33, 38, 0.06);
 }
 
@@ -1190,7 +1198,9 @@
   padding: var(--space-5) var(--space-6);
   border: 1px solid rgba(34, 33, 38, 0.1);
   border-radius: var(--radius-xl);
-  background: var(--color-sand);
+  background:
+    linear-gradient(180deg, #faf7f0, var(--color-wool-cream)),
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.08), transparent 44%);
   box-shadow: 0 0.8rem 1.6rem rgba(34, 33, 38, 0.07);
 }
 
@@ -1286,8 +1296,8 @@
   border: 1px solid rgba(198, 106, 61, 0.14);
   border-radius: var(--radius-xl);
   background:
-    radial-gradient(circle at top left, rgba(198, 106, 61, 0.11), transparent 34%),
-    linear-gradient(135deg, #faf7f0, var(--color-wool-cream));
+    linear-gradient(180deg, #faf7f0, var(--color-wool-cream)),
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.08), transparent 44%);
 }
 
 .faqList {
