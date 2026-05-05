@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { CustomerReview } from "@/lib/reviews/customer-reviews";
 
@@ -14,8 +14,6 @@ type CustomerReviewCarouselProps = {
   variant?: "pdp" | "home";
 };
 
-const rotationMs = 6500;
-
 export function CustomerReviewCarousel({
   reviews,
   className,
@@ -24,9 +22,7 @@ export function CustomerReviewCarousel({
   variant = "home",
 }: CustomerReviewCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const activeReview = reviews[activeIndex] ?? reviews[0];
+  const trackRef = useRef<HTMLDivElement | null>(null);
   const rootClassName = [
     styles.carousel,
     variant === "pdp" ? styles.carouselPdp : styles.carouselHome,
@@ -34,84 +30,95 @@ export function CustomerReviewCarousel({
   ]
     .filter(Boolean)
     .join(" ");
-  const activeMeta = useMemo(
-    () =>
-      activeReview
-        ? {
-            customerName: activeReview.customerName,
-            country: activeReview.country,
-            productType: activeReview.productType,
-          }
-        : null,
-    [activeReview],
-  );
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
-
-    updatePreference();
-    mediaQuery.addEventListener("change", updatePreference);
-
-    return () => mediaQuery.removeEventListener("change", updatePreference);
-  }, []);
-
-  useEffect(() => {
-    if (isPaused || prefersReducedMotion || reviews.length <= 1) {
+    const trackElement = trackRef.current;
+    if (!trackElement) {
       return;
     }
 
-    const timer = window.setInterval(() => {
-      setActiveIndex((currentIndex) => (currentIndex + 1) % reviews.length);
-    }, rotationMs);
+    function handleScroll() {
+      const currentTrack = trackRef.current;
+      if (!currentTrack) {
+        return;
+      }
 
-    return () => window.clearInterval(timer);
-  }, [isPaused, prefersReducedMotion, reviews.length]);
+      const nextIndex = Math.round(
+        currentTrack.scrollLeft / Math.max(currentTrack.clientWidth, 1),
+      );
+      setActiveIndex((currentIndex) => (currentIndex === nextIndex ? currentIndex : nextIndex));
+    }
 
-  if (!activeReview) {
+    trackElement.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      trackElement.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  if (!reviews.length) {
     return null;
   }
 
+  function scrollToReview(index: number) {
+    const track = trackRef.current;
+    if (!track) {
+      return;
+    }
+
+    const nextIndex = (index + reviews.length) % reviews.length;
+    track.scrollTo({
+      left: track.clientWidth * nextIndex,
+      behavior: "smooth",
+    });
+    setActiveIndex(nextIndex);
+  }
+
   return (
-    <section
-      className={rootClassName}
-      aria-label="Customer reviews"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocus={() => setIsPaused(true)}
-      onBlur={() => setIsPaused(false)}
-    >
+    <section className={rootClassName} aria-label="Customer reviews">
       <div className={styles.copy}>
         <p className={styles.eyebrow}>{eyebrow}</p>
         <h2>{title}</h2>
       </div>
 
-      <figure className={styles.reviewCard} aria-live="polite">
-        <blockquote key={activeReview.id}>{activeReview.body}</blockquote>
-        <figcaption>
-          {activeMeta ? (
-            <>
-              <span>{activeMeta.customerName}</span>
-              <span>{activeMeta.country}</span>
-              <span>{activeMeta.productType}</span>
-            </>
-          ) : null}
-        </figcaption>
-      </figure>
-
-      <div className={styles.controls} aria-label="Review carousel controls">
+      <div className={styles.carouselStage}>
         <button
-          className={styles.arrowButton}
+          className={`${styles.arrowButton} ${styles.arrowButtonPrev}`}
           type="button"
           aria-label="Show previous review"
-          onClick={() =>
-            setActiveIndex((currentIndex) =>
-              currentIndex === 0 ? reviews.length - 1 : currentIndex - 1,
-            )
-          }
+          onClick={() => scrollToReview(activeIndex - 1)}
         >
-          Prev
+          <ArrowIcon direction="left" />
         </button>
+
+        <div ref={trackRef} className={styles.reviewTrack}>
+          {reviews.map((review, index) => (
+            <figure
+              key={review.id}
+              className={styles.reviewCard}
+              aria-current={index === activeIndex ? "true" : undefined}
+            >
+              <blockquote>{review.body}</blockquote>
+              <figcaption>
+                <span>{review.customerName}</span>
+                <span>{review.country}</span>
+                <span>{review.productType}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+
+        <button
+          className={`${styles.arrowButton} ${styles.arrowButtonNext}`}
+          type="button"
+          aria-label="Show next review"
+          onClick={() => scrollToReview(activeIndex + 1)}
+        >
+          <ArrowIcon direction="right" />
+        </button>
+      </div>
+
+      <div className={styles.controls} aria-label="Review carousel controls">
         <div className={styles.dots} aria-label="Review position">
           {reviews.map((review, index) => (
             <button
@@ -120,27 +127,23 @@ export function CustomerReviewCarousel({
               type="button"
               aria-label={`Show review ${index + 1} of ${reviews.length}`}
               aria-current={index === activeIndex ? "true" : undefined}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => scrollToReview(index)}
             />
           ))}
         </div>
-        <button
-          className={styles.pauseButton}
-          type="button"
-          aria-pressed={isPaused}
-          onClick={() => setIsPaused((currentValue) => !currentValue)}
-        >
-          {isPaused ? "Play" : "Pause"}
-        </button>
-        <button
-          className={styles.arrowButton}
-          type="button"
-          aria-label="Show next review"
-          onClick={() => setActiveIndex((currentIndex) => (currentIndex + 1) % reviews.length)}
-        >
-          Next
-        </button>
       </div>
     </section>
+  );
+}
+
+function ArrowIcon({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      {direction === "left" ? (
+        <path d="M14.5 5.5 8 12l6.5 6.5" />
+      ) : (
+        <path d="M9.5 5.5 16 12l-6.5 6.5" />
+      )}
+    </svg>
   );
 }
