@@ -1,7 +1,8 @@
 .page {
   display: grid;
   gap: var(--space-7);
-  width: min(100% - 2rem, var(--container-width-wide));
+  width: 100%;
+  max-width: var(--container-width-wide);
   margin: 0 auto;
 }
 
@@ -294,9 +295,9 @@
 .editorialSection,
 .faqSection,
 .finalCta {
-  width: 100vw;
-  margin-left: 50%;
-  transform: translateX(-50%);
+  width: auto;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
 }
 
 .heroVisualBand,
