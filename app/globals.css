@@ -15,10 +15,10 @@
 }
 :root {
   --color-wool-cream: #f5f1e8;
-  --color-clay-terracotta: #c66a3d;
+  --color-clay-terracotta: #9f542f;
   --color-charcoal-ink: #2f2f2f;
   --color-sand: #d9c9a8;
-  --color-olive-thread: #7a7a52;
+  --color-olive-thread: #666645;
   --color-dust-rose: #c9a89a;
   --color-stone: #b5a490;
   --color-white: #ffffff;
@@ -28,7 +28,7 @@
   --color-text-subtle: var(--color-olive-thread);
   --button-primary-bg: var(--color-clay-terracotta);
   --button-primary-bg-hover: var(--color-charcoal-ink);
-  --button-primary-text: var(--color-wool-cream);
+  --button-primary-text: #ffffff;
   --button-secondary-bg: var(--color-wool-cream);
   --button-secondary-bg-hover: #faf7f0;
   --button-secondary-border: var(--color-border-strong);

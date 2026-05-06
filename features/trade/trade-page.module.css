@@ -1,0 +1,442 @@
+.page {
+  display: grid;
+  gap: var(--space-7);
+  width: min(100% - 2rem, var(--container-width-wide));
+  margin: 0 auto;
+}
+
+.hero,
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-soft);
+}
+
+.hero {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-7);
+  background:
+    radial-gradient(circle at top right, rgba(159, 84, 47, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 228, 0.96));
+}
+
+.heroLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.86fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.heroContent {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.heroBody {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 46rem;
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--color-clay-terracotta);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hero h1,
+.sectionHeader h2,
+.card h2,
+.card h3 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.04em;
+}
+
+.hero h1 {
+  font-size: clamp(2.6rem, 4vw, 4rem);
+  line-height: 0.97;
+  max-width: 58rem;
+}
+
+.sectionHeader h2 {
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  line-height: 1;
+}
+
+.card h2 {
+  font-size: 2rem;
+  line-height: 1.05;
+}
+
+.card h3 {
+  font-size: 1.9rem;
+  line-height: 1.08;
+}
+
+.lede,
+.body,
+.card p,
+.includeList {
+  margin: 0;
+  color: var(--color-text-body);
+  line-height: 1.8;
+}
+
+.lede {
+  max-width: 42rem;
+}
+
+.heroSignals {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 40rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.heroSignals li {
+  position: relative;
+  padding-left: 1.45rem;
+  color: var(--color-text-body);
+  line-height: 1.75;
+}
+
+.heroSignals li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.7rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--color-clay-terracotta);
+  box-shadow: 0 0 0 0.18rem rgba(159, 84, 47, 0.12);
+}
+
+.heroAside {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.heroFactRail,
+.heroProofCard {
+  border: 1px solid rgba(47, 47, 47, 0.12);
+  border-radius: 1.6rem;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 1rem 2rem rgba(34, 33, 38, 0.08);
+}
+
+.heroFactRail {
+  display: grid;
+  overflow: hidden;
+}
+
+.heroFactItem {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1.15rem 1.2rem;
+}
+
+.heroFactItem:not(:last-child) {
+  border-bottom: 1px solid rgba(47, 47, 47, 0.1);
+}
+
+.heroFactLabel,
+.heroProofEyebrow,
+.heroCategoryLabel {
+  margin: 0;
+  color: var(--color-clay-terracotta);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.heroFactValue {
+  margin: 0;
+  color: var(--color-charcoal-ink);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.25rem;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.heroProofCard {
+  display: grid;
+  gap: var(--space-4);
+  padding: 1.35rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(245, 241, 232, 0.86)),
+    radial-gradient(circle at top right, rgba(159, 84, 47, 0.08), transparent 42%);
+}
+
+.heroProofCard h2 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2rem;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.heroProofBody {
+  margin: 0;
+  color: var(--color-text-body);
+  line-height: 1.75;
+}
+
+.heroCategoryBlock {
+  display: grid;
+  gap: 0.8rem;
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(47, 47, 47, 0.08);
+}
+
+.heroCategoryChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.heroCategoryChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.15rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid rgba(159, 84, 47, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--color-charcoal-ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.cardBody {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 36rem;
+}
+
+.utilityGrid,
+.detailColumns {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.utilityGrid {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
+}
+
+.detailColumns {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.detailList,
+.faqList {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.detailItem,
+.faqItem {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.detailItem {
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(47, 47, 47, 0.08);
+}
+
+.detailItem:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.faqItem {
+  padding: var(--space-4) 0;
+  border-top: 1px solid rgba(47, 47, 47, 0.08);
+}
+
+.faqItem:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.includeList {
+  display: grid;
+  gap: 0.5rem;
+  padding-left: 1.35rem;
+}
+
+.sectionHeader {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 48rem;
+}
+
+.workflowGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.contactActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.finalCta {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) auto;
+  gap: var(--space-5);
+  align-items: center;
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(245, 241, 232, 0.82)),
+    radial-gradient(circle at top right, rgba(159, 84, 47, 0.07), transparent 42%);
+  box-shadow: var(--shadow-soft);
+}
+
+.finalCtaCopy {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 46rem;
+}
+
+.finalCta h2 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 1.25rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.primaryAction {
+  border: 1px solid var(--button-primary-bg);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+}
+
+.secondaryAction {
+  border: 1px solid var(--button-secondary-border);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+}
+
+.textAction {
+  display: inline-flex;
+  width: fit-content;
+  color: var(--color-charcoal-ink);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-decoration-color: var(--color-sand);
+  text-underline-offset: 0.22em;
+  text-transform: uppercase;
+}
+
+.primaryAction:hover,
+.primaryAction:focus-visible,
+.secondaryAction:hover,
+.secondaryAction:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.primaryAction:hover,
+.primaryAction:focus-visible {
+  box-shadow: 0 1rem 1.8rem rgba(159, 84, 47, 0.2);
+}
+
+.secondaryAction:hover,
+.secondaryAction:focus-visible {
+  border-color: var(--button-secondary-border-hover);
+  background: var(--button-secondary-bg-hover);
+}
+
+@media (max-width: 1100px) {
+  .heroLayout,
+  .utilityGrid,
+  .detailColumns,
+  .workflowGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroProofCard h2 {
+    font-size: 1.7rem;
+  }
+
+  .finalCta {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    width: min(100% - 1rem, var(--container-width-wide));
+  }
+
+  .hero,
+  .card {
+    padding: var(--space-5);
+  }
+
+  .heroLayout {
+    gap: var(--space-5);
+  }
+
+  .heroFactRail {
+    grid-template-columns: 1fr;
+  }
+
+  .card h2 {
+    font-size: 1.6rem;
+  }
+
+  .card h3 {
+    font-size: 1.55rem;
+  }
+
+  .heroProofCard h2 {
+    font-size: 1.5rem;
+  }
+}

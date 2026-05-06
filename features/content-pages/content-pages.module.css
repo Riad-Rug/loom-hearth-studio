@@ -44,6 +44,7 @@
 .sectionHeader h1,
 .sectionHeader h2,
 .card h2,
+.card h3,
 .faqItem h2,
 .testimonialCard blockquote,
 .policyShell h1,
@@ -534,6 +535,11 @@
 .faqItem h2 {
   font-size: 1.5rem;
   line-height: 1.1;
+}
+
+.card h3 {
+  font-size: 1.9rem;
+  line-height: 1.08;
 }
 
 .lookbookGrid {
