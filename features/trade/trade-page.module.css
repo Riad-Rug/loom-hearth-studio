@@ -13,6 +13,48 @@
   box-shadow: var(--shadow-soft);
 }
 
+.featureCard {
+  background:
+    linear-gradient(180deg, rgba(247, 235, 219, 0.92), rgba(234, 216, 193, 0.78)),
+    radial-gradient(circle at top right, rgba(159, 84, 47, 0.08), transparent 42%);
+}
+
+.detailCard {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 244, 236, 0.9)),
+    radial-gradient(circle at top left, rgba(159, 84, 47, 0.06), transparent 38%);
+}
+
+.utilityCard {
+  background:
+    linear-gradient(180deg, rgba(243, 236, 225, 0.96), rgba(236, 226, 211, 0.86)),
+    radial-gradient(circle at bottom right, rgba(91, 107, 72, 0.08), transparent 40%);
+}
+
+.proofCard {
+  background:
+    linear-gradient(180deg, rgba(255, 251, 245, 0.96), rgba(245, 241, 232, 0.9)),
+    radial-gradient(circle at top right, rgba(159, 84, 47, 0.08), transparent 40%);
+}
+
+.categoryCard {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(249, 247, 241, 0.9)),
+    radial-gradient(circle at top left, rgba(91, 107, 72, 0.06), transparent 42%);
+}
+
+.faqCard {
+  background:
+    linear-gradient(180deg, rgba(247, 243, 235, 0.96), rgba(238, 231, 218, 0.88)),
+    radial-gradient(circle at top right, rgba(159, 84, 47, 0.07), transparent 42%);
+}
+
+.testimonialCard {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 243, 0.96), rgba(244, 238, 227, 0.9)),
+    radial-gradient(circle at top left, rgba(159, 84, 47, 0.08), transparent 40%);
+}
+
 .hero {
   display: grid;
   gap: var(--space-5);
@@ -123,6 +165,7 @@
 .heroAside {
   display: grid;
   gap: var(--space-4);
+  min-width: 0;
 }
 
 .heroFactRail,
@@ -178,6 +221,20 @@
     radial-gradient(circle at top right, rgba(159, 84, 47, 0.08), transparent 42%);
 }
 
+.heroImageFrame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1 / 0.78;
+  border-radius: 1.2rem;
+  background: rgba(245, 241, 232, 0.78);
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .heroProofCard h2 {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
@@ -218,6 +275,21 @@
   font-size: 0.9rem;
   font-weight: 600;
   line-height: 1.2;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.heroCategoryChip:hover,
+.heroCategoryChip:focus-visible {
+  border-color: rgba(159, 84, 47, 0.26);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 0.8rem 1.6rem rgba(34, 33, 38, 0.08);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .card {
@@ -242,18 +314,32 @@
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
 }
 
+.utilityGrid > *,
+.detailColumns > *,
+.workflowGrid > *,
+.finalCtaCopy,
+.cardBody {
+  min-width: 0;
+}
+
 .detailColumns {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .detailList,
-.faqList {
+.faqList,
+.testimonialGrid {
   display: grid;
   gap: var(--space-4);
 }
 
+.testimonialGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .detailItem,
-.faqItem {
+.faqItem,
+.testimonialItem {
   display: grid;
   gap: var(--space-2);
 }
@@ -276,6 +362,40 @@
 .faqItem:first-child {
   padding-top: 0;
   border-top: 0;
+}
+
+.testimonialItem {
+  margin: 0;
+  padding: 1.35rem;
+  border: 1px solid rgba(47, 47, 47, 0.08);
+  border-radius: 1.4rem;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.testimonialItem blockquote {
+  margin: 0;
+  color: var(--color-charcoal-ink);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+}
+
+.testimonialItem figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.7rem;
+  color: var(--color-olive-thread);
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+}
+
+.testimonialItem figcaption span:not(:last-child)::after {
+  content: "•";
+  margin-left: 0.7rem;
 }
 
 .includeList {
@@ -364,13 +484,78 @@
   display: inline-flex;
   width: fit-content;
   color: var(--color-charcoal-ink);
-  font-size: 0.6875rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-decoration: underline;
-  text-decoration-color: var(--color-sand);
+  text-decoration-color: rgba(159, 84, 47, 0.42);
   text-underline-offset: 0.22em;
   text-transform: uppercase;
+}
+
+.textAction:hover,
+.textAction:focus-visible {
+  color: var(--color-clay-terracotta);
+  text-decoration-color: currentColor;
+  outline: none;
+}
+
+.stickyAction {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 18;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.8rem 0.7rem 1rem;
+  border: 1px solid rgba(47, 47, 47, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.96);
+  box-shadow: 0 1rem 2rem rgba(34, 33, 38, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0.75rem);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.stickyActionVisible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.stickyActionCopy {
+  margin: 0;
+  color: var(--color-charcoal-ink);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stickyActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.65rem;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.stickyActionButton:hover,
+.stickyActionButton:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .primaryAction:hover,
@@ -396,7 +581,8 @@
   .heroLayout,
   .utilityGrid,
   .detailColumns,
-  .workflowGrid {
+  .workflowGrid,
+  .testimonialGrid {
     grid-template-columns: 1fr;
   }
 
@@ -407,6 +593,12 @@
   .finalCta {
     grid-template-columns: 1fr;
     align-items: start;
+  }
+
+  .stickyAction {
+    left: 1rem;
+    right: 1rem;
+    justify-content: space-between;
   }
 }
 
@@ -438,5 +630,15 @@
 
   .heroProofCard h2 {
     font-size: 1.5rem;
+  }
+
+  .stickyAction {
+    align-items: stretch;
+    flex-direction: column;
+    border-radius: 1.25rem;
+  }
+
+  .stickyActionButton {
+    width: 100%;
   }
 }

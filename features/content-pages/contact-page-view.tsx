@@ -34,6 +34,11 @@ type ContactPageViewProps = {
     message?: string;
     productName?: string;
   };
+  heroContent?: {
+    title: string;
+    body: string;
+  };
+  formTitle?: string;
   recommendationContent?: {
     title: string;
     copy: string;
@@ -61,6 +66,8 @@ const messagePlaceholders: Record<InquiryType, string> = {
 
 export function ContactPageView({
   defaults,
+  heroContent,
+  formTitle,
   recommendationContent,
   recommendedProducts,
   submitAction,
@@ -165,7 +172,7 @@ export function ContactPageView({
   if (state?.tone === "success") {
     return (
       <div className={styles.page}>
-        <ContactHero />
+        <ContactHero heroContent={heroContent} />
 
         <section className={styles.contactGrid}>
           <ContactSupportCard />
@@ -209,14 +216,14 @@ export function ContactPageView({
 
   return (
     <div className={styles.page}>
-      <ContactHero />
+      <ContactHero heroContent={heroContent} />
 
       <section className={styles.contactGrid}>
         <ContactSupportCard />
 
         <div className={`${styles.card} ${styles.contactPanel}`}>
           <div className={styles.cardBody}>
-            <h2>Send a message</h2>
+            <h2>{formTitle ?? getFormTitle(selectedInquiryType)}</h2>
           </div>
 
           <form
@@ -406,12 +413,19 @@ export function ContactPageView({
   );
 }
 
-function ContactHero() {
+function ContactHero({
+  heroContent,
+}: {
+  heroContent?: {
+    title: string;
+    body: string;
+  };
+}) {
   return (
     <section className={styles.hero}>
       <div className={styles.heroBody}>
-        <h1>{contactData.title}</h1>
-        <p className={styles.lede}>{contactData.body}</p>
+        <h1>{heroContent?.title ?? contactData.title}</h1>
+        <p className={styles.lede}>{heroContent?.body ?? contactData.body}</p>
       </div>
     </section>
   );
@@ -475,6 +489,18 @@ function sanitizeInquiryType(value: string | undefined): InquiryType {
   return value === "trade-request" || value === "order-question"
     ? value
     : "product-inquiry";
+}
+
+function getFormTitle(inquiryType: InquiryType) {
+  if (inquiryType === "trade-request") {
+    return "Start a trade inquiry";
+  }
+
+  if (inquiryType === "order-question") {
+    return "Request order help";
+  }
+
+  return "Send a message";
 }
 
 function WhatsAppIcon() {

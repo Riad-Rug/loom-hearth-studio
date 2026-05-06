@@ -1,13 +1,17 @@
+import Image from "next/image";
 import Link from "next/link";
 
+import { customerReviews } from "@/lib/reviews/customer-reviews";
+
+import { TradeStickyAction } from "./trade-sticky-action";
 import styles from "./trade-page.module.css";
 
 const tradeIncludes = [
-  "Professional discount on all inventory",
-  "Complimentary piece holds during client review",
-  "High-resolution imagery for tear sheets and client decks",
-  "Direct line to the studio - not the general inquiry queue",
-  "Priority access to selected vintage pieces before public listing",
+  "Use it when the project needs a pricing answer before client approval.",
+  "Use it when a one-of-one rug needs to stay clear and reserved during review.",
+  "Use it when you need imagery for tear sheets, decks, or internal sourcing review.",
+  "Use it when destination market and delivery timing need to be reviewed before checkout.",
+  "Use it when the project requires direct studio back-and-forth instead of retail browsing.",
 ] as const;
 
 const tradeWorkflow = [
@@ -33,12 +37,16 @@ const tradeWorkflow = [
 
 const tradeFacts = [
   {
+    label: "Trade discount",
+    value: "10% on active inventory",
+  },
+  {
     label: "Response time",
     value: "Within 1 business day",
   },
   {
     label: "Project holds",
-    value: "Available during client review",
+    value: "3 business days",
   },
   {
     label: "Shipping origin",
@@ -47,48 +55,67 @@ const tradeFacts = [
 ] as const;
 
 const supportedCategories = [
-  "Rugs",
-  "Vintage rugs",
-  "Poufs",
-  "Pillows",
-  "Decor",
+  { label: "Rugs", href: "/shop/rugs" },
+  { label: "Vintage rugs", href: "/shop/rugs/vintage" },
+  { label: "Poufs", href: "/shop/poufs" },
+  { label: "Pillows", href: "/shop/pillows" },
+  { label: "Decor", href: "/shop/decor" },
 ] as const;
 
 const tradeDeliverables = [
   {
-    title: "Exact-piece review",
-    body: "One-of-one rugs are confirmed with the studio before a client signs off, so approvals are based on the actual piece rather than a style reference.",
+    title: "Trade pricing clarity",
+    body: "The conversation moves quickly into the 10% trade pricing structure, active availability, and whether a piece fits the budget before the client review drags on.",
   },
   {
-    title: "Project-ready imagery",
-    body: "High-resolution images can be prepared for client decks, mood boards, and internal sourcing review when a piece moves into active consideration.",
+    title: "Presentation-ready assets",
+    body: "High-resolution images and exact-piece confirmation support tear sheets, presentations, and internal review without having to rely on generic catalog references.",
   },
   {
-    title: "Direct studio contact",
-    body: "Trade inquiries move through a dedicated contact path, which keeps project questions out of the retail queue and shortens the back-and-forth.",
+    title: "Project coordination",
+    body: "The studio reviews market, timing, hold status, and next-step logistics directly so sourcing decisions stay clean once the client is close to approval.",
   },
 ] as const;
 
 const projectHoldNotes = [
-  "Short holds are available while a client reviews a selected piece.",
-  "The studio confirms hold timing based on the item, destination market, and project pace.",
-  "For one-of-one rugs, the hold discussion happens before the order moves forward so availability stays clear.",
+  "Complimentary holds are available for up to 3 business days while a client reviews a selected piece.",
+  "If the project timeline needs something different, the studio confirms next-step availability directly against the item and destination market.",
+  "For one-of-one rugs, the hold conversation happens before the order moves forward so availability stays clear.",
 ] as const;
 
 const categoryDetails = [
   {
     title: "Rugs",
-    body: "Hand-knotted Moroccan rugs for living rooms, bedrooms, and designer-led client installs.",
+    body: "Hand-knotted Moroccan rugs for living rooms, bedrooms, and full-room installs where exact-piece review matters before client sign-off.",
   },
   {
     title: "Vintage rugs",
-    body: "Older one-of-one pieces for projects that need patina, age, and a more collected feel.",
+    body: "One-of-one vintage pieces for projects that need age, patina, and a more collected point of view rather than broad repeatable stock.",
   },
   {
     title: "Poufs, pillows, and decor",
-    body: "Supporting pieces for styling layers, seating accents, and smaller client-facing sourcing packages.",
+    body: "Supporting pieces for styling layers, accessory packages, and the final room pass once the anchor textiles are already in view.",
   },
 ] as const;
+
+const tradeProofPoints = [
+  {
+    title: "Built around one-of-one inventory",
+    body: "The trade path exists because the strongest pieces are not repeatable stock. Designers need the exact item, clear timing, and a faster answer cycle.",
+  },
+  {
+    title: "Structured for client review",
+    body: "Imagery, availability, holds, and pricing are framed to help a designer move a shortlist through presentation and approval with less friction.",
+  },
+  {
+    title: "Direct studio coordination",
+    body: "Questions move through the studio instead of a general support queue, which keeps sourcing decisions closer to the actual piece and shipping context.",
+  },
+] as const;
+
+const tradeTestimonials = customerReviews.filter((review) =>
+  ["ashley-t-rug", "emma-s-rug", "josh-w-rug"].includes(review.id),
+);
 
 const tradeFaq = [
   {
@@ -104,7 +131,7 @@ const tradeFaq = [
   {
     question: "Can the studio hold a rug during client review?",
     answer:
-      "Yes. Holds are discussed directly with the studio and confirmed around the project timeline, especially for one-of-one rugs and vintage inventory.",
+      "Yes. Complimentary holds are available for up to 3 business days, with any longer timing confirmed directly against the piece and project timeline.",
   },
   {
     question: "Can I request imagery for a presentation deck?",
@@ -116,27 +143,31 @@ const tradeFaq = [
 export function TradePageView() {
   return (
     <div className={styles.page}>
+      <TradeStickyAction />
+
       <section className={styles.hero}>
         <div className={styles.heroLayout}>
           <div className={styles.heroContent}>
-            <p className={styles.eyebrow}>
-              Trade program / professional discount / dedicated contact
-            </p>
+            <p className={styles.eyebrow}>Interior design trade program</p>
             <h1>Trade pricing and project support for interior designers.</h1>
             <div className={styles.heroBody}>
               <p className={styles.lede}>
-                Trade pricing across rugs, poufs, pillows, and decor. Complimentary piece holds
-                while clients review a selection. Direct contact with the studio within one
-                business day.
+                A standing 10% trade discount across active rugs, poufs, pillows, and decor.
+                Complimentary 3-business-day holds while clients review a selection. Direct
+                contact with the studio within one business day.
+              </p>
+              <p className={styles.body}>
+                Open to interior designers, architects, stylists, and project buyers who need
+                direct sourcing support on active inventory.
               </p>
             </div>
             <ul className={styles.heroSignals} aria-label="Trade program highlights">
-              <li>Professional pricing on active inventory</li>
+              <li>10% trade pricing on active inventory</li>
               <li>Exact-piece review before a project moves forward</li>
               <li>High-resolution imagery for decks and tear sheets</li>
             </ul>
             <div className={styles.contactActions}>
-              <Link className={styles.primaryAction} href="/contact?inquiryType=trade-request">
+              <Link className={styles.primaryAction} href="/trade/apply">
                 Start a trade inquiry
               </Link>
               <Link className={styles.secondaryAction} href="/shop">
@@ -145,7 +176,7 @@ export function TradePageView() {
             </div>
             <div>
               <Link className={styles.textAction} href="/sourcing">
-                Review sourcing framework
+                See the sourcing review path →
               </Link>
             </div>
           </div>
@@ -161,6 +192,16 @@ export function TradePageView() {
             </div>
 
             <div className={styles.heroProofCard}>
+              <div className={styles.heroImageFrame}>
+                <Image
+                  alt="Top-down review image showing a handmade Moroccan rug in warm natural light"
+                  className={styles.heroImage}
+                  height={960}
+                  priority
+                  src="/hero/verification-topdown-v1.png"
+                  width={960}
+                />
+              </div>
               <p className={styles.heroProofEyebrow}>Trade support includes</p>
               <h2>Built for sourcing decisions that need client-ready proof.</h2>
               <p className={styles.heroProofBody}>
@@ -172,9 +213,9 @@ export function TradePageView() {
                 <p className={styles.heroCategoryLabel}>Categories currently supported</p>
                 <div className={styles.heroCategoryChips}>
                   {supportedCategories.map((category) => (
-                    <span key={category} className={styles.heroCategoryChip}>
-                      {category}
-                    </span>
+                    <Link key={category.label} className={styles.heroCategoryChip} href={category.href}>
+                      {category.label}
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -183,9 +224,9 @@ export function TradePageView() {
         </div>
       </section>
 
-      <section className={styles.card}>
+      <section className={`${styles.card} ${styles.featureCard}`}>
         <p className={styles.eyebrow}>What trade includes</p>
-        <h2>Built for client-facing sourcing, not retail browsing.</h2>
+        <h2>Use the trade path when the project needs more than a product page.</h2>
         <div className={styles.cardBody}>
           <ul className={styles.includeList}>
             {tradeIncludes.map((item) => (
@@ -196,9 +237,9 @@ export function TradePageView() {
       </section>
 
       <section className={styles.utilityGrid} aria-label="Trade support details">
-        <article className={styles.card}>
+        <article className={`${styles.card} ${styles.detailCard}`}>
           <p className={styles.eyebrow}>What you receive</p>
-          <h2>Support that helps a shortlist become an approved selection.</h2>
+          <h2>Support that keeps the sourcing conversation moving forward.</h2>
           <div className={styles.detailList}>
             {tradeDeliverables.map((item) => (
               <div key={item.title} className={styles.detailItem}>
@@ -209,7 +250,7 @@ export function TradePageView() {
           </div>
         </article>
 
-        <article className={styles.card}>
+        <article className={`${styles.card} ${styles.utilityCard}`}>
           <p className={styles.eyebrow}>Project holds</p>
           <h2>How a piece can stay reserved while the client decides.</h2>
           <div className={styles.cardBody}>
@@ -222,7 +263,37 @@ export function TradePageView() {
         </article>
       </section>
 
-      <section className={styles.card}>
+      <section className={`${styles.card} ${styles.proofCard}`}>
+        <p className={styles.eyebrow}>Why designers use it</p>
+        <h2>The trade page works best when the project needs certainty, not more browsing.</h2>
+        <div className={styles.detailColumns}>
+          {tradeProofPoints.map((point) => (
+            <div key={point.title} className={styles.detailItem}>
+              <h3>{point.title}</h3>
+              <p>{point.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={`${styles.card} ${styles.testimonialCard}`}>
+        <p className={styles.eyebrow}>Temporary trade proof</p>
+        <h2>Existing customer feedback, reused here until trade-specific quotes are ready.</h2>
+        <div className={styles.testimonialGrid}>
+          {tradeTestimonials.map((testimonial) => (
+            <figure key={testimonial.id} className={styles.testimonialItem}>
+              <blockquote>{testimonial.body}</blockquote>
+              <figcaption>
+                <span>{testimonial.customerName}</span>
+                <span>{testimonial.country}</span>
+                <span>{testimonial.productType}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      <section className={`${styles.card} ${styles.categoryCard}`}>
         <p className={styles.eyebrow}>Categories available for trade</p>
         <h2>Use the trade path across the collection, not just a single product type.</h2>
         <div className={styles.detailColumns}>
@@ -256,7 +327,7 @@ export function TradePageView() {
         ))}
       </section>
 
-      <section className={styles.card}>
+      <section className={`${styles.card} ${styles.faqCard}`}>
         <p className={styles.eyebrow}>Trade FAQ</p>
         <h2>Questions that come up before a designer reaches out.</h2>
         <div className={styles.faqList}>
@@ -279,11 +350,11 @@ export function TradePageView() {
           </p>
         </div>
         <div className={styles.contactActions}>
-          <Link className={styles.primaryAction} href="/contact?inquiryType=trade-request">
+          <Link className={styles.primaryAction} href="/trade/apply">
             Contact the studio
           </Link>
           <Link className={styles.secondaryAction} href="/sourcing">
-            Review sourcing framework
+            See the sourcing review path
           </Link>
         </div>
       </section>
