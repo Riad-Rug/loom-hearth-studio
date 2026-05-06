@@ -40,7 +40,7 @@
 .sidebarHeading {
   margin: 0;
   color: var(--color-sand);
-  font-size: 0.6875rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -243,19 +243,6 @@
 .sidebarCount {
   color: var(--color-clay-terracotta);
   font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.sidebarStatus {
-  margin: 0;
-  padding: 0.38rem 0.6rem;
-  border: 1px solid rgba(34, 33, 38, 0.1);
-  border-radius: 999px;
-  background: rgba(255, 251, 245, 0.88);
-  color: var(--color-olive-thread);
-  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -470,17 +457,99 @@
   gap: var(--space-2);
 }
 
+.filterGroups,
+.mobileFilterStack {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.filterGroup {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.filterLegend {
+  margin: 0;
+  color: var(--color-text-body);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .filterChip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 0.55rem 0.8rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   background: var(--color-wool-cream);
   color: var(--color-olive-thread);
+  cursor: pointer;
+  font: inherit;
   font-size: 0.78rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.filterChip:hover,
+.filterChip:focus-visible,
+.filterChipActive {
+  border-color: rgba(198, 106, 61, 0.32);
+  background: rgba(198, 106, 61, 0.14);
+  color: var(--color-charcoal-ink);
+  outline: none;
+}
+
+.filterChip:hover,
+.filterChip:focus-visible {
+  transform: translateY(-1px);
+}
+
+.filterChipActive {
+  box-shadow: inset 0 0 0 1px rgba(198, 106, 61, 0.08);
+}
+
+.searchInlineShell {
+  display: grid;
+  gap: 0.45rem;
+  min-width: min(100%, 24rem);
+}
+
+.searchInlineLabel {
+  color: var(--color-text-body);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.searchInlineInput {
+  width: 100%;
+  min-width: 0;
+  padding: 0.82rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.96);
+  color: var(--color-charcoal-ink);
+  font: inherit;
+}
+
+.searchInlineInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+.searchInlineInput:focus-visible {
+  border-color: rgba(198, 106, 61, 0.36);
+  outline: none;
+  box-shadow: 0 0 0 0.18rem rgba(198, 106, 61, 0.1);
 }
 
 .catalogContent {
@@ -490,7 +559,7 @@
 
 .catalogToolbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
@@ -507,10 +576,24 @@
   gap: var(--space-3);
 }
 
+.toolbarActions {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+}
+
 .toolbarCount {
   margin: 0;
   color: var(--color-text-muted);
   font-size: 0.95rem;
+}
+
+.toolbarTrustNote {
+  margin: 0;
+  color: var(--color-text-body);
+  font-size: 0.94rem;
+  line-height: 1.6;
 }
 
 .sortShell {
@@ -525,17 +608,32 @@
 
 .sortSelect {
   min-width: 13rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 2.75rem 0.75rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   background: var(--color-wool-cream);
   color: var(--color-charcoal-ink);
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(47, 47, 47, 0.7) 50%),
+    linear-gradient(135deg, rgba(47, 47, 47, 0.7) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.2rem) calc(50% - 0.12rem),
+    calc(100% - 0.85rem) calc(50% - 0.12rem);
+  background-size: 0.38rem 0.38rem, 0.38rem 0.38rem;
+  background-repeat: no-repeat;
   font: inherit;
+}
+
+.sortSelect:focus-visible {
+  border-color: rgba(198, 106, 61, 0.36);
+  outline: none;
+  box-shadow: 0 0 0 0.18rem rgba(198, 106, 61, 0.1);
 }
 
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
@@ -777,7 +875,7 @@
 
 .productCategory {
   margin: 0;
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-olive-thread);
@@ -799,7 +897,7 @@
 
 .productPrice {
   margin: 0;
-  color: var(--color-clay-terracotta);
+  color: var(--color-charcoal-ink);
   font-size: 0.92rem;
   font-weight: 700;
 }
@@ -811,7 +909,17 @@
   line-height: 1.12;
   letter-spacing: -0.03em;
   min-width: 0;
-  text-wrap: balance;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.productDimensions {
+  margin: 0;
+  color: var(--color-text-body);
+  font-size: 0.84rem;
+  line-height: 1.45;
 }
 
 .loadMoreShell {
@@ -825,6 +933,35 @@
   margin: 0;
   color: var(--color-text-muted);
   font-size: 0.92rem;
+}
+
+.emptyCatalogState {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(245, 241, 232, 0.94)),
+    radial-gradient(circle at top right, rgba(198, 106, 61, 0.1), transparent 35%);
+  box-shadow: var(--shadow-soft);
+}
+
+.emptyCatalogState h2,
+.emptyCatalogState p {
+  margin: 0;
+}
+
+.emptyCatalogState h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.emptyCatalogState p:not(.eyebrow) {
+  color: var(--color-text-body);
+  line-height: 1.7;
 }
 
 @media (max-width: 1100px) {
@@ -917,9 +1054,9 @@
 
   .mobileCatalogToolbar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: var(--space-2);
-    align-items: center;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    align-items: stretch;
     margin-top: var(--space-1);
     padding: 0;
     border: 0;
@@ -946,11 +1083,20 @@
     white-space: nowrap;
   }
 
+  .mobileFilterStack {
+    gap: var(--space-2);
+  }
+
+  .mobileCatalogToolbar .filterGroup {
+    gap: 0.45rem;
+  }
+
   .mobileCatalogToolbar .sortShell {
-    width: auto;
+    width: 100%;
     flex: 0 0 auto;
     flex-direction: row;
     gap: 0.45rem;
+    justify-content: space-between;
   }
 
   .mobileCatalogToolbar .sortShell label {
@@ -959,8 +1105,8 @@
 
   .mobileCatalogToolbar .sortSelect {
     width: auto;
-    min-width: 7.4rem;
-    max-width: 7.4rem;
+    min-width: 9rem;
+    max-width: 9rem;
     padding: 0.52rem 0.62rem;
     font-size: 0.78rem;
   }
@@ -968,20 +1114,6 @@
   .catalogSidebar,
   .catalogContent > .catalogToolbar {
     display: none;
-  }
-
-  .toolbarIntro {
-    width: 100%;
-  }
-
-  .sortShell {
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .sortSelect {
-    width: 100%;
   }
 
   .productGrid {

@@ -11,9 +11,12 @@ export type CatalogProductCardViewModel = {
   id: string;
   href: string;
   name: string;
+  displayName: string;
+  dimensionsLabel?: string;
   subtitle: string;
   category: ProductCategory;
   type: Product["type"];
+  availabilityLabel: string;
   priceUsd: number;
   priceUsdLabel: string;
   description: string;

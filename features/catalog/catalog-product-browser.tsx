@@ -7,7 +7,7 @@ import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
 import styles from "./catalog-page.module.css";
 
-const initialVisibleProductCount = 15;
+const initialVisibleProductCount = 20;
 const showMoreProductCount = 10;
 
 type CatalogProductBrowserProps = {
@@ -18,24 +18,10 @@ export function CatalogProductBrowser({ products }: CatalogProductBrowserProps) 
   const [visibleCount, setVisibleCount] = useState(() =>
     Math.min(products.length, initialVisibleProductCount),
   );
-  const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
     setVisibleCount(Math.min(products.length, initialVisibleProductCount));
   }, [products]);
-
-  useEffect(() => {
-    function handleScroll() {
-      setShowBackToTop(window.scrollY > 720);
-    }
-
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   const visibleProducts = products.slice(0, visibleCount);
   const hasMoreProducts = visibleCount < products.length;
@@ -66,18 +52,6 @@ export function CatalogProductBrowser({ products }: CatalogProductBrowserProps) 
           </p>
         </div>
       ) : null}
-
-      <a
-        aria-hidden={!showBackToTop}
-        aria-label="Back to top"
-        className={`${styles.backToTopButton} ${
-          showBackToTop ? styles.backToTopButtonVisible : ""
-        }`}
-        href="#shop-top"
-        tabIndex={showBackToTop ? 0 : -1}
-      >
-        Top
-      </a>
     </>
   );
 }

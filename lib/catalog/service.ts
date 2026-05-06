@@ -181,9 +181,12 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     id: product.id,
     href: getProductRoutePath(product),
     name: createDisplayProductTitle(product),
+    displayName: createProductCardDisplayName(product),
+    dimensionsLabel: createProductCardDimensionsLabel(product),
     subtitle: createProductSubtitle(product),
     category: product.category,
     type: product.type,
+    availabilityLabel: product.type === "rug" ? "One of one" : "Available now",
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
     description: normalizeDimensionSeparators(product.description),
@@ -205,6 +208,21 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
         }
       : undefined,
   };
+}
+
+function createProductCardDisplayName(product: Product) {
+  const displayName = normalizeDimensionSeparators(getDisplayProductName(product.name));
+  const titleWithoutDimensions = removeProductDimensions(displayName);
+
+  if (product.type !== "rug") {
+    return limitProductTitle(titleWithoutDimensions);
+  }
+
+  if (displayName.length <= productTitleMaxLength && displayName === titleWithoutDimensions) {
+    return limitProductTitle(titleWithoutDimensions);
+  }
+
+  return limitProductTitle(createCondensedRugTitle(product, titleWithoutDimensions));
 }
 
 function createProductDetailPageViewModel(
@@ -898,18 +916,15 @@ function createGalleryLabel(image: MediaAsset, index: number) {
 }
 
 function createDisplayProductTitle(product: Product) {
-  const displayName = normalizeDimensionSeparators(getDisplayProductName(product.name));
-  const titleWithoutDimensions = removeProductDimensions(displayName);
+  return createProductCardDisplayName(product);
+}
 
-  if (product.type !== "rug") {
-    return limitProductTitle(titleWithoutDimensions);
+function createProductCardDimensionsLabel(product: Product) {
+  if (product.type === "rug") {
+    return formatRugDimensionsShort(product);
   }
 
-  if (displayName.length <= productTitleMaxLength && displayName === titleWithoutDimensions) {
-    return limitProductTitle(titleWithoutDimensions);
-  }
-
-  return limitProductTitle(createCondensedRugTitle(product, titleWithoutDimensions));
+  return extractProductDimensions(product.name);
 }
 
 function createCondensedRugTitle(product: Extract<Product, { type: "rug" }>, title: string) {
@@ -959,6 +974,19 @@ function removeProductDimensions(title: string) {
     .replace(/\b\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)\b/giu, " ")
     .replace(/\s+/gu, " ")
     .trim();
+}
+
+function extractProductDimensions(title: string) {
+  const normalizedTitle = normalizeDimensionSeparators(title);
+  const titleDimensions =
+    normalizedTitle.match(
+      /\b\d{1,2}'\d{0,2}"\s*[×x]\s*\d{1,2}'\d{0,2}"\b/gu,
+    )?.[0] ??
+    normalizedTitle.match(
+      /\b\d{1,3}(?:\.\d+)?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)\b/iu,
+    )?.[0];
+
+  return titleDimensions?.replace(/\s+/gu, " ").trim() || undefined;
 }
 
 function limitProductTitle(title: string) {

@@ -27,7 +27,6 @@ export function ProductCard({ product }: ProductCardProps) {
     secondaryImage !== undefined &&
     secondaryImage.publicId !== primaryImage.publicId &&
     !secondaryImageFailed;
-  const availabilityLabel = product.type === "rug" ? "One of one" : "In studio";
 
   return (
     <Link className={styles.productCard} href={product.href as Route}>
@@ -75,9 +74,12 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className={styles.productContent}>
         <div className={styles.productCardTopline}>
           <p className={styles.productCategory}>{getCategoryLabel(product.category)}</p>
-          <span className={styles.productAvailability}>{availabilityLabel}</span>
+          <span className={styles.productAvailability}>{product.availabilityLabel}</span>
         </div>
-        <h3>{product.name}</h3>
+        <h3>{product.displayName}</h3>
+        {product.dimensionsLabel ? (
+          <p className={styles.productDimensions}>{product.dimensionsLabel}</p>
+        ) : null}
         <p className={styles.productPrice}>{product.priceUsdLabel}</p>
       </div>
     </Link>
