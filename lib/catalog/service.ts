@@ -212,7 +212,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
 
 function createProductCardDisplayName(product: Product) {
   const displayName = normalizeDimensionSeparators(getDisplayProductName(product.name));
-  const titleWithoutDimensions = removeProductDimensions(displayName);
+  const titleWithoutDimensions = removeTrailingTitlePunctuation(removeProductDimensions(displayName));
 
   if (product.type !== "rug") {
     return limitProductTitle(titleWithoutDimensions);
@@ -924,7 +924,9 @@ function createProductCardDimensionsLabel(product: Product) {
     return formatRugDimensionsShort(product);
   }
 
-  return extractProductDimensions(product.name);
+  const dimensions = extractProductDimensions(product.name);
+
+  return dimensions ? normalizeDimensionSeparators(dimensions) : undefined;
 }
 
 function createCondensedRugTitle(product: Extract<Product, { type: "rug" }>, title: string) {
@@ -966,6 +968,10 @@ function createProductSubtitle(product: Product) {
 
 function removeProductDimensions(title: string) {
   return title
+    .replace(
+      /\b\d{1,3}(?:\.\d+)?["”]?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?["”]?\b/giu,
+      " ",
+    )
     .replace(/\b\d{1,2}'\s*\d{0,2}"?\s*(?:[x×-]\s*)?\d{1,2}'\s*\d{0,2}"?(?=\s|$)/gu, " ")
     .replace(
       /\b\d{1,3}(?:\.\d+)?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)?\b/giu,
@@ -979,6 +985,9 @@ function removeProductDimensions(title: string) {
 function extractProductDimensions(title: string) {
   const normalizedTitle = normalizeDimensionSeparators(title);
   const titleDimensions =
+    normalizedTitle.match(
+      /\b\d{1,3}(?:\.\d+)?["”]?\s*[×x]\s*\d{1,3}(?:\.\d+)?["”]?\b/gu,
+    )?.[0] ??
     normalizedTitle.match(
       /\b\d{1,2}'\d{0,2}"\s*[×x]\s*\d{1,2}'\d{0,2}"\b/gu,
     )?.[0] ??
@@ -1006,13 +1015,17 @@ function limitProductTitle(title: string) {
 
 function removeDanglingTitleEnding(title: string) {
   const danglingWords = new Set(["and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"]);
-  const words = title.trim().split(/\s+/u);
+  const words = removeTrailingTitlePunctuation(title).trim().split(/\s+/u);
 
   while (words.length > 1 && danglingWords.has(words[words.length - 1].toLowerCase())) {
     words.pop();
   }
 
-  return words.join(" ");
+  return removeTrailingTitlePunctuation(words.join(" "));
+}
+
+function removeTrailingTitlePunctuation(title: string) {
+  return title.replace(/[,\-–:;]+$/u, "").trim();
 }
 
 function getPrimaryColorFromTitle(title: string) {

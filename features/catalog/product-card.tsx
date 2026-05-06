@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -28,6 +28,18 @@ export function ProductCard({ product }: ProductCardProps) {
     secondaryImage.publicId !== primaryImage.publicId &&
     !secondaryImageFailed;
 
+  const handlePrimaryImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+    event.currentTarget.alt = "";
+    event.currentTarget.style.display = "none";
+    setImageFailed(true);
+  };
+
+  const handleSecondaryImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+    event.currentTarget.alt = "";
+    event.currentTarget.style.display = "none";
+    setSecondaryImageFailed(true);
+  };
+
   return (
     <Link className={styles.productCard} href={product.href as Route}>
       <div className={styles.productMedia}>
@@ -42,7 +54,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 primaryImageLoaded ? styles.productImageLoaded : ""
               }`}
               loading="lazy"
-              onError={() => setImageFailed(true)}
+              onError={handlePrimaryImageError}
               onLoad={() => setPrimaryImageLoaded(true)}
               src={primaryImage.src}
             />
@@ -54,7 +66,7 @@ export function ProductCard({ product }: ProductCardProps) {
                   secondaryImageLoaded ? styles.productImageLoaded : ""
                 }`}
                 loading="lazy"
-                onError={() => setSecondaryImageFailed(true)}
+                onError={handleSecondaryImageError}
                 onLoad={() => setSecondaryImageLoaded(true)}
                 src={secondaryImage.src}
               />

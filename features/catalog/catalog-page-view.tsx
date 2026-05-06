@@ -47,8 +47,6 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const heroTitle = collection?.title ?? (categoryMeta ? categoryMeta.title : catalogLanding.title);
   const heroCopy =
     collection?.description ?? (categoryMeta ? categoryMeta.description : catalogLanding.description);
-  const heroBullets =
-    collection?.bullets ?? (categoryMeta ? categoryMeta.bullets : catalogLanding.bullets);
   const categoryCounts = useMemo(() => {
     return catalogCategories.reduce<Record<ProductCategory, number>>((accumulator, item) => {
       accumulator[item.key] = products.filter((product) => product.category === item.key).length;
@@ -234,7 +232,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                 ))}
               </select>
             </div>
-            <div className={styles.compactSelectShell}>
+            <div className={`${styles.compactSelectShell} ${styles.compactSortShell}`}>
               <label className={styles.srOnly} htmlFor="catalog-sort-mobile">
                 Sort
               </label>
@@ -291,15 +289,6 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
             <div className={styles.sidebarPanel}>
               <p className={styles.sidebarHeading}>Categories</p>
               <div className={styles.sidebarCategoryRail}>{renderCategoryRail()}</div>
-            </div>
-
-            <div className={styles.sidebarPanel}>
-              <p className={styles.sidebarHeading}>In this collection</p>
-              <ul className={styles.heroPanelList}>
-                {heroBullets.map((bullet) => (
-                  <li key={bullet}>{bullet}</li>
-                ))}
-              </ul>
             </div>
           </aside>
 
@@ -375,7 +364,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                     ))}
                   </select>
                 </div>
-                <div className={styles.compactSelectShell}>
+                <div className={`${styles.compactSelectShell} ${styles.compactSortShell}`}>
                   <label className={styles.srOnly} htmlFor="catalog-sort">
                     Sort
                   </label>
