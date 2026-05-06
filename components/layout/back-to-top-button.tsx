@@ -20,7 +20,7 @@ export function BackToTopButton() {
     };
   }, []);
 
-  if (pathname.startsWith("/admin")) {
+  if (pathname.startsWith("/admin") || pathname === "/trade") {
     return null;
   }
 

@@ -26,9 +26,8 @@ export function TradeStickyAction() {
       className={`${styles.stickyAction} ${isVisible ? styles.stickyActionVisible : ""}`}
       aria-hidden={!isVisible}
     >
-      <p className={styles.stickyActionCopy}>Start a trade inquiry</p>
       <Link className={styles.stickyActionButton} href="/trade/apply">
-        Contact the studio
+        Start trade inquiry
       </Link>
     </div>
   );

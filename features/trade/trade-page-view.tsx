@@ -16,19 +16,16 @@ const tradeIncludes = [
 
 const tradeWorkflow = [
   {
-    eyebrow: "Step 1",
     title: "Start with a trade inquiry",
     body:
       "The trade inquiry flow captures the practical context: product interest, destination market, room or project type, timing, and what kind of support you need from the studio.",
   },
   {
-    eyebrow: "Step 2",
     title: "Review the exact piece with the studio",
     body:
       "For rugs and other one-of-one pieces, the studio confirms the exact item with you before the order moves forward, so your client is reviewing the actual piece rather than a representative sample.",
   },
   {
-    eyebrow: "Step 3",
     title: "Confirm pricing, holds, and next steps",
     body:
       "Once the piece is right, the conversation moves into pricing, timing, delivery destination, and any project-hold requirements so the order can proceed cleanly.",
@@ -117,6 +114,8 @@ const tradeTestimonials = customerReviews.filter((review) =>
   ["ashley-t-rug", "emma-s-rug", "josh-w-rug"].includes(review.id),
 );
 
+const featuredTradeTestimonialId = "emma-s-rug";
+
 const tradeFaq = [
   {
     question: "Who is the trade program for?",
@@ -192,16 +191,6 @@ export function TradePageView() {
             </div>
 
             <div className={styles.heroProofCard}>
-              <div className={styles.heroImageFrame}>
-                <Image
-                  alt="Top-down review image showing a handmade Moroccan rug in warm natural light"
-                  className={styles.heroImage}
-                  height={960}
-                  priority
-                  src="/hero/verification-topdown-v1.png"
-                  width={960}
-                />
-              </div>
               <p className={styles.heroProofEyebrow}>Trade support includes</p>
               <h2>Built for sourcing decisions that need client-ready proof.</h2>
               <p className={styles.heroProofBody}>
@@ -224,15 +213,39 @@ export function TradePageView() {
         </div>
       </section>
 
-      <section className={`${styles.card} ${styles.featureCard}`}>
-        <p className={styles.eyebrow}>What trade includes</p>
-        <h2>Use the trade path when the project needs more than a product page.</h2>
-        <div className={styles.cardBody}>
-          <ul className={styles.includeList}>
-            {tradeIncludes.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+      <section className={styles.heroVisualBand} aria-label="Trade image review">
+        <div className={styles.heroVisualLayout}>
+          <div className={styles.heroVisualCopy}>
+            <p className={styles.eyebrow}>Review image</p>
+            <h2>The exact piece stays visible while the project decision is being made.</h2>
+            <p className={styles.body}>
+              The trade path works best when imagery, pricing, hold timing, and availability are
+              all being reviewed against the actual piece rather than a generic style reference.
+            </p>
+          </div>
+          <div className={styles.heroVisualFrame}>
+            <Image
+              alt="Top-down review image showing a handmade Moroccan rug in warm natural light"
+              className={styles.heroVisualImage}
+              height={960}
+              src="/hero/verification-topdown-v1.png"
+              width={960}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.bandSection}>
+        <div className={styles.bandInner}>
+          <p className={styles.eyebrow}>What trade includes</p>
+          <h2>Use the trade path when the project needs more than a product page.</h2>
+          <div className={styles.cardBody}>
+            <ul className={styles.includeList}>
+              {tradeIncludes.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -263,25 +276,36 @@ export function TradePageView() {
         </article>
       </section>
 
-      <section className={`${styles.card} ${styles.proofCard}`}>
-        <p className={styles.eyebrow}>Why designers use it</p>
-        <h2>The trade page works best when the project needs certainty, not more browsing.</h2>
-        <div className={styles.detailColumns}>
-          {tradeProofPoints.map((point) => (
-            <div key={point.title} className={styles.detailItem}>
-              <h3>{point.title}</h3>
-              <p>{point.body}</p>
-            </div>
-          ))}
+      <section className={styles.statBreak}>
+        <p>10% off. Direct studio contact. 3-business-day holds.</p>
+      </section>
+
+      <section className={styles.editorialSection}>
+        <div className={styles.editorialInner}>
+          <p className={styles.eyebrow}>Why designers use it</p>
+          <h2>The trade page works best when the project needs certainty, not more browsing.</h2>
+          <div className={styles.detailColumns}>
+            {tradeProofPoints.map((point) => (
+              <div key={point.title} className={styles.detailItem}>
+                <h3>{point.title}</h3>
+                <p>{point.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className={`${styles.card} ${styles.testimonialCard}`}>
-        <p className={styles.eyebrow}>Temporary trade proof</p>
-        <h2>Existing customer feedback, reused here until trade-specific quotes are ready.</h2>
+        <p className={styles.eyebrow}>What customers say</p>
+        <h2>Clear communication and confidence in the final piece still matter most.</h2>
         <div className={styles.testimonialGrid}>
           {tradeTestimonials.map((testimonial) => (
-            <figure key={testimonial.id} className={styles.testimonialItem}>
+            <figure
+              key={testimonial.id}
+              className={`${styles.testimonialItem} ${
+                testimonial.id === featuredTradeTestimonialId ? styles.testimonialItemFeatured : ""
+              }`}
+            >
               <blockquote>{testimonial.body}</blockquote>
               <figcaption>
                 <span>{testimonial.customerName}</span>
@@ -316,9 +340,9 @@ export function TradePageView() {
       </section>
 
       <section className={styles.workflowGrid}>
-        {tradeWorkflow.map((step) => (
+        {tradeWorkflow.map((step, index) => (
           <article key={step.title} className={styles.card}>
-            <p className={styles.eyebrow}>{step.eyebrow}</p>
+            <p className={styles.workflowStepLabel}>Step {index + 1}</p>
             <h3>{step.title}</h3>
             <div className={styles.cardBody}>
               <p>{step.body}</p>
@@ -327,35 +351,39 @@ export function TradePageView() {
         ))}
       </section>
 
-      <section className={`${styles.card} ${styles.faqCard}`}>
-        <p className={styles.eyebrow}>Trade FAQ</p>
-        <h2>Questions that come up before a designer reaches out.</h2>
-        <div className={styles.faqList}>
-          {tradeFaq.map((item) => (
-            <article key={item.question} className={styles.faqItem}>
-              <h3>{item.question}</h3>
-              <p>{item.answer}</p>
-            </article>
-          ))}
+      <section className={styles.faqSection}>
+        <div className={styles.faqInner}>
+          <p className={styles.eyebrow}>Trade FAQ</p>
+          <h2>Questions that come up before a designer reaches out.</h2>
+          <div className={styles.faqList}>
+            {tradeFaq.map((item) => (
+              <article key={item.question} className={styles.faqItem}>
+                <h3>{item.question}</h3>
+                <p>{item.answer}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className={styles.finalCta}>
-        <div className={styles.finalCtaCopy}>
-          <p className={styles.eyebrow}>Trade inquiry</p>
-          <h2>Bring the project details and the studio will take it from there.</h2>
-          <p className={styles.body}>
-            If you already know the category, size direction, destination market, or exact piece,
-            the inquiry can move straight into sourcing support and next-step pricing.
-          </p>
-        </div>
-        <div className={styles.contactActions}>
-          <Link className={styles.primaryAction} href="/trade/apply">
-            Contact the studio
-          </Link>
-          <Link className={styles.secondaryAction} href="/sourcing">
-            See the sourcing review path
-          </Link>
+        <div className={styles.finalCtaInner}>
+          <div className={styles.finalCtaCopy}>
+            <p className={styles.eyebrow}>Trade inquiry</p>
+            <h2>Bring the project details and the studio will take it from there.</h2>
+            <p className={styles.body}>
+              If you already know the category, size direction, destination market, or exact
+              piece, the inquiry can move straight into sourcing support and next-step pricing.
+            </p>
+          </div>
+          <div className={styles.contactActions}>
+            <Link className={styles.primaryAction} href="/trade/apply">
+              Contact the studio
+            </Link>
+            <Link className={styles.secondaryAction} href="/sourcing">
+              See the sourcing review path
+            </Link>
+          </div>
         </div>
       </section>
     </div>
