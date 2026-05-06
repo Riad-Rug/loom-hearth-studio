@@ -221,10 +221,9 @@
 .sidebarCard h1 {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(2rem, 2.6vw, 2.6rem);
-  line-height: 0.98;
-  letter-spacing: -0.04em;
-  text-wrap: balance;
+  font-size: clamp(1.35rem, 1.8vw, 1.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
 }
 
 .sidebarCount,
@@ -251,7 +250,8 @@
 .sidebarCopy,
 .sidebarPanelCopy {
   color: var(--color-text-body);
-  line-height: 1.7;
+  font-size: 0.92rem;
+  line-height: 1.55;
 }
 
 .sidebarHighlights {
@@ -451,95 +451,32 @@
   color: var(--color-charcoal-ink);
 }
 
-.filterList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.filterGroups,
-.mobileFilterStack {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.filterGroup {
-  display: grid;
-  gap: 0.55rem;
-}
-
-.filterLegend {
-  margin: 0;
-  color: var(--color-text-body);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.filterChip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.55rem 0.8rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-wool-cream);
-  color: var(--color-olive-thread);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  transition:
-    border-color 150ms ease,
-    background-color 150ms ease,
-    box-shadow 150ms ease,
-    color 150ms ease,
-    transform 150ms ease;
-}
-
-.filterChip:hover,
-.filterChip:focus-visible,
-.filterChipActive {
-  border-color: rgba(198, 106, 61, 0.32);
-  background: rgba(198, 106, 61, 0.14);
-  color: var(--color-charcoal-ink);
-  outline: none;
-}
-
-.filterChip:hover,
-.filterChip:focus-visible {
-  transform: translateY(-1px);
-}
-
-.filterChipActive {
-  box-shadow: inset 0 0 0 1px rgba(198, 106, 61, 0.08);
-}
-
 .searchInlineShell {
-  display: grid;
-  gap: 0.45rem;
-  min-width: min(100%, 24rem);
-}
-
-.searchInlineLabel {
-  color: var(--color-text-body);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  min-width: min(100%, 19rem);
 }
 
 .searchInlineInput {
   width: 100%;
   min-width: 0;
+  min-height: 3rem;
   padding: 0.82rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   background: rgba(255, 251, 245, 0.96);
   color: var(--color-charcoal-ink);
   font: inherit;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .searchInlineInput::placeholder {
@@ -558,56 +495,50 @@
 }
 
 .catalogToolbar {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.toolbarSummary {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background:
-    linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(245, 241, 232, 0.94)),
-    radial-gradient(circle at top right, rgba(198, 106, 61, 0.1), transparent 35%);
-  box-shadow: var(--shadow-soft);
-}
-
-.toolbarIntro {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.toolbarActions {
-  display: grid;
-  justify-items: end;
-  gap: var(--space-3);
-  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
 }
 
 .toolbarCount {
-  margin: 0;
-  color: var(--color-text-muted);
+  color: var(--color-charcoal-ink);
   font-size: 0.95rem;
+  font-weight: 700;
 }
 
 .toolbarTrustNote {
-  margin: 0;
   color: var(--color-text-body);
-  font-size: 0.94rem;
-  line-height: 1.6;
+  font-size: 0.88rem;
+  line-height: 1.4;
 }
 
-.sortShell {
-  display: flex;
+.compactToolbarRow {
+  display: grid;
+  grid-template-columns:
+    minmax(14rem, 1.45fr)
+    minmax(9rem, 0.85fr)
+    minmax(9rem, 0.82fr)
+    minmax(9rem, 0.82fr)
+    minmax(9rem, 0.92fr)
+    auto;
+  gap: 0.75rem;
   align-items: center;
-  gap: var(--space-3);
 }
 
-.sortShell label {
-  color: var(--color-text-body);
+.compactSelectShell {
+  min-width: 0;
 }
 
-.sortSelect {
-  min-width: 13rem;
+.compactSelect {
+  width: 100%;
+  min-height: 3rem;
   padding: 0.75rem 2.75rem 0.75rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
@@ -625,7 +556,7 @@
   font: inherit;
 }
 
-.sortSelect:focus-visible {
+.compactSelect:focus-visible {
   border-color: rgba(198, 106, 61, 0.36);
   outline: none;
   box-shadow: 0 0 0 0.18rem rgba(198, 106, 61, 0.1);
@@ -665,7 +596,7 @@
 
 .productMedia {
   position: relative;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 4 / 3;
   background:
     linear-gradient(135deg, rgba(34, 33, 38, 0.08), rgba(109, 113, 88, 0.16)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(245, 241, 232, 0.4));
@@ -690,17 +621,17 @@
   left: 0.85rem;
   z-index: 3;
   max-width: calc(100% - 1.7rem);
-  padding: 0.45rem 0.65rem;
-  border: 1px solid rgba(255, 255, 255, 0.34);
+  padding: 0.38rem 0.58rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
-  background: rgba(34, 33, 38, 0.72);
+  background: rgba(34, 33, 38, 0.56);
   color: var(--color-wool-cream);
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   line-height: 1.2;
   text-transform: uppercase;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
 }
 
 .productImage {
@@ -905,14 +836,14 @@
 .productContent h3 {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-size: 1.06rem;
-  line-height: 1.12;
+  font-size: 1rem;
+  line-height: 1.16;
   letter-spacing: -0.03em;
   min-width: 0;
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
 }
 
 .productDimensions {
@@ -980,6 +911,10 @@
 
   .productGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .compactToolbarRow {
+    grid-template-columns: minmax(14rem, 1fr) repeat(2, minmax(9rem, 0.8fr));
   }
 }
 
@@ -1055,7 +990,7 @@
   .mobileCatalogToolbar {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-3);
+    gap: 0.85rem;
     align-items: stretch;
     margin-top: var(--space-1);
     padding: 0;
@@ -1063,52 +998,8 @@
     background: transparent;
   }
 
-  .mobileCatalogToolbar .filterList {
-    flex-wrap: nowrap;
-    gap: 0.4rem;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .mobileCatalogToolbar .filterList::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mobileCatalogToolbar .filterChip {
-    flex: 0 0 auto;
-    padding: 0.42rem 0.58rem;
-    font-size: 0.66rem;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-  }
-
-  .mobileFilterStack {
-    gap: var(--space-2);
-  }
-
-  .mobileCatalogToolbar .filterGroup {
-    gap: 0.45rem;
-  }
-
-  .mobileCatalogToolbar .sortShell {
-    width: 100%;
-    flex: 0 0 auto;
-    flex-direction: row;
-    gap: 0.45rem;
-    justify-content: space-between;
-  }
-
-  .mobileCatalogToolbar .sortShell label {
-    font-size: 0.76rem;
-  }
-
-  .mobileCatalogToolbar .sortSelect {
-    width: auto;
-    min-width: 9rem;
-    max-width: 9rem;
-    padding: 0.52rem 0.62rem;
-    font-size: 0.78rem;
+  .compactToolbarRow {
+    grid-template-columns: 1fr 1fr;
   }
 
   .catalogSidebar,
@@ -1154,5 +1045,9 @@
 
   .searchSubmit {
     width: 100%;
+  }
+
+  .compactToolbarRow {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,12 +1,13 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Section } from "@/components/layout/section";
 import {
   catalogCategories,
-  catalogFilterLabels,
   catalogLanding,
   catalogSortOptions,
 } from "@/features/catalog/catalog-data";
@@ -18,7 +19,6 @@ import type { ProductCategory } from "@/types/domain";
 import styles from "./catalog-page.module.css";
 
 type CatalogSortOption = (typeof catalogSortOptions)[number];
-type CatalogQuickFilter = (typeof catalogFilterLabels)[number];
 type CatalogPriceFilter = "all" | "under-300" | "300-600" | "600-plus";
 type CatalogSizeFilter = "all" | "small" | "medium" | "large";
 
@@ -35,9 +35,9 @@ type CatalogPageViewProps = {
 };
 
 export function CatalogPageView({ category, products, collection }: CatalogPageViewProps) {
+  const router = useRouter();
   const [sortOption, setSortOption] = useState<CatalogSortOption>("Featured");
   const [searchQuery, setSearchQuery] = useState("");
-  const [quickFilter, setQuickFilter] = useState<CatalogQuickFilter | null>(null);
   const [priceFilter, setPriceFilter] = useState<CatalogPriceFilter>("all");
   const [sizeFilter, setSizeFilter] = useState<CatalogSizeFilter>("all");
   const categoryMeta =
@@ -59,7 +59,22 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     ? catalogCategories.some((item) => item.href === collection.href)
     : false;
   const showCategoryCounts = !category && !hasExactCategoryLink;
-  const freshArrivalIds = useMemo(() => new Set(products.slice(0, 12).map((product) => product.id)), [products]);
+  const visibleCategories = useMemo(
+    () => {
+      if (!showCategoryCounts) {
+        return catalogCategories;
+      }
+
+      return catalogCategories.filter((item) => {
+        const count = categoryCounts[item.key] ?? 0;
+        const isCurrentCategory =
+          item.key === category || (hasExactCategoryLink ? item.href === collection?.href : false);
+
+        return count > 0 || isCurrentCategory;
+      });
+    },
+    [category, categoryCounts, collection?.href, hasExactCategoryLink, showCategoryCounts],
+  );
   const sortedProducts = useMemo(() => sortCatalogProducts(products, sortOption), [products, sortOption]);
   const filteredProducts = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -82,10 +97,6 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         }
       }
 
-      if (quickFilter && !matchesQuickFilter(product, quickFilter, freshArrivalIds)) {
-        return false;
-      }
-
       if (!matchesPriceFilter(product, priceFilter)) {
         return false;
       }
@@ -96,88 +107,23 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
 
       return true;
     });
-  }, [freshArrivalIds, priceFilter, quickFilter, searchQuery, sizeFilter, sortedProducts]);
+  }, [priceFilter, searchQuery, sizeFilter, sortedProducts]);
   const productCountLabel = `${filteredProducts.length} ${
     filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
-  const hasActiveFilters =
-    Boolean(searchQuery.trim()) || quickFilter !== null || priceFilter !== "all" || sizeFilter !== "all";
+  const sidebarCopy =
+    category || hasExactCategoryLink
+      ? heroCopy
+      : "Handcrafted rugs, poufs, and decor from Marrakech. One of one pieces do not return once sold.";
+  const selectedCategoryHref =
+    collection?.href && hasExactCategoryLink ? collection.href : categoryMeta?.href ?? "/shop";
+  const hasActiveFilters = Boolean(searchQuery.trim()) || priceFilter !== "all" || sizeFilter !== "all";
 
   const clearAllFilters = () => {
     setSearchQuery("");
-    setQuickFilter(null);
     setPriceFilter("all");
     setSizeFilter("all");
   };
-
-  const renderQuickFilters = () => (
-    <div className={styles.filterGroup}>
-      <p className={styles.filterLegend}>Shop by</p>
-      <div className={styles.filterList} aria-label="Browse the collection by merchandising filter">
-        {catalogFilterLabels.map((label) => {
-          const isActive = quickFilter === label;
-
-          return (
-            <button
-              key={label}
-              type="button"
-              className={`${styles.filterChip} ${isActive ? styles.filterChipActive : ""}`}
-              aria-pressed={isActive}
-              onClick={() => setQuickFilter(isActive ? null : label)}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  const renderPriceFilters = () => (
-    <div className={styles.filterGroup}>
-      <p className={styles.filterLegend}>Price</p>
-      <div className={styles.filterList} aria-label="Filter by price range">
-        {priceFilterOptions.map((option) => {
-          const isActive = priceFilter === option.value;
-
-          return (
-            <button
-              key={option.value}
-              type="button"
-              className={`${styles.filterChip} ${isActive ? styles.filterChipActive : ""}`}
-              aria-pressed={isActive}
-              onClick={() => setPriceFilter(option.value)}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  const renderSizeFilters = () => (
-    <div className={styles.filterGroup}>
-      <p className={styles.filterLegend}>Size</p>
-      <div className={styles.filterList} aria-label="Filter by size range">
-        {sizeFilterOptions.map((option) => {
-          const isActive = sizeFilter === option.value;
-
-          return (
-            <button
-              key={option.value}
-              type="button"
-              className={`${styles.filterChip} ${isActive ? styles.filterChipActive : ""}`}
-              aria-pressed={isActive}
-              onClick={() => setSizeFilter(option.value)}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
 
   const renderCategoryRail = () => (
     <div className={styles.categoryRail}>
@@ -189,7 +135,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
       >
         All categories
       </Link>
-      {catalogCategories.map((item) => {
+      {visibleCategories.map((item) => {
         const isActive =
           collection?.href && hasExactCategoryLink
             ? item.href === collection.href
@@ -218,43 +164,98 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         </div>
         {renderCategoryRail()}
         <div className={`${styles.catalogToolbar} ${styles.mobileCatalogToolbar}`}>
-          <div className={styles.searchInlineShell}>
-            <label className={styles.searchInlineLabel} htmlFor="catalog-search-mobile">
-              Search collection
-            </label>
-            <input
-              id="catalog-search-mobile"
-              className={styles.searchInlineInput}
-              type="search"
-              placeholder="Search by name, size, or material"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.currentTarget.value)}
-            />
-          </div>
-          <div className={styles.mobileFilterStack}>
-            {renderQuickFilters()}
-            {renderPriceFilters()}
-            {renderSizeFilters()}
-          </div>
-          {hasActiveFilters ? (
-            <button className={styles.secondaryAction} type="button" onClick={clearAllFilters}>
-              Clear all filters
-            </button>
-          ) : null}
-          <div className={styles.sortShell}>
-            <label htmlFor="catalog-sort-mobile">Sort</label>
-            <select
-              id="catalog-sort-mobile"
-              className={styles.sortSelect}
-              value={sortOption}
-              onChange={(event) => setSortOption(event.currentTarget.value as CatalogSortOption)}
-            >
-              {catalogSortOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+          <p className={styles.toolbarSummary}>
+            <span className={styles.toolbarCount}>{productCountLabel}</span>
+            <span className={styles.toolbarTrustNote}>Every rug is one of one. Sold pieces are not restocked.</span>
+          </p>
+          <div className={styles.compactToolbarRow}>
+            <div className={styles.searchInlineShell}>
+              <label className={styles.srOnly} htmlFor="catalog-search-mobile">
+                Search collection
+              </label>
+              <input
+                id="catalog-search-mobile"
+                className={styles.searchInlineInput}
+                type="search"
+                placeholder="Search by name, size, or material"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.currentTarget.value)}
+              />
+            </div>
+            <div className={styles.compactSelectShell}>
+              <label className={styles.srOnly} htmlFor="catalog-category-mobile">
+                Category
+              </label>
+              <select
+                id="catalog-category-mobile"
+                className={styles.compactSelect}
+                value={selectedCategoryHref}
+                onChange={(event) => router.push(event.currentTarget.value as Route)}
+              >
+                <option value="/shop">Category: All</option>
+                {visibleCategories.map((item) => (
+                  <option key={item.href} value={item.href}>
+                    {showCategoryCounts ? `${item.label} (${categoryCounts[item.key] ?? 0})` : item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.compactSelectShell}>
+              <label className={styles.srOnly} htmlFor="catalog-price-mobile">
+                Price
+              </label>
+              <select
+                id="catalog-price-mobile"
+                className={styles.compactSelect}
+                value={priceFilter}
+                onChange={(event) => setPriceFilter(event.currentTarget.value as CatalogPriceFilter)}
+              >
+                {priceFilterOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.compactLabel}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.compactSelectShell}>
+              <label className={styles.srOnly} htmlFor="catalog-size-mobile">
+                Size
+              </label>
+              <select
+                id="catalog-size-mobile"
+                className={styles.compactSelect}
+                value={sizeFilter}
+                onChange={(event) => setSizeFilter(event.currentTarget.value as CatalogSizeFilter)}
+              >
+                {sizeFilterOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.compactLabel}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.compactSelectShell}>
+              <label className={styles.srOnly} htmlFor="catalog-sort-mobile">
+                Sort
+              </label>
+              <select
+                id="catalog-sort-mobile"
+                className={styles.compactSelect}
+                value={sortOption}
+                onChange={(event) => setSortOption(event.currentTarget.value as CatalogSortOption)}
+              >
+                {catalogSortOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {hasActiveFilters ? (
+              <button className={styles.secondaryAction} type="button" onClick={clearAllFilters}>
+                Clear filters
+              </button>
+            ) : null}
           </div>
         </div>
       </Section>
@@ -268,7 +269,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
               <div className={styles.sidebarStatRow}>
                 <p className={styles.sidebarCount}>{productCountLabel}</p>
               </div>
-              <p className={styles.sidebarCopy}>{heroCopy}</p>
+              <p className={styles.sidebarCopy}>{sidebarCopy}</p>
               <div className={styles.sidebarHighlights} aria-label="Collection service details">
                 <span>Every rug is one of one and sold pieces are not restocked</span>
                 <span>Colour verified before payment</span>
@@ -304,13 +305,13 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
 
           <div className={styles.catalogContent}>
             <div className={styles.catalogToolbar}>
-              <div className={styles.toolbarIntro}>
-                <p className={styles.toolbarCount}>{productCountLabel}</p>
-                <p className={styles.toolbarTrustNote}>
-                  Every rug is one of one. Sold pieces are not restocked.
-                </p>
+              <p className={styles.toolbarSummary}>
+                <span className={styles.toolbarCount}>{productCountLabel}</span>
+                <span className={styles.toolbarTrustNote}>Every rug is one of one. Sold pieces are not restocked.</span>
+              </p>
+              <div className={styles.compactToolbarRow}>
                 <div className={styles.searchInlineShell}>
-                  <label className={styles.searchInlineLabel} htmlFor="catalog-search">
+                  <label className={styles.srOnly} htmlFor="catalog-search">
                     Search collection
                   </label>
                   <input
@@ -322,23 +323,65 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                     onChange={(event) => setSearchQuery(event.currentTarget.value)}
                   />
                 </div>
-                <div className={styles.filterGroups}>
-                  {renderQuickFilters()}
-                  {renderPriceFilters()}
-                  {renderSizeFilters()}
+                <div className={styles.compactSelectShell}>
+                  <label className={styles.srOnly} htmlFor="catalog-category">
+                    Category
+                  </label>
+                  <select
+                    id="catalog-category"
+                    className={styles.compactSelect}
+                    value={selectedCategoryHref}
+                    onChange={(event) => router.push(event.currentTarget.value as Route)}
+                  >
+                    <option value="/shop">Category: All</option>
+                    {visibleCategories.map((item) => (
+                      <option key={item.href} value={item.href}>
+                        {showCategoryCounts ? `${item.label} (${categoryCounts[item.key] ?? 0})` : item.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </div>
-              <div className={styles.toolbarActions}>
-                {hasActiveFilters ? (
-                  <button className={styles.secondaryAction} type="button" onClick={clearAllFilters}>
-                    Clear all filters
-                  </button>
-                ) : null}
-                <div className={styles.sortShell}>
-                  <label htmlFor="catalog-sort">Sort</label>
+                <div className={styles.compactSelectShell}>
+                  <label className={styles.srOnly} htmlFor="catalog-price">
+                    Price
+                  </label>
+                  <select
+                    id="catalog-price"
+                    className={styles.compactSelect}
+                    value={priceFilter}
+                    onChange={(event) => setPriceFilter(event.currentTarget.value as CatalogPriceFilter)}
+                  >
+                    {priceFilterOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.compactLabel}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className={styles.compactSelectShell}>
+                  <label className={styles.srOnly} htmlFor="catalog-size">
+                    Size
+                  </label>
+                  <select
+                    id="catalog-size"
+                    className={styles.compactSelect}
+                    value={sizeFilter}
+                    onChange={(event) => setSizeFilter(event.currentTarget.value as CatalogSizeFilter)}
+                  >
+                    {sizeFilterOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.compactLabel}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className={styles.compactSelectShell}>
+                  <label className={styles.srOnly} htmlFor="catalog-sort">
+                    Sort
+                  </label>
                   <select
                     id="catalog-sort"
-                    className={styles.sortSelect}
+                    className={styles.compactSelect}
                     value={sortOption}
                     onChange={(event) => setSortOption(event.currentTarget.value as CatalogSortOption)}
                   >
@@ -349,6 +392,11 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                     ))}
                   </select>
                 </div>
+                {hasActiveFilters ? (
+                  <button className={styles.secondaryAction} type="button" onClick={clearAllFilters}>
+                    Clear filters
+                  </button>
+                ) : null}
               </div>
             </div>
 
@@ -416,38 +464,23 @@ function sortCatalogProducts(
   }
 }
 
-const priceFilterOptions: Array<{ label: string; value: CatalogPriceFilter }> = [
-  { label: "All prices", value: "all" },
-  { label: "Under $300", value: "under-300" },
-  { label: "$300–$600", value: "300-600" },
-  { label: "$600+", value: "600-plus" },
+const priceFilterOptions: Array<{
+  label: string;
+  compactLabel: string;
+  value: CatalogPriceFilter;
+}> = [
+  { label: "All prices", compactLabel: "Price: All", value: "all" },
+  { label: "Under $300", compactLabel: "Price: Under $300", value: "under-300" },
+  { label: "$300–$600", compactLabel: "Price: $300–$600", value: "300-600" },
+  { label: "$600+", compactLabel: "Price: $600+", value: "600-plus" },
 ];
 
-const sizeFilterOptions: Array<{ label: string; value: CatalogSizeFilter }> = [
-  { label: "All sizes", value: "all" },
-  { label: "Small", value: "small" },
-  { label: "Medium", value: "medium" },
-  { label: "Large", value: "large" },
+const sizeFilterOptions: Array<{ label: string; compactLabel: string; value: CatalogSizeFilter }> = [
+  { label: "All sizes", compactLabel: "Size: All", value: "all" },
+  { label: "Small", compactLabel: "Size: Small", value: "small" },
+  { label: "Medium", compactLabel: "Size: Medium", value: "medium" },
+  { label: "Large", compactLabel: "Size: Large", value: "large" },
 ];
-
-function matchesQuickFilter(
-  product: CatalogProductCardViewModel,
-  quickFilter: CatalogQuickFilter,
-  freshArrivalIds: Set<string>,
-) {
-  switch (quickFilter) {
-    case "Handwoven":
-      return product.category !== "decor";
-    case "One of One":
-      return product.type === "rug";
-    case "Decor":
-      return product.category === "decor";
-    case "Fresh Arrivals":
-      return freshArrivalIds.has(product.id);
-    default:
-      return true;
-  }
-}
 
 function matchesPriceFilter(
   product: CatalogProductCardViewModel,
