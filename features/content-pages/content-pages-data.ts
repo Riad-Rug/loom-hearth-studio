@@ -16,6 +16,7 @@ type LookbookItem = {
   href: string;
   imageSrc: string;
   imageAlt: string;
+  imagePosition?: string;
 };
 
 export const aboutHero = {
@@ -234,10 +235,9 @@ export const lookbookItems: LookbookItem[] = [
       "A low-furnished living room anchored by a pale Moroccan rug. Quiet seating, natural light, and a restrained palette keep the rug at the center.",
     ctaLabel: "Shop the rugs",
     href: "/shop/rugs/beni-ourain",
-    imageSrc:
-      "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+    imageSrc: "/lookbook/beni-ourain-living-room-v2.png",
     imageAlt:
-      "A Moroccan living room with low seating, natural light, and a visible handcrafted rug anchoring the floor.",
+      "A Moroccan living room with a pale Beni Ourain rug, low built-in seating, dark wood table, and natural daylight.",
   },
   {
     id: "lookbook-3",
@@ -260,10 +260,9 @@ export const lookbookItems: LookbookItem[] = [
       "A low sitting area with layered Moroccan rugs, floor cushions, leather chairs, and a small tray table. Pattern, pile, and tile work hold the room together.",
     ctaLabel: "Shop the rugs",
     href: "/shop/rugs",
-    imageSrc:
-      "https://images.pexels.com/photos/2827401/pexels-photo-2827401.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+    imageSrc: "/lookbook/layered-sitting-room-v2.png",
     imageAlt:
-      "A Moroccan sitting room with layered rugs, floor cushions, leather chairs, and a small tray table.",
+      "A Moroccan sitting room with layered handcrafted rugs, low seating, a round wood tea table, and warm daylight.",
   },
   {
     id: "lookbook-4",
@@ -286,9 +285,9 @@ export const lookbookItems: LookbookItem[] = [
       "A terracotta-toned rug holds a low salon with carved wood, warm plaster, and afternoon light. The scene takes its cue from the denser, earth-led pieces in the collection.",
     ctaLabel: "Shop terracotta rugs",
     href: "/shop/rugs/terracotta",
-    imageSrc: "/lookbook/terracotta-salon.png",
+    imageSrc: "/lookbook/terracotta-salon-v2.png",
     imageAlt:
-      "A Moroccan salon with low seating, a terracotta hand-knotted rug, carved wood table, and warm natural light.",
+      "A Moroccan salon with low seating, a terracotta-toned hand-knotted rug, carved wood table, and warm natural daylight.",
   },
   {
     id: "lookbook-6",
@@ -298,13 +297,13 @@ export const lookbookItems: LookbookItem[] = [
       "A pale Atlas rug softens the room under a low bench and sculptural chair. Sand, ivory, and restrained terracotta keep the rug architectural rather than decorative.",
     ctaLabel: "Shop Atlas rugs",
     href: "/shop/rugs/atlas",
-    imageSrc: "/lookbook/atlas-bedroom.png",
+    imageSrc: "/lookbook/atlas-bedroom-v2.png",
     imageAlt:
-      "A quiet bedroom-sitting space with a pale Moroccan Atlas rug, low wood bench, sculptural chair, and soft morning light.",
+      "A quiet bedroom-sitting room with a pale Atlas rug, low wood bench, textured chair, and soft morning daylight.",
   },
   {
     id: "lookbook-7",
-    roomLabel: "Sitting room",
+    roomLabel: "Tea room",
     title: "Clay-toned poufs around the tea table.",
     description:
       "Three wool poufs in sand, clay, and charcoal bring texture to a low sitting room. The styling stays spare so the poufs read as usable pieces, not props.",

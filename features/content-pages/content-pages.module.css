@@ -565,15 +565,15 @@
   text-decoration: none;
   cursor: pointer;
   transition:
-    transform 180ms ease,
-    box-shadow 180ms ease,
-    border-color 180ms ease;
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
 }
 
 .lookbookTile:hover,
 .lookbookTile:focus-visible {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-panel);
+  transform: translateY(-4px);
+  box-shadow: 0 1.5rem 2.8rem rgba(34, 33, 38, 0.14);
   border-color: rgba(34, 33, 38, 0.16);
   outline: none;
 }
@@ -628,7 +628,7 @@
 
 .lookbookImage {
   object-fit: cover;
-  transition: transform 220ms ease;
+  transition: transform 300ms ease;
 }
 
 .lookbookMediaOverlay {
@@ -644,12 +644,12 @@
 
 .lookbookTile:hover .lookbookImage,
 .lookbookTile:focus-visible .lookbookImage {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 
 .lookbookTile:hover .lookbookMediaOverlay,
 .lookbookTile:focus-visible .lookbookMediaOverlay {
-  opacity: 1;
+  opacity: 0.9;
 }
 
 .lookbookBody {
@@ -701,11 +701,14 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-5);
   align-items: center;
-  padding: var(--space-6);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: var(--shadow-soft);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: clamp(2.75rem, 5vw, 4.5rem) min(6vw, 5rem);
+  background:
+    radial-gradient(circle at top right, rgba(184, 94, 59, 0.18), transparent 34%),
+    linear-gradient(135deg, #2b2623, #41352e 56%, #5b473d);
+  color: rgba(255, 248, 239, 0.96);
 }
 
 .lookbookExit h2 {
@@ -714,6 +717,22 @@
   font-size: clamp(2rem, 3vw, 2.8rem);
   letter-spacing: -0.04em;
   line-height: 1;
+}
+
+.lookbookExit .eyebrow {
+  color: rgba(244, 219, 196, 0.88);
+}
+
+.lookbookExit .secondaryAction {
+  border-color: rgba(255, 245, 236, 0.34);
+  background: rgba(255, 245, 236, 0.06);
+  color: rgba(255, 248, 239, 0.96);
+}
+
+.lookbookExit .secondaryAction:hover,
+.lookbookExit .secondaryAction:focus-visible {
+  border-color: rgba(255, 245, 236, 0.52);
+  background: rgba(255, 245, 236, 0.12);
 }
 
 .testimonialCard {

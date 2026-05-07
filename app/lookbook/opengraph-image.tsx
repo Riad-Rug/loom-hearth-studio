@@ -1,7 +1,5 @@
 import { ImageResponse } from "next/og";
 
-import { lookbookItems } from "@/features/content-pages/content-pages-data";
-
 export const alt =
   "A low-furnished Moroccan living room anchored by a pale rug in natural light.";
 export const size = {
@@ -10,9 +8,10 @@ export const size = {
 };
 export const contentType = "image/png";
 
-export default function LookbookOpenGraphImage() {
-  const heroImage = lookbookItems[0]?.imageSrc;
+const heroImage =
+  "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960";
 
+export default function LookbookOpenGraphImage() {
   return new ImageResponse(
     (
       <div

@@ -19,7 +19,7 @@ export function LookbookPageView() {
       </section>
 
       <section className={styles.lookbookGrid} aria-label="Editorial Moroccan lookbook">
-        {lookbookItems.map((item) => (
+        {lookbookItems.map((item, index) => (
           <Link
             key={item.id}
             aria-label={`${item.ctaLabel} - ${item.title}`}
@@ -31,7 +31,10 @@ export function LookbookPageView() {
                 alt={item.imageAlt}
                 className={styles.lookbookImage}
                 fill
+                loading={index < 2 ? "eager" : "lazy"}
+                priority={index < 2}
                 sizes="(max-width: 1100px) 100vw, 50vw"
+                style={item.imagePosition ? { objectPosition: item.imagePosition } : undefined}
                 src={item.imageSrc}
               />
               <div className={styles.lookbookMediaOverlay} aria-hidden="true" />
@@ -49,7 +52,7 @@ export function LookbookPageView() {
       <section className={styles.lookbookExit}>
         <div>
           <p className={styles.eyebrow}>Shop next</p>
-          <h2>Start with the rugs.</h2>
+          <h2>Start with the collection.</h2>
         </div>
         <div className={styles.policyActions}>
           <Link className={styles.primaryAction} href="/shop">
