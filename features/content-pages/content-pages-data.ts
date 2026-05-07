@@ -9,6 +9,7 @@ type AboutSection = {
 
 type LookbookItem = {
   id: string;
+  roomLabel: string;
   title: string;
   description: string;
   ctaLabel: string;
@@ -227,6 +228,7 @@ export const faqItems: FaqItem[] = [
 export const lookbookItems: LookbookItem[] = [
   {
     id: "lookbook-1",
+    roomLabel: "Living room",
     title: "A Beni Ourain rug in a low-furnished living room.",
     description:
       "A low-furnished living room anchored by a pale Moroccan rug. Quiet seating, natural light, and a restrained palette keep the rug at the center.",
@@ -239,7 +241,8 @@ export const lookbookItems: LookbookItem[] = [
   },
   {
     id: "lookbook-3",
-    title: "Moroccan Hallway with Vintage Textiles",
+    roomLabel: "Hallway",
+    title: "Moroccan hallway with vintage textiles.",
     description:
       "A Moroccan interior with vintage rugs and woven textiles. Warm terracotta tones, pendant light, and layered natural materials.",
     ctaLabel: "Shop the vintage rugs",
@@ -251,6 +254,7 @@ export const lookbookItems: LookbookItem[] = [
   },
   {
     id: "lookbook-2",
+    roomLabel: "Sitting room",
     title: "Layered rugs in a low Moroccan sitting room.",
     description:
       "A low sitting area with layered Moroccan rugs, floor cushions, leather chairs, and a small tray table. Pattern, pile, and tile work hold the room together.",
@@ -263,6 +267,7 @@ export const lookbookItems: LookbookItem[] = [
   },
   {
     id: "lookbook-4",
+    roomLabel: "Sitting area",
     title: "A sitting area, restrained.",
     description:
       "A sunlit Moroccan sitting area with traditional cushions and restrained decor. Pale walls, warm shadows, no competing pattern.",
@@ -272,6 +277,54 @@ export const lookbookItems: LookbookItem[] = [
       "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
     imageAlt:
       "A minimal Moroccan decor vignette with neutral textiles and handcrafted accents in warm sunlight.",
+  },
+  {
+    id: "lookbook-5",
+    roomLabel: "Salon",
+    title: "Terracotta tones in a sun-washed salon.",
+    description:
+      "A terracotta-toned rug holds a low salon with carved wood, warm plaster, and afternoon light. The scene takes its cue from the denser, earth-led pieces in the collection.",
+    ctaLabel: "Shop terracotta rugs",
+    href: "/shop/rugs/terracotta",
+    imageSrc: "/lookbook/terracotta-salon.png",
+    imageAlt:
+      "A Moroccan salon with low seating, a terracotta hand-knotted rug, carved wood table, and warm natural light.",
+  },
+  {
+    id: "lookbook-6",
+    roomLabel: "Bedroom",
+    title: "An Atlas rug in a quiet bedroom-sitting room.",
+    description:
+      "A pale Atlas rug softens the room under a low bench and sculptural chair. Sand, ivory, and restrained terracotta keep the rug architectural rather than decorative.",
+    ctaLabel: "Shop Atlas rugs",
+    href: "/shop/rugs/atlas",
+    imageSrc: "/lookbook/atlas-bedroom.png",
+    imageAlt:
+      "A quiet bedroom-sitting space with a pale Moroccan Atlas rug, low wood bench, sculptural chair, and soft morning light.",
+  },
+  {
+    id: "lookbook-7",
+    roomLabel: "Sitting room",
+    title: "Clay-toned poufs around the tea table.",
+    description:
+      "Three wool poufs in sand, clay, and charcoal bring texture to a low sitting room. The styling stays spare so the poufs read as usable pieces, not props.",
+    ctaLabel: "Shop the poufs",
+    href: "/shop/poufs",
+    imageSrc: "/lookbook/clay-pouf-sitting-room.png",
+    imageAlt:
+      "A Moroccan sitting room with three wool poufs around a low tea table, layered over a pale rug in warm afternoon light.",
+  },
+  {
+    id: "lookbook-8",
+    roomLabel: "Reading corner",
+    title: "Striped pillows in a plaster reading corner.",
+    description:
+      "Striped pillows and a pale rug build a quieter textile scene in sand and clay tones. The emphasis is on layering, not volume, so the room still feels open.",
+    ctaLabel: "Shop the pillows",
+    href: "/shop/pillows",
+    imageSrc: "/lookbook/hearth-pillow-reading-corner.png",
+    imageAlt:
+      "A plaster reading corner with striped Moroccan pillows on a built-in bench, a pale rug, and warm sunlight.",
   },
 ] as const;
 

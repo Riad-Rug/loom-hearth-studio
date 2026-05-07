@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Section } from "@/components/layout/section";
@@ -13,6 +13,7 @@ import {
 } from "@/features/catalog/catalog-data";
 import { CatalogHistoryRecorder } from "@/features/catalog/catalog-history-recorder";
 import { CatalogProductBrowser } from "@/features/catalog/catalog-product-browser";
+import { lookbookSceneContext } from "@/features/lookbook/lookbook-scene-context";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import type { ProductCategory } from "@/types/domain";
 
@@ -36,6 +37,7 @@ type CatalogPageViewProps = {
 
 export function CatalogPageView({ category, products, collection }: CatalogPageViewProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [sortOption, setSortOption] = useState<CatalogSortOption>("Featured");
   const [searchQuery, setSearchQuery] = useState("");
   const [priceFilter, setPriceFilter] = useState<CatalogPriceFilter>("all");
@@ -116,6 +118,15 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const selectedCategoryHref =
     collection?.href && hasExactCategoryLink ? collection.href : categoryMeta?.href ?? "/shop";
   const hasActiveFilters = Boolean(searchQuery.trim()) || priceFilter !== "all" || sizeFilter !== "all";
+  const lookbookSceneId = searchParams.get("scene");
+  const fromLookbook = searchParams.get("from") === "lookbook";
+  const lookbookContext = useMemo(() => {
+    if (!fromLookbook || !lookbookSceneId) {
+      return null;
+    }
+
+    return lookbookSceneContext.find((item) => item.id === lookbookSceneId) ?? null;
+  }, [fromLookbook, lookbookSceneId]);
 
   const clearAllFilters = () => {
     setSearchQuery("");
@@ -273,6 +284,16 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                 <span>Colour verified before payment</span>
                 <span>Ships from Morocco</span>
               </div>
+              {lookbookContext ? (
+                <div className={styles.lookbookContextCard}>
+                  <p className={styles.lookbookContextEyebrow}>From the lookbook</p>
+                  <h2>{lookbookContext.title}</h2>
+                  <p>
+                    You arrived here from the {lookbookContext.roomLabel.toLowerCase()} scene. This
+                    collection carries the same visual direction.
+                  </p>
+                </div>
+              ) : null}
               {hasActiveFilters ? (
                 <div className={styles.sidebarActions}>
                   <button
@@ -293,6 +314,18 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
           </aside>
 
           <div className={styles.catalogContent}>
+            {lookbookContext ? (
+              <div className={styles.lookbookContextBanner}>
+                <p className={styles.lookbookContextEyebrow}>From the lookbook</p>
+                <div className={styles.lookbookContextBannerBody}>
+                  <h2>{lookbookContext.title}</h2>
+                  <p>
+                    This collection is where that {lookbookContext.roomLabel.toLowerCase()} scene
+                    starts. Browse the related pieces without losing the editorial thread.
+                  </p>
+                </div>
+              </div>
+            ) : null}
             <div className={styles.catalogToolbar}>
               <p className={styles.toolbarSummary}>
                 <span className={styles.toolbarCount}>{productCountLabel}</span>
