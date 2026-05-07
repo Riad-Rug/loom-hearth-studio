@@ -732,10 +732,10 @@
 
 .aboutExit {
   display: grid;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  width: 100%;
+  margin: 0;
   padding: clamp(2.75rem, 5vw, 4.5rem) min(6vw, 5rem);
+  border-radius: var(--radius-xl);
   background:
     radial-gradient(circle at top right, rgba(184, 94, 59, 0.18), transparent 34%),
     linear-gradient(135deg, #2b2623, #41352e 56%, #5b473d);
