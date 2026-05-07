@@ -3,6 +3,7 @@
   gap: var(--space-7);
   width: min(100% - 2rem, var(--container-width-wide));
   margin: 0 auto;
+  overflow-x: clip;
 }
 
 .hero,
@@ -62,7 +63,7 @@
 }
 
 .aboutHero h1 {
-  font-size: clamp(2.75rem, 4vw, 3rem);
+  font-size: clamp(2.65rem, 4vw, 3rem);
 }
 
 .lede,
@@ -656,25 +657,34 @@
   gap: var(--space-5);
 }
 
+.aboutSupportSection {
+  display: grid;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.aboutSupportIntro {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 42rem;
+}
+
 .aboutSupportCard {
   display: grid;
   overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: var(--shadow-soft);
 }
 
 .aboutSupportMedia {
   position: relative;
   aspect-ratio: 4 / 3;
   overflow: hidden;
+  border-radius: var(--radius-xl);
 }
 
 .aboutSupportBody {
   display: grid;
-  gap: var(--space-3);
-  padding: var(--space-5);
+  gap: var(--space-2);
+  padding: var(--space-3) 0 0;
 }
 
 .aboutSupportBody h3,
@@ -695,14 +705,14 @@
 }
 
 .aboutSplitSection {
-  align-items: stretch;
+  align-items: start;
 }
 
 .aboutOpenPanel {
   display: grid;
   align-content: start;
   gap: var(--space-4);
-  padding: var(--space-3) 0;
+  padding: 0;
 }
 
 .aboutOpenBody {
@@ -999,6 +1009,10 @@
     right: 1rem;
     bottom: 1rem;
     width: min(100% - 2rem, 28rem);
+  }
+
+  .aboutSupportBody {
+    padding-top: var(--space-2);
   }
 
   .lookbookBody h2 {

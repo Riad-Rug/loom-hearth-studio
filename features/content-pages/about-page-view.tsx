@@ -130,7 +130,16 @@ export function AboutPageView() {
         <p className={styles.body}>{renderLinkedText(aboutBridge.body)}</p>
       </section>
 
-      <section className={styles.aboutSupportGrid}>
+      <section className={styles.aboutSupportSection}>
+        <div className={styles.aboutSupportIntro}>
+          <p className={styles.eyebrow}>Selection details</p>
+          <p className={styles.body}>
+            The images below are part of the same sourcing process: direct handling in the bazaar,
+            and close inspection of construction before a piece ever reaches the site.
+          </p>
+        </div>
+
+        <div className={styles.aboutSupportGrid}>
         {sourcingProofs.map((item) => (
           <article key={item.title} className={styles.aboutSupportCard}>
             <div className={styles.aboutSupportMedia}>
@@ -143,18 +152,20 @@ export function AboutPageView() {
               />
             </div>
             <div className={styles.aboutSupportBody}>
+              <p className={styles.eyebrow}>Process</p>
               <h3>{item.title}</h3>
               <p>{item.body}</p>
             </div>
           </article>
         ))}
+        </div>
       </section>
 
       <section className={`${styles.twoColumn} ${styles.aboutSplitSection}`}>
-        <article className={styles.card}>
+        <article className={styles.aboutOpenPanel}>
           <p className={styles.eyebrow}>{craftSection.eyebrow}</p>
           <h2>{craftSection.title}</h2>
-          <div className={styles.cardBody}>
+          <div className={styles.aboutOpenBody}>
             {craftSection.paragraphs.map((paragraph, index) => (
               <p key={`${index}-${paragraph.slice(0, 24)}`}>{renderLinkedText(paragraph)}</p>
             ))}
