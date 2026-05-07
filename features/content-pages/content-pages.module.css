@@ -61,6 +61,10 @@
   line-height: 0.97;
 }
 
+.aboutHero h1 {
+  font-size: clamp(2.75rem, 4vw, 3rem);
+}
+
 .lede,
 .body,
 .card p,
@@ -70,6 +74,7 @@
 .policyBody p {
   margin: 0;
   color: var(--color-text-body);
+  font-size: 1rem;
   line-height: 1.8;
 }
 
@@ -606,6 +611,34 @@
   padding: var(--space-5);
 }
 
+.aboutProofBlock {
+  overflow: hidden;
+}
+
+.aboutProofCaption {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  display: grid;
+  gap: 0.55rem;
+  width: min(100% - 2.5rem, 32rem);
+  padding: 1rem 1.1rem;
+  background: rgba(25, 22, 20, 0.46);
+  color: rgba(255, 248, 239, 0.96);
+  backdrop-filter: blur(10px);
+}
+
+.aboutProofCaption .eyebrow {
+  margin-bottom: 0;
+  color: rgba(245, 214, 188, 0.9);
+}
+
+.aboutProofCaption p:last-child {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
 .trustHighlight {
   display: inline-flex;
   align-items: center;
@@ -615,6 +648,132 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.65);
   color: rgba(34, 33, 38, 0.82);
+}
+
+.aboutSupportGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.aboutSupportCard {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-soft);
+}
+
+.aboutSupportMedia {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.aboutSupportBody {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.aboutSupportBody h3,
+.aboutOpenPanel h2 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.9rem;
+  letter-spacing: -0.04em;
+  line-height: 1.06;
+}
+
+.aboutSupportBody p,
+.aboutOpenBody p {
+  margin: 0;
+  color: var(--color-text-body);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.aboutSplitSection {
+  align-items: stretch;
+}
+
+.aboutOpenPanel {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+}
+
+.aboutOpenBody {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 32rem;
+}
+
+.aboutExit {
+  display: grid;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: clamp(2.75rem, 5vw, 4.5rem) min(6vw, 5rem);
+  background:
+    radial-gradient(circle at top right, rgba(184, 94, 59, 0.18), transparent 34%),
+    linear-gradient(135deg, #2b2623, #41352e 56%, #5b473d);
+  color: rgba(255, 248, 239, 0.96);
+}
+
+.aboutExitBody {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 52rem;
+}
+
+.aboutExit h2 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.aboutExit .eyebrow {
+  margin-bottom: 0;
+  color: rgba(244, 219, 196, 0.88);
+}
+
+.aboutExit .body {
+  color: rgba(255, 248, 239, 0.84);
+}
+
+.aboutExit .secondaryAction {
+  border-color: rgba(255, 245, 236, 0.34);
+  background: rgba(255, 245, 236, 0.06);
+  color: rgba(255, 248, 239, 0.96);
+}
+
+.aboutExit .secondaryAction:hover,
+.aboutExit .secondaryAction:focus-visible {
+  border-color: rgba(255, 245, 236, 0.52);
+  background: rgba(255, 245, 236, 0.12);
+}
+
+.aboutCrossLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.25rem;
+  align-items: center;
+}
+
+.aboutCrossLinks .textAction {
+  color: rgba(255, 248, 239, 0.92);
+  text-decoration-color: rgba(244, 219, 196, 0.32);
+}
+
+.aboutCrossLinks .textAction:hover,
+.aboutCrossLinks .textAction:focus-visible {
+  color: rgba(255, 248, 239, 1);
+  text-decoration-color: rgba(244, 219, 196, 0.55);
 }
 
 .lookbookMedia {
@@ -789,7 +948,8 @@
 @media (max-width: 1100px) {
   .twoColumn,
   .contactGrid,
-  .lookbookGrid {
+  .lookbookGrid,
+  .aboutSupportGrid {
     grid-template-columns: 1fr;
   }
 
@@ -835,12 +995,22 @@
     padding: var(--space-4);
   }
 
+  .aboutProofCaption {
+    right: 1rem;
+    bottom: 1rem;
+    width: min(100% - 2rem, 28rem);
+  }
+
   .lookbookBody h2 {
     font-size: 1.45rem;
   }
 
   .lookbookExit {
     grid-template-columns: 1fr;
+    padding: var(--space-5);
+  }
+
+  .aboutExit {
     padding: var(--space-5);
   }
 }
