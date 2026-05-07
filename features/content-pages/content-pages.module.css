@@ -66,6 +66,16 @@
   font-size: clamp(2.65rem, 4vw, 3rem);
 }
 
+.aboutHero .lede,
+.aboutProofCaption p:last-child,
+.aboutSupportIntro .body,
+.aboutSupportBody p,
+.aboutOpenBody p,
+.aboutExit .body,
+.sectionHeader .body {
+  font-size: 1rem;
+}
+
 .lede,
 .body,
 .card p,
@@ -700,7 +710,6 @@
 .aboutOpenBody p {
   margin: 0;
   color: var(--color-text-body);
-  font-size: 1rem;
   line-height: 1.8;
 }
 
