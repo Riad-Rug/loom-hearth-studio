@@ -113,6 +113,12 @@ export function AccountDashboardPageView(props: {
     }, 350);
   }
 
+  const quickLinks: Array<{ href: Route; label: string }> = [
+    { href: "/shop" as Route, label: "Browse the collection" },
+    { href: "/contact" as Route, label: "Contact us about an order" },
+    { href: "/trade" as Route, label: "View the trade programme" },
+  ];
+
   return (
     <div className={styles.page}>
       <section className={styles.dashboardHero}>
@@ -126,6 +132,10 @@ export function AccountDashboardPageView(props: {
           {routeViewModel.hero.emptyStateLines.map((line) => (
             <p key={line}>{line}</p>
           ))}
+          <button className={styles.signOutAction} type="button" onClick={handleSignOutRequest}>
+            {routeViewModel.signOut.actionLabel}
+          </button>
+          {routeViewModel.signOut.message ? <p>{routeViewModel.signOut.message}</p> : null}
         </div>
       </section>
 
@@ -134,10 +144,6 @@ export function AccountDashboardPageView(props: {
         <h2>{routeViewModel.session.title}</h2>
         <p>{routeViewModel.session.statusLine}</p>
         {routeViewModel.session.accessLine ? <p>{routeViewModel.session.accessLine}</p> : null}
-        <button className={styles.primaryAction} type="button" onClick={handleSignOutRequest}>
-          {routeViewModel.signOut.actionLabel}
-        </button>
-        {routeViewModel.signOut.message ? <p>{routeViewModel.signOut.message}</p> : null}
       </section>
 
       {accessDecision.status === "allowed" ? (
@@ -153,6 +159,15 @@ export function AccountDashboardPageView(props: {
                 <p>{section.body}</p>
                 {sectionView?.summaryBody ? <strong>{sectionView.summaryBody}</strong> : null}
                 {sectionView?.summaryMeta ? <span>{sectionView.summaryMeta}</span> : null}
+                {section.id === "overview" ? (
+                  <div className={styles.quickLinkList}>
+                    {quickLinks.map((link) => (
+                      <Link key={link.href} className={styles.inlineDashboardLink} href={link.href}>
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
                 {section.id === "orders" ? (
                   <div className={styles.orderHistoryList}>
                     {props.dashboardData?.orders.items.map((order) => (
@@ -167,23 +182,6 @@ export function AccountDashboardPageView(props: {
                 ) : null}
                 {section.id === "profile" ? (
                   <div className={styles.formStack}>
-                    {routeViewModel.profileSummaryView ? (
-                      <div className={styles.profileSummaryList}>
-                        <strong>{routeViewModel.profileSummaryView.fullNameLabel}</strong>
-                        {routeViewModel.profileSummaryView.contactRows.map((row) => (
-                          <div key={row.id} className={styles.profileSummaryItem}>
-                            <span>{row.label}</span>
-                            <strong
-                              className={
-                                row.tone === "muted" ? styles.mutedSummaryValue : undefined
-                              }
-                            >
-                              {row.value}
-                            </strong>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
                     <label className={styles.field}>
                       <span>Full name</span>
                       <input
@@ -212,21 +210,18 @@ export function AccountDashboardPageView(props: {
                       />
                     </label>
                     <button
-                      className={styles.primaryAction}
+                      className={styles.formPrimaryAction}
                       type="button"
                       onClick={handleProfileUpdateRequest}
                     >
                       Save details
                     </button>
-                    <div className={styles.sessionNote}>
-                      <strong>{routeViewModel.profileUpdate.title}</strong>
-                      {routeViewModel.profileUpdate.stateLine ? (
-                        <span>{routeViewModel.profileUpdate.stateLine}</span>
-                      ) : null}
-                      {routeViewModel.profileUpdate.message ? (
-                        <span>{routeViewModel.profileUpdate.message}</span>
-                      ) : null}
-                    </div>
+                    {routeViewModel.profileUpdate.stateLine ? (
+                      <p className={styles.formSupportCopy}>{routeViewModel.profileUpdate.stateLine}</p>
+                    ) : null}
+                    {routeViewModel.profileUpdate.message ? (
+                      <p className={styles.formSupportCopy}>{routeViewModel.profileUpdate.message}</p>
+                    ) : null}
                   </div>
                 ) : null}
               </article>
@@ -240,14 +235,16 @@ export function AccountDashboardPageView(props: {
         </section>
       )}
 
-      <section className={styles.dashboardLinks}>
-        <Link className={styles.secondaryAction} href={"/account/login" as Route}>
-          Return to sign in
-        </Link>
-        <Link className={styles.secondaryAction} href={"/account/register" as Route}>
-          Create account
-        </Link>
-      </section>
+      {accessDecision.status !== "allowed" ? (
+        <section className={styles.dashboardLinks}>
+          <Link className={styles.secondaryAction} href={"/account/login" as Route}>
+            Return to sign in
+          </Link>
+          <Link className={styles.secondaryAction} href={"/account/register" as Route}>
+            Create account
+          </Link>
+        </section>
+      ) : null}
     </div>
   );
 }

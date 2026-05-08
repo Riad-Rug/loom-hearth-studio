@@ -4,6 +4,11 @@ import {
 import { createAccountProfileSummaryView } from "@/lib/account/dashboard-shared";
 import { requireAuthenticatedAccountUser } from "@/lib/auth/service";
 import { AccountDashboardPageView } from "@/features/account/account-dashboard-page-view";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "My Account | Loom & Hearth Studio",
+};
 
 export const dynamic = "force-dynamic";
 

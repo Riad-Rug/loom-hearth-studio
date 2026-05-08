@@ -60,20 +60,20 @@ export function createAccountDashboardRouteViewModel(input: {
 }): AccountDashboardRouteViewModel {
   return {
     hero: {
-      title: "Your account",
-      body: "Review order history and update the contact details tied to this account.",
+      title: "Your orders and details.",
+      body: "Review order history, update your contact details, and return to the collection from one place.",
       emptyStateTitle: input.dashboardData?.overview.greeting ?? "Welcome back",
       emptyStateLines: input.dashboardData
         ? [
+            "Your orders are saved to this account.",
             input.dashboardData.overview.statusLabel,
-            input.dashboardData.overview.accountEmail,
           ]
         : ["No orders are linked to this account yet."],
     },
     session: {
       title: "Signed-in account",
-      statusLine: "You are signed in and can review the details linked to this account below.",
-      accessLine: input.dashboardData?.overview.accountEmail ?? "",
+      statusLine: "You are signed in. Your orders are saved to this account and will appear below when they are placed.",
+      accessLine: "",
       redirectTargetLine: "",
       modeLine: "",
       todoLines: [],
@@ -90,7 +90,7 @@ export function createAccountDashboardRouteViewModel(input: {
       redirectTargetLine: null,
     },
     profileUpdate: {
-      title: "Profile details",
+      title: "Save your details",
       stateLine:
         input.profileUpdateState.status === "submitting"
           ? "Saving your details..."
@@ -103,8 +103,8 @@ export function createAccountDashboardRouteViewModel(input: {
     sections: [
       {
         id: "overview",
-        summaryBody: input.dashboardData?.overview.statusLabel ?? null,
-        summaryMeta: input.dashboardData?.overview.accountEmail ?? null,
+        summaryBody: "Use this account to move back into the collection, ask about an order, or view the trade route.",
+        summaryMeta: null,
       },
       {
         id: "orders",
@@ -113,7 +113,7 @@ export function createAccountDashboardRouteViewModel(input: {
       },
       {
         id: "profile",
-        summaryBody: input.dashboardData?.profile.email ?? null,
+        summaryBody: "Keep your checkout and inquiry details current for future orders.",
         summaryMeta: null,
       },
     ],
