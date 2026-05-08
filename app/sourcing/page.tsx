@@ -36,7 +36,7 @@ const sourcingProofs = [
     eyebrow: "Process",
     title: "Handled directly in the bazaar.",
     body:
-      "Rugs are opened, examined, and compared in person. That makes it possible to reject pieces that photograph well but do not have the weight, construction, or balance to justify their place in the collection.",
+      "Rugs are opened, examined, and compared in person. That makes it possible to reject pieces that photograph well but do not have the weight or balance to justify their place in the collection.",
     imageSrc: "/about/sourcing-hands.png",
     imageAlt:
       "Hands examining a handcrafted Moroccan rug in the family bazaar, checking pile and edge detail.",
@@ -45,7 +45,7 @@ const sourcingProofs = [
     eyebrow: "Authenticity",
     title: "Checked for structure, not just surface.",
     body:
-      "The reverse, fringe, weave tension, and pile density matter as much as the visible face of the rug. These details are part of the sourcing decision before a listing is ever published.",
+      "The reverse, fringe, weave tension, and pile density matter as much as the visible face of the rug. These details shape the sourcing decision before a listing is ever published.",
     imageSrc: "/about/rug-construction-detail.png",
     imageAlt:
       "Close-up of a Moroccan rug corner lifted by hand to show reverse weave, fringe, and pile density.",
@@ -120,7 +120,7 @@ export default function SourcingPage() {
       <section className={styles.aboutSupportSection}>
         <div className={styles.sectionHeader}>
           <p className={styles.eyebrow}>What the process looks like</p>
-          <h2>Documentation starts with handling the piece, not styling the room.</h2>
+          <h2>Handled in person before it reaches the site.</h2>
           <p className={styles.body}>
             These details are part of the sourcing decision itself: direct handling, close
             inspection, and construction review before a piece is written into the collection.
@@ -152,9 +152,9 @@ export default function SourcingPage() {
       <section className={styles.sectionHeader}>
         <p className={styles.eyebrow}>Collection standard</p>
         <h2>What this means for the pieces you actually see on the site.</h2>
-        <div className={styles.heroBody}>
+        <div className={`${styles.heroBody} ${styles.sourcingStandards}`}>
           {sourcingStandards.map((item) => (
-            <p key={item} className={styles.body}>
+            <p key={item} className={`${styles.body} ${styles.sourcingStandardItem}`}>
               {item}
             </p>
           ))}

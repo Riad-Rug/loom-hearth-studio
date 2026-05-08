@@ -3,7 +3,7 @@
   gap: var(--space-7);
   width: min(100% - 2rem, var(--container-width-wide));
   margin: 0 auto;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 .hero,
@@ -59,6 +59,10 @@
 .policyShell h1,
 .sectionHeader h1 {
   font-size: clamp(2.6rem, 4vw, 4rem);
+  line-height: 1.12;
+}
+
+.sectionHeader h2 {
   line-height: 1.12;
 }
 
@@ -206,6 +210,15 @@
   margin: 0;
   font-size: 0.98rem;
   line-height: 1.7;
+}
+
+.sourcingStandards {
+  gap: var(--space-3);
+}
+
+.sourcingStandardItem {
+  padding-left: 1rem;
+  border-left: 3px solid rgba(184, 94, 59, 0.42);
 }
 
 .twoColumn,
@@ -818,7 +831,7 @@
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.9rem;
   letter-spacing: -0.04em;
-  line-height: 1.06;
+  line-height: 1.2;
 }
 
 .aboutSupportBody p,
