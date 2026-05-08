@@ -96,6 +96,9 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
           <Container width="wide">
             <p className="site-header__announcement-copy">
               <strong>{primaryAnnouncement}</strong>
+              <span className="site-header__announcement-mobile">
+                Free shipping to the US, Canada &amp; Australia
+              </span>
               {supportingAnnouncements.length ? (
                 <span>{supportingAnnouncements.join(" / ")}</span>
               ) : null}

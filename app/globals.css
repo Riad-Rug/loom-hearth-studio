@@ -264,6 +264,10 @@ p {
   letter-spacing: 0.08em;
 }
 
+.site-header__announcement-mobile {
+  display: none;
+}
+
 .agentation-devtools {
   position: fixed !important;
   right: 1rem !important;
@@ -1190,8 +1194,20 @@ p {
 }
 
 @media (max-width: 640px) {
-  .site-header__announcement-copy span {
+  .site-header__announcement-copy {
+    padding: 0.42rem 0;
+    font-size: 0.75rem;
+  }
+
+  .site-header__announcement-copy strong,
+  .site-header__announcement-copy span:not(.site-header__announcement-mobile) {
     display: none;
+  }
+
+  .site-header__announcement-mobile {
+    display: inline;
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
 }
 

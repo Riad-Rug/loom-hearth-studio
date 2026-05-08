@@ -1032,7 +1032,7 @@
     min-width: 0;
     font-family: var(--font-display), Georgia, serif;
     font-size: clamp(1.9rem, 9vw, 2.6rem);
-    line-height: 0.98;
+    line-height: 1.1;
     letter-spacing: -0.032em;
   }
 
@@ -1080,7 +1080,42 @@
   }
 
   .compactToolbarRow {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.65rem;
+    align-items: stretch;
+  }
+
+  .mobileCatalogToolbar .searchInlineShell {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .mobileCatalogToolbar .searchInlineInput,
+  .mobileCatalogToolbar .compactSelect {
+    min-height: 2.9rem;
+  }
+
+  .mobileCatalogToolbar .searchInlineInput {
+    font-size: 0.92rem;
+  }
+
+  .mobileCatalogToolbar .compactSelect {
+    padding: 0.7rem 2rem 0.7rem 0.82rem;
+    font-size: 0.82rem;
+  }
+
+  .mobileCatalogToolbar .compactSortShell {
+    margin-left: 0;
+    padding-left: 0;
+  }
+
+  .mobileCatalogToolbar .compactSortShell::before {
+    display: none;
+  }
+
+  .mobileCatalogToolbar .secondaryAction {
+    grid-column: 1 / -1;
+    justify-self: start;
   }
 
   .catalogSidebar,
@@ -1090,6 +1125,22 @@
 
   .productGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .productScarcityBadge {
+    right: 0.55rem;
+    bottom: 0.55rem;
+    padding: 0.25rem 0.45rem;
+    font-size: 0.625rem;
+  }
+
+  .productContent h3 {
+    font-size: 0.81rem;
+    line-height: 1.22;
+  }
+
+  .productDimensions {
+    font-size: 0.78rem;
   }
 
   .productMetaOverlay {
@@ -1128,7 +1179,16 @@
     width: 100%;
   }
 
-  .compactToolbarRow {
-    grid-template-columns: 1fr;
+  .mobileCatalogToolbar .toolbarSummary {
+    gap: 0.4rem;
+  }
+
+  .mobileCatalogToolbar .toolbarTrustNote {
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .mobileCatalogToolbar .compactToolbarRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
