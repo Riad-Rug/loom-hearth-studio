@@ -34,7 +34,7 @@
 }
 
 .eyebrow {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 1rem;
   color: var(--color-clay-terracotta);
   font-size: 0.75rem;
   letter-spacing: 0.18em;
@@ -59,7 +59,7 @@
 .policyShell h1,
 .sectionHeader h1 {
   font-size: clamp(2.6rem, 4vw, 4rem);
-  line-height: 0.97;
+  line-height: 1.12;
 }
 
 .aboutHero h1 {
@@ -91,6 +91,60 @@
 
 .lede {
   max-width: 42rem;
+}
+
+.aboutHero {
+  grid-template-columns: minmax(0, 42.5rem) minmax(0, 1fr);
+  align-items: stretch;
+  column-gap: clamp(2rem, 4vw, 3.5rem);
+}
+
+.aboutHeroContent {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.aboutHero .heroBody {
+  max-width: 42.5rem;
+}
+
+.aboutHero .lede {
+  max-width: 42.5rem;
+}
+
+.aboutHeroHighlight {
+  margin: 0;
+  max-width: 38rem;
+  color: var(--color-charcoal-ink);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  font-style: italic;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.aboutHeroShipping {
+  margin: 0;
+  color: rgba(47, 47, 47, 0.58);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.aboutHeroMedia {
+  position: relative;
+  min-height: 39rem;
+  overflow: hidden;
+  border-radius: calc(var(--radius-xl) - 0.25rem);
+  background:
+    linear-gradient(135deg, rgba(34, 33, 38, 0.08), rgba(184, 94, 59, 0.16)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(245, 239, 228, 0.4));
+}
+
+.aboutHeroImage {
+  object-fit: cover;
+  object-position: center;
 }
 
 .twoColumn,
@@ -969,7 +1023,8 @@
   .twoColumn,
   .contactGrid,
   .lookbookGrid,
-  .aboutSupportGrid {
+  .aboutSupportGrid,
+  .aboutHero {
     grid-template-columns: 1fr;
   }
 
@@ -979,6 +1034,10 @@
 
   .contactPanel {
     order: 0;
+  }
+
+  .aboutHeroMedia {
+    min-height: 24rem;
   }
 }
 

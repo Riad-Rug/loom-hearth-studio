@@ -81,25 +81,38 @@ export function AboutPageView() {
   return (
     <div className={styles.page}>
       <section className={`${styles.hero} ${styles.aboutHero}`}>
-        <p className={styles.eyebrow}>{aboutHero.eyebrow}</p>
-        <h1>{aboutHero.title}</h1>
-        <div className={styles.heroBody}>
-          {heroParagraphs.map((paragraph, index) => (
-            <p key={`${index}-${paragraph.slice(0, 24)}`} className={styles.lede}>
-              {renderLinkedText(paragraph)}
-            </p>
-          ))}
+        <div className={styles.aboutHeroContent}>
+          <p className={styles.eyebrow}>{aboutHero.eyebrow}</p>
+          <h1>{aboutHero.title}</h1>
+          <div className={styles.heroBody}>
+            {heroParagraphs.map((paragraph, index) => (
+              <p key={`${index}-${paragraph.slice(0, 24)}`} className={styles.lede}>
+                {renderLinkedText(paragraph)}
+              </p>
+            ))}
+          </div>
+          <p className={styles.aboutHeroHighlight}>{aboutHero.highlight}</p>
+          <div className={styles.contactActions}>
+            <Link className={styles.primaryAction} href="/shop">
+              Shop the collection
+            </Link>
+            <Link className={styles.secondaryAction} href="/trade">
+              View the trade programme
+            </Link>
+          </div>
+          <p className={styles.aboutHeroShipping}>
+            Ships from Morocco — free to the United States, Canada, and Australia.
+          </p>
         </div>
-        <div className={styles.contactActions}>
-          <Link className={styles.primaryAction} href="/shop/rugs">
-            Shop Moroccan rugs
-          </Link>
-          <Link className={styles.secondaryAction} href="/shop">
-            Shop the collection
-          </Link>
-        </div>
-        <div className={styles.trustHighlight}>
-          Ships from Morocco with free shipping to the United States, Canada, and Australia. Inquiries from other countries are reviewed case by case before payment is captured.
+        <div className={styles.aboutHeroMedia}>
+          <Image
+            alt="Rugs displayed floor-to-ceiling in the family bazaar setting in Marrakech, with layered woven pieces and warm souk light."
+            className={styles.aboutHeroImage}
+            fill
+            priority
+            sizes="(max-width: 1100px) 100vw, 50vw"
+            src="/about/marrakech-bazaar-hero.png"
+          />
         </div>
       </section>
 

@@ -20,15 +20,14 @@ type LookbookItem = {
 };
 
 export const aboutHero = {
-  eyebrow: "About",
+  eyebrow: "ABOUT",
   title: "A direct source for handcrafted Moroccan rugs, poufs, pillows, and home decor.",
   body: `Loom & Hearth Studio is built on real roots in Marrakech, where our family has worked in the bazaar trade for decades. Our grandfather's shop in the Semmarine souk, steps from Jemaa el-Fnaa, was known for handcrafted pieces sourced across Morocco.
 
 Today, we continue that work with a more focused scope \u2014 selecting hand-knotted Moroccan rugs, turning some into one of one poufs and pillows, and adding a small selection of supporting decor.
 
-Every piece is chosen in person. Nothing is mass-produced. Nothing comes from an export catalogue assembled for foreign buyers. You are getting the rug the weaver made \u2014 not a category managed by a middleman.
-
-We source directly through the family bazaar. Not through cooperatives. That is what makes the difference in what you receive.`,
+Every piece is chosen in person. Nothing is mass-produced. Nothing comes from an export catalogue assembled for foreign buyers. We source directly through the family bazaar, not through cooperatives. That is what makes the difference in what you receive.`,
+  highlight: "You are getting the rug the weaver made — not a category managed by a middleman.",
 } as const;
 
 export const aboutSections: AboutSection[] = [
