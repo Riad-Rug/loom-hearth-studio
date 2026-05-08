@@ -137,7 +137,7 @@
 
 .sessionCard h2,
 .sessionNote strong,
-.authSupportNote strong,
+.authSupportNote h3,
 .requestFeedback strong {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
@@ -145,7 +145,7 @@
 }
 
 .sessionCard h2,
-.authSupportNote strong,
+.authSupportNote h3,
 .requestFeedback strong {
   font-size: 1.8rem;
   line-height: 1.15;
@@ -153,11 +153,19 @@
 
 .sessionCard p,
 .sessionNote span,
-.authSupportNote span,
+.authSupportNote p,
 .requestFeedback span {
   margin: 0;
   color: var(--color-text-body);
   line-height: 1.7;
+}
+
+.authSupportNote {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .formCard {

@@ -13,6 +13,8 @@ export const accountAuthContent = {
     supportTitle: "Access your saved pieces and order history",
     supportBody:
       "Sign in to return to your account area, revisit saved pieces, and review order history tied to your account email.",
+    supportExtra:
+      "Pieces held during client review and future order activity stay tied to the same account email.",
     reassurance:
       "Secure login. Your account and order history stay protected.",
   },
@@ -28,6 +30,7 @@ export const accountAuthContent = {
     supportTitle: "Track your orders and saved pieces",
     supportBody:
       "Create an account to track your orders and saved pieces, access future product releases, and save your preferences for faster checkout.",
+    supportExtra: null,
     reassurance:
       "Keep your orders, saved pieces, and future checkout details tied to one account email.",
   },
@@ -43,6 +46,7 @@ export const accountAuthContent = {
     supportTitle: "Recover access without creating a second account",
     supportBody:
       "Use password reset when you already have an account but cannot sign in. That keeps your existing account access tied to the same email instead of starting over with a new login.",
+    supportExtra: null,
     reassurance:
       "Use password reset only to recover an existing account, not to start a second login.",
   },

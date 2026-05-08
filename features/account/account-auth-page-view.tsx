@@ -47,6 +47,7 @@ type AuthSurfaceContent = {
   formBody: string;
   supportTitle: string;
   supportBody: string;
+  supportExtra?: string | null;
   reassurance: string;
 };
 
@@ -413,8 +414,9 @@ export function AccountAuthPageView({
 
           {showCuratedSurface ? (
             <div className={styles.authSupportNote}>
-              <strong>{content.supportTitle}</strong>
-              <span>{content.supportBody}</span>
+              <h3>{content.supportTitle}</h3>
+              <p>{content.supportBody}</p>
+              {content.supportExtra ? <p>{content.supportExtra}</p> : null}
             </div>
           ) : (
             <div className={styles.sessionNote}>
@@ -450,9 +452,10 @@ export function AccountAuthPageView({
 
           <div className={styles.formStack}>
             {mode === "register" ? (
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="account-full-name">
                 <span>Full name</span>
                 <input
+                  id="account-full-name"
                   placeholder="Jordan Smith"
                   type="text"
                   value={fullName}
@@ -461,9 +464,10 @@ export function AccountAuthPageView({
               </label>
             ) : null}
 
-            <label className={styles.field}>
+            <label className={styles.field} htmlFor="account-email">
               <span>Email address</span>
               <input
+                id="account-email"
                 placeholder="name@example.com"
                 type="email"
                 value={email}
@@ -473,9 +477,10 @@ export function AccountAuthPageView({
             </label>
 
             {mode !== "forgot-password" || isResetMode ? (
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="account-password">
                 <span>{isResetMode ? "New password" : "Password"}</span>
                 <input
+                  id="account-password"
                   placeholder="********"
                   type="password"
                   value={password}
@@ -485,9 +490,10 @@ export function AccountAuthPageView({
             ) : null}
 
             {isResetMode ? (
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="account-confirm-password">
                 <span>Confirm new password</span>
                 <input
+                  id="account-confirm-password"
                   placeholder="********"
                   type="password"
                   value={confirmPassword}
@@ -547,12 +553,6 @@ export function AccountAuthPageView({
                           href={"/account/forgot-password" as Route}
                         >
                           Forgot password?
-                        </Link>
-                        <Link
-                          className={styles.inlineSecondaryLink}
-                          href={"/admin/login" as Route}
-                        >
-                          Admin login
                         </Link>
                       </div>
                     ) : (
