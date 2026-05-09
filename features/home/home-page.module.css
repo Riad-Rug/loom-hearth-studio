@@ -1,6 +1,7 @@
 .page {
   display: grid;
   gap: var(--space-5);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   overflow-x: clip;
 }
 
