@@ -1,15 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { Agentation } from "agentation";
 import { useEffect, useState } from "react";
-
-const Agentation = dynamic(
-  () =>
-    import("agentation").then(
-      (module) => module.Agentation ?? module.PageFeedbackToolbarCSS ?? module.default,
-    ),
-  { ssr: false },
-);
 
 export function AgentationDevtools() {
   const [shouldRender, setShouldRender] = useState(false);
@@ -26,5 +18,5 @@ export function AgentationDevtools() {
     return null;
   }
 
-  return <Agentation className="agentation-devtools" />;
+  return <Agentation />;
 }

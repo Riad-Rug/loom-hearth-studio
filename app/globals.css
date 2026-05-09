@@ -667,6 +667,10 @@ p {
 
 .site-footer {
   padding: var(--space-5) 0 var(--space-7);
+  background:
+    linear-gradient(180deg, rgba(244, 237, 225, 0.88), rgba(239, 231, 217, 0.94)),
+    radial-gradient(circle at top left, rgba(198, 106, 61, 0.06), transparent 42%);
+  border-top: 1px solid rgba(34, 33, 38, 0.06);
 }
 
 .site-footer__grid {
@@ -674,10 +678,10 @@ p {
   grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
   gap: var(--space-6);
   padding: var(--space-6);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  background: #f5f1e8;
-  box-shadow: var(--shadow-panel);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .site-footer__intro,

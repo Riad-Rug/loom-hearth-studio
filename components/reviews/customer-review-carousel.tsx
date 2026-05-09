@@ -98,6 +98,11 @@ export function CustomerReviewCarousel({
               className={styles.reviewCard}
               aria-current={index === activeIndex ? "true" : undefined}
             >
+              <div className={styles.reviewStars} aria-label="5 out of 5 stars">
+                {Array.from({ length: 5 }).map((_, starIndex) => (
+                  <StarIcon key={`${review.id}-star-${starIndex}`} />
+                ))}
+              </div>
               <blockquote>{review.body}</blockquote>
               <figcaption>
                 <span>{review.customerName}</span>
@@ -144,6 +149,14 @@ function ArrowIcon({ direction }: { direction: "left" | "right" }) {
       ) : (
         <path d="M9.5 5.5 16 12l-6.5 6.5" />
       )}
+    </svg>
+  );
+}
+
+function StarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="m12 3.9 2.39 4.84 5.34.78-3.87 3.77.91 5.32L12 16.11 7.23 18.62l.91-5.32-3.87-3.77 5.34-.78L12 3.9Z" />
     </svg>
   );
 }

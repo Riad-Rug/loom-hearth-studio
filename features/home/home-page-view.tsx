@@ -4,9 +4,9 @@ import Link from "next/link";
 
 import { Section } from "@/components/layout/section";
 import { CustomerReviewCarousel } from "@/components/reviews/customer-review-carousel";
-import type { HomePageContent, HomePageOrderedSectionKey } from "@/features/home/home-page-data";
-import { HowItWorksSection } from "@/features/home/how-it-works-section";
-import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
+import { blogPosts } from "@/features/blog/blog-post-data";
+import { aboutBridge } from "@/features/content-pages/content-pages-data";
+import type { HomePageContent } from "@/features/home/home-page-data";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { customerReviews } from "@/lib/reviews/customer-reviews";
 
@@ -18,367 +18,235 @@ type HomePageViewProps = {
 };
 
 export function HomePageView({ content, featuredProducts = [] }: HomePageViewProps) {
-  return <div className={styles.page}>{content.sectionOrder.map((key) => renderSection(key, content, featuredProducts))}</div>;
-}
+  const trustItems = content.badges.items.filter((item) => item.visible);
+  const categoryCards = ["category-rugs", "category-poufs", "category-vintage"]
+    .map((id) => content.categories.cards.find((card) => card.id === id && card.visible))
+    .filter((card): card is NonNullable<typeof card> => Boolean(card));
+  const journalPosts = blogPosts.slice(0, 2);
 
-function renderSection(key: HomePageOrderedSectionKey, content: HomePageContent, featuredProducts: CatalogProductCardViewModel[]) {
-  if (key === "hero" && content.hero.visible) {
-    const heroLeadImage = content.hero.image;
-
-    return (
-      <Section key={key} width="wide">
-        <div className={styles.hero}>
-          <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>{content.hero.eyebrow}</p>
-            <h1>{content.hero.title}</h1>
-            <p className={styles.lede}>{content.hero.paragraph}</p>
-            <div className={styles.heroActions}>
-              {content.hero.primaryCta.visible ? (
-                <Link className={styles.primaryAction} href={content.hero.primaryCta.href as Route}>
-                  {content.hero.primaryCta.label}
-                </Link>
-              ) : null}
-              {content.hero.secondaryCta.visible ? (
-                <Link className={styles.secondaryAction} href={content.hero.secondaryCta.href as Route}>
-                  {content.hero.secondaryCta.label}
-                </Link>
-              ) : null}
-            </div>
-          </div>
-
-          <div className={styles.heroAside}>
-            <div className={styles.heroMedia}>
-              <div className={styles.heroImageFrameLead}>
-                <Image
-                  alt={heroLeadImage.alt}
-                  className={styles.heroImage}
-                  fill
-                  priority
-                  sizes="(max-width: 1100px) 100vw, 38vw"
-                  src={heroLeadImage.src}
-                />
-              </div>
-              <div className={styles.heroEvidenceCard}>
-                <div className={styles.heroEvidenceCopy}>
-                  <p className={styles.heroEvidenceEyebrow}>Color verification</p>
-                  <p className={styles.heroEvidenceTitle}>Light comparison before payment capture.</p>
-                  <p className={styles.heroEvidenceBody}>
-                    We review daylight, warm lamp, and cool lamp references so color reads honestly before any charge is finalized.
-                  </p>
-                </div>
-                <div className={styles.heroEvidenceComparison}>
-                  <div className={styles.heroEvidenceImageWrap}>
-                    <Image
-                      alt="Top-down product comparison showing the same Moroccan rug in daylight, warm light, and cool light."
-                      className={styles.heroEvidenceImage}
-                      fill
-                      sizes="(max-width: 1100px) 44vw, 16vw"
-                      src="/hero/verification-topdown-v1.png"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Section>
-    );
-  }
-
-  if (key === "badges" && content.badges.visible) {
-    const items = content.badges.items.filter((item) => item.visible);
-
-    if (!items.length) {
-      return null;
-    }
-
-    return (
-      <Section key={key} tone="muted" width="wide">
-        <div className={styles.buyerEntrySection}>
-          <ul className={styles.trustBanner} aria-label="Trust highlights">
-            {items.map((item, index) => {
-              const descriptor = getTrustDescriptor(index);
-
-              return (
-              <li key={item.id} className={index === 0 ? styles.trustBannerLeadItem : undefined}>
-                <span className={styles.trustIcon} aria-hidden="true">
-                  <TrustIcon index={index} />
-                </span>
-                <span className={styles.trustCopy}>
-                  <span className={styles.trustLabel}>{item.label}</span>
-                  <span className={styles.trustDescriptor}>{descriptor}</span>
-                </span>
-              </li>
-            )})}
-          </ul>
-        </div>
-      </Section>
-    );
-  }
-
-  if ((key === "brandStory" && content.brandStory.visible) || (key === "designDirection" && content.designDirection.visible)) {
-    const sections = [content.brandStory, content.designDirection].filter((section) => section.visible);
-
-    if (!sections.length || key !== firstNarrativeSection(content)) {
-      return null;
-    }
-
-    return (
-      <Section key={key} width="wide">
-        <div className={styles.narrativeGrid}>
-          {sections.map((section) => (
-            <Link
-              key={section.title}
-              className={`${styles.narrativeCard} ${getNarrativeCardClassName(section.eyebrow)}`}
-              href={section.href as Route}
-            >
-              <p className={styles.eyebrow}>{section.eyebrow}</p>
-              <h2>{section.title}</h2>
-              <p className={styles.narrativeMeta}>{getNarrativeMeta(section.eyebrow)}</p>
-              <p>{section.paragraph}</p>
-              <span className={styles.narrativeLinkLabel}>{section.linkLabel}</span>
-            </Link>
-          ))}
-        </div>
-      </Section>
-    );
-  }
-
-  if (key === "featured" && content.featured.visible) {
-    const cards = content.featured.cards.filter((card) => card.visible);
-
-    if (!cards.length) {
-      return null;
-    }
-
-    return (
-      <Section key={key} width="wide">
-        <div className={styles.featuredLayout}>
-          <div className={styles.sectionIntro}>
-            {content.featured.eyebrow ? (
-              <p className={styles.eyebrow}>{content.featured.eyebrow}</p>
-            ) : null}
-            <h2>{content.featured.title}</h2>
-            <p className={styles.sectionBody}>{content.featured.paragraph}</p>
-          </div>
-          <ShopFirstCards cards={cards} />
-          {featuredProducts.length ? (
-            <div className={styles.liveProductSection}>
-              <div className={styles.liveProductIntro}>
-                <p className={styles.eyebrow}>Available now</p>
-                <h3>Current one-of-one pieces with live pricing.</h3>
-                <p className={styles.sectionBody}>
-                  Browse actual inventory first, then open the full catalog once a size, palette, or construction style starts to feel right.
-                </p>
-              </div>
-              <LiveProductRail products={featuredProducts} />
-            </div>
-          ) : null}
-        </div>
-      </Section>
-    );
-  }
-
-  if (key === "proof" && content.proof.visible) {
-    return [<ProofComparisonSection key={key} />, <ReviewsHighlightSection key={`${key}-reviews`} />];
-  }
-
-  if (key === "howItWorks" && content.howItWorks.visible) {
-    return <HowItWorksSection key={key} />;
-  }
-
-  if (key === "guide" && content.guide.visible) {
-    const guideImage =
-      content.categories.cards.find((card) => card.visible && card.id === "category-rugs")?.image ?? content.hero.image;
-
-    return (
-      <Section key={key} width="wide">
-        <div className={styles.guideEditorial}>
-          <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>{content.guide.eyebrow}</p>
-            <h2>{content.guide.title}</h2>
-            <p className={styles.sectionBody}>{content.guide.paragraph}</p>
-            <ul className={styles.guideChecklist}>
-              <li>Check knot density before color styling.</li>
-              <li>Look for weight and structure, not just surface pattern.</li>
-              <li>Confirm how the exact piece behaves in real light.</li>
-            </ul>
-            <Link className={styles.narrativeLinkLabel} href={"/blog" as Route}>
-              READ THE RUG BUYING GUIDE
-            </Link>
-          </div>
-          <div className={styles.guideMedia}>
-            <Image
-              alt={guideImage.alt}
-              className={styles.guideImage}
-              fill
-              sizes="(max-width: 900px) 100vw, 42vw"
-              src={guideImage.src}
-            />
-          </div>
-        </div>
-      </Section>
-    );
-  }
-
-  if (key === "faq" && content.faq.visible) {
-    const items = content.faq.items.filter((item) => item.visible);
-
-    if (!items.length) {
-      return null;
-    }
-
-    return (
-      <Section key={key} tone="muted" width="wide">
-        <div className={styles.faqSection}>
-          <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>{content.faq.eyebrow}</p>
-            <h2>{content.faq.title}</h2>
-            <p className={styles.sectionBody}>{content.faq.paragraph}</p>
-          </div>
-          <div className={styles.faqList}>
-            {items.map((item, index) => (
-              <details key={item.id} className={styles.faqPanel} open={index === 0}>
-                <summary>{item.question}</summary>
-                <p>{item.answer}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </Section>
-    );
-  }
-
-  if (key === "newsletter" && content.newsletter.visible) {
-    return (
-      <Section key={key} width="wide">
-        <div className={styles.newsletterBand}>
-          <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>{content.newsletter.eyebrow}</p>
-            <h2>{content.newsletter.title}</h2>
-            <p className={styles.sectionBody}>{content.newsletter.paragraph}</p>
-          </div>
-          <NewsletterSignupIntentForm
-            ctaLabel={content.newsletter.ctaLabel}
-            inputLabel={content.newsletter.inputLabel}
-            inputPlaceholder={content.newsletter.inputPlaceholder}
+  return (
+    <div className={styles.page}>
+      <section className={styles.heroFullBleed}>
+        <div className={styles.heroBackdrop}>
+          <Image
+            alt={content.hero.image.alt}
+            className={styles.heroBackdropImage}
+            fill
+            priority
+            sizes="100vw"
+            src={content.hero.image.src}
           />
         </div>
-      </Section>
-    );
-  }
-
-  return null;
-}
-
-function ProofComparisonSection() {
-  const proofItems = [
-    {
-      eyebrow: "Verification model",
-      title: "See the exact piece before payment is captured.",
-      body: "Every one-of-one rug is confirmed in natural, warm, and cool light before the order moves forward.",
-    },
-    {
-      title: "Selected in Person",
-      body: "Pieces are sourced across Morocco by people who know the trade, not pulled from a generic export catalogue.",
-    },
-    {
-      title: "Exact-Piece Video Check",
-      body: "Before payment is captured, you see the actual rug in natural, warm, and cool light.",
-    },
-    {
-      title: "One-of-One Inventory",
-      body: "Rugs are individual pieces. When a rug sells, that exact piece does not come back in a restock batch.",
-    },
-    {
-      title: "Family Trade History",
-      body: "The collection is connected to a Marrakech bazaar with close to 80 years in the Moroccan rug trade.",
-    },
-  ];
-
-  const proofSignals = [
-    "Actual-piece confirmation before payment moves forward",
-    "One-of-one inventory instead of representative stock",
-    "Family-trade sourcing across Morocco",
-  ];
-
-  return (
-    <Section id="piece-difference" width="wide">
-      <div className={styles.proofSection}>
-        <div className={`${styles.sectionIntro} ${styles.proofIntroPanel}`}>
-          <p className={styles.eyebrow}>What makes a Loom & Hearth piece different</p>
-          <h2>Built for Buyers Who Want the Actual Piece, Not a Catalogue Approximation.</h2>
-          <p className={styles.sectionBody}>
-            The collection is structured for buyers who want to confirm the exact item, not settle for a representative sample.
-          </p>
-          <ul className={styles.proofSignalList} aria-label="Key buyer proof points">
-            {proofSignals.map((signal) => (
-              <li key={signal}>{signal}</li>
-            ))}
-          </ul>
+        <div className={styles.heroOverlay} />
+        <div className={styles.heroInner}>
+          <div className={styles.heroEditorialCopy}>
+            <p className={styles.heroEditorialEyebrow}>SELECTED IN PERSON, ONE AT A TIME</p>
+            <h1>Handcrafted Moroccan rugs.</h1>
+            <p className={styles.heroEditorialLine}>Selected in person, one at a time.</p>
+            <p className={styles.heroEditorialBody}>
+              The collection is sourced through a family bazaar in Marrakech, with colour verified
+              before payment is captured and every one-of-one piece tied to the actual rug in hand.
+            </p>
+            <div className={styles.heroActions}>
+              <Link className={styles.primaryAction} href={"/shop" as Route}>
+                Shop the collection
+              </Link>
+              <Link className={styles.heroSecondaryAction} href={"/sourcing" as Route}>
+                Read how we source
+              </Link>
+            </div>
+          </div>
+          <div className={styles.heroStatCard}>
+            <p className={styles.heroStatEyebrow}>Current collection</p>
+            <strong>52 pieces</strong>
+            <p>Free shipping to the United States, Canada, and Australia.</p>
+            <div className={styles.heroStatList}>
+              <span>One of one inventory</span>
+              <span>Colour verified before payment</span>
+              <span>Ships from Morocco</span>
+            </div>
+          </div>
         </div>
-        <div className={styles.proofContent}>
-          <article className={styles.proofLeadCard}>
-            <p className={styles.proofLeadEyebrow}>{proofItems[0].eyebrow}</p>
-            <h3>{proofItems[0].title}</h3>
-            <p>{proofItems[0].body}</p>
-          </article>
-          <div className={styles.proofGrid}>
-            {proofItems.slice(1).map((item, index) => (
-              <article key={item.title} className={`${styles.proofCard} ${getProofCardClassName(index)}`}>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-              </article>
+      </section>
+
+      <Section width="wide">
+        <ul className={styles.trustStrip} aria-label="Trust highlights">
+          {trustItems.map((item, index) => (
+            <li key={item.id}>
+              <span className={styles.trustIcon} aria-hidden="true">
+                <TrustIcon index={index} />
+              </span>
+              <div className={styles.trustStripCopy}>
+                <strong>{item.label}</strong>
+                <span>{getTrustDescriptor(index)}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Section>
+
+      <Section width="wide">
+        <div className={styles.shopCategorySection}>
+          <div className={styles.sectionHeadingRow}>
+            <div className={styles.sectionIntro}>
+              <p className={styles.eyebrow}>Shop by category</p>
+              <h2>The collection starts with rugs, then opens into the pieces around them.</h2>
+              <p className={styles.sectionBody}>
+                Use the homepage the way clients actually shop: start with the rug, then move into
+                poufs, pillows, and vintage pieces once the room direction is set.
+              </p>
+            </div>
+          </div>
+          <div className={styles.categoryShowcaseGrid}>
+            {categoryCards.map((card) => (
+              <Link key={card.id} className={styles.categoryShowcaseCard} href={card.href as Route}>
+                <div className={styles.categoryShowcaseImageWrap}>
+                  <Image
+                    alt={card.image.alt}
+                    className={styles.categoryShowcaseImage}
+                    fill
+                    sizes="(max-width: 900px) 100vw, 33vw"
+                    src={card.image.src}
+                  />
+                  <div className={styles.categoryShowcaseOverlay} />
+                </div>
+                <div className={styles.categoryShowcaseBody}>
+                  <p className={styles.categoryShowcaseEyebrow}>{card.title}</p>
+                  <h3>{card.description}</h3>
+                  <span className={styles.categoryShowcaseLink}>
+                    Browse {card.title.toLowerCase()}
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
-      </div>
-    </Section>
+      </Section>
+
+      {featuredProducts.length ? (
+        <Section width="wide">
+          <div className={styles.currentCollectionSection}>
+            <div className={styles.sectionHeadingRow}>
+              <div className={styles.sectionIntro}>
+                <p className={styles.eyebrow}>From the current collection</p>
+                <h2>Current one-of-one pieces with live pricing.</h2>
+                <p className={styles.sectionBody}>
+                  The homepage should show real inventory, not just mood. These are live pieces
+                  from the current collection, ready to move straight into the shop.
+                </p>
+              </div>
+              <Link className={styles.inlineSectionLink} href={"/shop" as Route}>
+                See all 52 pieces
+              </Link>
+            </div>
+            <LiveProductRail products={featuredProducts.slice(0, 4)} />
+          </div>
+        </Section>
+      ) : null}
+
+      <Section width="wide">
+        <div className={styles.sourcingStorySection}>
+          <div className={styles.sourcingStoryMedia}>
+            <Image
+              alt="Rugs displayed in the family bazaar in Marrakech."
+              className={styles.sourcingStoryImage}
+              fill
+              sizes="(max-width: 900px) 100vw, 50vw"
+              src="/homepage/sourcing-bazaar-process-v2.png"
+            />
+          </div>
+          <div className={styles.sourcingStoryCopy}>
+            <p className={styles.eyebrow}>{aboutBridge.eyebrow}</p>
+            <h2>{aboutBridge.title}</h2>
+            <p className={styles.sectionBody}>{aboutBridge.body}</p>
+            <Link className={styles.inlineSectionLink} href={"/sourcing" as Route}>
+              Read the sourcing story
+            </Link>
+          </div>
+        </div>
+      </Section>
+
+      <Section width="wide">
+        <div className={styles.reviewProofSection}>
+          <div className={styles.sectionHeadingRow}>
+            <div className={styles.sectionIntro}>
+              <p className={styles.eyebrow}>Customer reviews</p>
+              <h2>Proof that the pieces felt right once they were home.</h2>
+            </div>
+            <div className={styles.reviewCountPanel}>
+              <strong>150+</strong>
+              <span>happy customers</span>
+            </div>
+          </div>
+          <CustomerReviewCarousel reviews={customerReviews} />
+        </div>
+      </Section>
+
+      <Section width="wide">
+        <div className={styles.journalSection}>
+          <div className={styles.sectionHeadingRow}>
+            <div className={styles.sectionIntro}>
+              <p className={styles.eyebrow}>From the journal</p>
+              <h2>The sourcing notes and styling guides that support the collection.</h2>
+              <p className={styles.sectionBody}>
+                The journal is already stronger than most competitors’ editorial layer. Bringing it
+                onto the homepage makes the storefront feel deeper and more authoritative.
+              </p>
+            </div>
+            <Link className={styles.inlineSectionLink} href={"/blog" as Route}>
+              Read all 15 articles
+            </Link>
+          </div>
+          <div className={styles.journalGrid}>
+            {journalPosts.map((post) => (
+              <Link
+                key={post.id}
+                className={styles.journalCard}
+                href={`/blog/${post.categorySlug}/${post.slug}` as Route}
+              >
+                <div className={styles.journalImageWrap}>
+                  <Image
+                    alt={post.imageAlt}
+                    className={styles.journalImage}
+                    fill
+                    sizes="(max-width: 900px) 100vw, 50vw"
+                    src={post.imageSrc}
+                  />
+                </div>
+                <div className={styles.journalCardBody}>
+                  <p className={styles.journalMeta}>
+                    {post.categoryLabel} · {post.readTime}
+                  </p>
+                  <h3>{post.title}</h3>
+                  <p>{post.excerpt}</p>
+                  <span className={styles.inlineSectionLink}>{post.ctaLabel}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      <section className={styles.homeClosingSection}>
+        <div className={styles.homeClosingInner}>
+          <p className={styles.homeClosingEyebrow}>The collection is built one piece at a time</p>
+          <h2>Every rug selected and verified in person.</h2>
+          <p>
+            Shop the collection if you are buying now, or move into the trade route if sourcing
+            detail matters to the project.
+          </p>
+          <div className={styles.heroActions}>
+            <Link className={styles.homeClosingPrimary} href={"/shop" as Route}>
+              Shop the collection
+            </Link>
+            <Link className={styles.homeClosingSecondary} href={"/trade" as Route}>
+              View the trade programme
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
   );
-}
-
-function getProofCardClassName(index: number) {
-  if (index === 0) {
-    return styles.proofCardSelected;
-  }
-
-  if (index === 1) {
-    return styles.proofCardVideo;
-  }
-
-  if (index === 2) {
-    return styles.proofCardInventory;
-  }
-
-  return styles.proofCardHeritage;
-}
-
-function ReviewsHighlightSection() {
-  return (
-    <Section width="wide">
-      <CustomerReviewCarousel
-        reviews={customerReviews}
-        eyebrow="Customer reviews"
-        title="Pieces that felt right once they were home."
-      />
-    </Section>
-  );
-}
-
-function getNarrativeCardClassName(eyebrow: string) {
-  if (eyebrow === "WHO WE ARE") {
-    return styles.narrativeCardStory;
-  }
-
-  return styles.narrativeCardDirection;
-}
-
-function getNarrativeMeta(eyebrow: string) {
-  if (eyebrow === "WHO WE ARE") {
-    return "Family trade | Marrakech sourcing";
-  }
-
-  return "Pile density | Knot structure | Material weight";
 }
 
 function TrustIcon({ index }: { index: number }) {
@@ -482,86 +350,6 @@ function LiveProductRail({ products }: { products: CatalogProductCardViewModel[]
   );
 }
 
-function ShopFirstCards({ cards }: { cards: HomePageContent["featured"]["cards"] }) {
-  return (
-    <div className={styles.featuredGrid}>
-      {cards.map((product, index) => (
-        <Link
-          key={product.id}
-          className={`${styles.productCard} ${getFeaturedCardClassName(index)} ${getFeaturedRoleClassName(product.id)}`}
-          href={product.href as Route}
-        >
-          {(() => {
-            const image = getShopFirstCardImage(product);
-
-            return (
-          <div className={styles.productImagePlaceholder}>
-            <Image
-              alt={image.alt}
-              className={styles.productImage}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 20vw"
-              src={image.src}
-            />
-          </div>
-            );
-          })()}
-          <div className={styles.productMeta}>
-            {index === 0 ? <p className={styles.productEyebrow}>Start here</p> : null}
-            <h3>{product.title}</h3>
-            <p>{product.description}</p>
-            {product.priceLabel ? (
-              <div className={styles.productCardActionRow}>
-                <span className={styles.productPriceLabel}>{product.priceLabel}</span>
-              </div>
-            ) : null}
-          </div>
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-function getFeaturedCardClassName(index: number) {
-  if (index === 0) {
-    return styles.productCardLead;
-  }
-
-  if (index === 1 || index === 2) {
-    return styles.productCardMedium;
-  }
-
-  return styles.productCardCompact;
-}
-
-function getFeaturedRoleClassName(id: string) {
-  switch (id) {
-    case "featured-rugs":
-      return styles.productCardRugs;
-    case "featured-poufs":
-      return styles.productCardPoufs;
-    case "featured-pillows":
-      return styles.productCardPillows;
-    case "featured-decor":
-      return styles.productCardDecor;
-    case "featured-vintage":
-      return styles.productCardVintage;
-    default:
-      return "";
-  }
-}
-
-function getShopFirstCardImage(card: HomePageContent["featured"]["cards"][number]) {
-  if (card.id === "featured-rugs") {
-    return {
-      src: "https://res.cloudinary.com/dnyhdvqra/image/upload/v1774377734/loom-hearth/homepage/mnxu9y8lxhsvdqmlzgep.jpg",
-      alt: "Moroccan sitting room with a handmade rug, carved wood, and warm natural light",
-    };
-  }
-
-  return card.image;
-}
-
 function getProductCardDescription(product: CatalogProductCardViewModel) {
   const candidate = product.description.trim() || product.merchandisingNote.trim();
   const normalized = candidate.replace(/\s+/g, " ");
@@ -569,15 +357,3 @@ function getProductCardDescription(product: CatalogProductCardViewModel) {
 
   return firstSentence.length > 104 ? `${firstSentence.slice(0, 101).trimEnd()}...` : firstSentence;
 }
-
-function firstNarrativeSection(content: HomePageContent) {
-  return content.sectionOrder.find(
-    (key) => (key === "brandStory" && content.brandStory.visible) || (key === "designDirection" && content.designDirection.visible),
-  );
-}
-
-
-
-
-
-
