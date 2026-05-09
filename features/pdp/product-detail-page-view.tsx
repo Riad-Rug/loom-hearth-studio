@@ -255,7 +255,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             </p>
             <DecisionTrustStrip />
             {product.type === "rug" ? (
-              <p className={styles.scarcityLine}>One-of-one. When sold, this exact rug does not return.</p>
+              <p className={styles.scarcityLine}>ONE OF A KIND. When sold, this exact rug does not return.</p>
             ) : null}
             <p className={styles.summary}>{product.description}</p>
             {product.type === "rug" ? <p className={styles.placementNote}>{product.placementNote}</p> : null}
@@ -409,7 +409,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                 <h2>How This Piece Is Verified and Shipped.</h2>
               </div>
               <p className={styles.sectionHeaderIntro}>
-                Every one-of-one goes through the same three-step verification before we take payment.
+                Every ONE OF A KIND goes through the same three-step verification before we take payment.
               </p>
             </div>
             <div className={styles.supportGrid}>
@@ -795,7 +795,7 @@ function RugPurchaseShell({
         Reserve - no payment yet
       </Link>
       <p className={styles.purchaseReassurance}>
-        This is a one-of-one piece. Reserve holds it for you - we film the exact rug, you approve the
+        This is a ONE OF A KIND piece. Reserve holds it for you - we film the exact rug, you approve the
         video, and only then is payment captured. 24-hour reply.
       </p>
     </div>
@@ -918,3 +918,4 @@ function buildInquiryHref(product: ProductDetailPageViewModel) {
 function getProductPath(product: ProductDetailPageViewModel) {
   return `/shop/${product.category}/${product.slug}`;
 }
+

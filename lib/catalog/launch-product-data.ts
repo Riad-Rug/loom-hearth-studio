@@ -381,7 +381,7 @@ export const launchProducts = [
     "slug": "desert-find",
     "name": "Desert Find Vintage Piece",
     "category": "vintage",
-    "description": "A one of one vintage textile piece selected for collectors who want an older handwoven piece with visible age and construction detail.",
+    "description": "A ONE OF A KIND vintage textile piece selected for collectors who want an older handwoven piece with visible age and construction detail.",
     "priceUsd": 1680,
     "origin": "Morocco",
     "status": "active",
@@ -431,7 +431,7 @@ export const launchProducts = [
       "Wool"
     ],
     "seoTitle": "Desert Find Vintage Piece",
-    "seoDescription": "Vintage one-of-one launch textile from Loom & Hearth Studio.",
+    "seoDescription": "Vintage ONE OF A KIND launch textile from Loom & Hearth Studio.",
     "rugStyle": "vintage",
     "dimensionsCm": {
       "width": 175,
@@ -709,6 +709,7 @@ export const launchProducts = [
     "notifyMeEnabled": null
   }
 ];
+
 
 
 

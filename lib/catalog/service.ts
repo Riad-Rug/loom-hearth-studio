@@ -186,7 +186,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     subtitle: createProductSubtitle(product),
     category: product.category,
     type: product.type,
-    availabilityLabel: product.type === "rug" ? "One of one" : "Available now",
+    availabilityLabel: product.type === "rug" ? "ONE OF A KIND" : "Available now",
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
     description: normalizeDimensionSeparators(product.description),
@@ -312,7 +312,7 @@ function createProductSpecifications(product: Product): ProductSpecificationView
       { label: "Technique", value: "Handwoven" },
       { label: "Dimensions", value: formatRugDimensions(product) },
       { label: "Weight", value: formatRugWeight(product) },
-      { label: "Piece type", value: "One-of-one rug" },
+      { label: "Piece type", value: "ONE OF A KIND rug" },
     );
   } else {
     specs.push(
@@ -659,7 +659,7 @@ function createRugHeroDescription(product: Extract<Product, { type: "rug" }>) {
 
   if (/pile\s+motifs?/iu.test(titleAndDescription)) {
     return normalizeDimensionSeparators(
-      `A one-of-one Moroccan ${construction} with 40+ individually hand-knotted pile motifs raised above the surface, each motif sitting as a small three-dimensional object on a warm ${ground}. The field reads quiet from across the room and detailed up close.`,
+      `A ONE OF A KIND Moroccan ${construction} with 40+ individually hand-knotted pile motifs raised above the surface, each motif sitting as a small three-dimensional object on a warm ${ground}. The field reads quiet from across the room and detailed up close.`,
     ).replace(/\s+/gu, " ");
   }
 
@@ -669,7 +669,7 @@ function createRugHeroDescription(product: Extract<Product, { type: "rug" }>) {
   const featureText = feature ? ` with ${feature}` : "";
 
   return normalizeDimensionSeparators(
-    `${firstSentence || `A one-of-one Moroccan ${construction}${featureText} in ${material}.`} Selected for texture, scale, and exact-piece character, with final color confirmed by video before payment is captured.`,
+    `${firstSentence || `A ONE OF A KIND Moroccan ${construction}${featureText} in ${material}.`} Selected for texture, scale, and exact-piece character, with final color confirmed by video before payment is captured.`,
   ).replace(/\s+/gu, " ");
 }
 
@@ -756,7 +756,7 @@ function createConditionDescription(product: Product) {
   const conditionNote = normalizeDimensionSeparators(product.conditionNote?.trim() || "");
   const general =
     product.type === "rug"
-      ? "One-of-one handmade rugs can show natural variation in pile height, edge line, and color."
+      ? "ONE OF A KIND handmade rugs can show natural variation in pile height, edge line, and color."
       : "Handmade pieces can show natural variation in color, texture, and finish.";
   const thisPiece = conditionNote || "No additional condition issue is listed for this piece.";
 
@@ -956,7 +956,7 @@ function createProductSubtitle(product: Product) {
     return [
       formatRugDimensionsShort(product),
       createMaterialOriginLabel(product),
-      "One-of-one",
+      "ONE OF A KIND",
     ].join(" | ");
   }
 
@@ -1161,3 +1161,4 @@ function createInventoryStateLabel(product: Extract<Product, { type: "multiUnit"
 
   return "In stock";
 }
+

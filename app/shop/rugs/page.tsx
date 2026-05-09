@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
     entityKey: "rugs",
     title: "Rugs",
     description:
-      "Browse handcrafted Moroccan rugs sourced in Marrakech, including one-of-one pieces prepared for review-first buying.",
+      "Browse handcrafted Moroccan rugs sourced in Marrakech, including ONE OF A KIND pieces prepared for review-first buying.",
     path: "/shop/rugs",
   });
 }

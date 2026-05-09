@@ -8,7 +8,7 @@ import styles from "./trade-page.module.css";
 
 const tradeIncludes = [
   "Use it when the project needs a pricing answer before client approval.",
-  "Use it when a one-of-one rug needs to stay clear and reserved during review.",
+  "Use it when a ONE OF A KIND rug needs to stay clear and reserved during review.",
   "Use it when you need imagery for tear sheets, decks, or internal sourcing review.",
   "Use it when destination market and delivery timing need to be reviewed before checkout.",
   "Use it when the project requires direct studio back-and-forth instead of retail browsing.",
@@ -23,7 +23,7 @@ const tradeWorkflow = [
   {
     title: "Review the exact piece with the studio",
     body:
-      "For rugs and other one-of-one pieces, the studio confirms the exact item with you before the order moves forward, so your client is reviewing the actual piece rather than a representative sample.",
+      "For rugs and other ONE OF A KIND pieces, the studio confirms the exact item with you before the order moves forward, so your client is reviewing the actual piece rather than a representative sample.",
   },
   {
     title: "Confirm pricing, holds, and next steps",
@@ -77,7 +77,7 @@ const tradeDeliverables = [
 const projectHoldNotes = [
   "Complimentary holds are available for up to 3 business days while a client reviews a selected piece.",
   "If the project timeline needs something different, the studio confirms next-step availability directly against the item and destination market.",
-  "For one-of-one rugs, the hold conversation happens before the order moves forward so availability stays clear.",
+  "For ONE OF A KIND rugs, the hold conversation happens before the order moves forward so availability stays clear.",
 ] as const;
 
 const categoryDetails = [
@@ -87,7 +87,7 @@ const categoryDetails = [
   },
   {
     title: "Vintage rugs",
-    body: "One-of-one vintage pieces for projects that need age, patina, and a more collected point of view rather than broad repeatable stock.",
+    body: "ONE OF A KIND vintage pieces for projects that need age, patina, and a more collected point of view rather than broad repeatable stock.",
   },
   {
     title: "Poufs, pillows, and decor",
@@ -97,7 +97,7 @@ const categoryDetails = [
 
 const tradeProofPoints = [
   {
-    title: "Built around one-of-one inventory",
+    title: "Built around ONE OF A KIND inventory",
     body: "The trade path exists because the strongest pieces are not repeatable stock. Designers need the exact item, clear timing, and a faster answer cycle.",
   },
   {
@@ -389,3 +389,4 @@ export function TradePageView() {
     </div>
   );
 }
+

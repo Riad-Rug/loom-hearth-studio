@@ -96,7 +96,7 @@ export function BlogIndexPageView() {
           <h2>Take the sourcing notes into the collection itself.</h2>
           <p>
             If the journal clarified what to look for, the next step is to see the actual rugs,
-            pillows, poufs, and one-of-one pieces the studio selected in person.
+            pillows, poufs, and ONE OF A KIND pieces the studio selected in person.
           </p>
         </div>
         <div className={styles.closingActions}>
@@ -111,3 +111,4 @@ export function BlogIndexPageView() {
     </div>
   );
 }
+

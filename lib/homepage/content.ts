@@ -112,7 +112,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
     if (card.id === "category-vintage") {
       return {
         ...card,
-        description: "One-of-one vintage Moroccan rugs. Selected for construction integrity, visible age, and pile condition.",
+        description: "ONE OF A KIND vintage Moroccan rugs. Selected for construction integrity, visible age, and pile condition.",
       };
     }
 
@@ -134,12 +134,12 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.featured.eyebrow = "";
   next.featured.title = "Choose the category first, then the exact piece.";
   next.featured.paragraph =
-    "Every listing is a one-of-one inventory decision. Start with the type of piece you need, then confirm the exact item.";
+    "Every listing is a ONE OF A KIND inventory decision. Start with the type of piece you need, then confirm the exact item.";
   next.featured.cards = [
     {
       ...(next.featured.cards.find((card) => card.id === "featured-rugs") ?? next.featured.cards[0]),
       id: "featured-rugs",
-      title: "One-of-One Moroccan Rugs",
+      title: "ONE OF A KIND Moroccan Rugs",
       description: "Hand-knotted Moroccan rugs selected for pile density, weight, and long-term durability.",
       priceLabel: "SHOP RUGS",
       href: "/shop/rugs",
@@ -196,7 +196,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
       id: "featured-vintage",
       title: "Vintage Moroccan Rugs",
       description:
-        "One-of-one vintage Moroccan rugs selected for construction integrity, visible age, and pile condition.",
+        "ONE OF A KIND vintage Moroccan rugs selected for construction integrity, visible age, and pile condition.",
       priceLabel: "SHOP VINTAGE",
       href: "/shop/rugs/vintage",
       visible: true,
@@ -220,7 +220,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.newsletter.ctaLabel = "JOIN";
 
   next.faq.eyebrow = "BEFORE YOU BUY";
-  next.faq.title = "Questions buyers ask before choosing a one-of-one rug.";
+  next.faq.title = "Questions buyers ask before choosing a ONE OF A KIND rug.";
   next.faq.paragraph =
     "A rug is a considered purchase. These are the details we confirm before you commit.";
   next.faq.items = next.faq.items.map((item) => {
@@ -229,7 +229,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
         ...item,
         question: "Is my rug really the exact one I will receive?",
         answer:
-          "Yes. One-of-one rugs are listed as exact pieces, not representative samples. Before payment is captured, we confirm the actual rug with you through the inquiry and verification flow.",
+          "Yes. ONE OF A KIND rugs are listed as exact pieces, not representative samples. Before payment is captured, we confirm the actual rug with you through the inquiry and verification flow.",
       };
     }
 
@@ -325,3 +325,4 @@ function usesDemoCloudinaryUrl(value: string) {
     return false;
   }
 }
+

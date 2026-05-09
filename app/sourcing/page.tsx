@@ -53,7 +53,7 @@ const sourcingProofs = [
 ] as const;
 
 const sourcingStandards = [
-  "One-of-one rugs are chosen as exact pieces, not as representatives of a style batch.",
+  "ONE OF A KIND rugs are chosen as exact pieces, not as representatives of a style batch.",
   "Rug-made poufs and pillows are selected for the same fibre and structural quality as the source textile.",
   "Listings are written from the real piece in hand, not from generic category language.",
 ] as const;
@@ -183,3 +183,4 @@ export default function SourcingPage() {
     </div>
   );
 }
+

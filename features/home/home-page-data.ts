@@ -44,7 +44,7 @@ export const homepageSectionDefinitions: Record<
   },
   featured: {
     label: "Shop-first categories",
-    description: "Category-first shopping cards that lead buyers into one-of-one inventory.",
+    description: "Category-first shopping cards that lead buyers into ONE OF A KIND inventory.",
   },
   proof: {
     label: "Buyer proof",
@@ -245,8 +245,8 @@ const defaultHomePageContent: HomePageContent = {
       visible: true,
     },
     image: {
-      src: "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
-      alt: "A Moroccan sitting room with wool textiles, carved wood, and handmade furnishings",
+      src: "/homepage/hero-bazaar-editorial-v2.png",
+      alt: "A sun-washed Moroccan interior with a prominent handcrafted rug, low seating, carved wood, and warm natural light.",
       publicId: "",
       width: null,
       height: null,
@@ -290,8 +290,8 @@ const defaultHomePageContent: HomePageContent = {
         description:
           "Hand-knotted rugs selected for pile density, construction depth, and weight underfoot.",
         image: {
-          src: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-          alt: "Handmade Moroccan rug in a warm neutral living room with soft natural light",
+          src: "/homepage/category-rugs-editorial-v2.png",
+          alt: "A hand-knotted Moroccan rug displayed prominently in a warm, refined interior with natural light.",
           publicId: "",
           width: null,
           height: null,
@@ -305,8 +305,8 @@ const defaultHomePageContent: HomePageContent = {
         description:
           "Rug-made and leather poufs. Functional seating with a quieter footprint than upholstered furniture.",
         image: {
-          src: "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
-          alt: "Moroccan leather pouf styled in a tactile interior with warm linen textures",
+          src: "/homepage/category-poufs-pillows-editorial-v2.png",
+          alt: "Handcrafted Moroccan poufs and woven pillows grouped around a low tea table over a pale rug.",
           publicId: "",
           width: null,
           height: null,
@@ -348,10 +348,10 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/rugs/vintage",
         visible: true,
         description:
-          "One-of-one vintage Moroccan rugs. Selected for construction integrity, visible age, and pile condition.",
+          "ONE OF A KIND vintage Moroccan rugs. Selected for construction integrity, visible age, and pile condition.",
         image: {
-          src: "https://images.pexels.com/photos/28582589/pexels-photo-28582589.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1600",
-          alt: "Vintage Moroccan rugs displayed in a warm showroom with visible patina and texture",
+          src: "/homepage/category-vintage-editorial-v2.png",
+          alt: "ONE OF A KIND vintage Moroccan rugs layered in a warm showroom with visible patina and softened reds.",
           publicId: "",
           width: null,
           height: null,
@@ -397,11 +397,11 @@ const defaultHomePageContent: HomePageContent = {
     eyebrow: "",
     title: "Choose the category first, then the exact piece.",
     paragraph:
-      "Every listing is a one-of-one inventory decision. Start with the type of piece you need, then confirm the exact item.",
+      "Every listing is a ONE OF A KIND inventory decision. Start with the type of piece you need, then confirm the exact item.",
     cards: [
       {
         id: "featured-rugs",
-        title: "One-of-One Moroccan Rugs",
+        title: "ONE OF A KIND Moroccan Rugs",
         description:
           "Hand-knotted Moroccan rugs selected for pile density, weight, and long-term durability.",
         priceLabel: "SHOP RUGS",
@@ -466,7 +466,7 @@ const defaultHomePageContent: HomePageContent = {
         id: "featured-vintage",
         title: "Vintage Moroccan Rugs",
         description:
-          "One-of-one vintage Moroccan rugs selected for construction integrity, visible age, and pile condition.",
+          "ONE OF A KIND vintage Moroccan rugs selected for construction integrity, visible age, and pile condition.",
         priceLabel: "SHOP VINTAGE",
         href: "/shop/rugs/vintage",
         visible: true,
@@ -485,7 +485,7 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Why buy Moroccan rugs here | Loom & Hearth Studio",
       metaDescription:
-        "Learn how Loom & Hearth Studio sources exact Moroccan pieces, verifies color before payment capture, and sells one-of-one handmade inventory.",
+        "Learn how Loom & Hearth Studio sources exact Moroccan pieces, verifies color before payment capture, and sells ONE OF A KIND handmade inventory.",
     },
   },
   howItWorks: {
@@ -531,7 +531,7 @@ const defaultHomePageContent: HomePageContent = {
         "Answers to common questions about exact-piece Moroccan rugs, room fit, shipping, duties, returns, and what is included in the price.",
     },
     eyebrow: "BEFORE YOU BUY",
-    title: "Questions buyers ask before choosing a one-of-one rug.",
+    title: "Questions buyers ask before choosing a ONE OF A KIND rug.",
     paragraph:
       "A rug is a considered purchase. These are the details we confirm before you commit.",
     items: [
@@ -539,7 +539,7 @@ const defaultHomePageContent: HomePageContent = {
         id: "faq-exact-rug",
         question: "Is my rug really the exact one I will receive?",
         answer:
-          "Yes. One-of-one rugs are listed as exact pieces, not representative samples. Before payment is captured, we confirm the actual rug with you through the inquiry and verification flow.",
+          "Yes. ONE OF A KIND rugs are listed as exact pieces, not representative samples. Before payment is captured, we confirm the actual rug with you through the inquiry and verification flow.",
         visible: true,
       },
       {
@@ -1002,6 +1002,7 @@ function isAllowedImageUrl(value: string) {
 function isOrderedSectionKey(value: unknown): value is HomePageOrderedSectionKey {
   return typeof value === "string" && homepageSectionOrderKeys.includes(value as HomePageOrderedSectionKey);
 }
+
 
 
 

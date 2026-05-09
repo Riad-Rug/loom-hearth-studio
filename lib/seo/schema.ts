@@ -196,7 +196,7 @@ export function productSchema(input: {
             {
               "@type": "PropertyValue",
               name: "Made to stock",
-              value: "one-of-one",
+              value: "ONE OF A KIND",
             },
           ]
         : []),
@@ -237,3 +237,4 @@ export function productSchema(input: {
     },
   };
 }
+

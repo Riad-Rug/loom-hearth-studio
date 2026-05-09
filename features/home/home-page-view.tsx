@@ -54,7 +54,7 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
             <p className={styles.heroEditorialLine}>Selected in person, one at a time.</p>
             <p className={styles.heroEditorialBody}>
               The collection is sourced through a family bazaar in Marrakech, with colour verified
-              before payment is captured and every one-of-one piece tied to the actual rug in hand.
+              before payment is captured and every ONE OF A KIND piece tied to the actual rug in hand.
             </p>
             <div className={styles.heroActions}>
               <Link className={styles.primaryAction} href={"/shop" as Route}>
@@ -70,7 +70,7 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
             <strong>52 pieces</strong>
             <p>Free shipping to the United States, Canada, and Australia.</p>
             <div className={styles.heroStatList}>
-              <span>One of one inventory</span>
+              <span>ONE OF A KIND inventory</span>
               <span>Colour verified before payment</span>
               <span>Ships from Morocco</span>
             </div>
@@ -156,7 +156,7 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
             <div className={styles.sectionHeadingRow}>
               <div className={styles.sectionIntro}>
                 <p className={styles.eyebrow}>From the current collection</p>
-                <h2>Current one-of-one pieces with live pricing.</h2>
+                <h2>Current ONE OF A KIND pieces with live pricing.</h2>
                 <p className={styles.sectionBody}>
                   The homepage should show real inventory, not just mood. These are live pieces
                   from the current collection, ready to move straight into the shop.
@@ -272,7 +272,7 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
             <p className={styles.eyebrow}>New arrivals</p>
             <h2>New pieces arrive from Morocco. Be the first to see them.</h2>
             <p className={styles.sectionBody}>
-              Join the list for new one-of-one arrivals, sourcing notes, and the pieces that reach
+              Join the list for new ONE OF A KIND arrivals, sourcing notes, and the pieces that reach
               the site before they disappear into past inventory.
             </p>
           </div>
@@ -422,3 +422,4 @@ function getProductCardDescription(product: CatalogProductCardViewModel) {
 
   return firstSentence.length > 104 ? `${firstSentence.slice(0, 101).trimEnd()}...` : firstSentence;
 }
+

@@ -161,7 +161,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/shop/rugs",
     fallbackTitle: "Rugs",
     fallbackDescription:
-      "Browse handcrafted Moroccan rugs sourced in Marrakech, including one-of-one pieces prepared for review-first buying.",
+      "Browse handcrafted Moroccan rugs sourced in Marrakech, including ONE OF A KIND pieces prepared for review-first buying.",
   },
   {
     id: "category-rugs-beni-ourain",
@@ -248,3 +248,4 @@ export function getSeoRegistryItem(entityType: string, entityKey: string) {
 export function getSeoRegistryItemById(id: string) {
   return seoStaticRouteRegistry.find((item) => item.id === id) ?? null;
 }
+

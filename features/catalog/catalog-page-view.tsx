@@ -114,7 +114,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const sidebarCopy =
     category || hasExactCategoryLink
       ? heroCopy
-      : "Handcrafted rugs, poufs, and decor from Marrakech. One of one pieces do not return once sold.";
+      : "Handcrafted rugs, poufs, and decor from Marrakech. ONE OF A KIND pieces do not return once sold.";
   const selectedCategoryHref =
     collection?.href && hasExactCategoryLink ? collection.href : categoryMeta?.href ?? "/shop";
   const hasActiveFilters = Boolean(searchQuery.trim()) || priceFilter !== "all" || sizeFilter !== "all";
@@ -175,7 +175,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         <div className={`${styles.catalogToolbar} ${styles.mobileCatalogToolbar}`}>
           <p className={styles.toolbarSummary}>
             <span className={styles.toolbarCount}>{productCountLabel}</span>
-            <span className={styles.toolbarTrustNote}>Every rug is one of one. Sold pieces are not restocked.</span>
+            <span className={styles.toolbarTrustNote}>Every rug is ONE OF A KIND. Sold pieces are not restocked.</span>
           </p>
           <div className={styles.compactToolbarRow}>
             <div className={styles.searchInlineShell}>
@@ -280,7 +280,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
               </div>
               <p className={styles.sidebarCopy}>{sidebarCopy}</p>
               <div className={styles.sidebarHighlights} aria-label="Collection service details">
-                <span>Every rug is one of one and sold pieces are not restocked</span>
+                <span>Every rug is ONE OF A KIND and sold pieces are not restocked</span>
                 <span>Colour verified before payment</span>
                 <span>Ships from Morocco</span>
               </div>
@@ -329,7 +329,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
             <div className={styles.catalogToolbar}>
               <p className={styles.toolbarSummary}>
                 <span className={styles.toolbarCount}>{productCountLabel}</span>
-                <span className={styles.toolbarTrustNote}>Every rug is one of one. Sold pieces are not restocked.</span>
+                <span className={styles.toolbarTrustNote}>Every rug is ONE OF A KIND. Sold pieces are not restocked.</span>
               </p>
               <div className={styles.compactToolbarRow}>
                 <div className={styles.searchInlineShell}>
@@ -598,3 +598,4 @@ function inferLargestDimensionCm(product: CatalogProductCardViewModel) {
 
   return Math.max(...inchMatches) * 2.54;
 }
+

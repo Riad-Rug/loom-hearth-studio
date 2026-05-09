@@ -720,7 +720,7 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           <p className={styles.summaryNote}>{props.nonConfirmationRouteViewModel.information.note}</p>
           <div className={styles.reviewCard}>
             <h3>Need Help Before You Continue?</h3>
-            <p>If you are checking out a one-of-one rug and want guidance before payment, use the inquiry flow and we will review the piece with you directly.</p>
+            <p>If you are checking out a ONE OF A KIND rug and want guidance before payment, use the inquiry flow and we will review the piece with you directly.</p>
             <Link className={styles.secondaryAction} href="/contact">
               Contact the Studio
             </Link>
@@ -784,7 +784,7 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
           </div>
           <div className={styles.reviewCard}>
             <h3>Prefer a Reviewed Buying Path?</h3>
-            <p>For one-of-one rugs or project purchases, you can contact the studio instead of continuing through checkout.</p>
+            <p>For ONE OF A KIND rugs or project purchases, you can contact the studio instead of continuing through checkout.</p>
             <Link className={styles.secondaryAction} href="/contact?inquiryType=product-inquiry">
               Start an Inquiry Instead
             </Link>
@@ -912,3 +912,4 @@ function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
       return null;
   }
 }
+

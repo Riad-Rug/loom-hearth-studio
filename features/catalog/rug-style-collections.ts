@@ -5,7 +5,7 @@ export const rugStyleCollections = {
       "Browse Beni Ourain rugs selected for hand-knotted wool construction, pale fields, and restrained geometric pattern. Each rug is reviewed as an individual piece before it is listed.",
     bullets: [
       "Hand-knotted wool pile rugs with visible construction notes",
-      "One-of-one pieces sourced through Marrakech",
+      "ONE OF A KIND pieces sourced through Marrakech",
       "Final colour and condition confirmed before payment is captured",
     ],
     category: "rugs",
@@ -15,7 +15,7 @@ export const rugStyleCollections = {
     description:
       "Browse vintage Moroccan rugs selected for structure, patina, and exact-piece character. These are collected pieces, not repeatable stock.",
     bullets: [
-      "One-of-one vintage rugs with condition notes",
+      "ONE OF A KIND vintage rugs with condition notes",
       "Selected for structural integrity, not age alone",
       "Final colour and condition confirmed before payment is captured",
     ],
@@ -28,3 +28,4 @@ export type RugStyleCollectionSlug = keyof typeof rugStyleCollections;
 export function getRugStyleCollection(slug: string) {
   return rugStyleCollections[slug as RugStyleCollectionSlug] ?? null;
 }
+

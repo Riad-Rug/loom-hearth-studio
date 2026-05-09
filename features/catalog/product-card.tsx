@@ -44,7 +44,7 @@ export function ProductCard({ product }: ProductCardProps) {
     <Link className={styles.productCard} href={product.href as Route}>
       <div className={styles.productMedia}>
         {product.type === "rug" ? (
-          <span className={styles.productScarcityBadge}>1 of 1 Available now</span>
+          <span className={styles.productScarcityBadge}>One of a kind available now</span>
         ) : null}
         {showImage ? (
           <>
@@ -106,3 +106,4 @@ function getDescriptor(description: string, merchandisingNote: string) {
 
   return firstSentence.length > 110 ? `${firstSentence.slice(0, 107).trimEnd()}...` : firstSentence;
 }
+

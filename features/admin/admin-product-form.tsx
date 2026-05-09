@@ -310,7 +310,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
             >
               {adminProductTypeOptions.map((option) => (
                 <option key={option} value={option}>
-                  {option === "rug" ? "One-of-one" : "Multi-unit"}
+                  {option === "rug" ? "One of a kind" : "Multi-unit"}
                 </option>
               ))}
             </select>

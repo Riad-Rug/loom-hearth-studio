@@ -4,10 +4,10 @@ export const catalogLanding = {
   eyebrow: "Collection",
   title: "The Full Collection",
   description:
-    "Handcrafted Moroccan rugs, poufs, pillows, and decor \u2014 sourced directly from Marrakech. Every rug is one of one. When a piece sells, it does not return.",
+    "Handcrafted Moroccan rugs, poufs, pillows, and decor \u2014 sourced directly from Marrakech. Every rug is ONE OF A KIND. When a piece sells, it does not return.",
   bullets: [
     "Hand-knotted rugs, rug-made poufs, cactus silk pillows, and handcrafted decor",
-    "Every rug is one of one \u2014 sold pieces are not restocked",
+    "Every rug is ONE OF A KIND \u2014 sold pieces are not restocked",
     "Filter by category or sort by price and arrival date",
   ],
 } as const;
@@ -19,9 +19,9 @@ export const catalogCategories = [
     title: "Moroccan Rugs",
     href: "/shop/rugs",
     description:
-      "Hand-knotted Moroccan rugs sourced directly through our family bazaar in Marrakech. Every rug in this collection is one of one \u2014 made by a single weaver, not mass-produced. When a piece sells, it does not return.",
+      "Hand-knotted Moroccan rugs sourced directly through our family bazaar in Marrakech. Every rug in this collection is ONE OF A KIND \u2014 made by a single weaver, not mass-produced. When a piece sells, it does not return.",
     bullets: [
-      "Hand-knotted pile rugs, flatweave kilims, and one of one vintage pieces",
+      "Hand-knotted pile rugs, flatweave kilims, and ONE OF A KIND vintage pieces",
       "Construction details \u2014 pile depth, fibre type, knot structure \u2014 documented in every listing",
       "Filter by style or sort by price and arrival date",
     ],
@@ -71,7 +71,7 @@ export const catalogCategories = [
     title: "Vintage Rugs",
     href: "/shop/rugs/vintage",
     description:
-      "Vintage Moroccan rugs selected for structural integrity, patina, and visible age. Each piece is assessed for warp and weft tension, pile density, and condition before entering the collection. Visible age is not enough \u2014 the construction has to hold.\n\nEvery piece is one of one.",
+      "Vintage Moroccan rugs selected for structural integrity, patina, and visible age. Each piece is assessed for warp and weft tension, pile density, and condition before entering the collection. Visible age is not enough \u2014 the construction has to hold.\n\nEvery piece is ONE OF A KIND.",
     bullets: [
       "Handmade textures in sand, clay, and terracotta",
       "Pieces for shelves, seating areas, and daily use",
@@ -96,7 +96,8 @@ export const catalogSortOptions = [
 
 export const catalogFilterLabels = [
   "Handwoven",
-  "One of One",
+  "ONE OF A KIND",
   "Decor",
   "Fresh Arrivals",
 ] as const;
+

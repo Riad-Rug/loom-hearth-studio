@@ -158,7 +158,7 @@ export const blogPosts: BlogPostRecord[] = [
     body: [
       "Vintage rugs cost more because age alone is not the point — survival is. A piece that has kept its structure, retained enough pile or surface integrity, and still reads convincingly after years of use is rarer than a newer rug made to a broad commercial template.",
       "Patina matters when it comes from use, light, and fibre, not from damage pretending to be romance. The best vintage pieces show colour softening, a believable surface, and enough structure left in the weave to keep performing in a room rather than existing only as a collectible object.",
-      "Whether they are worth it depends on what you need. If you want a one-of-one piece with age written into the surface and a room that feels less newly assembled, vintage often earns its price. If you need dense, plush utility first, a newer rug can be the better answer.",
+      "Whether they are worth it depends on what you need. If you want a ONE OF A KIND piece with age written into the surface and a room that feels less newly assembled, vintage often earns its price. If you need dense, plush utility first, a newer rug can be the better answer.",
     ].join("\n\n"),
     publishedAt: "March 27, 2026",
     readTime: "6 min read",
@@ -263,7 +263,7 @@ export const blogPosts: BlogPostRecord[] = [
     body: [
       "Low-furnished rooms depend on proportion and one or two real decisions. A strong rug can do the visual work that extra side tables, throw blankets, or decorative filler often fail to do because it anchors the entire floor plane at once.",
       "That only works when the rug has enough weight and pattern logic to hold the space by itself. If the piece is timid, the room feels underfurnished. If the rug is right, the restraint stops reading as lack and starts reading as confidence.",
-      "This is where one-of-one Moroccan rugs can be especially effective. Their irregularity and surface depth create enough movement to keep the room alive even when the furniture remains sparse.",
+      "This is where ONE OF A KIND Moroccan rugs can be especially effective. Their irregularity and surface depth create enough movement to keep the room alive even when the furniture remains sparse.",
     ].join("\n\n"),
     publishedAt: "March 14, 2026",
     readTime: "4 min read",
@@ -335,12 +335,12 @@ export const blogPosts: BlogPostRecord[] = [
     slug: "how-the-semmarine-souk-works",
     categorySlug: "sourcing",
     categoryLabel: "Sourcing stories",
-    title: "How the Semmarine Souk Works and Why It Produces One-of-One Pieces",
+    title: "How the Semmarine Souk Works and Why It Produces ONE OF A KIND Pieces",
     excerpt:
       "A place-based sourcing story about the Marrakech trade context behind the collection and why bazaar buying produces different pieces from catalogue sourcing.",
     body: [
       "The Semmarine souk is not organised like an export catalogue. Pieces arrive through relationships, timing, local movement, and the daily rhythm of who is trading what on a given day. That means a buyer working there sees actual variation rather than a flattened menu of standardised options.",
-      "For a collection like this, that matters because one-of-one rugs are rarely found by asking for a category alone. They are found by being present when the right piece appears, by comparing it against what is already in hand, and by rejecting the majority that do not hold up closely enough.",
+      "For a collection like this, that matters because ONE OF A KIND rugs are rarely found by asking for a category alone. They are found by being present when the right piece appears, by comparing it against what is already in hand, and by rejecting the majority that do not hold up closely enough.",
       "The result is slower and less scalable, but also sharper. A bazaar-sourced collection can stay tied to the peculiarities of individual textiles instead of becoming a clean spreadsheet of interchangeable stock.",
     ].join("\n\n"),
     publishedAt: "March 4, 2026",
@@ -351,7 +351,7 @@ export const blogPosts: BlogPostRecord[] = [
     imageSrc: "/about/marrakech-bazaar-hero.png",
     seoTitle: "How the Semmarine souk works | Loom & Hearth Studio",
     seoDescription:
-      "A sourcing story on the Semmarine souk in Marrakech and why bazaar buying produces one-of-one rugs.",
+      "A sourcing story on the Semmarine souk in Marrakech and why bazaar buying produces ONE OF A KIND rugs.",
     targetKeyword: "Semmarine souk",
     updatedAt: "2026-03-04T11:30:00.000Z",
     ctaLabel: "Read the story",
@@ -429,3 +429,4 @@ export function getBlogPostByParams(category: string, slug: string) {
     (post) => post.categorySlug === category && post.slug === slug,
   );
 }
+
