@@ -2,8 +2,8 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import { Section } from "@/components/layout/section";
-import { CustomerReviewCarousel } from "@/components/reviews/customer-review-carousel";
 import { blogPosts } from "@/features/blog/blog-post-data";
 import { aboutBridge } from "@/features/content-pages/content-pages-data";
 import type { HomePageContent } from "@/features/home/home-page-data";
@@ -23,18 +23,27 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
     .map((id) => content.categories.cards.find((card) => card.id === id && card.visible))
     .filter((card): card is NonNullable<typeof card> => Boolean(card));
   const journalPosts = blogPosts.slice(0, 2);
+  const reviewCards = [customerReviews[7], customerReviews[5], customerReviews[6]].filter(Boolean);
+  const colorLinks = [
+    { label: "Ivory", href: "/search?q=ivory" },
+    { label: "Terracotta", href: "/search?q=terracotta" },
+    { label: "Natural", href: "/search?q=natural" },
+    { label: "Charcoal", href: "/search?q=charcoal" },
+    { label: "Multicolour", href: "/search?q=multicolour" },
+    { label: "Navy", href: "/search?q=navy" },
+  ] as const;
 
   return (
     <div className={styles.page}>
       <section className={styles.heroFullBleed}>
         <div className={styles.heroBackdrop}>
           <Image
-            alt={content.hero.image.alt}
+            alt="A Moroccan bazaar scene with handmade rugs layered in warm natural light, showing the sourcing context behind the collection."
             className={styles.heroBackdropImage}
             fill
             priority
             sizes="100vw"
-            src={content.hero.image.src}
+            src="/homepage/hero-bazaar-editorial-v2.png"
           />
         </div>
         <div className={styles.heroOverlay} />
@@ -123,6 +132,24 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
         </div>
       </Section>
 
+      <Section width="wide">
+        <div className={styles.colorStripSection}>
+          <div className={styles.sectionHeadingRow}>
+            <div className={styles.sectionIntro}>
+              <p className={styles.eyebrow}>Shop by colour</p>
+              <h2>Start with the palette the room already needs.</h2>
+            </div>
+          </div>
+          <div className={styles.colorStrip} aria-label="Shop by colour">
+            {colorLinks.map((link) => (
+              <Link key={link.label} className={styles.colorChip} href={link.href as Route}>
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </Section>
+
       {featuredProducts.length ? (
         <Section width="wide">
           <div className={styles.currentCollectionSection}>
@@ -178,20 +205,32 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
               <span>happy customers</span>
             </div>
           </div>
-          <CustomerReviewCarousel reviews={customerReviews} />
+          <div className={styles.reviewGrid}>
+            {reviewCards.map((review) => (
+              <article key={review.id} className={styles.reviewCardStatic}>
+                <div className={styles.reviewStars} aria-label="5 out of 5 stars">
+                  {Array.from({ length: 5 }).map((_, starIndex) => (
+                    <StarIcon key={`${review.id}-star-${starIndex}`} />
+                  ))}
+                </div>
+                <p className={styles.reviewQuote}>{review.body}</p>
+                <p className={styles.reviewMeta}>
+                  <span>{review.customerName}</span>
+                  <span>{review.country}</span>
+                  <span>{review.productType}</span>
+                </p>
+              </article>
+            ))}
+          </div>
         </div>
       </Section>
 
       <Section width="wide">
-        <div className={styles.journalSection}>
+          <div className={styles.journalSection}>
           <div className={styles.sectionHeadingRow}>
             <div className={styles.sectionIntro}>
               <p className={styles.eyebrow}>From the journal</p>
               <h2>The sourcing notes and styling guides that support the collection.</h2>
-              <p className={styles.sectionBody}>
-                The journal is already stronger than most competitors’ editorial layer. Bringing it
-                onto the homepage makes the storefront feel deeper and more authoritative.
-              </p>
             </div>
             <Link className={styles.inlineSectionLink} href={"/blog" as Route}>
               Read all 15 articles
@@ -219,11 +258,29 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
                   </p>
                   <h3>{post.title}</h3>
                   <p>{post.excerpt}</p>
-                  <span className={styles.inlineSectionLink}>{post.ctaLabel}</span>
+                  <span className={styles.journalCardLink}>{post.ctaLabel}</span>
                 </div>
               </Link>
             ))}
           </div>
+        </div>
+      </Section>
+
+      <Section width="wide">
+        <div className={styles.newsletterSection}>
+          <div className={styles.sectionIntro}>
+            <p className={styles.eyebrow}>New arrivals</p>
+            <h2>New pieces arrive from Morocco. Be the first to see them.</h2>
+            <p className={styles.sectionBody}>
+              Join the list for new one-of-one arrivals, sourcing notes, and the pieces that reach
+              the site before they disappear into past inventory.
+            </p>
+          </div>
+          <NewsletterSignupIntentForm
+            ctaLabel={content.newsletter.ctaLabel}
+            inputLabel={content.newsletter.inputLabel}
+            inputPlaceholder={content.newsletter.inputPlaceholder}
+          />
         </div>
       </Section>
 
@@ -302,6 +359,14 @@ function getTrustDescriptor(index: number) {
     default:
       return "";
   }
+}
+
+function StarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="m12 3.9 2.39 4.84 5.34.78-3.87 3.77.91 5.32L12 16.11 7.23 18.62l.91-5.32-3.87-3.77 5.34-.78L12 3.9Z" />
+    </svg>
+  );
 }
 
 function LiveProductRail({ products }: { products: CatalogProductCardViewModel[] }) {
