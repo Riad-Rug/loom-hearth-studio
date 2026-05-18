@@ -337,7 +337,7 @@
 .lookbookRoomLabel,
 .journalMeta {
   margin: 0;
-  color: var(--color-clay-terracotta);
+  color: rgba(255, 248, 239, 0.88);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -348,6 +348,7 @@
 .lookbookCardBody h3,
 .journalCardBody h3 {
   margin: 0;
+  color: rgba(255, 248, 239, 0.98);
   font-family: "Canela", Georgia, serif;
   font-size: 1.55rem;
   line-height: 1.12;
@@ -355,7 +356,7 @@
 }
 
 .categoryShowcaseLink {
-  color: rgba(255, 248, 239, 0.94);
+  color: rgba(255, 248, 239, 0.96);
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.08em;

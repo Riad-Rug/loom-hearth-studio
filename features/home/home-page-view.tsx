@@ -10,6 +10,7 @@ import type { HomePageContent } from "@/features/home/home-page-data";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { customerReviews } from "@/lib/reviews/customer-reviews";
 
+import { LiveProductCardImage } from "./live-product-card-image";
 import styles from "./home-page.module.css";
 
 type HomePageViewProps = {
@@ -375,32 +376,11 @@ function LiveProductRail({ products }: { products: CatalogProductCardViewModel[]
       {products.map((product) => (
         <Link key={product.id} className={styles.liveProductCard} href={product.href as Route}>
           <div className={styles.liveProductImageWrap}>
-            {product.primaryImage ? (
-              <>
-                <Image
-                  alt={product.primaryImage.altText || product.name}
-                  className={`${styles.productImage} ${styles.liveProductImagePrimary}`}
-                  fill
-                  sizes="(max-width: 768px) 86vw, (max-width: 1100px) 42vw, 21vw"
-                  src={product.primaryImage.src}
-                />
-                {product.secondaryImage &&
-                product.secondaryImage.publicId !== product.primaryImage.publicId ? (
-                  <Image
-                    alt=""
-                    aria-hidden="true"
-                    className={`${styles.productImage} ${styles.liveProductImageSecondary}`}
-                    fill
-                    sizes="(max-width: 768px) 86vw, (max-width: 1100px) 42vw, 21vw"
-                    src={product.secondaryImage.src}
-                  />
-                ) : null}
-              </>
-            ) : (
-              <div className={styles.liveProductFallback}>
-                <span>Loom & Hearth</span>
-              </div>
-            )}
+            <LiveProductCardImage
+              primaryImage={product.primaryImage}
+              productName={product.name}
+              secondaryImage={product.secondaryImage}
+            />
           </div>
           <div className={styles.productMeta}>
             <p className={styles.productEyebrow}>{product.badge}</p>
