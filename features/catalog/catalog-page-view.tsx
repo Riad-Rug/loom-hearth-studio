@@ -269,46 +269,30 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         </div>
       </Section>
 
+      <Section className={styles.desktopShopHero} width="wide">
+        <div className={styles.shopHeroPanel}>
+          <div className={styles.shopHeroCopy}>
+            <p className={styles.eyebrow}>{heroEyebrow}</p>
+            <h1>{heroTitle}</h1>
+            <p>{heroCopy}</p>
+          </div>
+          <div className={styles.shopHeroAside} aria-label="Collection service details">
+            <p className={styles.shopHeroCount}>{productCountLabel}</p>
+            <div className={styles.shopHeroHighlights}>
+              <span>One of a kind inventory</span>
+              <span>Colour verified before payment</span>
+              <span>Ships from Morocco</span>
+            </div>
+          </div>
+        </div>
+      </Section>
+
       <Section className={styles.productsSection} width="wide">
         <div className={styles.catalogShell}>
           <aside className={styles.catalogSidebar}>
-            <div className={styles.sidebarCard}>
-              <p className={styles.eyebrow}>{heroEyebrow}</p>
-              <h1>{heroTitle}</h1>
-              <div className={styles.sidebarStatRow}>
-                <p className={styles.sidebarCount}>{productCountLabel}</p>
-              </div>
-              <p className={styles.sidebarCopy}>{sidebarCopy}</p>
-              <div className={styles.sidebarHighlights} aria-label="Collection service details">
-                <span>Every rug is ONE OF A KIND and sold pieces are not restocked</span>
-                <span>Colour verified before payment</span>
-                <span>Ships from Morocco</span>
-              </div>
-              {lookbookContext ? (
-                <div className={styles.lookbookContextCard}>
-                  <p className={styles.lookbookContextEyebrow}>From the lookbook</p>
-                  <h2>{lookbookContext.title}</h2>
-                  <p>
-                    You arrived here from the {lookbookContext.roomLabel.toLowerCase()} scene. This
-                    collection carries the same visual direction.
-                  </p>
-                </div>
-              ) : null}
-              {hasActiveFilters ? (
-                <div className={styles.sidebarActions}>
-                  <button
-                    className={styles.secondaryAction}
-                    type="button"
-                    onClick={clearAllFilters}
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              ) : null}
-            </div>
-
             <div className={styles.sidebarPanel}>
               <p className={styles.sidebarHeading}>Categories</p>
+              <p className={styles.sidebarPanelCopy}>{sidebarCopy}</p>
               <div className={styles.sidebarCategoryRail}>{renderCategoryRail()}</div>
             </div>
           </aside>
@@ -327,10 +311,16 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
               </div>
             ) : null}
             <div className={styles.catalogToolbar}>
-              <p className={styles.toolbarSummary}>
-                <span className={styles.toolbarCount}>{productCountLabel}</span>
-                <span className={styles.toolbarTrustNote}>Every rug is ONE OF A KIND. Sold pieces are not restocked.</span>
-              </p>
+              <div className={styles.toolbarHeader}>
+                <div>
+                  <p className={styles.toolbarEyebrow}>Browse collection</p>
+                  <h2>Find the piece that fits the room.</h2>
+                </div>
+                <p className={styles.toolbarSummary}>
+                  <span className={styles.toolbarCount}>{productCountLabel}</span>
+                  <span className={styles.toolbarTrustNote}>One of a kind pieces are not restocked.</span>
+                </p>
+              </div>
               <div className={styles.compactToolbarRow}>
                 <div className={styles.searchInlineShell}>
                   <label className={styles.srOnly} htmlFor="catalog-search">

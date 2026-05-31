@@ -7,8 +7,12 @@
   display: none;
 }
 
+.desktopShopHero {
+  padding-bottom: 0;
+}
+
 .productsSection {
-  order: 1;
+  order: 2;
 }
 
 .eyebrow {
@@ -25,7 +29,6 @@
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(2.5rem, 4vw, 3.5rem);
   line-height: 1.02;
-  letter-spacing: -0.032em;
 }
 
 .lede {
@@ -69,6 +72,34 @@
     radial-gradient(circle at top right, rgba(198, 106, 61, 0.14), transparent 34%),
     linear-gradient(135deg, #faf7f0, var(--color-wool-cream));
   box-shadow: var(--shadow-panel);
+}
+
+.searchSuggestionRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: var(--space-4);
+}
+
+.searchSuggestion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.65rem;
+  padding: 0.72rem 0.9rem;
+  border: 1px solid rgba(47, 47, 47, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.78);
+  color: var(--color-charcoal-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.searchSuggestion:hover,
+.searchSuggestion:focus-visible {
+  border-color: rgba(198, 106, 61, 0.3);
+  background: rgba(198, 106, 61, 0.1);
+  outline: none;
 }
 
 .searchForm {
@@ -159,12 +190,18 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+  padding-block: var(--space-2);
 }
 
 .searchSummary p {
   margin: 0;
   color: var(--color-text-body);
   font-weight: 600;
+}
+
+.searchSummaryText {
+  font-size: clamp(1.05rem, 2vw, 1.28rem);
+  line-height: 1.35;
 }
 
 .emptySearch {
@@ -192,9 +229,89 @@
   gap: var(--space-3);
 }
 
+.shopHeroPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.38fr);
+  gap: var(--space-6);
+  align-items: end;
+  padding: clamp(2rem, 4vw, 3.5rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 92% 16%, rgba(198, 106, 61, 0.12), transparent 30%),
+    linear-gradient(135deg, #fffaf2, var(--color-wool-cream));
+  box-shadow: var(--shadow-soft);
+}
+
+.shopHeroCopy {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 48rem;
+}
+
+.shopHeroCopy h1,
+.shopHeroCopy p {
+  margin: 0;
+}
+
+.shopHeroCopy h1 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.6rem, 5vw, 4.8rem);
+  line-height: 0.98;
+}
+
+.shopHeroCopy p:not(.eyebrow) {
+  max-width: 42rem;
+  color: var(--color-text-body);
+  font-size: clamp(1rem, 1.35vw, 1.15rem);
+  line-height: 1.65;
+}
+
+.shopHeroAside {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(255, 251, 245, 0.72);
+}
+
+.shopHeroCount {
+  margin: 0;
+  color: var(--color-clay-terracotta);
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.shopHeroHighlights {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.shopHeroHighlights span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  gap: 0.6rem;
+  color: var(--color-text-body);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.shopHeroHighlights span::before {
+  content: "";
+  width: 0.44rem;
+  height: 0.44rem;
+  border-radius: 999px;
+  background: var(--color-clay-terracotta);
+  box-shadow: 0 0 0 0.28rem rgba(198, 106, 61, 0.12);
+  flex: 0 0 auto;
+}
+
 .catalogShell {
   display: grid;
-  grid-template-columns: minmax(15rem, 18.5rem) minmax(0, 1fr);
+  grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
   gap: var(--space-5);
   align-items: start;
 }
@@ -210,9 +327,9 @@
 .sidebarPanel {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-5);
+  padding: var(--space-4);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background:
     linear-gradient(135deg, #faf7f0, var(--color-wool-cream));
   box-shadow: var(--shadow-soft);
@@ -344,7 +461,8 @@
 .sidebarCategoryRail .categoryChip {
   width: 100%;
   justify-content: flex-start;
-  padding: 0.9rem 1rem;
+  min-height: 3rem;
+  padding: 0.8rem 1rem;
   border-radius: var(--radius-md);
 }
 
@@ -547,7 +665,39 @@
 
 .catalogToolbar {
   display: grid;
-  gap: 0.85rem;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 251, 245, 0.72);
+  box-shadow: var(--shadow-soft);
+}
+
+.toolbarHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.toolbarHeader h2,
+.toolbarEyebrow {
+  margin: 0;
+}
+
+.toolbarHeader h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.45rem, 2.2vw, 2rem);
+  line-height: 1.08;
+}
+
+.toolbarEyebrow {
+  margin-bottom: 0.45rem;
+  color: var(--color-clay-terracotta);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .toolbarSummary {
@@ -573,11 +723,11 @@
 .compactToolbarRow {
   display: grid;
   grid-template-columns:
-    minmax(14rem, 1.45fr)
-    minmax(9rem, 0.85fr)
-    minmax(9rem, 0.82fr)
-    minmax(9rem, 0.82fr)
-    minmax(9rem, 0.92fr)
+    minmax(16rem, 1.45fr)
+    minmax(10rem, 0.85fr)
+    minmax(9rem, 0.8fr)
+    minmax(9rem, 0.8fr)
+    minmax(9rem, 0.9fr)
     auto;
   gap: 0.75rem;
   align-items: center;
@@ -642,7 +792,7 @@
   flex-direction: column;
   cursor: pointer;
   border: 1px solid var(--color-border);
-  border-radius: 1.25rem;
+  border-radius: var(--radius-lg);
   background:
     linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(248, 243, 235, 0.96));
   color: inherit;
@@ -968,6 +1118,16 @@
 }
 
 @media (max-width: 1100px) {
+  .shopHeroPanel {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .shopHeroAside {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+  }
+
   .catalogShell {
     grid-template-columns: 1fr;
   }
@@ -1004,14 +1164,91 @@
     gap: var(--space-4);
   }
 
+  .searchHero {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+  }
+
+  .searchHero .heroCopy h1 {
+    max-width: 10ch;
+    font-size: clamp(2.6rem, 15vw, 4.4rem);
+    line-height: 0.95;
+  }
+
+  .searchHero .lede {
+    margin-top: var(--space-3);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .searchSuggestionRail {
+    flex-wrap: nowrap;
+    margin-inline: -1rem;
+    padding: 0 1rem 0.15rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .searchSuggestionRail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .searchSuggestion {
+    flex: 0 0 auto;
+  }
+
+  .searchForm {
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+  }
+
+  .searchInputShell {
+    align-items: stretch;
+    border-radius: var(--radius-md);
+    flex-direction: column;
+    padding: 0.75rem;
+  }
+
+  .searchInputShell svg {
+    display: none;
+  }
+
+  .searchInput {
+    min-height: 3rem;
+    padding: 0 0.35rem;
+    font-size: 1rem;
+  }
+
+  .searchSubmit {
+    width: 100%;
+    min-height: 3rem;
+  }
+
+  .searchSummary {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: 0;
+  }
+
+  .desktopShopHero {
+    display: none;
+  }
+
   .mobileShopHeader {
     display: block;
     order: 1;
     padding: var(--space-3) 0;
   }
 
-  .categoryTradeSection {
+  .productsSection {
     order: 2;
+  }
+
+  .categoryTradeSection {
+    order: 3;
     padding-top: 0;
   }
 
@@ -1033,7 +1270,6 @@
     font-family: var(--font-display), Georgia, serif;
     font-size: clamp(1.9rem, 9vw, 2.6rem);
     line-height: 1.1;
-    letter-spacing: -0.032em;
   }
 
   .mobileTitleRow p {
@@ -1148,9 +1384,8 @@
     transform: none;
   }
 
-  .searchSummary {
-    align-items: flex-start;
-    flex-direction: column;
+  .searchProductGrid {
+    gap: var(--space-3);
   }
 }
 
@@ -1162,21 +1397,6 @@
 
   .sidebarCategoryRail .categoryRail {
     grid-template-columns: 1fr;
-  }
-
-  .searchInputShell {
-    align-items: stretch;
-    border-radius: var(--radius-md);
-    flex-direction: column;
-    padding: 0.8rem;
-  }
-
-  .searchInputShell svg {
-    display: none;
-  }
-
-  .searchSubmit {
-    width: 100%;
   }
 
   .mobileCatalogToolbar .toolbarSummary {

@@ -7,6 +7,7 @@ import { Section } from "@/components/layout/section";
 import { blogPosts } from "@/features/blog/blog-post-data";
 import { aboutBridge } from "@/features/content-pages/content-pages-data";
 import type { HomePageContent } from "@/features/home/home-page-data";
+import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { customerReviews } from "@/lib/reviews/customer-reviews";
 
@@ -19,11 +20,11 @@ type HomePageViewProps = {
 };
 
 export function HomePageView({ content, featuredProducts = [] }: HomePageViewProps) {
-  const trustItems = content.badges.items.filter((item) => item.visible);
   const categoryCards = ["category-rugs", "category-poufs", "category-vintage"]
     .map((id) => content.categories.cards.find((card) => card.id === id && card.visible))
     .filter((card): card is NonNullable<typeof card> => Boolean(card));
   const journalPosts = blogPosts.slice(0, 2);
+  const normalizedFeaturedProducts = featuredProducts.map(normalizeHomepageProductImages);
   const reviewCards = [customerReviews[7], customerReviews[5], customerReviews[6]].filter(Boolean);
   const colorLinks = [
     { label: "Ivory", href: "/search?q=ivory" },
@@ -57,6 +58,11 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
               The collection is sourced through a family bazaar in Marrakech, with colour verified
               before payment is captured and every ONE OF A KIND piece tied to the actual rug in hand.
             </p>
+            <div className={styles.heroTrustLine} aria-label="Collection service details">
+              <span>ONE OF A KIND inventory</span>
+              <span>Colour verified before payment</span>
+              <span>Ships from Morocco</span>
+            </div>
             <div className={styles.heroActions}>
               <Link className={styles.primaryAction} href={"/shop" as Route}>
                 Shop the collection
@@ -66,34 +72,8 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
               </Link>
             </div>
           </div>
-          <div className={styles.heroStatCard}>
-            <p className={styles.heroStatEyebrow}>Current collection</p>
-            <strong>52 pieces</strong>
-            <p>Free shipping to the United States, Canada, and Australia.</p>
-            <div className={styles.heroStatList}>
-              <span>ONE OF A KIND inventory</span>
-              <span>Colour verified before payment</span>
-              <span>Ships from Morocco</span>
-            </div>
-          </div>
         </div>
       </section>
-
-      <Section width="wide">
-        <ul className={styles.trustStrip} aria-label="Trust highlights">
-          {trustItems.map((item, index) => (
-            <li key={item.id}>
-              <span className={styles.trustIcon} aria-hidden="true">
-                <TrustIcon index={index} />
-              </span>
-              <div className={styles.trustStripCopy}>
-                <strong>{item.label}</strong>
-                <span>{getTrustDescriptor(index)}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </Section>
 
       <Section width="wide">
         <div className={styles.shopCategorySection}>
@@ -122,7 +102,9 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
                 </div>
                 <div className={styles.categoryShowcaseBody}>
                   <p className={styles.categoryShowcaseEyebrow}>{card.title}</p>
-                  <h3>{card.description}</h3>
+                  <h3 className={styles.categoryShowcaseDesktopTitle}>{card.description}</h3>
+                  <h3 className={styles.categoryShowcaseMobileTitle}>{card.title}</h3>
+                  <p className={styles.categoryShowcaseDescription}>{card.description}</p>
                   <span className={styles.categoryShowcaseLink}>
                     Browse {card.title.toLowerCase()}
                   </span>
@@ -151,7 +133,7 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
         </div>
       </Section>
 
-      {featuredProducts.length ? (
+      {normalizedFeaturedProducts.length ? (
         <Section width="wide">
           <div className={styles.currentCollectionSection}>
             <div className={styles.sectionHeadingRow}>
@@ -164,10 +146,10 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
                 </p>
               </div>
               <Link className={styles.inlineSectionLink} href={"/shop" as Route}>
-                See all 52 pieces
+                See the full collection
               </Link>
             </div>
-            <LiveProductRail products={featuredProducts.slice(0, 4)} />
+            <LiveProductRail products={normalizedFeaturedProducts.slice(0, 4)} />
           </div>
         </Section>
       ) : null}
@@ -250,7 +232,7 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
                     className={styles.journalImage}
                     fill
                     sizes="(max-width: 900px) 100vw, 50vw"
-                    src={post.imageSrc}
+                    src={normalizeHomepageJournalImageSrc(post.imageSrc)}
                   />
                 </div>
                 <div className={styles.journalCardBody}>
@@ -307,61 +289,6 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
   );
 }
 
-function TrustIcon({ index }: { index: number }) {
-  const iconKey = index % 4;
-
-  if (iconKey === 0) {
-    return (
-      <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-        <circle cx="12" cy="12" r="8" />
-        <path d="M4 12h16M12 4c2 2.3 3 5 3 8s-1 5.7-3 8M12 4c-2 2.3-3 5-3 8s1 5.7 3 8" />
-      </svg>
-    );
-  }
-
-  if (iconKey === 1) {
-    return (
-      <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-        <path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z" />
-        <circle cx="7" cy="18" r="1.6" />
-        <circle cx="18" cy="18" r="1.6" />
-      </svg>
-    );
-  }
-
-  if (iconKey === 2) {
-    return (
-      <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-        <path d="M4 8h4l1.5-2h5L16 8h4v11H4z" />
-        <circle cx="12" cy="13.5" r="3" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-      <path d="M9 7 5 11l4 4" />
-      <path d="M5 11h9a5 5 0 1 1 0 10h-2" />
-      <path d="M18 4v5h-5" />
-    </svg>
-  );
-}
-
-function getTrustDescriptor(index: number) {
-  switch (index) {
-    case 0:
-      return "See the actual piece before payment is finalized.";
-    case 1:
-      return "Family-trade sourcing and shipping from Morocco.";
-    case 2:
-      return "No separate delivery surcharge at checkout.";
-    case 3:
-      return "Fourteen days to decide once it arrives.";
-    default:
-      return "";
-  }
-}
-
 function StarIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -387,7 +314,7 @@ function LiveProductRail({ products }: { products: CatalogProductCardViewModel[]
             <h3>{product.name}</h3>
             <p className={styles.productPrice}>{product.priceUsdLabel}</p>
             <p className={styles.productSubtitle}>{product.subtitle}</p>
-            <p>{getProductCardDescription(product)}</p>
+            <p className={styles.productDescription}>{getProductCardDescription(product)}</p>
           </div>
         </Link>
       ))}
@@ -400,6 +327,72 @@ function getProductCardDescription(product: CatalogProductCardViewModel) {
   const normalized = candidate.replace(/\s+/g, " ");
   const firstSentence = normalized.match(/.+?[.!?](?:\s|$)/)?.[0] ?? normalized;
 
-  return firstSentence.length > 104 ? `${firstSentence.slice(0, 101).trimEnd()}...` : firstSentence;
+  return firstSentence.length > 104 ? `${firstSentence.slice(0, 101).trimEnd()}…` : firstSentence;
+}
+
+function normalizeHomepageProductImages(
+  product: CatalogProductCardViewModel,
+): CatalogProductCardViewModel {
+  return {
+    ...product,
+    primaryImage: product.primaryImage
+      ? {
+          ...product.primaryImage,
+          src: buildHomepageProductImageUrl(product.primaryImage.publicId),
+        }
+      : undefined,
+    secondaryImage: product.secondaryImage
+      ? {
+          ...product.secondaryImage,
+          src: buildHomepageProductImageUrl(product.secondaryImage.publicId),
+        }
+      : undefined,
+  };
+}
+
+function buildHomepageProductImageUrl(publicId: string) {
+  return buildCloudinaryUrl(publicId, {
+    transformation: {
+      c: "fill",
+      f: "auto",
+      g: "auto",
+      h: 1200,
+      q: "auto",
+      w: 960,
+    },
+  });
+}
+
+function normalizeHomepageJournalImageSrc(src: string) {
+  const publicId = extractCloudinaryPublicId(src);
+
+  if (!publicId) {
+    return src;
+  }
+
+  return buildCloudinaryUrl(publicId, {
+    transformation: {
+      c: "fill",
+      f: "auto",
+      g: "auto",
+      h: 750,
+      q: "auto",
+      w: 1200,
+    },
+  });
+}
+
+function extractCloudinaryPublicId(src: string) {
+  const uploadMarker = "/image/upload/";
+  const uploadIndex = src.indexOf(uploadMarker);
+
+  if (uploadIndex === -1) {
+    return null;
+  }
+
+  const uploadPath = src.slice(uploadIndex + uploadMarker.length);
+  const loomPathIndex = uploadPath.indexOf("loom-hearth/");
+
+  return loomPathIndex === -1 ? uploadPath : uploadPath.slice(loomPathIndex);
 }
 

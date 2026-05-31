@@ -52,10 +52,10 @@
   --space-6: 2rem;
   --space-7: 3rem;
   --space-8: 4rem;
-  --radius-sm: 0.5rem;
-  --radius-md: 1rem;
-  --radius-lg: 1.5rem;
-  --radius-xl: 2rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
   --shadow-soft: 0 16px 40px rgba(34, 33, 38, 0.08);
   --shadow-panel: 0 24px 60px rgba(34, 33, 38, 0.1);
   --site-header-scroll-offset: 11rem;
@@ -163,7 +163,7 @@ p {
   margin: 0 auto;
   padding: var(--space-8);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   background:
     linear-gradient(135deg, #faf7f0, var(--color-wool-cream)),
     linear-gradient(180deg, rgba(198, 106, 61, 0.06), transparent);
@@ -209,7 +209,7 @@ p {
 .placeholder-panel {
   padding: var(--space-5);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
   backdrop-filter: blur(8px);
   box-shadow: var(--shadow-soft);

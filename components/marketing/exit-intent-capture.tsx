@@ -19,7 +19,9 @@ const DISMISSED_STORAGE_KEY = "loom-hearth-studio.exit-intent.dismissed-at";
 const SUBSCRIBED_STORAGE_KEY = "loom-hearth-studio.exit-intent.subscribed";
 const SESSION_STORAGE_KEY = "loom-hearth-studio.exit-intent.shown";
 const DISMISS_SUPPRESSION_DAYS = 14;
-const MINIMUM_ENGAGEMENT_MS = 9000;
+const DESKTOP_MINIMUM_ENGAGEMENT_MS = 30000;
+const MOBILE_MINIMUM_ENGAGEMENT_MS = 45000;
+const MOBILE_TRIGGER_SCROLL_RATIO = 0.5;
 
 export function ExitIntentCapture() {
   const pathname = usePathname();
@@ -27,8 +29,10 @@ export function ExitIntentCapture() {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
+  const reachedMobileScrollDepthRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
   const [canTrigger, setCanTrigger] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState<boolean | null>(null);
   const [actionState, formAction] = useActionState<NewsletterSignupActionState, FormData>(
     submitNewsletterSignupAction,
     initialNewsletterSignupActionState,
@@ -41,16 +45,33 @@ export function ExitIntentCapture() {
     pathname.startsWith("/terms-and-conditions");
 
   useEffect(() => {
-    if (shouldSkipRoute || hasRecentCaptureInteraction()) {
+    const mediaQuery = window.matchMedia("(max-width: 767px), (pointer: coarse)");
+    const updateViewportMode = () => setIsMobileViewport(mediaQuery.matches);
+
+    updateViewportMode();
+    mediaQuery.addEventListener("change", updateViewportMode);
+
+    return () => mediaQuery.removeEventListener("change", updateViewportMode);
+  }, []);
+
+  useEffect(() => {
+    setCanTrigger(false);
+    reachedMobileScrollDepthRef.current = false;
+
+    if (isMobileViewport === null || shouldSkipRoute || hasRecentCaptureInteraction()) {
       return;
     }
 
-    const timeoutId = window.setTimeout(() => setCanTrigger(true), MINIMUM_ENGAGEMENT_MS);
+    const minimumEngagementMs = isMobileViewport
+      ? MOBILE_MINIMUM_ENGAGEMENT_MS
+      : DESKTOP_MINIMUM_ENGAGEMENT_MS;
+    const timeoutId = window.setTimeout(() => setCanTrigger(true), minimumEngagementMs);
+
     return () => window.clearTimeout(timeoutId);
-  }, [shouldSkipRoute]);
+  }, [isMobileViewport, pathname, shouldSkipRoute]);
 
   useEffect(() => {
-    if (!canTrigger || isOpen || shouldSkipRoute) {
+    if (!canTrigger || isOpen || shouldSkipRoute || isMobileViewport === null) {
       return;
     }
 
@@ -65,6 +86,10 @@ export function ExitIntentCapture() {
     };
 
     const handleMouseOut = (event: MouseEvent) => {
+      if (isMobileViewport) {
+        return;
+      }
+
       if (event.clientY <= 0 && !event.relatedTarget) {
         openCapture();
       }
@@ -73,10 +98,32 @@ export function ExitIntentCapture() {
     let lastScrollY = window.scrollY;
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      const scrollableDistance = Math.max(
+        document.documentElement.scrollHeight - window.innerHeight,
+        1,
+      );
+      const scrollDepth = currentScrollY / scrollableDistance;
       const isReturningTowardTop = lastScrollY - currentScrollY > 80 && currentScrollY < 260;
       lastScrollY = currentScrollY;
 
-      if (isReturningTowardTop && (itemCount > 0 || document.body.scrollHeight > window.innerHeight * 1.8)) {
+      if (isMobileViewport && scrollDepth >= MOBILE_TRIGGER_SCROLL_RATIO) {
+        reachedMobileScrollDepthRef.current = true;
+      }
+
+      if (
+        !isMobileViewport &&
+        isReturningTowardTop &&
+        (itemCount > 0 || document.body.scrollHeight > window.innerHeight * 1.8)
+      ) {
+        openCapture();
+      }
+
+      if (
+        isMobileViewport &&
+        itemCount > 0 &&
+        reachedMobileScrollDepthRef.current &&
+        isReturningTowardTop
+      ) {
         openCapture();
       }
     };
@@ -88,7 +135,7 @@ export function ExitIntentCapture() {
       document.removeEventListener("mouseout", handleMouseOut);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [canTrigger, isOpen, itemCount, shouldSkipRoute]);
+  }, [canTrigger, isMobileViewport, isOpen, itemCount, shouldSkipRoute]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -177,12 +224,13 @@ export function ExitIntentCapture() {
               type="email"
               placeholder="Your email address"
               autoComplete="email"
+              spellCheck={false}
               required
             />
             <SubmitButton />
           </div>
           {actionState.message ? (
-            <p className={styles.status} role="status">
+            <p className={styles.status} role="status" aria-live="polite">
               {actionState.message}
             </p>
           ) : null}
@@ -200,7 +248,7 @@ function SubmitButton() {
 
   return (
     <button className={styles.submitButton} type="submit" disabled={pending}>
-      {pending ? "Sending..." : "Send the guide"}
+      {pending ? "Sending…" : "Send the guide"}
     </button>
   );
 }

@@ -26,11 +26,22 @@ export function SearchPageView({ query, results, totalCount }: SearchPageViewPro
         <div className={styles.searchHero}>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>Search</p>
-            <h1>Find a piece by material, style, category, or detail.</h1>
+            <h1>Search the collection.</h1>
             <p className={styles.lede}>
               Search across rugs, poufs, pillows, and decor. Try terms like Beni Ourain, vintage,
               wool, cactus silk, pouf, or a room direction.
             </p>
+            <div className={styles.searchSuggestionRail} aria-label="Suggested searches">
+              {["Beni Ourain", "Vintage", "Wool", "Pouf"].map((suggestion) => (
+                <Link
+                  key={suggestion}
+                  className={styles.searchSuggestion}
+                  href={`/search?q=${encodeURIComponent(suggestion)}`}
+                >
+                  {suggestion}
+                </Link>
+              ))}
+            </div>
           </div>
           <form className={styles.searchForm} action="/search">
             <label className={styles.searchLabel} htmlFor="site-search">
@@ -56,7 +67,7 @@ export function SearchPageView({ query, results, totalCount }: SearchPageViewPro
 
       <Section tone="muted" width="wide">
         <div className={styles.searchSummary}>
-          <p>
+          <p className={styles.searchSummaryText}>
             {hasQuery
               ? `${results.length} ${results.length === 1 ? "result" : "results"} for "${query}"`
               : `${totalCount} pieces in the collection`}
@@ -75,7 +86,7 @@ export function SearchPageView({ query, results, totalCount }: SearchPageViewPro
 
       <Section width="wide">
         {results.length ? (
-          <div className={styles.productGrid}>
+          <div className={`${styles.productGrid} ${styles.searchProductGrid}`}>
             {results.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

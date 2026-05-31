@@ -46,6 +46,15 @@ export function LiveProductCardImage({
     setFailed(true);
   };
 
+  const handleImageLoad = (
+    event: SyntheticEvent<HTMLImageElement>,
+    setFailed: (value: boolean) => void,
+  ) => {
+    if (event.currentTarget.naturalWidth === 0) {
+      handleImageError(event, setFailed);
+    }
+  };
+
   if (!showPrimaryImage || !primaryImage) {
     return (
       <PlaceholderMedia
@@ -64,6 +73,7 @@ export function LiveProductCardImage({
         className={`${styles.productImage} ${styles.liveProductImagePrimary}`}
         loading="lazy"
         onError={(event) => handleImageError(event, setPrimaryImageFailed)}
+        onLoad={(event) => handleImageLoad(event, setPrimaryImageFailed)}
         src={primaryImage.src}
       />
       {showSecondaryImage && secondaryImage ? (
@@ -73,6 +83,7 @@ export function LiveProductCardImage({
           className={`${styles.productImage} ${styles.liveProductImageSecondary}`}
           loading="lazy"
           onError={(event) => handleImageError(event, setSecondaryImageFailed)}
+          onLoad={(event) => handleImageLoad(event, setSecondaryImageFailed)}
           src={secondaryImage.src}
         />
       ) : null}

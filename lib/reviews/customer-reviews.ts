@@ -26,7 +26,7 @@ export const customerReviews: CustomerReview[] = [
     customerName: "Mia R.",
     country: "Australia",
     productType: "Pillows",
-    body: "Really happy with the pillows. Good texture, nice colors, didnt feel cheap at all.",
+    body: "Really happy with the pillows. Good texture, nice colors, didn’t feel cheap at all.",
   },
   {
     id: "ashley-t-rug",
@@ -47,7 +47,7 @@ export const customerReviews: CustomerReview[] = [
     customerName: "Hannah B.",
     country: "Australia",
     productType: "Rug",
-    body: "I had been looking for something that didnt feel mass-produced, and this was exactly that. The room felt warmer the second we put it down.",
+    body: "I had been looking for something that didn’t feel mass-produced, and this was exactly that. The room felt warmer the second we put it down.",
   },
   {
     id: "marcus-d-pillows",

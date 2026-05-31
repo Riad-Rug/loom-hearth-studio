@@ -370,13 +370,13 @@ export function AccountAuthPageView({
     currentFeedbackState.status === "submitting"
       ? mode === "login"
         ? isAdminSurface
-          ? "Signing you into admin..."
-          : "Signing you in..."
+          ? "Signing you into admin…"
+          : "Signing you in…"
         : mode === "register"
-          ? "Creating your account..."
+          ? "Creating your account…"
           : isResetMode
-            ? "Updating your password..."
-            : "Sending reset email..."
+            ? "Updating your password…"
+            : "Sending reset email…"
       : currentFeedbackState.message;
   const formTitle =
     mode === "forgot-password" && isResetMode ? "Set a new password" : content.formTitle;
