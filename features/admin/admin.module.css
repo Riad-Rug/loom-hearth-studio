@@ -69,8 +69,8 @@
 .secondaryActionCard p,
 .dashboardMetaInline,
 .tableSummary p,
-.productCell span,
-.productCell em,
+.productText span,
+.productText em,
 .dateCell span,
 .emptyState p {
   margin: 0;
@@ -501,7 +501,7 @@
 
 .table {
   width: 100%;
-  min-width: 1220px;
+  min-width: 960px;
   border-collapse: collapse;
   table-layout: fixed;
 }
@@ -523,30 +523,37 @@
 
 .table th:nth-child(3),
 .table td:nth-child(3) {
-  width: 28rem;
+  width: 5.5rem;
 }
 
 .table th:nth-child(4),
-.table td:nth-child(4),
-.table th:nth-child(5),
-.table td:nth-child(5),
-.table th:nth-child(6),
-.table td:nth-child(6),
-.table th:nth-child(7),
-.table td:nth-child(7) {
-  width: 8rem;
+.table td:nth-child(4) {
+  width: 6.4rem;
 }
 
-.table th:nth-child(8),
-.table td:nth-child(8),
-.table th:nth-child(9),
-.table td:nth-child(9) {
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  width: 7.2rem;
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
+  width: 6.9rem;
+}
+
+.table th:nth-child(7),
+.table td:nth-child(7) {
   width: 7.8rem;
 }
 
-.table th:nth-child(10),
-.table td:nth-child(10) {
-  width: 13.5rem;
+.table th:nth-child(8),
+.table td:nth-child(8) {
+  width: 10.25rem;
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 24rem;
 }
 
 .tableRow {
@@ -583,14 +590,11 @@
   cursor: pointer;
 }
 
-.thumbnailCell {
-  width: 5.6rem;
-}
-
 .thumbnailFrame {
   display: grid;
   place-items: center;
-  width: 4.2rem;
+  flex: 0 0 auto;
+  width: 3.8rem;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   border: 1px solid rgba(34, 33, 38, 0.08);
@@ -603,6 +607,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.thumbnailImage[hidden],
+.thumbnailFallback[hidden] {
+  display: none;
 }
 
 .thumbnailFallback {
@@ -618,34 +627,41 @@
   letter-spacing: 0.08em;
 }
 
-.productCell,
 .dateCell,
 .actionCluster {
   display: grid;
 }
 
 .productCell {
-  gap: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
   min-width: 0;
 }
 
-.productCell strong,
+.productText {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.productText strong,
 .dateCell strong {
   font-size: 0.98rem;
   color: var(--color-charcoal-ink);
 }
 
-.productCell span,
+.productText span,
 .dateCell span {
   font-size: 0.85rem;
 }
 
-.productCell strong,
-.productCell span {
+.productText strong,
+.productText span {
   overflow-wrap: anywhere;
 }
 
-.productCell em {
+.productText em {
   color: var(--color-clay-terracotta);
   font-size: 0.78rem;
   font-style: normal;
@@ -686,18 +702,19 @@
 }
 
 .actionCluster {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: flex-start;
-  min-width: 12.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  justify-content: stretch;
 }
 
 .actionCluster .inlineActionLink,
 .actionCluster .dangerAction {
-  min-height: 2.3rem;
-  padding: 0.56rem 0.72rem;
-  font-size: 0.88rem;
+  width: 100%;
+  min-height: 2.2rem;
+  padding: 0.5rem 0.45rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
 }
 
 .actionForm {
@@ -1311,7 +1328,7 @@
 }
 
 .tableCard .table {
-  min-width: 1260px;
+  min-width: 960px;
 }
 
 .table thead th {

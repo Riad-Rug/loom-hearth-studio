@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   bulkAdminProductsAction,
@@ -23,6 +23,7 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
   const [categoryFilter, setCategoryFilter] = useState<"all" | (typeof productCategoryOptions)[number]>("all");
   const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]>("updated-desc");
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [bulkAction, setBulkAction] = useState("");
 
   if (!props.items.length) {
     return (
@@ -62,6 +63,12 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
   const visibleProductIds = visibleItems.map((item) => item.id);
   const selectedVisibleProductCount = visibleProductIds.filter((id) => selectedProductIdSet.has(id)).length;
   const allVisibleProductsSelected = visibleItems.length > 0 && selectedVisibleProductCount === visibleItems.length;
+
+  useEffect(() => {
+    if (!selectedProductIds.length && bulkAction) {
+      setBulkAction("");
+    }
+  }, [bulkAction, selectedProductIds.length]);
 
   function toggleProductSelection(productId: string) {
     setSelectedProductIds((currentIds) =>
@@ -178,7 +185,12 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
           ))}
           <label className={styles.bulkActionField}>
             <span>Bulk action</span>
-            <select defaultValue="" disabled={!selectedProductIds.length} name="bulkAction" required>
+            <select
+              disabled={!selectedProductIds.length}
+              name="bulkAction"
+              onChange={(event) => setBulkAction(event.target.value)}
+              value={bulkAction}
+            >
               <option disabled value="">
                 Choose action
               </option>
@@ -188,7 +200,7 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
               <option value="delete">Delete selected</option>
             </select>
           </label>
-          <button className={styles.bulkActionButton} disabled={!selectedProductIds.length} type="submit">
+          <button className={styles.bulkActionButton} disabled={!selectedProductIds.length || !bulkAction} type="submit">
             Apply
           </button>
         </form>
@@ -210,14 +222,12 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
                     />
                   </label>
                 </th>
-                <th>Image</th>
-                <th>Name</th>
+                <th>Product</th>
                 <th>Category</th>
                 <th>Status</th>
                 <th>Homepage</th>
                 <th>Price</th>
                 <th>Last updated</th>
-                <th>Created</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -239,38 +249,14 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
                       />
                     </label>
                   </td>
-                  <td className={styles.thumbnailCell}>
-                    <div className={styles.thumbnailFrame}>
-                      {item.imageUrl ? (
-                        <>
-                          <img
-                            alt={item.imageAlt}
-                            className={styles.thumbnailImage}
-                            loading="lazy"
-                            onError={(event) => {
-                              event.currentTarget.hidden = true;
-                              const fallback = event.currentTarget.nextElementSibling;
-
-                              if (fallback instanceof HTMLElement) {
-                                fallback.hidden = false;
-                              }
-                            }}
-                            src={item.imageUrl}
-                          />
-                          <span className={styles.thumbnailFallback} hidden>
-                            Image unavailable
-                          </span>
-                        </>
-                      ) : (
-                        <span className={styles.thumbnailFallback}>No image</span>
-                      )}
-                    </div>
-                  </td>
                   <td>
                     <div className={styles.productCell}>
-                      <strong>{item.name}</strong>
-                      <span>{item.routePath}</span>
-                      {!item.hasImage ? <em>Missing hero image</em> : null}
+                      <ProductThumbnail item={item} />
+                      <div className={styles.productText}>
+                        <strong>{item.name}</strong>
+                        <span>{item.routePath}</span>
+                        {!item.hasImage ? <em>Missing hero image</em> : null}
+                      </div>
                     </div>
                   </td>
                   <td>{formatCategoryLabel(item.category)}</td>
@@ -282,13 +268,6 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
                   <td>
                     <div className={styles.dateCell}>
                       <strong>{item.updatedAtLabel}</strong>
-                      <span>{formatAbsoluteDate(item.updatedAt)}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className={styles.dateCell}>
-                      <strong>{item.createdAtLabel}</strong>
-                      <span>{formatAbsoluteDate(item.createdAt)}</span>
                     </div>
                   </td>
                   <td>
@@ -335,20 +314,62 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
   );
 }
 
+function ProductThumbnail({ item }: { item: AdminProductListItem }) {
+  const [imageState, setImageState] = useState<"loading" | "loaded" | "failed">(
+    item.imageUrl ? "loading" : "failed",
+  );
+
+  useEffect(() => {
+    if (!item.imageUrl) {
+      setImageState("failed");
+      return;
+    }
+
+    let isMounted = true;
+    const image = new window.Image();
+
+    setImageState("loading");
+    image.onload = () => {
+      if (isMounted) {
+        setImageState("loaded");
+      }
+    };
+    image.onerror = () => {
+      if (isMounted) {
+        setImageState("failed");
+      }
+    };
+    image.src = item.imageUrl;
+
+    return () => {
+      isMounted = false;
+    };
+  }, [item.imageUrl]);
+
+  return (
+    <div className={styles.thumbnailFrame}>
+      {item.imageUrl && imageState === "loaded" ? (
+        <img
+          alt={item.imageAlt}
+          className={styles.thumbnailImage}
+          loading="lazy"
+          src={item.imageUrl}
+        />
+      ) : (
+        <span className={styles.thumbnailFallback}>
+          {imageState === "loading" ? "Loading" : item.imageUrl ? "Unavailable" : "No image"}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function formatCategoryLabel(category: AdminProductListItem["category"]) {
   return category.charAt(0).toUpperCase() + category.slice(1);
 }
 
 function formatStatusLabel(status: AdminProductListItem["status"]) {
   return status.charAt(0).toUpperCase() + status.slice(1);
-}
-
-function formatAbsoluteDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
 }
 
 function formatBulkActionLabel(value: FormDataEntryValue) {
