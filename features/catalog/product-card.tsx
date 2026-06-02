@@ -74,7 +74,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className={styles.productMediaOverlay} aria-hidden="true" />
             <div className={styles.productMetaOverlay} aria-hidden="true">
               <p className={styles.productOverlaySubtitle}>{product.subtitle}</p>
-              <p className={styles.productOverlaySummary}>{descriptor}</p>
+              {descriptor ? <p className={styles.productOverlaySummary}>{descriptor}</p> : null}
             </div>
           </>
         ) : (
@@ -92,6 +92,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {product.dimensionsLabel ? (
           <p className={styles.productDimensions}>{product.dimensionsLabel}</p>
         ) : null}
+        {descriptor ? <p className={styles.productDescriptor}>{descriptor}</p> : null}
         <p className={styles.productPrice}>{product.priceUsdLabel}</p>
       </div>
     </Link>
@@ -100,10 +101,36 @@ export function ProductCard({ product }: ProductCardProps) {
 
 
 function getDescriptor(description: string, merchandisingNote: string) {
-  const candidate = description.trim() || merchandisingNote.trim();
-  const normalized = candidate.replace(/\s+/g, " ");
-  const firstSentence = normalized.match(/.+?[.!?](?:\s|$)/)?.[0] ?? normalized;
+  const candidates = [merchandisingNote, description]
+    .map((value) => value.trim().replace(/\s+/g, " "))
+    .filter(Boolean);
 
-  return firstSentence.length > 110 ? `${firstSentence.slice(0, 107).trimEnd()}...` : firstSentence;
+  for (const candidate of candidates) {
+    const firstSentence = candidate.match(/.+?[.!?](?:\s|$)/)?.[0]?.trim() ?? candidate;
+
+    if (!isUsefulDescriptor(firstSentence)) {
+      continue;
+    }
+
+    return firstSentence.length > 110 ? `${firstSentence.slice(0, 107).trimEnd()}…` : firstSentence;
+  }
+
+  return null;
+}
+
+function isUsefulDescriptor(value: string) {
+  const normalized = value.trim();
+
+  if (normalized.length < 24) {
+    return false;
+  }
+
+  if (!/[.!?,]/.test(normalized) && normalized === normalized.toLowerCase()) {
+    return false;
+  }
+
+  return /wool|cotton|pile|woven|hand|rug|pouf|pillow|vessel|ceramic|Marrakech|Morocco|Atlas|room|sofa|shelf|table|floor/i.test(
+    normalized,
+  );
 }
 

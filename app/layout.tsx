@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { MicrosoftClarity } from "@/components/analytics/microsoft-clarity";
 import { MarketingPixels } from "@/components/analytics/marketing-pixels";
 import { CookieConsentBanner } from "@/components/compliance/cookie-consent-banner";
 import { CookieConsentProvider } from "@/components/compliance/cookie-consent-provider";
@@ -22,6 +23,7 @@ const marketingPixelIds = {
   pinterestTagId: process.env.NEXT_PUBLIC_PINTEREST_TAG_ID?.trim() || "",
 };
 const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || "";
+const microsoftClarityId = process.env.NEXT_PUBLIC_MICROSOFT_CLARITY_ID?.trim() || "";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
@@ -70,6 +72,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <CartProvider>
           <CookieConsentProvider>
             <GoogleAnalytics measurementId={gaMeasurementId} />
+            <MicrosoftClarity projectId={microsoftClarityId} />
             <MarketingPixels {...marketingPixelIds} />
             <AppShell
               header={<SiteHeader />}

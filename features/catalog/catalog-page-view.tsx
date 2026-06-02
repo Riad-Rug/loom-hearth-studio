@@ -2,8 +2,8 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 import { Section } from "@/components/layout/section";
 import {
@@ -37,11 +37,18 @@ type CatalogPageViewProps = {
 
 export function CatalogPageView({ category, products, collection }: CatalogPageViewProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [sortOption, setSortOption] = useState<CatalogSortOption>("Featured");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [priceFilter, setPriceFilter] = useState<CatalogPriceFilter>("all");
-  const [sizeFilter, setSizeFilter] = useState<CatalogSizeFilter>("all");
+  const [sortOption, setSortOption] = useState<CatalogSortOption>(() =>
+    parseSortOption(searchParams.get("sort")),
+  );
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
+  const [priceFilter, setPriceFilter] = useState<CatalogPriceFilter>(() =>
+    parsePriceFilter(searchParams.get("price")),
+  );
+  const [sizeFilter, setSizeFilter] = useState<CatalogSizeFilter>(() =>
+    parseSizeFilter(searchParams.get("size")),
+  );
   const categoryMeta =
     category ? catalogCategories.find((item) => item.key === category) ?? null : null;
   const heroEyebrow =
@@ -108,7 +115,8 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
       return true;
     });
   }, [priceFilter, searchQuery, sizeFilter, sortedProducts]);
-  const productCountLabel = `${filteredProducts.length} ${
+  const totalProductCountLabel = `${products.length} ${products.length === 1 ? "piece" : "pieces"}`;
+  const resultCountLabel = `${filteredProducts.length} ${
     filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
   const sidebarCopy =
@@ -117,7 +125,13 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
       : "Handcrafted rugs, poufs, and decor from Marrakech. ONE OF A KIND pieces do not return once sold.";
   const selectedCategoryHref =
     collection?.href && hasExactCategoryLink ? collection.href : categoryMeta?.href ?? "/shop";
-  const hasActiveFilters = Boolean(searchQuery.trim()) || priceFilter !== "all" || sizeFilter !== "all";
+  const hasActiveFilters =
+    Boolean(searchQuery.trim()) ||
+    priceFilter !== "all" ||
+    sizeFilter !== "all" ||
+    sortOption !== "Featured";
+  const primaryHeroActionLabel = category || collection?.href ? "Browse all pieces" : "Shop rugs";
+  const primaryHeroActionHref = category || collection?.href ? "#shop-products" : "/shop/rugs";
   const lookbookSceneId = searchParams.get("scene");
   const fromLookbook = searchParams.get("from") === "lookbook";
   const lookbookContext = useMemo(() => {
@@ -128,10 +142,29 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     return lookbookSceneContext.find((item) => item.id === lookbookSceneId) ?? null;
   }, [fromLookbook, lookbookSceneId]);
 
+  useEffect(() => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    const trimmedQuery = searchQuery.trim();
+
+    updateQueryParam(nextParams, "q", trimmedQuery);
+    updateQueryParam(nextParams, "price", priceFilter === "all" ? "" : priceFilter);
+    updateQueryParam(nextParams, "size", sizeFilter === "all" ? "" : sizeFilter);
+    updateQueryParam(nextParams, "sort", sortOption === "Featured" ? "" : sortOption);
+
+    const nextQuery = nextParams.toString();
+    const nextHref = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+    const currentHref = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
+
+    if (nextHref !== currentHref) {
+      router.replace(nextHref as Route, { scroll: false });
+    }
+  }, [pathname, priceFilter, router, searchParams, searchQuery, sizeFilter, sortOption]);
+
   const clearAllFilters = () => {
     setSearchQuery("");
     setPriceFilter("all");
     setSizeFilter("all");
+    setSortOption("Featured");
   };
 
   const renderCategoryRail = () => (
@@ -169,12 +202,15 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
       <Section className={styles.mobileShopHeader} tone="muted" width="wide">
         <div className={styles.mobileTitleRow}>
           <h1>{heroTitle}</h1>
-          <p>{productCountLabel}</p>
+          <p>{totalProductCountLabel}</p>
         </div>
+        <p className={styles.mobileShopIntro}>
+          Handcrafted rugs, poufs, pillows, and decor sourced from Marrakech.
+        </p>
         {renderCategoryRail()}
         <div className={`${styles.catalogToolbar} ${styles.mobileCatalogToolbar}`}>
           <p className={styles.toolbarSummary}>
-            <span className={styles.toolbarCount}>{productCountLabel}</span>
+            <span className={styles.toolbarCount}>{resultCountLabel}</span>
             <span className={styles.toolbarTrustNote}>Every rug is ONE OF A KIND. Sold pieces are not restocked.</span>
           </p>
           <div className={styles.compactToolbarRow}>
@@ -182,23 +218,27 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
               <label className={styles.srOnly} htmlFor="catalog-search-mobile">
                 Search collection
               </label>
-              <input
-                id="catalog-search-mobile"
-                className={styles.searchInlineInput}
-                type="search"
-                placeholder="Search by name, size, or material"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.currentTarget.value)}
-              />
+                <input
+                  id="catalog-search-mobile"
+                  name="q"
+                  className={styles.searchInlineInput}
+                  type="search"
+                  placeholder="Search by name, size, or material"
+                  value={searchQuery}
+                  autoComplete="off"
+                  onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                  spellCheck={false}
+                />
             </div>
             <div className={styles.compactSelectShell}>
               <label className={styles.srOnly} htmlFor="catalog-category-mobile">
                 Category
               </label>
-              <select
-                id="catalog-category-mobile"
-                className={styles.compactSelect}
-                value={selectedCategoryHref}
+                <select
+                  id="catalog-category-mobile"
+                  name="category"
+                  className={styles.compactSelect}
+                  value={selectedCategoryHref}
                 onChange={(event) => router.push(event.currentTarget.value as Route)}
               >
                 <option value="/shop">Category: All</option>
@@ -213,9 +253,10 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
               <label className={styles.srOnly} htmlFor="catalog-price-mobile">
                 Price
               </label>
-              <select
-                id="catalog-price-mobile"
-                className={styles.compactSelect}
+                <select
+                  id="catalog-price-mobile"
+                  name="price"
+                  className={styles.compactSelect}
                 value={priceFilter}
                 onChange={(event) => setPriceFilter(event.currentTarget.value as CatalogPriceFilter)}
               >
@@ -230,9 +271,10 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
               <label className={styles.srOnly} htmlFor="catalog-size-mobile">
                 Size
               </label>
-              <select
-                id="catalog-size-mobile"
-                className={styles.compactSelect}
+                <select
+                  id="catalog-size-mobile"
+                  name="size"
+                  className={styles.compactSelect}
                 value={sizeFilter}
                 onChange={(event) => setSizeFilter(event.currentTarget.value as CatalogSizeFilter)}
               >
@@ -247,9 +289,10 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
               <label className={styles.srOnly} htmlFor="catalog-sort-mobile">
                 Sort
               </label>
-              <select
-                id="catalog-sort-mobile"
-                className={styles.compactSelect}
+                <select
+                  id="catalog-sort-mobile"
+                  name="sort"
+                  className={styles.compactSelect}
                 value={sortOption}
                 onChange={(event) => setSortOption(event.currentTarget.value as CatalogSortOption)}
               >
@@ -275,9 +318,17 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
             <p className={styles.eyebrow}>{heroEyebrow}</p>
             <h1>{heroTitle}</h1>
             <p>{heroCopy}</p>
+            <div className={styles.shopHeroActions}>
+              <Link className={styles.primaryAction} href={primaryHeroActionHref as Route}>
+                {primaryHeroActionLabel}
+              </Link>
+              <Link className={styles.secondaryAction} href="/sourcing">
+                Read how we source
+              </Link>
+            </div>
           </div>
           <div className={styles.shopHeroAside} aria-label="Collection service details">
-            <p className={styles.shopHeroCount}>{productCountLabel}</p>
+            <p className={styles.shopHeroCount}>{totalProductCountLabel}</p>
             <div className={styles.shopHeroHighlights}>
               <span>One of a kind inventory</span>
               <span>Colour verified before payment</span>
@@ -287,7 +338,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         </div>
       </Section>
 
-      <Section className={styles.productsSection} width="wide">
+      <Section className={styles.productsSection} id="shop-products" width="wide">
         <div className={styles.catalogShell}>
           <aside className={styles.catalogSidebar}>
             <div className={styles.sidebarPanel}>
@@ -317,7 +368,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                   <h2>Find the piece that fits the room.</h2>
                 </div>
                 <p className={styles.toolbarSummary}>
-                  <span className={styles.toolbarCount}>{productCountLabel}</span>
+                  <span className={styles.toolbarCount}>{resultCountLabel}</span>
                   <span className={styles.toolbarTrustNote}>One of a kind pieces are not restocked.</span>
                 </p>
               </div>
@@ -328,11 +379,14 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                   </label>
                   <input
                     id="catalog-search"
+                    name="q"
                     className={styles.searchInlineInput}
                     type="search"
                     placeholder="Search by name, size, or material"
                     value={searchQuery}
+                    autoComplete="off"
                     onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                    spellCheck={false}
                   />
                 </div>
                 <div className={styles.compactSelectShell}>
@@ -341,6 +395,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                   </label>
                   <select
                     id="catalog-category"
+                    name="category"
                     className={styles.compactSelect}
                     value={selectedCategoryHref}
                     onChange={(event) => router.push(event.currentTarget.value as Route)}
@@ -359,6 +414,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                   </label>
                   <select
                     id="catalog-price"
+                    name="price"
                     className={styles.compactSelect}
                     value={priceFilter}
                     onChange={(event) => setPriceFilter(event.currentTarget.value as CatalogPriceFilter)}
@@ -376,6 +432,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                   </label>
                   <select
                     id="catalog-size"
+                    name="size"
                     className={styles.compactSelect}
                     value={sizeFilter}
                     onChange={(event) => setSizeFilter(event.currentTarget.value as CatalogSizeFilter)}
@@ -393,6 +450,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                   </label>
                   <select
                     id="catalog-sort"
+                    name="sort"
                     className={styles.compactSelect}
                     value={sortOption}
                     onChange={(event) => setSortOption(event.currentTarget.value as CatalogSortOption)}
@@ -474,6 +532,31 @@ function sortCatalogProducts(
     default:
       return sortableProducts;
   }
+}
+
+function updateQueryParam(params: URLSearchParams, key: string, value: string) {
+  if (value) {
+    params.set(key, value);
+    return;
+  }
+
+  params.delete(key);
+}
+
+function parseSortOption(value: string | null): CatalogSortOption {
+  return catalogSortOptions.includes(value as CatalogSortOption)
+    ? (value as CatalogSortOption)
+    : "Featured";
+}
+
+function parsePriceFilter(value: string | null): CatalogPriceFilter {
+  return value === "under-300" || value === "300-600" || value === "600-plus"
+    ? value
+    : "all";
+}
+
+function parseSizeFilter(value: string | null): CatalogSizeFilter {
+  return value === "small" || value === "medium" || value === "large" ? value : "all";
 }
 
 const priceFilterOptions: Array<{

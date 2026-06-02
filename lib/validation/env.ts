@@ -9,6 +9,11 @@ export const envDefinitions = {
     required: false,
     description: "GA4 measurement ID for consent-aware storefront analytics.",
   },
+  NEXT_PUBLIC_MICROSOFT_CLARITY_ID: {
+    scope: "public",
+    required: false,
+    description: "Microsoft Clarity project ID for consent-aware session analytics.",
+  },
   NEXT_PUBLIC_GOOGLE_ADS_ID: {
     scope: "public",
     required: false,
@@ -102,6 +107,7 @@ export const envGroups = {
   site: [
     "NEXT_PUBLIC_SITE_URL",
     "NEXT_PUBLIC_GA_MEASUREMENT_ID",
+    "NEXT_PUBLIC_MICROSOFT_CLARITY_ID",
     "NEXT_PUBLIC_GOOGLE_ADS_ID",
     "NEXT_PUBLIC_META_PIXEL_ID",
     "NEXT_PUBLIC_PINTEREST_TAG_ID",
@@ -145,6 +151,7 @@ export function getPublicEnv() {
   return {
     NEXT_PUBLIC_SITE_URL: env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_GA_MEASUREMENT_ID: env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+    NEXT_PUBLIC_MICROSOFT_CLARITY_ID: env.NEXT_PUBLIC_MICROSOFT_CLARITY_ID,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   } as const;
 }
