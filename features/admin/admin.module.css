@@ -360,7 +360,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .groupPanel,
@@ -408,14 +408,14 @@
 .tableCard {
   display: grid;
   gap: var(--space-4);
-  padding: var(--space-4);
+  padding: var(--space-5);
 }
 
 .tableToolbar {
   display: grid;
   grid-template-columns: minmax(16rem, 2.2fr) repeat(3, minmax(10rem, 1fr));
   gap: var(--space-3);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .searchField,
@@ -438,19 +438,77 @@
   justify-content: space-between;
 }
 
+.bulkActionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: var(--radius-lg);
+  background: rgba(245, 239, 228, 0.42);
+}
+
+.bulkActionBar p {
+  margin: 0;
+  color: rgba(34, 33, 38, 0.7);
+}
+
+.bulkActionBar strong {
+  color: var(--color-charcoal-ink);
+}
+
+.bulkActionForm {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.bulkActionField {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.bulkActionField span {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(34, 33, 38, 0.58);
+}
+
+.bulkActionButton {
+  min-height: 2.75rem;
+  padding: 0.72rem 1rem;
+  border: 1px solid rgba(34, 33, 38, 0.14);
+  border-radius: 999px;
+  background: var(--color-charcoal-ink);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bulkActionButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .tableScroller {
   overflow-x: auto;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: var(--radius-lg);
 }
 
 .table {
   width: 100%;
-  min-width: 980px;
+  min-width: 1220px;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .table th,
 .table td {
-  padding: 1.1rem 0.9rem;
+  padding: 1rem 0.85rem;
   border-bottom: 1px solid rgba(34, 33, 38, 0.08);
   text-align: left;
   vertical-align: middle;
@@ -461,6 +519,34 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(34, 33, 38, 0.62);
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 28rem;
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4),
+.table th:nth-child(5),
+.table td:nth-child(5),
+.table th:nth-child(6),
+.table td:nth-child(6),
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  width: 8rem;
+}
+
+.table th:nth-child(8),
+.table td:nth-child(8),
+.table th:nth-child(9),
+.table td:nth-child(9) {
+  width: 7.8rem;
+}
+
+.table th:nth-child(10),
+.table td:nth-child(10) {
+  width: 13.5rem;
 }
 
 .tableRow {
@@ -475,16 +561,40 @@
   background: rgba(245, 239, 228, 0.28);
 }
 
+.tableRowSelected,
+.tableRowSelected:hover {
+  background: rgba(184, 94, 59, 0.09);
+}
+
+.selectCell {
+  width: 3rem;
+  text-align: center;
+}
+
+.checkboxLabel {
+  display: inline-grid;
+  place-items: center;
+}
+
+.selectionCheckbox {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--color-clay-terracotta);
+  cursor: pointer;
+}
+
 .thumbnailCell {
-  width: 6rem;
+  width: 5.6rem;
 }
 
 .thumbnailFrame {
-  width: 4rem;
+  display: grid;
+  place-items: center;
+  width: 4.2rem;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   border: 1px solid rgba(34, 33, 38, 0.08);
-  border-radius: 1rem;
+  border-radius: 0.65rem;
   background: linear-gradient(180deg, rgba(245, 239, 228, 0.9), rgba(232, 225, 213, 0.7));
 }
 
@@ -516,6 +626,7 @@
 
 .productCell {
   gap: 0.25rem;
+  min-width: 0;
 }
 
 .productCell strong,
@@ -527,6 +638,11 @@
 .productCell span,
 .dateCell span {
   font-size: 0.85rem;
+}
+
+.productCell strong,
+.productCell span {
+  overflow-wrap: anywhere;
 }
 
 .productCell em {
@@ -570,9 +686,18 @@
 }
 
 .actionCluster {
-  grid-template-columns: repeat(2, minmax(0, max-content));
-  gap: 0.6rem;
-  justify-content: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  min-width: 12.5rem;
+}
+
+.actionCluster .inlineActionLink,
+.actionCluster .dangerAction {
+  min-height: 2.3rem;
+  padding: 0.56rem 0.72rem;
+  font-size: 0.88rem;
 }
 
 .actionForm {
@@ -605,7 +730,7 @@
   .sectionHeaderCompact {
     display: grid;
     gap: 0.35rem;
-    justify-content: start;
+    justify-content: flex-start;
   }
 }
 
@@ -625,13 +750,18 @@
   }
 
   .inlineGroup,
-  .tableToolbar,
-  .actionCluster {
+  .tableToolbar {
     grid-template-columns: 1fr;
   }
 
-  .table {
-    min-width: 780px;
+  .bulkActionBar,
+  .bulkActionForm {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bulkActionButton {
+    width: 100%;
   }
 }
 
@@ -822,7 +952,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.85fr) minmax(18rem, 0.82fr);
   gap: var(--space-4);
-  align-items: start;
+  align-items: flex-start;
 }
 
 .editorColumn,
@@ -1181,7 +1311,7 @@
 }
 
 .tableCard .table {
-  min-width: 1080px;
+  min-width: 1260px;
 }
 
 .table thead th {
@@ -1345,7 +1475,7 @@
   display: grid;
   grid-template-columns: minmax(17rem, 19rem) minmax(0, 1.55fr) minmax(24rem, 1fr);
   gap: clamp(1.25rem, 1.8vw, 1.75rem);
-  align-items: start;
+  align-items: flex-start;
 }
 
 .homepageWorkspaceRail,
@@ -1626,7 +1756,7 @@
     position: static;
     grid-column: 1 / -1;
     grid-template-columns: minmax(18rem, 21rem) minmax(0, 1fr);
-    align-items: start;
+    align-items: flex-start;
   }
 }
 

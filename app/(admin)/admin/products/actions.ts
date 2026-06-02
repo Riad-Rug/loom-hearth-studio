@@ -254,6 +254,89 @@ export async function deleteAdminProductAction(productId: string) {
   redirect("/admin/products" as Route);
 }
 
+const bulkProductActionOptions = ["enable", "disable", "archive", "delete"] as const;
+
+type BulkProductAction = (typeof bulkProductActionOptions)[number];
+
+export async function bulkAdminProductsAction(formData: FormData) {
+  const permission = await requireAdminRoleForMutation();
+
+  if (permission.status !== "allowed") {
+    throw new Error("An admin role is required before products can be changed.");
+  }
+
+  const bulkAction = formData.get("bulkAction");
+  const productIds = Array.from(
+    new Set(
+      formData
+        .getAll("productId")
+        .map((value) => (typeof value === "string" ? value.trim() : ""))
+        .filter(Boolean),
+    ),
+  );
+
+  if (!isBulkProductAction(bulkAction) || productIds.length === 0) {
+    redirect("/admin/products" as Route);
+  }
+
+  const repository = createProductRepository();
+
+  for (const productId of productIds) {
+    const product = await repository.getById(productId);
+
+    if (!product) {
+      continue;
+    }
+
+    if (bulkAction === "delete") {
+      await repository.delete(productId);
+
+      revalidateCatalogPaths({
+        productId,
+        nextPath: "",
+        nextCategory: product.category,
+        previousPath: getProductRoutePath(product),
+      });
+
+      continue;
+    }
+
+    const nextStatus = getBulkStatus(bulkAction);
+    const nextProduct = {
+      ...product,
+      status: nextStatus,
+    };
+    const validation = validateProductMutationInput({
+      status: "parsed",
+      value: nextProduct,
+      urlState: {
+        hasUrlChange: false,
+        previousPath: getProductRoutePath(product),
+        nextPath: getProductRoutePath(nextProduct),
+        confirmUrlChange: false,
+      },
+    });
+
+    if (validation.status === "invalid") {
+      throw new Error(`Could not ${bulkAction} "${product.name}": ${validation.message}`);
+    }
+
+    const updatedProduct = await repository.update({
+      ...validation.value,
+      id: productId,
+    });
+
+    revalidateCatalogPaths({
+      productId,
+      nextPath: getProductRoutePath(updatedProduct),
+      nextCategory: updatedProduct.category,
+      previousPath: getProductRoutePath(product),
+    });
+  }
+
+  redirect("/admin/products" as Route);
+}
+
 function revalidateCatalogPaths(input: {
   productId: string;
   nextPath: string;
@@ -277,4 +360,20 @@ function revalidateCatalogPaths(input: {
 
 function createDuplicatedSlug(slug: string) {
   return normalizeSlug(`${slug}-copy-${Date.now().toString(36)}`);
+}
+
+function isBulkProductAction(value: FormDataEntryValue | null): value is BulkProductAction {
+  return typeof value === "string" && bulkProductActionOptions.includes(value as BulkProductAction);
+}
+
+function getBulkStatus(action: Exclude<BulkProductAction, "delete">) {
+  if (action === "enable") {
+    return "active" as const;
+  }
+
+  if (action === "archive") {
+    return "archived" as const;
+  }
+
+  return "draft" as const;
 }

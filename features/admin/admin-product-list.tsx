@@ -4,7 +4,11 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useState } from "react";
 
-import { deleteAdminProductAction, duplicateAdminProductAction } from "@/app/(admin)/admin/products/actions";
+import {
+  bulkAdminProductsAction,
+  deleteAdminProductAction,
+  duplicateAdminProductAction,
+} from "@/app/(admin)/admin/products/actions";
 import type { AdminProductListItem } from "@/lib/admin/products";
 import { productCategoryOptions } from "@/lib/catalog/product-validation";
 
@@ -18,6 +22,7 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
   const [statusFilter, setStatusFilter] = useState<(typeof statusOptions)[number]>("all");
   const [categoryFilter, setCategoryFilter] = useState<"all" | (typeof productCategoryOptions)[number]>("all");
   const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]>("updated-desc");
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
 
   if (!props.items.length) {
     return (
@@ -53,6 +58,28 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
 
     return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
   });
+  const selectedProductIdSet = new Set(selectedProductIds);
+  const visibleProductIds = visibleItems.map((item) => item.id);
+  const selectedVisibleProductCount = visibleProductIds.filter((id) => selectedProductIdSet.has(id)).length;
+  const allVisibleProductsSelected = visibleItems.length > 0 && selectedVisibleProductCount === visibleItems.length;
+
+  function toggleProductSelection(productId: string) {
+    setSelectedProductIds((currentIds) =>
+      currentIds.includes(productId)
+        ? currentIds.filter((currentId) => currentId !== productId)
+        : [...currentIds, productId],
+    );
+  }
+
+  function toggleVisibleProductSelection() {
+    setSelectedProductIds((currentIds) => {
+      if (allVisibleProductsSelected) {
+        return currentIds.filter((currentId) => !visibleProductIds.includes(currentId));
+      }
+
+      return Array.from(new Set([...currentIds, ...visibleProductIds]));
+    });
+  }
 
   return (
     <div className={styles.tableCard}>
@@ -118,11 +145,71 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
         </p>
       </div>
 
+      <div className={styles.bulkActionBar}>
+        <p>
+          <strong>{selectedProductIds.length}</strong>{" "}
+          {selectedProductIds.length === 1 ? "product selected" : "products selected"}
+        </p>
+        <form
+          action={bulkAdminProductsAction}
+          className={styles.bulkActionForm}
+          onSubmit={(event) => {
+            const formData = new FormData(event.currentTarget);
+            const action = formData.get("bulkAction");
+
+            if (!selectedProductIds.length || !action) {
+              event.preventDefault();
+              return;
+            }
+
+            const actionLabel = formatBulkActionLabel(action);
+            const message =
+              action === "delete"
+                ? `${actionLabel} ${selectedProductIds.length} selected products? This cannot be undone.`
+                : `${actionLabel} ${selectedProductIds.length} selected products?`;
+
+            if (!window.confirm(message)) {
+              event.preventDefault();
+            }
+          }}
+        >
+          {selectedProductIds.map((productId) => (
+            <input key={productId} name="productId" type="hidden" value={productId} />
+          ))}
+          <label className={styles.bulkActionField}>
+            <span>Bulk action</span>
+            <select defaultValue="" disabled={!selectedProductIds.length} name="bulkAction" required>
+              <option disabled value="">
+                Choose action
+              </option>
+              <option value="enable">Enable selected</option>
+              <option value="disable">Disable selected</option>
+              <option value="archive">Archive selected</option>
+              <option value="delete">Delete selected</option>
+            </select>
+          </label>
+          <button className={styles.bulkActionButton} disabled={!selectedProductIds.length} type="submit">
+            Apply
+          </button>
+        </form>
+      </div>
+
       {visibleItems.length ? (
         <div className={styles.tableScroller}>
           <table className={styles.table}>
             <thead>
               <tr>
+                <th className={styles.selectCell}>
+                  <label className={styles.checkboxLabel}>
+                    <input
+                      aria-label="Select all visible products"
+                      checked={allVisibleProductsSelected}
+                      className={styles.selectionCheckbox}
+                      onChange={toggleVisibleProductSelection}
+                      type="checkbox"
+                    />
+                  </label>
+                </th>
                 <th>Image</th>
                 <th>Name</th>
                 <th>Category</th>
@@ -136,13 +223,46 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
             </thead>
             <tbody>
               {visibleItems.map((item) => (
-                <tr className={styles.tableRow} data-status={item.status} key={item.id}>
+                <tr
+                  className={`${styles.tableRow} ${selectedProductIdSet.has(item.id) ? styles.tableRowSelected : ""}`}
+                  data-status={item.status}
+                  key={item.id}
+                >
+                  <td className={styles.selectCell}>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        aria-label={`Select ${item.name}`}
+                        checked={selectedProductIdSet.has(item.id)}
+                        className={styles.selectionCheckbox}
+                        onChange={() => toggleProductSelection(item.id)}
+                        type="checkbox"
+                      />
+                    </label>
+                  </td>
                   <td className={styles.thumbnailCell}>
                     <div className={styles.thumbnailFrame}>
                       {item.imageUrl ? (
-                        <img alt={item.imageAlt} className={styles.thumbnailImage} src={item.imageUrl} />
+                        <>
+                          <img
+                            alt={item.imageAlt}
+                            className={styles.thumbnailImage}
+                            loading="lazy"
+                            onError={(event) => {
+                              event.currentTarget.hidden = true;
+                              const fallback = event.currentTarget.nextElementSibling;
+
+                              if (fallback instanceof HTMLElement) {
+                                fallback.hidden = false;
+                              }
+                            }}
+                            src={item.imageUrl}
+                          />
+                          <span className={styles.thumbnailFallback} hidden>
+                            Image unavailable
+                          </span>
+                        </>
                       ) : (
-                        <div className={styles.thumbnailFallback}>No image</div>
+                        <span className={styles.thumbnailFallback}>No image</span>
                       )}
                     </div>
                   </td>
@@ -229,6 +349,22 @@ function formatAbsoluteDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function formatBulkActionLabel(value: FormDataEntryValue) {
+  if (value === "enable") {
+    return "Enable";
+  }
+
+  if (value === "disable") {
+    return "Disable";
+  }
+
+  if (value === "archive") {
+    return "Archive";
+  }
+
+  return "Delete";
 }
 
 function getStatusBadgeClassName(
