@@ -1,7 +1,7 @@
 .page {
   display: grid;
   gap: var(--space-5);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
   overflow-x: clip;
 }
 
@@ -66,7 +66,7 @@
 .heroEditorialCopy h1 {
   margin: 0;
   color: rgba(255, 248, 239, 0.98);
-  font-family: "Canela", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(3.4rem, 6.2vw, 6rem);
   line-height: 1.1;
   letter-spacing: -0.05em;
@@ -76,7 +76,7 @@
 .heroEditorialLine {
   margin: 0;
   color: rgba(255, 248, 239, 0.92);
-  font-family: "Canela", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(1.2rem, 2vw, 1.75rem);
   line-height: 1.18;
 }
@@ -134,7 +134,7 @@
 }
 
 .heroStatCard strong {
-  font-family: "Canela", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(2rem, 4vw, 2.7rem);
   line-height: 1.06;
   letter-spacing: -0.04em;
@@ -232,6 +232,60 @@
   outline: none;
 }
 
+.valueProps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-5);
+  margin: 0;
+  padding: var(--space-6) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.valueProp {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.valuePropIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  background: var(--color-wool-cream);
+  color: var(--color-clay-terracotta);
+}
+
+.valuePropIcon svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.valuePropText {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.valuePropTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.valuePropBody {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
 .sectionHeadingRow {
   display: flex;
   align-items: flex-end;
@@ -264,8 +318,7 @@
 }
 
 .categoryShowcaseGrid {
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
-  grid-auto-rows: 15.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
 }
 
 .lookbookGrid {
@@ -288,11 +341,27 @@
   box-shadow: 0 0.5rem 1rem rgba(34, 33, 38, 0.05);
 }
 
-.categoryShowcaseCard:first-child {
-  grid-row: span 2;
+.categoryShowcaseCard {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
 }
 
-.categoryShowcaseImageWrap,
+.categoryShowcaseCard:hover,
+.categoryShowcaseCard:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(34, 33, 38, 0.14);
+  box-shadow: 0 1.2rem 2.5rem rgba(34, 33, 38, 0.1);
+  outline: none;
+}
+
+.categoryShowcaseImageWrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
 .lookbookImageWrap,
 .journalImageWrap {
   position: relative;
@@ -349,10 +418,19 @@
 .journalCardBody h3 {
   margin: 0;
   color: rgba(255, 248, 239, 0.98);
-  font-family: "Canela", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.55rem;
   line-height: 1.12;
   letter-spacing: -0.03em;
+}
+
+.categoryShowcaseBody {
+  padding: 1rem 1.1rem;
+  gap: 0.3rem;
+}
+
+.categoryShowcaseBody h3 {
+  font-size: 1.2rem;
 }
 
 .categoryShowcaseMobileTitle,
@@ -434,7 +512,7 @@
 .sourcingStoryCopy h2 {
   margin: 0;
   color: rgba(255, 248, 239, 0.98);
-  font-family: "Canela", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(2rem, 3.6vw, 3.1rem);
   line-height: 1.12;
   letter-spacing: -0.04em;
@@ -455,7 +533,7 @@
 }
 
 .reviewCountPanel strong {
-  font-family: "Canela", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(2.2rem, 4vw, 3.5rem);
   line-height: 1.04;
   letter-spacing: -0.05em;
@@ -499,7 +577,7 @@
 .reviewQuote {
   margin: 0;
   color: var(--color-charcoal-ink);
-  font-family: "Canela", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.28rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
@@ -554,7 +632,7 @@
 .homeClosingInner h2 {
   margin: 0;
   color: rgba(255, 248, 239, 0.98);
-  font-family: "Canela", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(2.4rem, 5vw, 4rem);
   line-height: 1.12;
   letter-spacing: -0.05em;
@@ -1614,6 +1692,7 @@
   color: var(--color-charcoal-ink);
   font-size: 0.96rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .productSubtitle {
@@ -2230,7 +2309,6 @@
 @media (max-width: 1100px) {
   .heroInner,
   .sourcingStorySection,
-  .categoryShowcaseGrid,
   .lookbookGrid,
   .journalGrid,
   .reviewGrid,
@@ -2249,14 +2327,6 @@
 
   .reviewCountPanel {
     justify-items: start;
-  }
-
-  .categoryShowcaseCard:first-child {
-    grid-row: auto;
-  }
-
-  .categoryShowcaseGrid {
-    grid-auto-rows: auto;
   }
 }
 
@@ -2311,52 +2381,13 @@
     min-height: 100%;
   }
 
-  .categoryShowcaseCard {
-    display: block;
-    background: linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(245, 241, 232, 0.92));
-  }
-
-  .categoryShowcaseImageWrap {
-    min-height: 13.5rem;
-  }
-
-  .categoryShowcaseOverlay {
-    background: linear-gradient(180deg, rgba(34, 33, 38, 0.02), rgba(34, 33, 38, 0.12));
-  }
-
   .categoryShowcaseBody {
-    position: static;
-    gap: 0.45rem;
-    padding: 1rem;
-    color: var(--color-charcoal-ink);
+    gap: 0.3rem;
+    padding: 0.85rem 0.95rem;
   }
 
-  .categoryShowcaseEyebrow,
-  .categoryShowcaseDesktopTitle {
-    display: none;
-  }
-
-  .categoryShowcaseMobileTitle,
-  .categoryShowcaseDescription {
-    display: block;
-  }
-
-  .categoryShowcaseBody .categoryShowcaseMobileTitle {
-    color: var(--color-charcoal-ink);
-    font-size: 1.25rem;
-    line-height: 1.12;
-  }
-
-  .categoryShowcaseDescription {
-    margin: 0;
-    color: var(--color-text-body);
-    font-size: 0.92rem;
-    line-height: 1.55;
-  }
-
-  .categoryShowcaseLink {
-    margin-top: 0.2rem;
-    color: var(--color-clay-terracotta);
+  .categoryShowcaseBody h3 {
+    font-size: 1.05rem;
   }
 
   .colorStrip {
@@ -2402,7 +2433,6 @@
     display: none;
   }
 
-  .categoryShowcaseImageWrap,
   .lookbookImageWrap,
   .journalImageWrap,
   .sourcingStoryMedia {
@@ -2412,6 +2442,38 @@
   .homeClosingSection {
     padding-inline: 0.75rem;
   }
+}
+
+/* Accessibility: authoritative keyboard focus ring for every interactive element
+   on the landing page. Appended last so it wins source-order over hover rules
+   that set `outline: none`. */
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible,
+.heroSecondaryAction:focus-visible,
+.newsletterButton:focus-visible,
+.inlineSectionLink:focus-visible,
+.colorChip:focus-visible,
+.categoryShowcaseCard:focus-visible,
+.lookbookCard:focus-visible,
+.journalCard:focus-visible,
+.productCard:focus-visible,
+.liveProductCard:focus-visible,
+.narrativeCard:focus-visible,
+.categoryCard:focus-visible,
+.homeClosingPrimary:focus-visible,
+.homeClosingSecondary:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--color-white),
+    0 0 0 6px rgba(159, 84, 47, 0.85);
+}
+
+/* On the dark closing band the white inner ring would vanish, so invert it. */
+.homeClosingPrimary:focus-visible,
+.homeClosingSecondary:focus-visible {
+  box-shadow:
+    0 0 0 3px rgba(35, 34, 32, 0.9),
+    0 0 0 6px rgba(255, 248, 239, 0.95);
 }
 
 

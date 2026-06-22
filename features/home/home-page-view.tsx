@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import { Section } from "@/components/layout/section";
+import { CustomerReviewCarousel } from "@/components/reviews/customer-review-carousel";
 import { blogPosts } from "@/features/blog/blog-post-data";
 import { aboutBridge } from "@/features/content-pages/content-pages-data";
 import type { HomePageContent } from "@/features/home/home-page-data";
@@ -20,12 +21,36 @@ type HomePageViewProps = {
 };
 
 export function HomePageView({ content, featuredProducts = [] }: HomePageViewProps) {
-  const categoryCards = ["category-rugs", "category-poufs", "category-vintage"]
-    .map((id) => content.categories.cards.find((card) => card.id === id && card.visible))
-    .filter((card): card is NonNullable<typeof card> => Boolean(card));
+  const categoryCards = content.categories.cards.filter((card) => card.visible);
   const journalPosts = blogPosts.slice(0, 2);
   const normalizedFeaturedProducts = featuredProducts.map(normalizeHomepageProductImages);
-  const reviewCards = [customerReviews[7], customerReviews[5], customerReviews[6]].filter(Boolean);
+  const reviewCards = customerReviews.slice(0, 8);
+  const valueProps = [
+    {
+      id: "vp-shipping",
+      title: "Free worldwide shipping",
+      body: "Tracked delivery to the US, Canada, and Australia.",
+      icon: <TruckIcon />,
+    },
+    {
+      id: "vp-verified",
+      title: "Colour verified before payment",
+      body: "See the exact piece in multiple lights before you are charged.",
+      icon: <EyeIcon />,
+    },
+    {
+      id: "vp-returns",
+      title: "14-day returns",
+      body: "Straightforward returns on eligible pieces.",
+      icon: <ReturnIcon />,
+    },
+    {
+      id: "vp-direct",
+      title: "Direct from Morocco",
+      body: "Sourced in person through a family bazaar in Marrakech.",
+      icon: <GlobeIcon />,
+    },
+  ];
   const colorLinks = [
     { label: "Ivory", href: "/search?q=ivory" },
     { label: "Terracotta", href: "/search?q=terracotta" },
@@ -95,24 +120,37 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
                     alt={card.image.alt}
                     className={styles.categoryShowcaseImage}
                     fill
-                    sizes="(max-width: 900px) 100vw, 33vw"
+                    sizes="(max-width: 640px) 50vw, (max-width: 900px) 33vw, 20vw"
                     src={card.image.src}
                   />
                   <div className={styles.categoryShowcaseOverlay} />
                 </div>
                 <div className={styles.categoryShowcaseBody}>
-                  <p className={styles.categoryShowcaseEyebrow}>{card.title}</p>
-                  <h3 className={styles.categoryShowcaseDesktopTitle}>{card.description}</h3>
-                  <h3 className={styles.categoryShowcaseMobileTitle}>{card.title}</h3>
-                  <p className={styles.categoryShowcaseDescription}>{card.description}</p>
+                  <h3>{card.title}</h3>
                   <span className={styles.categoryShowcaseLink}>
-                    Browse {card.title.toLowerCase()}
+                    Shop {card.title.toLowerCase()}
                   </span>
                 </div>
               </Link>
             ))}
           </div>
         </div>
+      </Section>
+
+      <Section width="wide">
+        <ul className={styles.valueProps} aria-label="Why shop with Loom & Hearth Studio">
+          {valueProps.map((prop) => (
+            <li key={prop.id} className={styles.valueProp}>
+              <span className={styles.valuePropIcon} aria-hidden="true">
+                {prop.icon}
+              </span>
+              <div className={styles.valuePropText}>
+                <p className={styles.valuePropTitle}>{prop.title}</p>
+                <p className={styles.valuePropBody}>{prop.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </Section>
 
       <Section width="wide">
@@ -178,33 +216,13 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
 
       <Section width="wide">
         <div className={styles.reviewProofSection}>
-          <div className={styles.sectionHeadingRow}>
-            <div className={styles.sectionIntro}>
-              <p className={styles.eyebrow}>Customer reviews</p>
-              <h2>Proof that the pieces felt right once they were home.</h2>
-            </div>
-            <div className={styles.reviewCountPanel}>
-              <strong>150+</strong>
-              <span>happy customers</span>
-            </div>
-          </div>
-          <div className={styles.reviewGrid}>
-            {reviewCards.map((review) => (
-              <article key={review.id} className={styles.reviewCardStatic}>
-                <div className={styles.reviewStars} aria-label="5 out of 5 stars">
-                  {Array.from({ length: 5 }).map((_, starIndex) => (
-                    <StarIcon key={`${review.id}-star-${starIndex}`} />
-                  ))}
-                </div>
-                <p className={styles.reviewQuote}>{review.body}</p>
-                <p className={styles.reviewMeta}>
-                  <span>{review.customerName}</span>
-                  <span>{review.country}</span>
-                  <span>{review.productType}</span>
-                </p>
-              </article>
-            ))}
-          </div>
+          <CustomerReviewCarousel
+            className={styles.reviewCarousel}
+            reviews={reviewCards}
+            variant="home"
+            eyebrow="Customer reviews · 150+ happy customers"
+            title="Proof that the pieces felt right once they were home."
+          />
         </div>
       </Section>
 
@@ -289,10 +307,51 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
   );
 }
 
-function StarIcon() {
+const iconProps = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+  focusable: false,
+};
+
+function TruckIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="m12 3.9 2.39 4.84 5.34.78-3.87 3.77.91 5.32L12 16.11 7.23 18.62l.91-5.32-3.87-3.77 5.34-.78L12 3.9Z" />
+    <svg {...iconProps}>
+      <path d="M3 6h11v9H3z" />
+      <path d="M14 9h4l3 3v3h-7z" />
+      <circle cx="7" cy="18" r="1.6" />
+      <circle cx="17" cy="18" r="1.6" />
+    </svg>
+  );
+}
+
+function EyeIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="2.6" />
+    </svg>
+  );
+}
+
+function ReturnIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M9 5 4 10l5 5" />
+      <path d="M4 10h10a6 6 0 0 1 0 12h-3" />
+    </svg>
+  );
+}
+
+function GlobeIcon() {
+  return (
+    <svg {...iconProps}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18" />
     </svg>
   );
 }

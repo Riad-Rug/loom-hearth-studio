@@ -1098,3 +1098,15 @@
     margin-inline: 0;
   }
 }
+
+/* Accessibility: authoritative keyboard focus ring for interactive PDP controls.
+   Appended last so it wins source-order over hover rules that set `outline: none`.
+   Matches the landing-page and shop focus treatment. */
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible,
+.thumbnailCard:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--color-white),
+    0 0 0 6px rgba(159, 84, 47, 0.85);
+}

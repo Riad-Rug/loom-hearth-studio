@@ -14,18 +14,18 @@
   font-display: swap;
 }
 :root {
-  --color-wool-cream: #f5f1e8;
+  --color-wool-cream: #f6f3ee;
   --color-clay-terracotta: #9f542f;
-  --color-charcoal-ink: #2f2f2f;
+  --color-charcoal-ink: #232220;
   --color-sand: #d9c9a8;
-  --color-olive-thread: #666645;
+  --color-olive-thread: #6b6b4d;
   --color-dust-rose: #c9a89a;
-  --color-stone: #b5a490;
+  --color-stone: #8a8378;
   --color-white: #ffffff;
   --color-mist: rgba(245, 241, 232, 0.72);
   --color-text-body: var(--color-charcoal-ink);
-  --color-text-muted: var(--color-olive-thread);
-  --color-text-subtle: var(--color-olive-thread);
+  --color-text-muted: #6f6a62;
+  --color-text-subtle: #908a80;
   --button-primary-bg: var(--color-clay-terracotta);
   --button-primary-bg-hover: var(--color-charcoal-ink);
   --button-primary-text: #ffffff;
@@ -38,12 +38,15 @@
   --button-tertiary-underline-hover: var(--color-clay-terracotta);
   --color-error: #aa3d2a;
   --color-success: #31684c;
-  --color-border: rgba(47, 47, 47, 0.12);
-  --color-border-strong: rgba(47, 47, 47, 0.2);
-  --color-surface: #fbf7f2;
-  --color-surface-raised: #faf7f0;
-  --font-display: "Canela";
-  --font-body: "Canela";
+  --color-border: rgba(35, 34, 32, 0.1);
+  --color-border-strong: rgba(35, 34, 32, 0.16);
+  --color-surface: #faf8f5;
+  --color-surface-raised: #ffffff;
+  --font-stack-sans: var(--font-sans), system-ui, -apple-system, "Segoe UI",
+    Helvetica, Arial, sans-serif;
+  --font-display: var(--font-stack-sans);
+  --font-body: var(--font-stack-sans);
+  --font-serif: "Canela", Georgia, serif;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -56,8 +59,8 @@
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
-  --shadow-soft: 0 16px 40px rgba(34, 33, 38, 0.08);
-  --shadow-panel: 0 24px 60px rgba(34, 33, 38, 0.1);
+  --shadow-soft: 0 10px 30px rgba(34, 33, 38, 0.06);
+  --shadow-panel: 0 18px 48px rgba(34, 33, 38, 0.08);
   --site-header-scroll-offset: 11rem;
   --container-width: 76rem;
   --container-width-narrow: 56rem;
@@ -81,14 +84,15 @@ body {
   min-width: 320px;
   background: var(--color-white);
   color: var(--color-charcoal-ink);
-  font-family: var(--font-body), Georgia, serif;
+  font-family: var(--font-body);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 .klaviyo-form button,
 [class*="klaviyo-form"] button {
-  font-family: var(--font-body), Georgia, serif !important;
+  font-family: var(--font-body) !important;
 }
 
 button,
@@ -102,6 +106,21 @@ textarea {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Accessibility baseline: a visible keyboard focus ring for any interactive
+   element that does not define its own. Components that opt out with
+   `outline: none` provide their own box-shadow ring instead. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-clay-terracotta);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 img {
@@ -118,6 +137,18 @@ h6,
 p {
   margin: 0;
   color: var(--color-text-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.018em;
 }
 
 .shell-container {
@@ -151,6 +182,10 @@ p {
 .site-main {
   flex: 1;
   padding: var(--space-7) 0 var(--space-8);
+  /* Contain full-bleed (100vw) sections at the viewport edge without clipping
+     the centered content columns. `clip` is used (not `hidden`) so it does not
+     create a scroll container and keeps the sticky header/buy-box working. */
+  overflow-x: clip;
 }
 
 .page-stack {
@@ -233,10 +268,10 @@ p {
   z-index: 20;
   padding-top: 0.55rem;
   padding-bottom: 0.7rem;
-  border-bottom: 1px solid rgba(34, 33, 38, 0.06);
-  background: rgba(255, 255, 255, 0.48);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0.4rem 1.2rem rgba(34, 33, 38, 0.04);
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0.4rem 1.2rem rgba(34, 33, 38, 0.03);
 }
 
 .site-header__announcement {
@@ -666,11 +701,9 @@ p {
 }
 
 .site-footer {
-  padding: var(--space-5) 0 var(--space-7);
-  background:
-    linear-gradient(180deg, rgba(244, 237, 225, 0.88), rgba(239, 231, 217, 0.94)),
-    radial-gradient(circle at top left, rgba(198, 106, 61, 0.06), transparent 42%);
-  border-top: 1px solid rgba(34, 33, 38, 0.06);
+  padding: var(--space-7) 0 var(--space-7);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
 }
 
 .site-footer__grid {

@@ -3,7 +3,6 @@
   gap: var(--space-7);
   width: min(100% - 2rem, var(--container-width-wide));
   margin: 0 auto;
-  overflow-x: hidden;
 }
 
 .hero,
@@ -229,6 +228,16 @@
 
 .twoColumn {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* The two-column info blocks on content pages (e.g. /sourcing) should read as
+   plain text columns, not floating cards — let them blend into the page. */
+.twoColumn .card {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .contactGrid {
@@ -1011,6 +1020,9 @@
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
+  /* Pull the full-bleed closing band flush against the footer, cancelling the
+     site-main bottom padding so it doesn't float above the footer. */
+  margin-bottom: calc(var(--space-8) * -1);
   padding: clamp(2.75rem, 5vw, 4.5rem) min(6vw, 5rem);
   background:
     radial-gradient(circle at top right, rgba(184, 94, 59, 0.18), transparent 34%),
@@ -1188,4 +1200,16 @@
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(250, 240, 238, 0.98)),
     radial-gradient(circle at top right, rgba(138, 31, 17, 0.08), transparent 40%);
+}
+
+/* Accessibility: authoritative keyboard focus ring for the lookbook page's
+   interactive elements. Appended last so it wins source-order over hover rules
+   that set `outline: none`. Matches the landing-page, shop, and PDP treatment. */
+.lookbookTile:focus-visible,
+.lookbookExit .primaryAction:focus-visible,
+.lookbookExit .secondaryAction:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--color-white),
+    0 0 0 6px rgba(159, 84, 47, 0.85);
 }

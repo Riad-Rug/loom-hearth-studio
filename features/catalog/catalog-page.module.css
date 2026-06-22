@@ -784,7 +784,7 @@
 .productGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .productCard {
@@ -794,11 +794,10 @@
   cursor: pointer;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background:
-    linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(248, 243, 235, 0.96));
+  background: var(--color-surface-raised);
   color: inherit;
   text-decoration: none;
-  box-shadow: 0 0.45rem 1rem rgba(34, 33, 38, 0.045);
+  box-shadow: 0 0.45rem 1rem rgba(34, 33, 38, 0.04);
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
@@ -1448,4 +1447,22 @@
   .mobileCatalogToolbar .compactToolbarRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* Accessibility: authoritative keyboard focus ring for every interactive element
+   on the shop/catalog page. Appended last so it wins source-order over hover
+   rules that set `outline: none`. Matches the landing-page focus treatment. */
+.productCard:focus-visible,
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible,
+.tertiaryAction:focus-visible,
+.categoryChip:focus-visible,
+.searchSuggestion:focus-visible,
+.searchSubmit:focus-visible,
+.compactSelect:focus-visible,
+.searchInlineInput:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--color-white),
+    0 0 0 6px rgba(159, 84, 47, 0.85);
 }
