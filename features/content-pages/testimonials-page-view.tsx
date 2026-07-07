@@ -1,5 +1,3 @@
-import { testimonials } from "@/features/content-pages/content-pages-data";
-
 import styles from "./content-pages.module.css";
 
 export function TestimonialsPageView() {
@@ -7,19 +5,12 @@ export function TestimonialsPageView() {
     <div className={styles.page}>
       <section className={styles.sectionHeader}>
         <p className={styles.eyebrow}>Testimonials</p>
-        <h2>Customer stories placeholder</h2>
+        <h1>Customer reviews</h1>
+        <p className={styles.body}>Reviews will appear here as orders are delivered.</p>
       </section>
 
-      <section className={styles.testimonialsGrid}>
-        {testimonials.map((item) => (
-          <article key={item.id} className={styles.testimonialCard}>
-            <blockquote>{item.quote}</blockquote>
-            <p className={styles.testimonialMeta}>
-              {item.customerName}
-              {item.location ? `, ${item.location}` : ""}
-            </p>
-          </article>
-        ))}
+      <section className={styles.testimonialPlaceholder}>
+        <p>Until then, each product page shows condition notes and approval-before-capture terms instead of placeholder praise.</p>
       </section>
     </div>
   );

@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-import Image from "next/image";
 import Link from "next/link";
 
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { aboutBridge, aboutHero, aboutSections } from "@/features/content-pages/content-pages-data";
 
 import styles from "./content-pages.module.css";
@@ -17,24 +17,6 @@ export function AboutPageView() {
     { text: "Moroccan rugs", href: "/shop/rugs" },
     { text: "poufs", href: "/shop/poufs" },
     { text: "pillows", href: "/shop/pillows" },
-  ] as const;
-  const sourcingProofs = [
-    {
-      title: "Selected by hand in the bazaar",
-      body:
-        "The collection is built through direct handling, not remote buying. Pieces are checked in person for colour, fibre, balance, and whether they actually hold a room.",
-      imageSrc: "/about/sourcing-hands.png",
-      imageAlt:
-        "Hands examining a handcrafted Moroccan rug in the family bazaar, checking pile and edge detail.",
-    },
-    {
-      title: "Checked for structure, not just surface",
-      body:
-        "The back, fringe, knot structure, and pile density all matter. That construction read is part of the selection process before a piece ever enters the site.",
-      imageSrc: "/about/rug-construction-detail.png",
-      imageAlt:
-        "Close-up of a Moroccan rug corner lifted by hand to show reverse weave, fringe, and pile density.",
-    },
   ] as const;
 
   function renderLinkedText(text: string): ReactNode {
@@ -92,86 +74,30 @@ export function AboutPageView() {
             ))}
           </div>
           <p className={styles.aboutHeroHighlight}>{aboutHero.highlight}</p>
-          <div className={styles.contactActions}>
+          <div className={styles.policyActions}>
             <Link className={styles.primaryAction} href="/shop">
               Shop the collection
             </Link>
             <Link className={styles.secondaryAction} href="/trade">
-              View the trade programme
+              Trade inquiries
             </Link>
           </div>
-          <p className={styles.aboutHeroShipping}>
-            Ships from Morocco — free to the United States, Canada, and Australia.
-          </p>
         </div>
-        <div className={styles.aboutHeroMedia}>
-          <Image
-            alt="Rugs displayed floor-to-ceiling in the family bazaar setting in Marrakech, with layered woven pieces and warm souk light."
-            className={styles.aboutHeroImage}
-            fill
-            priority
-            sizes="(max-width: 1100px) 100vw, 50vw"
-            src="/about/marrakech-bazaar-hero.png"
-          />
-        </div>
-      </section>
 
-      <section className={`${styles.proofBlock} ${styles.aboutProofBlock}`}>
-        <div className={styles.proofMedia}>
-          <Image
-            alt="Rugs displayed floor-to-ceiling in the family bazaar setting in Marrakech, with layered woven pieces and warm souk light."
-            className={styles.proofImage}
-            fill
-            priority
-            loading="eager"
-            sizes="(max-width: 1100px) 100vw, 1200px"
-            src="/about/marrakech-bazaar-hero.png"
+        <div className={styles.aboutFounderMedia}>
+          <PlaceholderMedia
+            alt="Founder photo placeholder"
+            aspectRatio="4 / 5"
+            label="Founder photo pending"
+            sizes="(max-width: 1100px) 100vw, 40vw"
           />
-          <div className={styles.aboutProofCaption}>
-            <p className={styles.eyebrow}>Selected in Morocco</p>
-            <p>
-              The collection starts in Marrakech, with direct sourcing and in-person selection
-              rather than catalog buying.
-            </p>
-          </div>
         </div>
       </section>
 
       <section className={styles.sectionHeader}>
         <p className={styles.eyebrow}>{aboutBridge.eyebrow}</p>
-        <h2>{aboutBridge.title}</h2>
+        <h2>This shop carries on my grandfather&apos;s bazaar.</h2>
         <p className={styles.body}>{renderLinkedText(aboutBridge.body)}</p>
-      </section>
-
-      <section className={styles.aboutSupportSection}>
-        <div className={styles.aboutSupportIntro}>
-          <p className={styles.eyebrow}>Selection details</p>
-          <p className={styles.body}>
-            The images below are part of the same sourcing process: direct handling in the bazaar,
-            and close inspection of construction before a piece ever reaches the site.
-          </p>
-        </div>
-
-        <div className={styles.aboutSupportGrid}>
-        {sourcingProofs.map((item) => (
-          <article key={item.title} className={styles.aboutSupportCard}>
-            <div className={styles.aboutSupportMedia}>
-              <Image
-                alt={item.imageAlt}
-                className={styles.proofImage}
-                fill
-                sizes="(max-width: 1100px) 100vw, 50vw"
-                src={item.imageSrc}
-              />
-            </div>
-            <div className={styles.aboutSupportBody}>
-              <p className={styles.eyebrow}>Process</p>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-            </div>
-          </article>
-        ))}
-        </div>
       </section>
 
       <section className={`${styles.twoColumn} ${styles.aboutSplitSection}`}>
@@ -199,25 +125,16 @@ export function AboutPageView() {
       <section className={styles.aboutExit}>
         <div className={styles.aboutExitBody}>
           <p className={styles.eyebrow}>Continue</p>
-          <h2>Every piece in the collection is selected through this process, one at a time, in person.</h2>
+          <h2>Each piece is still chosen one at a time, then shipped from Casablanca.</h2>
           <p className={styles.body}>
-            Browse the full collection, or use the trade route if you are sourcing for a client
-            project and need support before checkout.
+            Browse Moroccan rugs, poufs, pillows, and antiques, or use the trade route if you are sourcing for a client project.
           </p>
           <div className={styles.policyActions}>
             <Link className={styles.primaryAction} href="/shop">
               Shop the collection
             </Link>
-            <Link className={styles.secondaryAction} href="/trade">
-              View the trade programme
-            </Link>
-          </div>
-          <div className={styles.aboutCrossLinks}>
-            <Link className={styles.textAction} href="/sourcing">
-              Read more about how we source
-            </Link>
-            <Link className={styles.textAction} href="/blog">
-              See what&apos;s new in the journal
+            <Link className={styles.secondaryAction} href="/sourcing">
+              Read the sourcing notes
             </Link>
           </div>
         </div>
@@ -225,5 +142,3 @@ export function AboutPageView() {
     </div>
   );
 }
-
-

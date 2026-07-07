@@ -2,15 +2,10 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
-import { publicBusinessDetails } from "@/config/public-business-details";
-import { siteConfig } from "@/config/site";
 import { getHomepageContent } from "@/lib/homepage/content";
 
 export async function SiteFooter() {
   const content = await getHomepageContent();
-  const introTitle = /homepage manager studio/i.test(content.footer.introTitle)
-    ? siteConfig.name
-    : content.footer.introTitle;
   const exploreLinks = dedupeFooterLinks(content.footer.exploreLinks);
   const supportLinks = dedupeFooterLinks(content.footer.supportLinks);
   const collectionLinks = dedupeFooterLinks(content.footer.collectionLinks);
@@ -24,27 +19,17 @@ export async function SiteFooter() {
       <Container width="wide">
         <div className="site-footer__grid">
           <div className="site-footer__intro">
-            <p className="site-footer__eyebrow">{introTitle}</p>
-            <p className="site-footer__statement">Sourced across Morocco. Selected in person.</p>
-            {content.footer.introBody ? (
-              <p className="site-footer__brand">{content.footer.introBody}</p>
-            ) : null}
-            <p className="site-footer__meta">{content.footer.introMeta}</p>
-            <p className="site-footer__trade">
-              <Link href="/trade">Trade &amp; interior designers</Link> - our full inventory is larger than what is
-              shown online.
+            <p className="site-footer__eyebrow">Loom & Hearth</p>
+            <p className="site-footer__statement">Handmade Moroccan rugs, poufs, pillows and antiques.</p>
+            <p className="site-footer__brand">
+              {content.footer.introBody ||
+                "One of each, sold direct from Casablanca. Every piece is photographed individually and approved in daylight before payment is captured."}
             </p>
-            <div className="site-footer__legal">
-              <p className="site-footer__legal-heading">Studio and contact details</p>
-              <p>{publicBusinessDetails.legalName}</p>
-              <p>Atelier &amp; sourcing: Marrakech, Morocco</p>
-              <p>Registered office: Wyoming, USA</p>
-              <p>{publicBusinessDetails.email}</p>
-            </div>
+            <p className="site-footer__meta">{content.footer.introMeta}</p>
           </div>
           <div className="site-footer__nav-group">
-            <p className="site-footer__heading">{content.footer.exploreHeading}</p>
-            <nav aria-label="Footer primary" className="site-footer__nav">
+            <p className="site-footer__heading">Shop</p>
+            <nav aria-label="Footer shop" className="site-footer__nav">
               {exploreLinks.map((item) => (
                 <Link key={item.href} className="site-footer__link" href={item.href as Route}>
                   {item.label}
@@ -53,7 +38,7 @@ export async function SiteFooter() {
             </nav>
           </div>
           <div className="site-footer__nav-group">
-            <p className="site-footer__heading">{content.footer.supportHeading}</p>
+            <p className="site-footer__heading">Help</p>
             <nav aria-label="Footer support" className="site-footer__nav">
               {supportLinks.map((item) => (
                 <Link key={item.href} className="site-footer__link" href={item.href as Route}>
@@ -63,16 +48,22 @@ export async function SiteFooter() {
             </nav>
           </div>
           <div className="site-footer__nav-group">
-            <p className="site-footer__heading">{content.footer.collectionsHeading}</p>
-            <nav aria-label="Footer collections" className="site-footer__nav">
+            <p className="site-footer__heading">Story</p>
+            <nav aria-label="Footer story" className="site-footer__nav">
               {collectionLinks.map((item) => (
                 <Link key={item.href} className="site-footer__link" href={item.href as Route}>
                   {item.label}
                 </Link>
               ))}
+              <Link className="site-footer__link" href="/trade">
+                Trade
+              </Link>
             </nav>
           </div>
         </div>
+        <p className="site-footer__legal-line">
+          © 2026 Loom & Hearth · Wyoming LLC · Ships from Casablanca, Morocco
+        </p>
       </Container>
     </footer>
   );

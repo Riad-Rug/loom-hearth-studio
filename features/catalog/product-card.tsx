@@ -4,8 +4,8 @@ import { useState, type SyntheticEvent } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
-import { getCategoryLabel } from "@/lib/catalog/helpers";
 
 import styles from "./catalog-page.module.css";
 
@@ -18,7 +18,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const [primaryImageLoaded, setPrimaryImageLoaded] = useState(false);
   const [secondaryImageFailed, setSecondaryImageFailed] = useState(false);
   const [secondaryImageLoaded, setSecondaryImageLoaded] = useState(false);
-  const descriptor = getDescriptor(product.description, product.merchandisingNote);
   const primaryImage = product.primaryImage;
   const secondaryImage = product.secondaryImage;
   const showImage = primaryImage !== undefined && !imageFailed;
@@ -43,9 +42,6 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link className={styles.productCard} href={product.href as Route}>
       <div className={styles.productMedia}>
-        {product.type === "rug" ? (
-          <span className={styles.productScarcityBadge}>One of a kind available now</span>
-        ) : null}
         {showImage ? (
           <>
             <img
@@ -71,66 +67,34 @@ export function ProductCard({ product }: ProductCardProps) {
                 src={secondaryImage.src}
               />
             ) : null}
-            <div className={styles.productMediaOverlay} aria-hidden="true" />
-            <div className={styles.productMetaOverlay} aria-hidden="true">
-              <p className={styles.productOverlaySubtitle}>{product.subtitle}</p>
-              {descriptor ? <p className={styles.productOverlaySummary}>{descriptor}</p> : null}
-            </div>
           </>
         ) : (
-          <div className={styles.productFallback}>
-            <span className={styles.productFallbackNote}>Image coming soon</span>
-          </div>
+          <PlaceholderMedia
+            alt={`${product.name} placeholder`}
+            aspectRatio="4 / 5"
+            label="Photo pending"
+            sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw"
+          />
         )}
       </div>
       <div className={styles.productContent}>
-        <div className={styles.productCardTopline}>
-          <p className={styles.productCategory}>{getCategoryLabel(product.category)}</p>
-          <span className={styles.productAvailability}>{product.availabilityLabel}</span>
+        <div className={styles.productTitleRow}>
+          <h3>{product.displayName}</h3>
+          <span className={styles.productMonoBadge}>1 OF 1</span>
         </div>
-        <h3>{product.displayName}</h3>
-        {product.dimensionsLabel ? (
-          <p className={styles.productDimensions}>{product.dimensionsLabel}</p>
-        ) : null}
-        {descriptor ? <p className={styles.productDescriptor}>{descriptor}</p> : null}
+        <p className={styles.productDimensions}>{buildSizeAgeLine(product)}</p>
         <p className={styles.productPrice}>{product.priceUsdLabel}</p>
       </div>
     </Link>
   );
 }
 
+function buildSizeAgeLine(product: CatalogProductCardViewModel) {
+  const parts = [
+    product.dimensionsLabel,
+    product.category === "vintage" ? "Vintage" : product.type === "rug" ? "Handmade" : "Moroccan",
+  ].filter(Boolean);
 
-function getDescriptor(description: string, merchandisingNote: string) {
-  const candidates = [merchandisingNote, description]
-    .map((value) => value.trim().replace(/\s+/g, " "))
-    .filter(Boolean);
-
-  for (const candidate of candidates) {
-    const firstSentence = candidate.match(/.+?[.!?](?:\s|$)/)?.[0]?.trim() ?? candidate;
-
-    if (!isUsefulDescriptor(firstSentence)) {
-      continue;
-    }
-
-    return firstSentence.length > 110 ? `${firstSentence.slice(0, 107).trimEnd()}…` : firstSentence;
-  }
-
-  return null;
-}
-
-function isUsefulDescriptor(value: string) {
-  const normalized = value.trim();
-
-  if (normalized.length < 24) {
-    return false;
-  }
-
-  if (!/[.!?,]/.test(normalized) && normalized === normalized.toLowerCase()) {
-    return false;
-  }
-
-  return /wool|cotton|pile|woven|hand|rug|pouf|pillow|vessel|ceramic|Marrakech|Morocco|Atlas|room|sofa|shelf|table|floor/i.test(
-    normalized,
-  );
+  return parts.join(" · ");
 }
 

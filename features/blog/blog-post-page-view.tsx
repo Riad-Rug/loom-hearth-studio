@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { BlogAuthorBlock } from "@/features/blog/blog-author-block";
 import { blogPosts } from "@/features/blog/blog-post-data";
 import type { BlogAuthor, BlogPost } from "@/types/domain";
@@ -38,14 +39,24 @@ export function BlogPostPageView({ post, author }: BlogPostPageViewProps) {
         </header>
 
         <div className={styles.articleMedia}>
-          <Image
-            alt={post.imageAlt}
-            className={styles.articleImage}
-            fill
-            priority
-            sizes="(max-width: 1100px) 100vw, 80vw"
-            src={post.imageSrc}
-          />
+          {isCloudinaryImage(post.imageSrc) ? (
+            <Image
+              alt={post.imageAlt}
+              className={styles.articleImage}
+              fill
+              priority
+              sizes="(max-width: 1100px) 100vw, 80vw"
+              src={post.imageSrc}
+            />
+          ) : (
+            <PlaceholderMedia
+              alt={post.imageAlt}
+              aspectRatio="16 / 10"
+              label="Journal photo pending"
+              priority
+              sizes="(max-width: 1100px) 100vw, 80vw"
+            />
+          )}
         </div>
 
         <div className={styles.articleBody}>
@@ -77,4 +88,8 @@ export function BlogPostPageView({ post, author }: BlogPostPageViewProps) {
       </section>
     </div>
   );
+}
+
+function isCloudinaryImage(src: string) {
+  return src.startsWith("https://res.cloudinary.com/");
 }

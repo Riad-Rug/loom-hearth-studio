@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { customerReviews } from "@/lib/reviews/customer-reviews";
 
 import { TradeStickyAction } from "./trade-sticky-action";
@@ -224,12 +224,11 @@ export function TradePageView() {
             </p>
           </div>
           <div className={styles.heroVisualFrame}>
-            <Image
-              alt="Top-down review image showing a handmade Moroccan rug in warm natural light"
-              className={styles.heroVisualImage}
-              height={960}
-              src="/hero/verification-topdown-v1.png"
-              width={960}
+            <PlaceholderMedia
+              alt="Trade review photo placeholder"
+              aspectRatio="1 / 1"
+              label="Review photo pending"
+              sizes="(max-width: 1100px) 100vw, 28rem"
             />
           </div>
         </div>

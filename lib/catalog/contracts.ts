@@ -66,6 +66,7 @@ type ProductDetailPageViewModelBase = {
   subtitle: string;
   category: ProductCategory;
   description: string;
+  merchandisingNote: string;
   descriptionSections: ProductDetailSectionViewModel[];
   seoTitle: string;
   seoDescription: string;

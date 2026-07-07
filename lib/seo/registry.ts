@@ -22,9 +22,9 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     entityType: "site",
     entityKey: "home",
     path: "/",
-    fallbackTitle: "Loom & Hearth Studio",
+    fallbackTitle: "Loom & Hearth",
     fallbackDescription:
-      "Premium Moroccan rugs, poufs, pillows, and home decor sourced in Marrakech and shipped from Morocco.",
+      "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
   },
   {
     id: "static-about",
@@ -34,7 +34,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/about",
     fallbackTitle: "About",
     fallbackDescription:
-      "About Loom & Hearth Studio, its Marrakech sourcing roots, and its approach to handcrafted Moroccan rugs and home decor.",
+      "About Loom & Hearth, its family bazaar roots, and its approach to handmade Moroccan rugs, poufs, pillows and antiques.",
   },
   {
     id: "static-contact",
@@ -44,7 +44,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/contact",
     fallbackTitle: "Contact Loom & Hearth Studio",
     fallbackDescription:
-      "Contact Loom & Hearth Studio for inquiries about handmade Moroccan rugs, custom sourcing, vintage textiles, and handmade home decor.",
+      "Contact Loom & Hearth for inquiries about handmade Moroccan rugs, poufs, pillows, antiques, and direct sourcing from Casablanca.",
   },
   {
     id: "static-faq",
@@ -64,7 +64,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/lookbook",
     fallbackTitle: "Moroccan Interior Lookbook",
     fallbackDescription:
-      "Hand-knotted rugs, vintage textiles, and Moroccan decor photographed in real interiors. Shop the collections they came from.",
+      "Real-room photography for Moroccan rugs, poufs, pillows, and antiques is coming soon.",
   },
   {
     id: "static-sourcing",
@@ -151,7 +151,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/shop",
     fallbackTitle: "Shop",
     fallbackDescription:
-      "Browse Moroccan rugs, poufs, pillows, and decor sourced in Marrakech and prepared for review-first buying.",
+      "Browse handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
   },
   {
     id: "category-rugs",
@@ -161,7 +161,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/shop/rugs",
     fallbackTitle: "Rugs",
     fallbackDescription:
-      "Browse handcrafted Moroccan rugs sourced in Marrakech, including ONE OF A KIND pieces prepared for review-first buying.",
+      "Browse handmade Moroccan rugs, including Beni Ourain and one-of-a-kind pieces sold direct from Casablanca.",
   },
   {
     id: "category-rugs-beni-ourain",
@@ -180,7 +180,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/shop/poufs",
     fallbackTitle: "Poufs",
     fallbackDescription:
-      "Browse Moroccan poufs and rug-based seating pieces sourced in Marrakech for layered, tactile interiors.",
+      "Browse handmade Moroccan poufs and rug-based seating pieces sold direct from Casablanca.",
   },
   {
     id: "category-pillows",
@@ -190,7 +190,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/shop/pillows",
     fallbackTitle: "Pillows",
     fallbackDescription:
-      "Browse Moroccan pillows and textile accents designed to layer with rugs, poufs, and collected interiors.",
+      "Browse handmade Moroccan pillows and textile accents designed to layer with Moroccan rugs and poufs.",
   },
   {
     id: "category-decor",
@@ -200,7 +200,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/shop/decor",
     fallbackTitle: "Decor",
     fallbackDescription:
-      "Browse supporting Moroccan decor pieces selected to sit alongside rugs, poufs, and collected textile interiors.",
+      "Browse Moroccan decor and antiques selected to sit alongside rugs, poufs, and pillows.",
   },
   {
     id: "category-rugs-vintage",

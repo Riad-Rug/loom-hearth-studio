@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/seo/json-ld";
-import { lookbookItems } from "@/features/content-pages/content-pages-data";
 import { LookbookPageView } from "@/features/content-pages/lookbook-page-view";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
-import { breadcrumbSchema, imageGallerySchema, itemListSchema } from "@/lib/seo/schema";
-
-const lookbookOgImage = "/lookbook/opengraph-image";
-const lookbookOgImageAlt =
-  "A low-furnished Moroccan living room anchored by a pale rug in natural light.";
+import { breadcrumbSchema } from "@/lib/seo/schema";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
@@ -16,12 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
     entityKey: "lookbook",
     title: "Moroccan Interior Lookbook",
     description:
-      "Hand-knotted rugs, vintage textiles, and Moroccan decor photographed in real interiors. Shop the collections they came from.",
+      "Real-room photography for Moroccan rugs, poufs, pillows, and antiques is coming soon.",
     path: "/lookbook",
-    ogImageUrl: lookbookOgImage,
-    ogImageAlt: lookbookOgImageAlt,
-    ogImageWidth: 1200,
-    ogImageHeight: 630,
   });
 }
 
@@ -29,33 +20,10 @@ export default function LookbookPage() {
   return (
     <>
       <JsonLd
-        data={[
-          itemListSchema({
-            path: "/lookbook",
-            name: "Moroccan Interior Lookbook",
-            items: lookbookItems.map((item) => ({
-              name: item.title,
-              path: item.href,
-              image: item.imageSrc,
-            })),
-          }),
-          imageGallerySchema({
-            path: "/lookbook",
-            name: "Moroccan Interior Lookbook",
-            description:
-              "Hand-knotted rugs, vintage textiles, and Moroccan decor photographed in real interiors.",
-            images: lookbookItems.map((item) => ({
-              name: item.title,
-              description: item.description,
-              image: item.imageSrc,
-              altText: item.imageAlt,
-            })),
-          }),
-          breadcrumbSchema([
-            { name: "Home", path: "/" },
-            { name: "Lookbook", path: "/lookbook" },
-          ]),
-        ]}
+        data={breadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: "Lookbook", path: "/lookbook" },
+        ])}
       />
       <LookbookPageView />
     </>

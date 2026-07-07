@@ -251,6 +251,7 @@ function createProductDetailPageViewModel(
     subtitle: createProductSubtitle(product),
     category: product.category,
     description: createProductDescriptionLead(product),
+    merchandisingNote: normalizeDimensionSeparators(getProductMerchandisingNote(product)),
     descriptionSections: createProductDescriptionSections(product),
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,

@@ -45,32 +45,28 @@ export function normalizePublicUrl(value: string, fallbackBase = siteConfig.site
 }
 
 export const siteConfig = {
-  name: "Loom & Hearth Studio",
+  name: "Loom & Hearth",
   description:
-    "Premium Moroccan rugs, poufs, pillows, and home decor sourced in Marrakech and shipped from Morocco.",
+    "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
   siteUrl: normalizePublicSiteUrl(process.env.NEXT_PUBLIC_SITE_URL),
   locale: "en-US",
   currency: "USD",
   market: "US",
   ogImagePath: "/og/default-placeholder.jpg",
-  tagline: "Handcrafted Moroccan rugs and home decor",
+  tagline:
+    "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
   announcementItems: [
-    "COLOUR VERIFIED BEFORE PAYMENT IS CAPTURED",
-    "FREE SHIPPING TO THE UNITED STATES, CANADA, AND AUSTRALIA",
-    "SHIPS FROM MOROCCO",
+    "SEE YOUR EXACT PIECE IN DAYLIGHT PHOTOS BEFORE YOU PAY",
+    "FREE SHIPPING US · CA · AU",
+    "SHIPS FROM CASABLANCA",
   ],
   primaryNav: [
-    { href: "/shop", label: "SHOP" },
-    { href: "/lookbook", label: "LOOKBOOK" },
-    {
-      label: "STORY",
-      items: [
-        { href: "/about", label: "About" },
-        { href: "/sourcing", label: "Sourcing" },
-        { href: "/blog", label: "Journal" },
-      ],
-    },
-    { href: "/trade", label: "TRADE" },
+    { href: "/shop/rugs", label: "Rugs" },
+    { href: "/shop/poufs", label: "Poufs" },
+    { href: "/shop/pillows", label: "Pillows" },
+    { href: "/shop/decor", label: "Decor & Antiques" },
+    { href: "/blog", label: "Journal" },
+    { href: "/about", label: "About" },
   ],
   supportNav: [
     { href: "/contact", label: "Contact" },

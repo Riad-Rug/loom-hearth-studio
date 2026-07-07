@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   const [content, featuredProducts] = await Promise.all([
     getHomepageContent(),
-    listHomepageFeaturedProductCards({ limit: 4 }),
+    listHomepageFeaturedProductCards({ limit: 8 }),
   ]);
 
   return <HomePageView content={content} featuredProducts={featuredProducts} />;
