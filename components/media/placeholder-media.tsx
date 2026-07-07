@@ -11,6 +11,7 @@ type PlaceholderMediaProps = {
   label: string;
   sizes: string;
   priority?: boolean;
+  tone?: "neutral" | "condition";
 };
 
 export function PlaceholderMedia({
@@ -19,11 +20,12 @@ export function PlaceholderMedia({
   label,
   sizes,
   priority = false,
+  tone = "neutral",
 }: PlaceholderMediaProps) {
   const usingPlaceholderOnly = !hasCloudinaryEnv();
 
   return (
-    <div className={styles.frame} style={{ aspectRatio }}>
+    <div className={styles.frame} data-tone={tone} style={{ aspectRatio }}>
       <Image
         alt={alt}
         className={styles.image}

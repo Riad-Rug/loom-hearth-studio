@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import styles from "@/features/content-pages/content-pages.module.css";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 
@@ -37,7 +37,7 @@ const sourcingProofs = [
     title: "Handled directly in the bazaar.",
     body:
       "Rugs are opened, examined, and compared in person. That makes it possible to reject pieces that photograph well but do not have the weight or balance to justify their place in the collection.",
-    imageSrc: "/about/sourcing-hands.png",
+    imageSrc: "",
     imageAlt:
       "Hands examining a handcrafted Moroccan rug in the family bazaar, checking pile and edge detail.",
   },
@@ -46,7 +46,7 @@ const sourcingProofs = [
     title: "Checked for structure, not just surface.",
     body:
       "The reverse, fringe, weave tension, and pile density matter as much as the visible face of the rug. These details shape the sourcing decision before a listing is ever published.",
-    imageSrc: "/about/rug-construction-detail.png",
+    imageSrc: "",
     imageAlt:
       "Close-up of a Moroccan rug corner lifted by hand to show reverse weave, fringe, and pile density.",
   },
@@ -90,13 +90,12 @@ export default function SourcingPage() {
         </div>
 
         <div className={styles.sourcingHeroMedia}>
-          <Image
-            alt="Rugs displayed floor-to-ceiling in the family bazaar setting in Marrakech, with layered woven pieces and warm souk light."
-            className={styles.sourcingHeroImage}
-            fill
+          <PlaceholderMedia
+            alt="Sourcing photo placeholder"
+            aspectRatio="4 / 5"
+            label="Sourcing photo pending"
             priority
             sizes="(max-width: 1100px) 100vw, 50vw"
-            src="/about/marrakech-bazaar-hero.png"
           />
           <div className={styles.sourcingHeroCaption}>
             <p className={styles.eyebrow}>Marrakech bazaar context</p>
@@ -131,12 +130,11 @@ export default function SourcingPage() {
           {sourcingProofs.map((item) => (
             <article key={item.title} className={styles.aboutSupportCard}>
               <div className={styles.aboutSupportMedia}>
-                <Image
+                <PlaceholderMedia
                   alt={item.imageAlt}
-                  className={styles.proofImage}
-                  fill
+                  aspectRatio="4 / 3"
+                  label="Process photo pending"
                   sizes="(max-width: 1100px) 100vw, 50vw"
-                  src={item.imageSrc}
                 />
               </div>
               <div className={styles.aboutSupportBody}>

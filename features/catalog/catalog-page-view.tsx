@@ -356,7 +356,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                   <h2>{lookbookContext.title}</h2>
                   <p>
                     This collection is where that {lookbookContext.roomLabel.toLowerCase()} scene
-                    starts. Browse the related pieces without losing the editorial thread.
+                    starts. Browse the related pieces without losing the room direction.
                   </p>
                 </div>
               </div>

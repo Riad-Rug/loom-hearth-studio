@@ -51,7 +51,7 @@ export const blogPosts: BlogPostRecord[] = [
     body: [
       "Poufs work best when they solve two things at once: movement and texture. A single leather or striped floor pouf can soften the edge of a seating group, but it should still feel grounded by the rug beneath it and by enough negative space around it to keep the room breathable.",
       "Sabra pillows do the opposite job. They sharpen a sofa, bench, or daybed with a little geometry and faded colour, especially when the rest of the palette stays warm and restrained. The goal is not to stack as many as possible, but to let one or two handmade pieces carry the contrast.",
-      "The most believable rooms mix the two with discipline. Use the pouf as the lower, quieter anchor and the pillows as the brighter editorial note. That hierarchy keeps the room readable and keeps wool, leather, and cactus silk in balance.",
+      "The most believable rooms mix the two with discipline. Use the pouf as the lower, quieter anchor and the pillows as the brighter accent note. That hierarchy keeps the room readable and keeps wool, leather, and cactus silk in balance.",
     ].join("\n\n"),
     publishedAt: "April 9, 2026",
     readTime: "5 min read",
@@ -78,7 +78,7 @@ export const blogPosts: BlogPostRecord[] = [
     body: [
       "Collections feel sharper when they are edited close to the source. Seeing Moroccan pieces in person makes it easier to compare wool density, leather finish, hand feel, dye softness, and the small construction details that disappear in a marketplace thumbnail.",
       "That proximity also changes the mix. Instead of buying to fill categories abstractly, the collection can be built around what actually holds up: a quieter rug, a stronger sabra pillow, a more sculptural pouf, or a small decor object that finishes a shelf without feeling ornamental.",
-      "For an editorial storefront, that matters. The goal is not volume. It is to keep every piece aligned to the same room, the same material world, and the same standard of selection.",
+      "For a direct storefront, that matters. The goal is not volume. It is to keep every piece aligned to the same room, the same material world, and the same standard of selection.",
     ].join("\n\n"),
     publishedAt: "April 5, 2026",
     readTime: "4 min read",
@@ -139,7 +139,7 @@ export const blogPosts: BlogPostRecord[] = [
     status: "active",
     imageAlt:
       "Moroccan rug imagery comparing a flatter woven surface with a denser piled wool texture.",
-    imageSrc: "/about/rug-construction-detail.png",
+    imageSrc: "",
     seoTitle: "Flatweave vs pile rug | Loom & Hearth Studio",
     seoDescription:
       "A practical guide to the difference between flatweave Moroccan rugs and pile rugs, and when each belongs in a room.",
@@ -192,7 +192,7 @@ export const blogPosts: BlogPostRecord[] = [
     status: "active",
     imageAlt:
       "Moroccan rug shown in a lived-in room with visible furniture legs and clear rug edge placement.",
-    imageSrc: "/lookbook/beni-ourain-living-room-v2.png",
+    imageSrc: "",
     seoTitle: "How rug size decisions work in a real room | Loom & Hearth Studio",
     seoDescription:
       "A practical guide to choosing Moroccan rug size through furniture placement, edge position, and room structure.",
@@ -218,7 +218,7 @@ export const blogPosts: BlogPostRecord[] = [
     status: "active",
     imageAlt:
       "Geometric Moroccan rug with red and ochre pattern language associated with Zemmour weaving traditions.",
-    imageSrc: "/lookbook/terracotta-salon-v2.png",
+    imageSrc: "",
     seoTitle: "Zemmour rugs explained | Loom & Hearth Studio",
     seoDescription:
       "An introduction to Zemmour rugs, their geometric pattern language, and how they differ from other Moroccan rug families.",
@@ -244,7 +244,7 @@ export const blogPosts: BlogPostRecord[] = [
     status: "active",
     imageAlt:
       "Moroccan interior scene where the rug leads the palette across textiles, walls, and supporting objects.",
-    imageSrc: "/lookbook/terracotta-salon-v2.png",
+    imageSrc: "",
     seoTitle: "Use one rug as the starting point for a room palette | Loom & Hearth Studio",
     seoDescription:
       "A styling note on building a room palette from the colours already present in one Moroccan rug.",
@@ -270,7 +270,7 @@ export const blogPosts: BlogPostRecord[] = [
     status: "active",
     imageAlt:
       "A low-furnished room structured by a single Moroccan rug with minimal supporting furniture.",
-    imageSrc: "/lookbook/layered-sitting-room-v2.png",
+    imageSrc: "",
     seoTitle: "The case for a single statement rug | Loom & Hearth Studio",
     seoDescription:
       "A styling note on using one strong Moroccan rug to carry a restrained, low-furnished room.",
@@ -296,7 +296,7 @@ export const blogPosts: BlogPostRecord[] = [
     status: "active",
     imageAlt:
       "Neutral Moroccan-influenced room using a restrained mix of rug, pouf, and textile accents.",
-    imageSrc: "/lookbook/atlas-bedroom-v2.png",
+    imageSrc: "",
     seoTitle: "Moroccan textiles in a neutral room | Loom & Hearth Studio",
     seoDescription:
       "A styling guide to editing Moroccan rugs, pillows, and poufs into pale, restrained interiors.",
@@ -322,7 +322,7 @@ export const blogPosts: BlogPostRecord[] = [
     status: "active",
     imageAlt:
       "Open-plan room with a Moroccan rug clearly defining the living zone through edge placement.",
-    imageSrc: "/lookbook/beni-ourain-living-room-v2.png",
+    imageSrc: "",
     seoTitle: "Placing a rug in an open-plan space | Loom & Hearth Studio",
     seoDescription:
       "A practical styling note on where the edge of a Moroccan rug should fall in an open-plan room.",
@@ -348,7 +348,7 @@ export const blogPosts: BlogPostRecord[] = [
     status: "active",
     imageAlt:
       "Marrakech bazaar aisle with stacked rugs and low seating, reflecting the Semmarine souk trade environment.",
-    imageSrc: "/about/marrakech-bazaar-hero.png",
+    imageSrc: "",
     seoTitle: "How the Semmarine souk works | Loom & Hearth Studio",
     seoDescription:
       "A sourcing story on the Semmarine souk in Marrakech and why bazaar buying produces ONE OF A KIND rugs.",
@@ -374,7 +374,7 @@ export const blogPosts: BlogPostRecord[] = [
     status: "active",
     imageAlt:
       "Close-up of a Moroccan rug reverse showing weave structure, fringe, and knot definition held up by hand.",
-    imageSrc: "/about/rug-construction-detail.png",
+    imageSrc: "",
     seoTitle: "Check the back of the rug first | Loom & Hearth Studio",
     seoDescription:
       "A sourcing story on why Loom & Hearth Studio checks the back of a Moroccan rug before trusting the front.",
@@ -400,7 +400,7 @@ export const blogPosts: BlogPostRecord[] = [
     status: "active",
     imageAlt:
       "Moroccan bazaar rug selection scene emphasizing individual textiles rather than standardized catalogue presentation.",
-    imageSrc: "/about/sourcing-hands.png",
+    imageSrc: "",
     seoTitle: "Bazaar piece vs export catalogue piece | Loom & Hearth Studio",
     seoDescription:
       "A sourcing story on what distinguishes a bazaar-selected Moroccan textile from an export catalogue piece.",

@@ -44,28 +44,29 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   const next = structuredClone(content);
 
   next.brand.logoImageUrl = "/brand/logo.png";
-  next.brand.logoImageAlt = "Loom & Hearth Studio logo";
-  next.brand.tagline = "Handcrafted Moroccan rugs and home decor";
+  next.brand.logoImageAlt = "Loom & Hearth logo";
+  next.brand.tagline =
+    "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.";
 
-  next.pageSeo.title = "Loom & Hearth Studio  Handcrafted Moroccan Rugs";
+  next.pageSeo.title = "Loom & Hearth | Handmade Moroccan Rugs";
   next.pageSeo.description =
-    "Hand-knotted Moroccan rugs, poufs, cactus silk pillows, and decor sourced directly across Morocco. Family business. 80 years in the trade. Free shipping to the US, Canada, and Australia.";
+    "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.";
 
-  next.hero.title = "Hand-knotted Moroccan rugs from a family that has worked this trade for 80 years.";
-  next.hero.eyebrow = "COLOUR VERIFIED BEFORE PAYMENT";
+  next.hero.title = "Woven by hand in the Atlas. Warm underfoot in your home.";
+  next.hero.eyebrow = "DIRECT FROM CASABLANCA";
   next.hero.paragraph =
-    "Before payment is captured, you see the exact piece in multiple light conditions. Then it ships directly from Morocco through a family trade built over 80 years.";
+    "One-of-a-kind rugs, poufs and antiques, found and shipped by one person in Morocco — from $30.";
   next.hero.primaryCta = { ...next.hero.primaryCta, label: "SHOP RUGS" };
   next.hero.secondaryCta = {
     ...next.hero.secondaryCta,
-    label: "SHOP VINTAGE RUGS",
-    href: "/shop/rugs/vintage",
+    label: "SHOP EVERYTHING",
+    href: "/shop",
   };
   next.hero.seo = {
     ...next.hero.seo,
-    seoTitle: "Loom & Hearth Studio  Handcrafted Moroccan Rugs",
+    seoTitle: "Loom & Hearth | Handmade Moroccan Rugs",
     metaDescription:
-      "Hand-knotted Moroccan rugs, poufs, cactus silk pillows, and decor sourced directly across Morocco. Family business. 80 years in the trade. Free shipping to the US, Canada, and Australia.",
+      "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
   };
 
   next.badges.items = next.badges.items.map((item) => {
@@ -77,9 +78,9 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   });
 
   next.categories.eyebrow = "SHOP BY CATEGORY";
-  next.categories.title = "The full collection  rugs, poufs, pillows, decor, and vintage finds.";
+  next.categories.title = "Handmade Moroccan rugs, poufs, pillows, decor, and antiques.";
   next.categories.paragraph =
-    "The collection is built around hand-knotted Moroccan rugs selected for construction quality, pile density, and weight. Supporting pieces  rug-made poufs, cactus silk pillows, and handcrafted decor  are chosen to work alongside them.";
+    "Every piece is sourced one at a time and sold as the exact item shown. Moroccan rugs lead the collection, then poufs, pillows, decor, and antiques follow around them.";
   next.categories.cards = next.categories.cards.map((card) => {
     if (card.id === "category-rugs") {
       return {
@@ -215,7 +216,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.newsletter.eyebrow = "JOIN THE LIST";
   next.newsletter.title = "New arrivals, sourcing stories, and first access to pieces before wider release.";
   next.newsletter.paragraph =
-    "Join for a free sourcing guide: 10 things to check before buying a Moroccan rug. You will also get new arrivals, sourcing stories, and first access to pieces before wider release. No filler.";
+    "New handmade Moroccan rugs, poufs, pillows and antiques arrive in small batches. Join the list to see them before they sell through.";
   next.newsletter.inputPlaceholder = "Your email address";
   next.newsletter.ctaLabel = "JOIN";
 
@@ -282,7 +283,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   });
 
   next.footer.introBody = "";
-  next.footer.introMeta = "Prices in USD. Free shipping to the US, Canada, and Australia.";
+  next.footer.introMeta = "Prices in USD. Ships from Casablanca with free shipping to the US, Canada, and Australia.";
 
   return next;
 }

@@ -21,13 +21,13 @@ type LookbookItem = {
 
 export const aboutHero = {
   eyebrow: "ABOUT",
-  title: "A direct source for handcrafted Moroccan rugs, poufs, pillows, and home decor.",
-  body: `Loom & Hearth Studio is built on real roots in Marrakech, where our family has worked in the bazaar trade for decades. Our grandfather's shop in the Semmarine souk, steps from Jemaa el-Fnaa, was known for handcrafted pieces sourced across Morocco.
+  title: "A direct source for handmade Moroccan rugs, poufs, pillows, and antiques.",
+  body: `My grandfather ran a bazaar in Morocco. The shop itself was later sold by the beneficiaries of his will, but the eye for rugs stayed in the family.
 
-Today, we continue that work with a more focused scope \u2014 selecting hand-knotted Moroccan rugs, turning some into ONE OF A KIND poufs and pillows, and adding a small selection of supporting decor.
+Loom & Hearth carries that inheritance forward in a smaller, more direct form: one person sourcing, photographing, and shipping handmade Moroccan rugs, poufs, pillows, and antiques from Casablanca.
 
-Every piece is chosen in person. Nothing is mass-produced. Nothing comes from an export catalogue assembled for foreign buyers. We source directly through the family bazaar, not through cooperatives. That is what makes the difference in what you receive.`,
-  highlight: "You are getting the rug the weaver made — not a category managed by a middleman.",
+The point is not scale. The point is being close enough to the material, condition, and daylight color of each piece that the description can stay honest.`,
+  highlight: "The bazaar was sold. The habit of noticing the right rug was not.",
 } as const;
 
 export const aboutSections: AboutSection[] = [
@@ -35,12 +35,12 @@ export const aboutSections: AboutSection[] = [
     eyebrow: "Craft",
     title: "Built on material knowledge and direct selection.",
     body:
-      "We select based on construction and fibre quality \u2014 not trends. For rugs, that means checking pile density by weight and feel, examining the back for knot structure, and assessing warp tension. Many pieces are ONE OF A KIND. Even repeatable designs remain handmade \u2014 no two are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug material, which means they carry the same fibre, weave structure, and colour as the source piece.",
+      "We select based on construction and fibre quality \u2014 not trends. For rugs, that means checking pile density by weight and feel, examining the back for knot structure, and assessing warp tension. Many pieces are one of a kind. Even repeatable designs remain handmade \u2014 no two are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug material, which means they carry the same fibre, weave structure, and color as the source piece.",
   },
   {
     eyebrow: "Direction",
     title: "A focused collection. Not a marketplace.",
-    body: `Loom & Hearth Studio is not a marketplace. We do not list everything we encounter. The collection stays deliberately narrow \u2014 hand-knotted rugs, rug-based poufs, pillows, and a small selection of supporting decor.
+    body: `Loom & Hearth is not a marketplace. We do not list everything we encounter. The collection stays deliberately narrow \u2014 hand-knotted rugs, rug-based poufs, pillows, and a small selection of supporting decor and antiques.
 
 The criterion is simple: does this piece hold up on its own, in a room, without explanation?`,
   },
@@ -50,7 +50,7 @@ export const aboutBridge = {
   eyebrow: "How we source",
   title: "Selected in person, not pulled from a catalog.",
   body:
-    "We work directly across Morocco \u2014 primarily through the family bazaar in Marrakech \u2014 to source rugs, rug-made poufs, pillows, and supporting decor. Every piece is assessed in person for construction, fibre quality, and condition before it enters the collection.",
+    "We work directly across Morocco to source rugs, rug-made poufs, pillows, and supporting decor. Every piece is assessed in person for construction, fibre quality, and condition before it enters the collection.",
 } as const;
 
 export const contactData = {
@@ -234,7 +234,7 @@ export const lookbookItems: LookbookItem[] = [
       "A low-furnished living room anchored by a pale Moroccan rug. Quiet seating, natural light, and a restrained palette keep the rug at the center.",
     ctaLabel: "Shop the rugs",
     href: "/shop/rugs/beni-ourain",
-    imageSrc: "/lookbook/beni-ourain-living-room-v2.png",
+    imageSrc: "",
     imageAlt:
       "A Moroccan living room with a pale Beni Ourain rug, low built-in seating, dark wood table, and natural daylight.",
   },
@@ -246,8 +246,7 @@ export const lookbookItems: LookbookItem[] = [
       "A Moroccan interior with vintage rugs and woven textiles. Warm terracotta tones, pendant light, and layered natural materials.",
     ctaLabel: "Shop the vintage rugs",
     href: "/shop/rugs/vintage",
-    imageSrc:
-      "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+    imageSrc: "",
     imageAlt:
       "A Moroccan interior scene with textiles, a pouf, and terracotta, wood, and woven materials.",
   },
@@ -259,7 +258,7 @@ export const lookbookItems: LookbookItem[] = [
       "A low sitting area with layered Moroccan rugs, floor cushions, leather chairs, and a small tray table. Pattern, pile, and tile work hold the room together.",
     ctaLabel: "Shop the rugs",
     href: "/shop/rugs",
-    imageSrc: "/lookbook/layered-sitting-room-v2.png",
+    imageSrc: "",
     imageAlt:
       "A Moroccan sitting room with layered handcrafted rugs, low seating, a round wood tea table, and warm daylight.",
   },
@@ -271,8 +270,7 @@ export const lookbookItems: LookbookItem[] = [
       "A sunlit Moroccan sitting area with traditional cushions and restrained decor. Pale walls, warm shadows, no competing pattern.",
     ctaLabel: "Shop the decor",
     href: "/shop/decor",
-    imageSrc:
-      "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    imageSrc: "",
     imageAlt:
       "A minimal Moroccan decor vignette with neutral textiles and handcrafted accents in warm sunlight.",
   },
@@ -284,7 +282,7 @@ export const lookbookItems: LookbookItem[] = [
       "A terracotta-toned rug holds a low salon with carved wood, warm plaster, and afternoon light. The scene takes its cue from the denser, earth-led pieces in the collection.",
     ctaLabel: "Shop terracotta rugs",
     href: "/shop/rugs/terracotta",
-    imageSrc: "/lookbook/terracotta-salon-v2.png",
+    imageSrc: "",
     imageAlt:
       "A Moroccan salon with low seating, a terracotta-toned hand-knotted rug, carved wood table, and warm natural daylight.",
   },
@@ -296,7 +294,7 @@ export const lookbookItems: LookbookItem[] = [
       "A pale Atlas rug softens the room under a low bench and sculptural chair. Sand, ivory, and restrained terracotta keep the rug architectural rather than decorative.",
     ctaLabel: "Shop Atlas rugs",
     href: "/shop/rugs/atlas",
-    imageSrc: "/lookbook/atlas-bedroom-v2.png",
+    imageSrc: "",
     imageAlt:
       "A quiet bedroom-sitting room with a pale Atlas rug, low wood bench, textured chair, and soft morning daylight.",
   },
@@ -308,7 +306,7 @@ export const lookbookItems: LookbookItem[] = [
       "Three wool poufs in sand, clay, and charcoal bring texture to a low sitting room. The styling stays spare so the poufs read as usable pieces, not props.",
     ctaLabel: "Shop the poufs",
     href: "/shop/poufs",
-    imageSrc: "/lookbook/clay-pouf-sitting-room.png",
+    imageSrc: "",
     imageAlt:
       "A Moroccan sitting room with three wool poufs around a low tea table, layered over a pale rug in warm afternoon light.",
   },
@@ -320,7 +318,7 @@ export const lookbookItems: LookbookItem[] = [
       "Striped pillows and a pale rug build a quieter textile scene in sand and clay tones. The emphasis is on layering, not volume, so the room still feels open.",
     ctaLabel: "Shop the pillows",
     href: "/shop/pillows",
-    imageSrc: "/lookbook/hearth-pillow-reading-corner.png",
+    imageSrc: "",
     imageAlt:
       "A plaster reading corner with striped Moroccan pillows on a built-in bench, a pale rug, and warm sunlight.",
   },

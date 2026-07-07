@@ -218,35 +218,35 @@ const defaultHomePageContent: HomePageContent = {
     tagline: siteConfig.tagline,
   },
   pageSeo: {
-    title: "Loom & Hearth Studio  Handcrafted Moroccan Rugs",
+    title: "Loom & Hearth | Handmade Moroccan Rugs",
     description:
-      "Hand-knotted Moroccan rugs, poufs, cactus silk pillows, and decor sourced directly across Morocco. Family business. 80 years in the trade. Free shipping to the US, Canada, and Australia.",
+      "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
   },
   sectionOrder: [...homepageSectionOrderKeys],
   hero: {
     visible: true,
     seo: {
-      seoTitle: "Loom & Hearth Studio  Handcrafted Moroccan Rugs",
+      seoTitle: "Loom & Hearth | Handmade Moroccan Rugs",
       metaDescription:
-        "Hand-knotted Moroccan rugs, poufs, cactus silk pillows, and decor sourced directly across Morocco. Family business. 80 years in the trade. Free shipping to the US, Canada, and Australia.",
+        "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
     },
-    eyebrow: "COLOUR VERIFIED BEFORE PAYMENT",
-    title: "Hand-knotted Moroccan rugs from a family that has worked this trade for 80 years.",
+    eyebrow: "DIRECT FROM CASABLANCA",
+    title: "Woven by hand in the Atlas. Warm underfoot in your home.",
     paragraph:
-      "Before payment is captured, you see the exact piece in multiple light conditions. Then it ships directly from Morocco through a family trade built over 80 years.",
+      "One-of-a-kind rugs, poufs and antiques, found and shipped by one person in Morocco — from $30.",
     primaryCta: {
       label: "SHOP RUGS",
       href: "/shop/rugs",
       visible: true,
     },
     secondaryCta: {
-      label: "SHOP VINTAGE RUGS",
-      href: "/shop/rugs/vintage",
+      label: "SHOP EVERYTHING",
+      href: "/shop",
       visible: true,
     },
     image: {
-      src: "/homepage/hero-bazaar-editorial-v2.png",
-      alt: "A sun-washed Moroccan interior with a prominent handcrafted rug, low seating, carved wood, and warm natural light.",
+      src: "",
+      alt: "Texture photograph placeholder for Loom & Hearth.",
       publicId: "",
       width: null,
       height: null,
@@ -278,9 +278,9 @@ const defaultHomePageContent: HomePageContent = {
         "Browse Moroccan rugs, vintage rugs, rug-made poufs, cactus silk pillows, and decor through a structured category section on the homepage.",
     },
     eyebrow: "SHOP BY CATEGORY",
-    title: "The full collection  rugs, poufs, pillows, decor, and vintage finds.",
+    title: "Handmade Moroccan rugs, poufs, pillows, decor, and antiques.",
     paragraph:
-      "The collection is built around hand-knotted Moroccan rugs selected for construction quality, pile density, and weight. Supporting pieces  rug-made poufs, cactus silk pillows, and handcrafted decor  are chosen to work alongside them.",
+      "Every piece is sourced one at a time and sold as the exact item shown. Moroccan rugs lead the collection, then poufs, pillows, decor, and antiques follow around them.",
     cards: [
       {
         id: "category-rugs",
@@ -290,8 +290,8 @@ const defaultHomePageContent: HomePageContent = {
         description:
           "Hand-knotted rugs selected for pile density, construction depth, and weight underfoot.",
         image: {
-          src: "/homepage/category-rugs-editorial-v2.png",
-          alt: "A hand-knotted Moroccan rug displayed prominently in a warm, refined interior with natural light.",
+          src: "",
+          alt: "Moroccan rugs photo placeholder",
           publicId: "",
           width: null,
           height: null,
@@ -305,8 +305,8 @@ const defaultHomePageContent: HomePageContent = {
         description:
           "Rug-made and leather poufs. Functional seating with a quieter footprint than upholstered furniture.",
         image: {
-          src: "/homepage/category-poufs-pillows-editorial-v2.png",
-          alt: "Handcrafted Moroccan poufs and woven pillows grouped around a low tea table over a pale rug.",
+          src: "",
+          alt: "Moroccan poufs photo placeholder",
           publicId: "",
           width: null,
           height: null,
@@ -320,8 +320,8 @@ const defaultHomePageContent: HomePageContent = {
         description:
           "Cactus silk and rug-based pillows. Flat-woven, low-shed, with strong colour saturation.",
         image: {
-          src: "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          alt: "Cactus silk pillows in Moroccan sunlight with woven textiles",
+          src: "",
+          alt: "Moroccan pillows photo placeholder",
           publicId: "",
           width: null,
           height: null,
@@ -350,8 +350,8 @@ const defaultHomePageContent: HomePageContent = {
         description:
           "ONE OF A KIND vintage Moroccan rugs. Selected for construction integrity, visible age, and pile condition.",
         image: {
-          src: "/homepage/category-vintage-editorial-v2.png",
-          alt: "ONE OF A KIND vintage Moroccan rugs layered in a warm showroom with visible patina and softened reds.",
+          src: "",
+          alt: "Vintage Moroccan rugs photo placeholder",
           publicId: "",
           width: null,
           height: null,
@@ -455,8 +455,8 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/decor",
         visible: true,
         image: {
-          src: "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
-          alt: "Moroccan decor with carved wood, ceramics, and woven textiles",
+          src: "",
+          alt: "Decor and antiques photo placeholder",
           publicId: "",
           width: null,
           height: null,
@@ -518,7 +518,7 @@ const defaultHomePageContent: HomePageContent = {
     eyebrow: "JOIN THE LIST",
     title: "New arrivals, sourcing stories, and first access to pieces before wider release.",
     paragraph:
-      "Join for a free sourcing guide: 10 things to check before buying a Moroccan rug. You will also get new arrivals, sourcing stories, and first access to pieces before wider release. No filler.",
+      "New handmade Moroccan rugs, poufs, pillows and antiques arrive in small batches. Join the list to see them before they sell through.",
     inputLabel: "Email address",
     inputPlaceholder: "Your email address",
     ctaLabel: "JOIN",

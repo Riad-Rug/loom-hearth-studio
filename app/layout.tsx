@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { IBM_Plex_Mono, Outfit, Young_Serif } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
@@ -18,10 +18,24 @@ import { organizationSchema, websiteSchema } from "@/lib/seo/schema";
 
 import "./globals.css";
 
-const sans = Manrope({
+const display = Young_Serif({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-sans",
+  weight: ["400"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const body = Outfit({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -73,7 +87,11 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={sans.variable} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />
@@ -96,4 +114,3 @@ export default function RootLayout({ children }: RootLayoutProps) {
     </html>
   );
 }
-

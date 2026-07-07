@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 
+import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { blogCategories, blogPosts } from "@/features/blog/blog-post-data";
 
 import styles from "./blog.module.css";
@@ -14,7 +15,7 @@ export function BlogIndexPageView() {
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>JOURNAL</p>
-          <h1>The editorial journal for Moroccan rugs, materials, and lived-in rooms.</h1>
+          <h1>The journal for Moroccan rugs, materials, and lived-in rooms.</h1>
           <p className={styles.lede}>
             Notes from Loom &amp; Hearth Studio on Beni Ourain rugs, cactus silk pillows, poufs, and the sourcing process behind this collection.
           </p>
@@ -38,14 +39,24 @@ export function BlogIndexPageView() {
           href={`/blog/${featuredPost.categorySlug}/${featuredPost.slug}` as Route}
         >
           <div className={styles.featuredMedia}>
-            <Image
-              alt={featuredPost.imageAlt}
-              className={styles.postImage}
-              fill
-              priority
-              sizes="(max-width: 1100px) 100vw, 52vw"
-              src={featuredPost.imageSrc}
-            />
+            {isCloudinaryImage(featuredPost.imageSrc) ? (
+              <Image
+                alt={featuredPost.imageAlt}
+                className={styles.postImage}
+                fill
+                priority
+                sizes="(max-width: 1100px) 100vw, 52vw"
+                src={featuredPost.imageSrc}
+              />
+            ) : (
+              <PlaceholderMedia
+                alt={featuredPost.imageAlt}
+                aspectRatio="4 / 3"
+                label="Journal photo pending"
+                priority
+                sizes="(max-width: 1100px) 100vw, 52vw"
+              />
+            )}
           </div>
           <div className={styles.featuredBody}>
             <div className={styles.postMeta}>
@@ -68,13 +79,22 @@ export function BlogIndexPageView() {
             href={`/blog/${post.categorySlug}/${post.slug}` as Route}
           >
             <div className={styles.postMedia}>
-              <Image
-                alt={post.imageAlt}
-                className={styles.postImage}
-                fill
-                sizes="(max-width: 1100px) 100vw, 33vw"
-                src={post.imageSrc}
-              />
+              {isCloudinaryImage(post.imageSrc) ? (
+                <Image
+                  alt={post.imageAlt}
+                  className={styles.postImage}
+                  fill
+                  sizes="(max-width: 1100px) 100vw, 33vw"
+                  src={post.imageSrc}
+                />
+              ) : (
+                <PlaceholderMedia
+                  alt={post.imageAlt}
+                  aspectRatio="4 / 3"
+                  label="Journal photo pending"
+                  sizes="(max-width: 1100px) 100vw, 33vw"
+                />
+              )}
             </div>
             <div className={styles.postBody}>
               <div className={styles.postMeta}>
@@ -110,5 +130,9 @@ export function BlogIndexPageView() {
       </section>
     </div>
   );
+}
+
+function isCloudinaryImage(src: string) {
+  return src.startsWith("https://res.cloudinary.com/");
 }
 
