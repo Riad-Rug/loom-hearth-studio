@@ -314,7 +314,6 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
   const provenanceItems = [
     `Region: ${region} (${confidence})`,
     `Tradition: ${tradition}`,
-    "Sourcing: Direct from weaver or partner cooperative",
   ];
 
   const verificationItems =
@@ -732,7 +731,6 @@ function createProvenanceDescription(product: Product) {
     provenance,
     `Region: ${region} (${confidence})`,
     `Tradition: ${tradition}`,
-    "Sourcing: Direct from weaver or partner cooperative",
   ].filter(Boolean);
 
   return parts.join("\n");
