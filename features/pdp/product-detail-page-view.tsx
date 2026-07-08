@@ -270,7 +270,9 @@ function buildSpecificationRows(product: ProductDetailPageViewModel) {
 
   if (product.type === "rug") {
     rows.push({ label: "Style", value: product.rugStyle ?? "Handwoven rug" });
-    rows.push({ label: "Technique", value: product.techniqueLabel ?? "Handwoven" });
+    if (product.techniqueLabel) {
+      rows.push({ label: "Technique", value: product.techniqueLabel });
+    }
   }
 
   rows.push(

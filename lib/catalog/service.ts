@@ -213,7 +213,7 @@ function createProductDetailPageViewModel(
     palette: createProductPalette(product),
     materialLabel: product.materials.join(", "),
     originLabel: product.origin,
-    techniqueLabel: product.type === "rug" ? "Handwoven" : undefined,
+    techniqueLabel: undefined,
     specifications: createProductSpecifications(product),
     supportPanels: createProductSupportPanels(product),
     detailSections: createProductDetailSections(product),
