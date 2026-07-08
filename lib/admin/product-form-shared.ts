@@ -14,6 +14,7 @@ export type AdminProductFormValues = {
   category: Product["category"];
   description: string;
   priceUsd: string;
+  acquisitionCostMad: string;
   images: Product["images"];
   materials: string[];
   palette: string[];
@@ -29,6 +30,7 @@ export type AdminProductFormValues = {
   shippingNotes: string[];
   careNote: string;
   status: Product["status"];
+  soldAt: string;
   seoTitle: string;
   seoDescription: string;
   rugStyle: string;

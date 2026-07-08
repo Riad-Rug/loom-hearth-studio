@@ -4,7 +4,6 @@ import type { AdminProductFormValues } from "@/lib/admin/product-form-shared";
 import { getProductRoutePreview } from "@/lib/catalog/product-validation";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createRepositoryContext } from "@/lib/db";
-import { createProductRepository } from "@/lib/db/repositories/product-repository";
 import type { Product } from "@/types/domain";
 
 export type AdminProductListItem = {
@@ -59,17 +58,25 @@ export async function getAdminProductsPageData(): Promise<AdminProductsPageData>
 }
 
 export async function getAdminProductFormPageData(productId: string): Promise<AdminProductFormPageData | null> {
-  const product = await createProductRepository().getById(productId);
+  const record = await createRepositoryContext().client.catalogProduct.findUnique({
+    where: { id: productId },
+  });
 
-  if (!product) {
+  if (!record) {
     return null;
   }
+
+  const product = mapCatalogProductRecordToDomainProduct(record);
 
   return {
     title: `Edit ${product.name}`,
     description:
       "Edit persisted product content, pricing, route fields, and publish visibility from the admin products boundary.",
-    product: createAdminProductFormValues(product),
+    product: createAdminProductFormValues(product, {
+      acquisitionCostMad:
+        record.acquisitionCostMad === null ? "" : String(record.acquisitionCostMad),
+      soldAt: record.soldAt ? formatDateInput(record.soldAt) : "",
+    }),
   };
 }
 
@@ -93,6 +100,7 @@ export function createEmptyAdminProductFormValues(type: Product["type"]): AdminP
     category: type === "rug" ? "rugs" : "poufs",
     description: "",
     priceUsd: "",
+    acquisitionCostMad: "",
     images: [],
     materials: [""],
     palette: ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"],
@@ -108,6 +116,7 @@ export function createEmptyAdminProductFormValues(type: Product["type"]): AdminP
     shippingNotes: [],
     careNote: "",
     status: "draft",
+    soldAt: "",
     seoTitle: "",
     seoDescription: "",
     rugStyle: "",
@@ -185,7 +194,10 @@ function formatAdminDateLabel(value: Date) {
   }).format(value);
 }
 
-function createAdminProductFormValues(product: Product): AdminProductFormValues {
+function createAdminProductFormValues(
+  product: Product,
+  internal: { acquisitionCostMad: string; soldAt: string },
+): AdminProductFormValues {
   return {
     id: product.id,
     catalogNumber: product.catalogNumber ?? "",
@@ -195,6 +207,7 @@ function createAdminProductFormValues(product: Product): AdminProductFormValues 
     category: product.category,
     description: product.description,
     priceUsd: String(product.priceUsd),
+    acquisitionCostMad: internal.acquisitionCostMad,
     images: product.images,
     materials: product.materials,
     palette: product.palette,
@@ -210,6 +223,7 @@ function createAdminProductFormValues(product: Product): AdminProductFormValues 
     shippingNotes: product.shippingNotes ?? [],
     careNote: product.careNote ?? "",
     status: product.status,
+    soldAt: internal.soldAt,
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
     rugStyle: product.type === "rug" ? product.rugStyle : "",
@@ -238,4 +252,8 @@ function createAdminProductFormValues(product: Product): AdminProductFormValues 
             category: product.category,
           }),
   };
+}
+
+function formatDateInput(value: Date) {
+  return value.toISOString().slice(0, 10);
 }

@@ -132,8 +132,10 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     dimensionsLabel: createProductCardDimensionsLabel(product),
     subtitle: createProductSubtitle(product),
     category: product.category,
+    status: product.status,
     type: product.type,
-    availabilityLabel: product.type === "rug" ? "ONE OF A KIND" : "Available now",
+    availabilityLabel:
+      product.status === "sold" ? "SOLD" : product.type === "rug" ? "ONE OF A KIND" : "Available now",
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
     description: normalizeDimensionSeparators(product.description),
@@ -198,6 +200,7 @@ function createProductDetailPageViewModel(
     name: createDisplayProductTitle(product),
     subtitle: createProductSubtitle(product),
     category: product.category,
+    status: product.status,
     description: createProductDescriptionLead(product),
     merchandisingNote: normalizeDimensionSeparators(getProductMerchandisingNote(product)),
     descriptionSections: createProductDescriptionSections(product),
@@ -447,6 +450,10 @@ function isRecommendableCandidate(
   candidate: Product,
 ) {
   if (candidate.id === product.id) {
+    return false;
+  }
+
+  if (candidate.status === "sold") {
     return false;
   }
 

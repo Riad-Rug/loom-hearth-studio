@@ -138,7 +138,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             <ProductBreadcrumb product={product} />
 
             <div className={styles.badges}>
-              <span className={styles.monoBadge}>1 OF 1</span>
+              <span className={styles.monoBadge}>{product.status === "sold" ? "SOLD" : "1 OF 1"}</span>
               <span className={styles.catalogBadge}>{product.catalogNumber}</span>
             </div>
 
@@ -162,7 +162,9 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               </p>
             </section>
 
-            {product.type === "rug" ? (
+            {product.status === "sold" ? (
+              <SoldPurchaseShell />
+            ) : product.type === "rug" ? (
               <RugPurchaseShell product={product} />
             ) : (
               <MultiUnitPurchaseShell product={product} />
@@ -407,6 +409,17 @@ function RugPurchaseShell({
       </Link>
       <p className={styles.purchaseMicrocopy}>
         Card authorized now, charged only after your approval.
+      </p>
+    </div>
+  );
+}
+
+function SoldPurchaseShell() {
+  return (
+    <div className={styles.purchaseCard}>
+      <strong>This piece is sold.</strong>
+      <p className={styles.purchaseMicrocopy}>
+        It remains in the catalog as a record. Browse the collection for available pieces.
       </p>
     </div>
   );

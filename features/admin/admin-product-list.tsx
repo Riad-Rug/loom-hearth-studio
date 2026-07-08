@@ -14,7 +14,7 @@ import { productCategoryOptions } from "@/lib/catalog/product-validation";
 
 import styles from "./admin.module.css";
 
-const statusOptions = ["all", "active", "draft", "archived"] as const;
+const statusOptions = ["all", "active", "draft", "sold", "archived"] as const;
 const sortOptions = ["updated-desc", "updated-asc", "price-desc", "price-asc"] as const;
 
 export function AdminProductList(props: { items: AdminProductListItem[] }) {
@@ -113,6 +113,7 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
             <option value="all">All statuses</option>
             <option value="active">Active</option>
             <option value="draft">Draft</option>
+            <option value="sold">Sold</option>
             <option value="archived">Archived</option>
           </select>
         </label>
@@ -403,6 +404,10 @@ function getStatusBadgeClassName(
 
   if (status === "draft") {
     return `${scopedStyles.statusBadge} ${scopedStyles.statusBadgeDraft}`;
+  }
+
+  if (status === "sold") {
+    return `${scopedStyles.statusBadge} ${scopedStyles.statusBadgeSold}`;
   }
 
   return `${scopedStyles.statusBadge} ${scopedStyles.statusBadgeArchived}`;

@@ -260,6 +260,15 @@ function validateLineItem(input: {
   const issues: LaunchCheckoutValidationIssue[] = [];
   const expectedUnitAmountUsd = input.product.priceUsd;
 
+  if (input.product.status !== "active") {
+    issues.push({
+      code: "product-unavailable",
+      message: `Product ${input.product.id} is no longer available for checkout.`,
+      lineItemId: input.lineItem.id,
+      productId: input.product.id,
+    });
+  }
+
   if (input.lineItem.productType !== input.product.type) {
     issues.push({
       code: "product-type-mismatch",

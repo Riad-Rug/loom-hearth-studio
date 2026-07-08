@@ -48,7 +48,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           priceUsdLabel: product.priceUsdLabel,
           category: product.category,
           imageUrls: product.gallery.map((image) => image.src),
-          availability: "inStock",
+          availability: product.status === "sold" ? "outOfStock" : "inStock",
           isOneOfOne: true,
         })}
       />

@@ -196,6 +196,7 @@ model CatalogProduct {
   category         ProductCategory
   description      String          @db.Text
   priceUsd         Decimal         @db.Decimal(10, 2)
+  acquisitionCostMad Decimal?      @db.Decimal(12, 2)
   origin           String
   attributionRegion String?
   attributionConfidence String?
@@ -208,6 +209,7 @@ model CatalogProduct {
   shippingNotes    Json?
   careNote         String?         @db.Text
   status           String
+  soldAt           DateTime?
   images           Json
   materials        Json
   palette          Json?
@@ -230,6 +232,7 @@ model CatalogProduct {
   @@index([status])
   @@index([category, status])
   @@index([type, status])
+  @@index([status, soldAt])
   @@index([homepageFeatured, homepageRank])
 }
 

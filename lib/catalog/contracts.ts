@@ -15,6 +15,7 @@ export type CatalogProductCardViewModel = {
   dimensionsLabel?: string;
   subtitle: string;
   category: ProductCategory;
+  status: Product["status"];
   type: Product["type"];
   availabilityLabel: string;
   priceUsd: number;
@@ -66,6 +67,7 @@ type ProductDetailPageViewModelBase = {
   name: string;
   subtitle: string;
   category: ProductCategory;
+  status: Product["status"];
   description: string;
   merchandisingNote: string;
   descriptionSections: ProductDetailSectionViewModel[];
@@ -136,6 +138,7 @@ export type LaunchCheckoutValidationIssue = {
     | "product-type-mismatch"
     | "slug-mismatch"
     | "name-mismatch"
+    | "product-unavailable"
     | "variant-not-found"
     | "invalid-rug-quantity"
     | "invalid-quantity"
