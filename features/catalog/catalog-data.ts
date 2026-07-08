@@ -54,8 +54,8 @@ export const catalogCategories = [
   },
   {
     key: "decor",
-    label: "Decor",
-    title: "Home Decor",
+    label: "Decor & Antiques",
+    title: "Decor & Antiques",
     href: "/shop/decor",
     description:
       "A focused selection of handcrafted Moroccan pieces for shelves, consoles, and surfaces. The same sourcing criteria as the rugs \u2014 assessed in person for construction and material quality, not added to fill a category.",
@@ -67,9 +67,9 @@ export const catalogCategories = [
   },
   {
     key: "vintage",
-    label: "Vintage",
+    label: "Vintage Rugs",
     title: "Vintage Rugs",
-    href: "/shop/rugs/vintage",
+    href: "/shop/vintage",
     description:
       "Vintage Moroccan rugs selected for structural integrity, patina, and visible age. Each piece is assessed for warp and weft tension, pile density, and condition before entering the collection. Visible age is not enough \u2014 the construction has to hold.\n\nEvery piece is ONE OF A KIND.",
     bullets: [

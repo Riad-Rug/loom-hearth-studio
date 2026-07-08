@@ -9,6 +9,7 @@ import type { Product } from "@/types/domain";
 
 export type AdminProductListItem = {
   id: string;
+  catalogNumber: string;
   imageUrl: string | null;
   imageAlt: string;
   hasImage: boolean;
@@ -78,13 +79,14 @@ export function getNewAdminProductFormPageData(
   return {
     title: "Create product",
     description:
-      "Create a persisted draft or active product using the same full required field set used for all product saves in v1.",
+      "Create a truthful stockroom listing: catalog identity, exact physical facts, condition, provenance basis, sourcing note, and category-specific photographs.",
     product: createEmptyAdminProductFormValues(type),
   };
 }
 
 export function createEmptyAdminProductFormValues(type: Product["type"]): AdminProductFormValues {
   return {
+    catalogNumber: "",
     type,
     slug: "",
     name: "",
@@ -95,6 +97,16 @@ export function createEmptyAdminProductFormValues(type: Product["type"]): AdminP
     materials: [""],
     palette: ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"],
     origin: "",
+    attributionRegion: "",
+    attributionConfidence: "",
+    provenanceNote: "",
+    sourcingNote: "",
+    conditionNote: "",
+    ageClass: "",
+    ageBasis: "",
+    verificationNotes: [],
+    shippingNotes: [],
+    careNote: "",
     status: "draft",
     seoTitle: "",
     seoDescription: "",
@@ -122,6 +134,7 @@ function createAdminProductListItem(
 
   return {
     id: product.id,
+    catalogNumber: product.catalogNumber ?? "",
     imageUrl: heroImage
       ? buildCloudinaryUrl(heroImage.publicId, {
           transformation: {
@@ -175,6 +188,7 @@ function formatAdminDateLabel(value: Date) {
 function createAdminProductFormValues(product: Product): AdminProductFormValues {
   return {
     id: product.id,
+    catalogNumber: product.catalogNumber ?? "",
     type: product.type,
     slug: product.slug,
     name: product.name,
@@ -185,15 +199,23 @@ function createAdminProductFormValues(product: Product): AdminProductFormValues 
     materials: product.materials,
     palette: product.palette,
     origin: product.origin,
+    attributionRegion: product.attributionRegion ?? "",
+    attributionConfidence: product.attributionConfidence ?? "",
+    provenanceNote: product.provenanceNote ?? "",
+    sourcingNote: product.sourcingNote ?? "",
+    conditionNote: product.conditionNote ?? "",
+    ageClass: product.ageClass ?? "",
+    ageBasis: product.ageBasis ?? "",
+    verificationNotes: product.verificationNotes ?? [],
+    shippingNotes: product.shippingNotes ?? [],
+    careNote: product.careNote ?? "",
     status: product.status,
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
     rugStyle: product.type === "rug" ? product.rugStyle : "",
-    dimensionsCmLength:
-      product.type === "rug" ? String(product.dimensionsCm.length) : "",
-    dimensionsCmWidth:
-      product.type === "rug" ? String(product.dimensionsCm.width) : "",
-    weightKg: product.type === "rug" ? String(product.weightKg) : "",
+    dimensionsCmLength: product.dimensionsCm ? String(product.dimensionsCm.length) : "",
+    dimensionsCmWidth: product.dimensionsCm ? String(product.dimensionsCm.width) : "",
+    weightKg: product.weightKg ? String(product.weightKg) : "",
     fixedQuantity: product.type === "rug" ? String(product.fixedQuantity) : "1",
     inventory: product.type === "multiUnit" ? String(product.inventory) : "0",
     lowStockThreshold:

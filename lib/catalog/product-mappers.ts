@@ -8,6 +8,7 @@ type PrismaProductCategory = CatalogProduct["category"];
 export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): Product {
   const baseProduct = {
     id: record.id,
+    catalogNumber: record.catalogNumber ?? undefined,
     slug: record.slug,
     name: record.name,
     category: mapPrismaProductCategoryToDomain(record.category),
@@ -17,6 +18,22 @@ export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): 
     materials: record.materials as Product["materials"],
     palette: Array.isArray(record.palette) ? (record.palette as Product["palette"]) : [],
     origin: record.origin,
+    attributionRegion: record.attributionRegion ?? undefined,
+    attributionConfidence: record.attributionConfidence ?? undefined,
+    provenanceNote: record.provenanceNote ?? undefined,
+    sourcingNote: record.sourcingNote ?? undefined,
+    conditionNote: record.conditionNote ?? undefined,
+    ageClass: record.ageClass ?? undefined,
+    ageBasis: record.ageBasis ?? undefined,
+    verificationNotes: Array.isArray(record.verificationNotes)
+      ? (record.verificationNotes as string[])
+      : [],
+    shippingNotes: Array.isArray(record.shippingNotes) ? (record.shippingNotes as string[]) : [],
+    careNote: record.careNote ?? undefined,
+    dimensionsCm: record.dimensionsCm
+      ? (record.dimensionsCm as Product["dimensionsCm"])
+      : undefined,
+    weightKg: record.weightKg === null ? undefined : Number(record.weightKg),
     status: mapStatus(record.status),
     seoTitle: record.seoTitle,
     seoDescription: record.seoDescription,
@@ -49,6 +66,7 @@ export function mapProductMutationInputToCreateInput(
   input: ProductMutationInput,
 ): Prisma.CatalogProductCreateInput {
   const baseInput: Prisma.CatalogProductCreateInput = {
+    catalogNumber: input.catalogNumber || null,
     type: input.type,
     slug: input.slug,
     name: input.name,
@@ -56,6 +74,16 @@ export function mapProductMutationInputToCreateInput(
     description: input.description,
     priceUsd: createPrismaDecimal(input.priceUsd),
     origin: input.origin,
+    attributionRegion: input.attributionRegion || null,
+    attributionConfidence: input.attributionConfidence || null,
+    provenanceNote: input.provenanceNote || null,
+    sourcingNote: input.sourcingNote || null,
+    conditionNote: input.conditionNote || null,
+    ageClass: input.ageClass || null,
+    ageBasis: input.ageBasis || null,
+    verificationNotes: sanitizeJsonValue(input.verificationNotes) as Prisma.InputJsonValue,
+    shippingNotes: sanitizeJsonValue(input.shippingNotes) as Prisma.InputJsonValue,
+    careNote: input.careNote || null,
     status: input.status,
     images: sanitizeJsonValue(input.images) as Prisma.InputJsonValue,
     materials: sanitizeJsonValue(input.materials) as Prisma.InputJsonValue,
@@ -63,11 +91,10 @@ export function mapProductMutationInputToCreateInput(
     seoTitle: input.seoTitle,
     seoDescription: input.seoDescription,
     rugStyle: input.type === "rug" ? input.rugStyle : null,
-    dimensionsCm:
-      input.type === "rug"
-        ? (sanitizeJsonValue(input.dimensionsCm) as Prisma.InputJsonValue)
-        : Prisma.JsonNull,
-    weightKg: input.type === "rug" ? createPrismaDecimal(input.weightKg) : null,
+    dimensionsCm: input.dimensionsCm
+      ? (sanitizeJsonValue(input.dimensionsCm) as Prisma.InputJsonValue)
+      : Prisma.JsonNull,
+    weightKg: input.weightKg ? createPrismaDecimal(input.weightKg) : null,
     fixedQuantity: input.type === "rug" ? input.fixedQuantity : null,
     inventory: input.type === "multiUnit" ? input.inventory : null,
     lowStockThreshold: input.type === "multiUnit" ? input.lowStockThreshold : null,
@@ -92,6 +119,7 @@ export function mapProductMutationInputToUpdateInput(
   input: ProductMutationInput,
 ): Prisma.CatalogProductUpdateInput {
   return {
+    catalogNumber: input.catalogNumber || null,
     type: input.type,
     slug: input.slug,
     name: input.name,
@@ -99,6 +127,16 @@ export function mapProductMutationInputToUpdateInput(
     description: input.description,
     priceUsd: createPrismaDecimal(input.priceUsd),
     origin: input.origin,
+    attributionRegion: input.attributionRegion || null,
+    attributionConfidence: input.attributionConfidence || null,
+    provenanceNote: input.provenanceNote || null,
+    sourcingNote: input.sourcingNote || null,
+    conditionNote: input.conditionNote || null,
+    ageClass: input.ageClass || null,
+    ageBasis: input.ageBasis || null,
+    verificationNotes: sanitizeJsonValue(input.verificationNotes) as Prisma.InputJsonValue,
+    shippingNotes: sanitizeJsonValue(input.shippingNotes) as Prisma.InputJsonValue,
+    careNote: input.careNote || null,
     status: input.status,
     images: sanitizeJsonValue(input.images) as Prisma.InputJsonValue,
     materials: sanitizeJsonValue(input.materials) as Prisma.InputJsonValue,
@@ -106,11 +144,10 @@ export function mapProductMutationInputToUpdateInput(
     seoTitle: input.seoTitle,
     seoDescription: input.seoDescription,
     rugStyle: input.type === "rug" ? input.rugStyle : null,
-    dimensionsCm:
-      input.type === "rug"
-        ? (sanitizeJsonValue(input.dimensionsCm) as Prisma.InputJsonValue)
-        : Prisma.JsonNull,
-    weightKg: input.type === "rug" ? createPrismaDecimal(input.weightKg) : null,
+    dimensionsCm: input.dimensionsCm
+      ? (sanitizeJsonValue(input.dimensionsCm) as Prisma.InputJsonValue)
+      : Prisma.JsonNull,
+    weightKg: input.weightKg ? createPrismaDecimal(input.weightKg) : null,
     fixedQuantity: input.type === "rug" ? input.fixedQuantity : null,
     inventory: input.type === "multiUnit" ? input.inventory : null,
     lowStockThreshold: input.type === "multiUnit" ? input.lowStockThreshold : null,

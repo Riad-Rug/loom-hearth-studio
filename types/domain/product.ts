@@ -9,6 +9,7 @@ export type ProductCategory =
 
 export type ProductBase = SeoFields & {
   id: string;
+  catalogNumber?: string;
   slug: string;
   name: string;
   category: ProductCategory;
@@ -20,12 +21,20 @@ export type ProductBase = SeoFields & {
   origin: string;
   status: EntityStatus;
   provenanceNote?: string;
+  sourcingNote?: string;
   attributionRegion?: string;
   attributionConfidence?: string;
   conditionNote?: string;
+  ageClass?: string;
+  ageBasis?: string;
   verificationNotes?: string[];
   shippingNotes?: string[];
   careNote?: string;
+  dimensionsCm?: {
+    length: number;
+    width: number;
+  };
+  weightKg?: number;
   homepageFeatured: boolean;
   homepageRank: number | null;
 };

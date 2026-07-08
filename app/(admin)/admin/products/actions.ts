@@ -103,9 +103,10 @@ export async function createAdminProductAction(
     if (isUniqueConstraintError(error)) {
       return {
         status: "error",
-        message: "Product slug and category must remain unique.",
+        message: "Product slug, category, and catalog number must remain unique.",
         fieldErrors: {
           slug: "Slug/category combination is already taken.",
+          catalogNumber: "Catalog number is already assigned to another product.",
         },
       };
     }
@@ -179,9 +180,10 @@ export async function updateAdminProductAction(
     if (isUniqueConstraintError(error)) {
       return {
         status: "error",
-        message: "Product slug and category must remain unique.",
+        message: "Product slug, category, and catalog number must remain unique.",
         fieldErrors: {
           slug: "Slug/category combination is already taken.",
+          catalogNumber: "Catalog number is already assigned to another product.",
         },
       };
     }
@@ -211,6 +213,7 @@ export async function duplicateAdminProductAction(productId: string) {
   const duplicate = await repository.create({
     ...product,
     id: undefined,
+    catalogNumber: undefined,
     name: `${product.name} Copy`,
     slug: createDuplicatedSlug(product.slug),
     status: "draft",

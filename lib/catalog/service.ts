@@ -13,6 +13,7 @@ import {
 import type {
   CatalogProductCardViewModel,
   MultiUnitProductDetailPageViewModel,
+  ProductDetailPageViewModel,
   ProductDetailSectionViewModel,
   ProductLinkViewModel,
   ProductSpecificationViewModel,
@@ -20,7 +21,6 @@ import type {
   RugProductDetailPageViewModel,
 } from "@/lib/catalog/contracts";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
-import type { CloudinaryTransformation } from "@/lib/cloudinary/types";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
 import type { MediaAsset, Product, ProductCategory, RugProduct } from "@/types/domain";
@@ -35,56 +35,6 @@ const paletteLabelsByHex = new Map([
   ["#B9562A", "Burnt orange"],
   ["#7A2B2B", "Burgundy"],
 ]);
-const rugGalleryShotPlan = [
-  {
-    role: "styled",
-    label: "Styled in room",
-    altSuffix: "styled in a room setting",
-    transformation: { c: "fill", g: "auto", w: 1600, h: 1200, q: "auto", f: "auto" },
-  },
-  {
-    role: "detail",
-    label: "Knot density close-up",
-    altSuffix: "close-up showing knot density and pile texture",
-    transformation: { c: "fill", g: "auto", w: 1400, h: 1050, q: "auto", f: "auto" },
-  },
-  {
-    role: "edge",
-    label: "Fringe and edge detail",
-    altSuffix: "fringe and edge detail",
-    transformation: { c: "fill", g: "auto", w: 1400, h: 1050, q: "auto", f: "auto" },
-  },
-  {
-    role: "motif",
-    label: "Motif detail",
-    altSuffix: "detail of one woven motif",
-    transformation: { c: "fill", g: "auto", w: 1400, h: 1050, q: "auto", f: "auto" },
-  },
-  {
-    role: "back",
-    label: "Reverse side",
-    altSuffix: "reverse side construction detail",
-    transformation: { c: "fill", g: "auto", w: 1400, h: 1050, q: "auto", f: "auto" },
-  },
-  {
-    role: "scale",
-    label: "Scale reference",
-    altSuffix: "shown with scale reference",
-    transformation: { c: "fill", g: "auto", w: 1600, h: 1200, q: "auto", f: "auto" },
-  },
-  {
-    role: "hero",
-    label: "Full flat-lay",
-    altSuffix: "shown as a full flat-lay",
-    transformation: { c: "fill", g: "auto", w: 1600, h: 1200, q: "auto", f: "auto" },
-  },
-] as const satisfies ReadonlyArray<{
-  role: MediaAsset["role"];
-  label: string;
-  altSuffix: string;
-  transformation: CloudinaryTransformation;
-}>;
-
 export async function listCatalogProductCards(input?: {
   category?: ProductCategory;
   repository?: ProductRepository;
@@ -157,20 +107,17 @@ export async function getCategoryProductDetailByParams(input: {
   category: string;
   slug: string;
   repository?: ProductRepository;
-}): Promise<MultiUnitProductDetailPageViewModel | null> {
+}): Promise<ProductDetailPageViewModel | null> {
   const repository = input.repository ?? createProductRepository();
   const product = await repository.getBySlug(input.slug);
 
-  if (!product || product.type !== "multiUnit" || product.category !== input.category) {
+  if (!product || product.category !== input.category) {
     return null;
   }
 
   const allProducts = await repository.listAll();
 
-  return createProductDetailPageViewModel(
-    product,
-    allProducts,
-  ) as MultiUnitProductDetailPageViewModel;
+  return createProductDetailPageViewModel(product, allProducts);
 }
 
 function createCatalogProductCardViewModel(product: Product): CatalogProductCardViewModel {
@@ -246,6 +193,7 @@ function createProductDetailPageViewModel(
 
   const baseViewModel = {
     id: product.id,
+    catalogNumber: product.catalogNumber ?? "Catalog number pending",
     slug: product.slug,
     name: createDisplayProductTitle(product),
     subtitle: createProductSubtitle(product),
@@ -316,10 +264,30 @@ function createProductSpecifications(product: Product): ProductSpecificationView
       { label: "Piece type", value: "ONE OF A KIND rug" },
     );
   } else {
+    if (product.dimensionsCm) {
+      specs.push({
+        label: "Dimensions",
+        value: `${product.dimensionsCm.length} × ${product.dimensionsCm.width} cm`,
+      });
+    }
+
+    if (product.weightKg) {
+      specs.push({ label: "Weight", value: `${product.weightKg.toFixed(1)} kg` });
+    }
+
     specs.push(
       { label: "Availability", value: createInventoryStateLabel(product) },
       { label: "Ordering", value: "Project and destination reviewed before payment capture" },
     );
+  }
+
+  if (product.ageClass?.trim()) {
+    specs.push({
+      label: "Age",
+      value: product.ageBasis?.trim()
+        ? `${product.ageClass.trim()} — ${product.ageBasis.trim()}`
+        : product.ageClass.trim(),
+    });
   }
 
   if (product.attributionRegion?.trim()) {
@@ -404,6 +372,16 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
       eyebrow: "Condition",
       title: "Condition notes",
       body: normalizeDimensionSeparators(product.conditionNote.trim()),
+      items: [],
+    });
+  }
+
+  if (product.sourcingNote?.trim()) {
+    panels.push({
+      id: "sourcing",
+      eyebrow: "Sourcing note",
+      title: "How this piece entered the stockroom",
+      body: normalizeDimensionSeparators(product.sourcingNote.trim()),
       items: [],
     });
   }
@@ -811,50 +789,7 @@ function createProductGallery(product: Product) {
     .slice()
     .sort((left, right) => left.sortOrder - right.sortOrder);
 
-  if (product.type !== "rug") {
-    return images.map((image, index) => createGalleryItem(image, index));
-  }
-
-  const roleImages = new Map<MediaAsset["role"], MediaAsset>();
-
-  for (const image of images) {
-    if (!roleImages.has(image.role)) {
-      roleImages.set(image.role, image);
-    }
-  }
-
-  const plannedGallery = rugGalleryShotPlan.flatMap((shot, index) => {
-    const source =
-      roleImages.get(shot.role) ??
-      (shot.role === "hero" ? images[0] : undefined) ??
-      images[index] ??
-      images[index % images.length];
-
-    if (!source) {
-      return [];
-    }
-
-    const hasExactRole = source.role === shot.role;
-
-    return {
-      id: hasExactRole ? source.id : `${source.id}-${shot.role}-crop`,
-      label: shot.label,
-      src: buildCloudinaryUrl(source.publicId, { transformation: shot.transformation }),
-      publicId: source.publicId,
-      altText: source.altText.trim()
-        ? source.altText
-        : `${createDisplayProductTitle(product)} ${shot.altSuffix}`,
-      role: shot.role,
-      isDerived: !hasExactRole,
-    };
-  });
-
-  const plannedIds = new Set(plannedGallery.map((image) => image.id));
-  const additionalImages = images
-    .map((image, index) => createGalleryItem(image, plannedGallery.length + index))
-    .filter((image) => !plannedIds.has(image.id));
-
-  return [...plannedGallery, ...additionalImages];
+  return images.map((image, index) => createGalleryItem(image, index));
 }
 
 function createProductPalette(product: Product) {
