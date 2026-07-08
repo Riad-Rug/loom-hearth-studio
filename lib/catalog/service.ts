@@ -818,7 +818,7 @@ function createGalleryItem(image: MediaAsset, index: number) {
     id: image.id,
     label: createGalleryLabel(image, index),
     src: buildCloudinaryUrl(image.publicId, {
-      transformation: { c: "fill", g: "auto", w: 1600, h: 1200, q: "auto", f: "auto" },
+      transformation: { w: 1600, q: "auto", f: "auto" },
     }),
     publicId: image.publicId,
     altText: image.altText,

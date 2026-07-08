@@ -183,6 +183,17 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               <p className={styles.panelEyebrow}>Founder sourcing note</p>
               <p>{product.merchandisingNote || product.description}</p>
             </section>
+
+            {product.detailSections.length > 0 && (
+              <div className={styles.detailSections}>
+                {product.detailSections.map((section) => (
+                  <section key={section.title} className={styles.detailSection}>
+                    <p className={styles.detailSectionTitle}>{section.title}</p>
+                    <p className={styles.detailSectionBody}>{section.body}</p>
+                  </section>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </Section>
@@ -222,51 +233,51 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   );
 }
 
-function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalleryItem[] {
-  const gallery = product.gallery.slice(0, 5);
-  const lastImage = product.gallery.at(-1);
-  const hasConditionImage = lastImage && lastImage.id !== gallery.at(-1)?.id;
-  const items = hasConditionImage ? [...gallery.slice(0, 4), lastImage] : gallery;
+const MIN_GALLERY_SLOTS = 5;
 
-  if (items.length >= 5) {
-    return items.map((item, index) => ({
-      ...item,
-      label: index === items.length - 1 ? "Condition" : item.label,
-      tone: index === items.length - 1 ? ("condition" as const) : ("neutral" as const),
-    }));
-  }
+function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalleryItem[] {
+  const allImages = product.gallery;
+
+  const items: DisplayGalleryItem[] = allImages.map((item, index) => ({
+    ...item,
+    label: index === allImages.length - 1 ? "Condition" : item.label,
+    tone: index === allImages.length - 1 ? ("condition" as const) : ("neutral" as const),
+  }));
 
   const padded: DisplayGalleryItem[] = [...items];
 
-  while (padded.length < 5) {
+  while (padded.length < MIN_GALLERY_SLOTS) {
     padded.push({
       id: `placeholder-${padded.length}`,
-      label: padded.length === 4 ? "Condition" : `View ${padded.length + 1}`,
+      label: padded.length === MIN_GALLERY_SLOTS - 1 ? "Condition" : `View ${padded.length + 1}`,
       src: "",
       publicId: "",
       altText: "",
       role: "placeholder",
-      tone: padded.length === 4 ? ("condition" as const) : ("neutral" as const),
+      tone: padded.length === MIN_GALLERY_SLOTS - 1 ? ("condition" as const) : ("neutral" as const),
     });
   }
 
-  return padded as DisplayGalleryItem[];
+  return padded;
 }
 
 function buildSpecificationRows(product: ProductDetailPageViewModel) {
-  const rows = [
+  const rows: { label: string; value: string }[] = [
     { label: "Size", value: product.type === "rug" ? product.dimensionsLabel : "See variant options" },
     { label: "Material", value: product.materialLabel || "See listing" },
-    { label: "Age", value: product.category === "vintage" ? "Vintage" : "Handmade contemporary piece" },
-    {
-      label: "Condition",
-      value: extractConditionNote(product),
-    },
-    {
-      label: "Weight",
-      value: product.type === "rug" ? product.weightLabel : product.inventoryMessage,
-    },
+    { label: "Origin", value: product.originLabel || "Morocco" },
   ];
+
+  if (product.type === "rug") {
+    rows.push({ label: "Style", value: product.rugStyle ?? "Handwoven rug" });
+    rows.push({ label: "Technique", value: product.techniqueLabel ?? "Handwoven" });
+  }
+
+  rows.push(
+    { label: "Age", value: product.category === "vintage" ? "Vintage" : "Handmade contemporary piece" },
+    { label: "Condition", value: extractConditionNote(product) },
+    { label: "Weight", value: product.type === "rug" ? product.weightLabel : product.inventoryMessage },
+  );
 
   return rows;
 }

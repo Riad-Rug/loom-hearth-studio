@@ -34,7 +34,7 @@
 
 .thumbnailGrid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
   gap: var(--space-2);
 }
 
@@ -242,6 +242,40 @@
   .layout {
     grid-template-columns: 1fr;
   }
+}
+
+.detailSections {
+  display: grid;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: var(--color-panel);
+}
+
+.detailSection {
+  display: grid;
+  gap: 0.4rem;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.detailSection:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.detailSectionTitle {
+  color: var(--color-green);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.detailSectionBody {
+  color: var(--color-ink);
+  line-height: 1.65;
 }
 
 @media (max-width: 700px) {
