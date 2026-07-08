@@ -3,6 +3,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
@@ -309,7 +310,7 @@ function ImageLightbox({
     };
   }, [onClose]);
 
-  return (
+  return createPortal(
     <div className={styles.lightboxOverlay} role="dialog" aria-modal="true" onClick={onClose}>
       <button
         ref={closeButtonRef}
@@ -326,7 +327,8 @@ function ImageLightbox({
         src={src}
         onClick={(event) => event.stopPropagation()}
       />
-    </div>
+    </div>,
+    document.body,
   );
 }
 

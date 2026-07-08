@@ -504,6 +504,12 @@ h6 {
   outline: none;
 }
 
+@media (max-width: 700px) {
+  .cookie-banner {
+    bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+}
+
 .global-back-to-top-button {
   position: fixed;
   right: 1.25rem;
@@ -541,6 +547,12 @@ h6 {
 .global-back-to-top-button:focus-visible {
   border-color: var(--button-secondary-border-hover);
   outline: none;
+}
+
+@media (max-width: 700px) {
+  .global-back-to-top-button {
+    bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
 }
 
 .site-header__sr-only {
