@@ -163,6 +163,13 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                 </button>
               ))}
             </div>
+
+            {product.description ? (
+              <section className={styles.descriptionSection} aria-label="Description">
+                <p className={styles.panelEyebrow}>Description</p>
+                <p>{product.description}</p>
+              </section>
+            ) : null}
           </div>
 
           <div className={styles.infoColumn}>
@@ -209,25 +216,23 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                 <li>Questions handled directly before dispatch.</li>
               </ul>
             </section>
+
+            <section className={styles.founderNote}>
+              <p className={styles.panelEyebrow}>Founder sourcing note</p>
+              <p>{product.merchandisingNote}</p>
+            </section>
+
+            {product.detailSections.length > 0 && (
+              <div className={styles.detailSections}>
+                {product.detailSections.map((section) => (
+                  <section key={section.title} className={styles.detailSection}>
+                    <h3 className={styles.detailSectionTitle}>{section.title}</h3>
+                    <p className={styles.detailSectionBody}>{section.body}</p>
+                  </section>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-
-        <div className={styles.moreInfoSection}>
-          <section className={styles.founderNote}>
-            <p className={styles.panelEyebrow}>Founder sourcing note</p>
-            <p>{product.merchandisingNote || product.description}</p>
-          </section>
-
-          {product.detailSections.length > 0 && (
-            <div className={styles.detailSections}>
-              {product.detailSections.map((section) => (
-                <section key={section.title} className={styles.detailSection}>
-                  <h3 className={styles.detailSectionTitle}>{section.title}</h3>
-                  <p className={styles.detailSectionBody}>{section.body}</p>
-                </section>
-              ))}
-            </div>
-          )}
         </div>
       </Section>
 

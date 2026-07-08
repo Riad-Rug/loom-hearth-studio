@@ -17,13 +17,6 @@
   gap: var(--space-4);
 }
 
-.moreInfoSection {
-  display: grid;
-  gap: var(--space-4);
-  max-width: 46rem;
-  margin-top: var(--space-6);
-}
-
 .primaryMedia {
   aspect-ratio: 3 / 4;
   overflow: hidden;
@@ -188,13 +181,18 @@
 .verificationPanel,
 .founderNote,
 .purchaseCard,
-.checklistSection {
+.checklistSection,
+.descriptionSection {
   display: grid;
   gap: var(--space-3);
   padding: var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-panel);
+}
+
+.descriptionSection p:last-child {
+  line-height: 1.65;
 }
 
 .panelEyebrow,
