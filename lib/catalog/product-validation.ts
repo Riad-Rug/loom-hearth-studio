@@ -309,19 +309,6 @@ export function validateProductMutationInput(
       fieldErrors.fixedQuantity = "Rugs must keep fixed quantity at 1.";
     }
 
-    if (input.status === "active" || input.status === "sold") {
-      const requiredRugImageRoles = ["hero", "detail", "edge", "back", "scale"] as const;
-      const imageRoles = new Set(
-        input.images
-          .filter((image) => image.mediaType === "image" && image.publicId.trim())
-          .map((image) => image.role),
-      );
-      const missingRoles = requiredRugImageRoles.filter((role) => !imageRoles.has(role));
-
-      if (missingRoles.length) {
-        fieldErrors.images = `Active rugs need distinct truthful views: full flat-lay, texture/detail close-up, fringe/edge, reverse side, and scale reference. Missing roles: ${missingRoles.join(", ")}. Add every flaw as an additional gallery image.`;
-      }
-    }
   }
 
   if (input.type === "multiUnit") {
