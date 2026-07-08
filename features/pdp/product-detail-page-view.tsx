@@ -139,7 +139,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 
             <div className={styles.badges}>
               <span className={styles.monoBadge}>1 OF 1</span>
-              <span className={styles.catalogBadge}>{formatCatalogNumber(product.id)}</span>
+              <span className={styles.catalogBadge}>{product.catalogNumber}</span>
             </div>
 
             <h1>{product.name}</h1>
@@ -278,17 +278,12 @@ function extractConditionNote(product: ProductDetailPageViewModel) {
   return `${conditionSection.split(/\n|(?<=[.!?])\s/u)[0]} Photo shown in the condition view.`;
 }
 
-function formatCatalogNumber(id: string) {
-  const digits = id.replace(/\D/g, "").slice(-3).padStart(3, "0");
-  return `NO. ${digits}`;
-}
-
 function ProductBreadcrumb({ product }: { product: ProductDetailPageViewModel }) {
   const categoryPath = getProductCategoryHref(product);
   const items: Array<{ label: string; href?: Route }> = [
     { label: "Home", href: "/" },
     { label: "Shop", href: "/shop" },
-    { label: product.type === "rug" ? "Rugs" : getCategoryLabel(product.category), href: categoryPath as Route },
+    { label: getCategoryLabel(product.category), href: categoryPath as Route },
     { label: product.name },
   ];
 
@@ -397,7 +392,7 @@ function getCrossSellPresentation(
 }
 
 function getProductCategoryHref(product: ProductDetailPageViewModel): Route {
-  return (product.type === "rug" ? "/shop/rugs" : `/shop/${product.category}`) as Route;
+  return (product.category === "vintage" ? "/shop/vintage" : product.type === "rug" ? "/shop/rugs" : `/shop/${product.category}`) as Route;
 }
 
 function RugPurchaseShell({

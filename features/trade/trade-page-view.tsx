@@ -53,7 +53,7 @@ const tradeFacts = [
 
 const supportedCategories = [
   { label: "Rugs", href: "/shop/rugs" },
-  { label: "Vintage rugs", href: "/shop/rugs/vintage" },
+  { label: "Vintage rugs", href: "/shop/vintage" },
   { label: "Poufs", href: "/shop/poufs" },
   { label: "Pillows", href: "/shop/pillows" },
   { label: "Decor", href: "/shop/decor" },

@@ -37,7 +37,9 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
 
   const normalizedQuery = query.trim().toLowerCase();
   const filteredItems = props.items.filter((item) => {
-    const matchesQuery = normalizedQuery ? item.name.toLowerCase().includes(normalizedQuery) : true;
+    const matchesQuery = normalizedQuery
+      ? `${item.catalogNumber} ${item.name}`.toLowerCase().includes(normalizedQuery)
+      : true;
     const matchesStatus = statusFilter === "all" ? true : item.status === statusFilter;
     const matchesCategory = categoryFilter === "all" ? true : item.category === categoryFilter;
 
@@ -96,7 +98,7 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
           <input
             name="product-search"
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search by product name"
+            placeholder="Search by catalog number or name"
             type="search"
             value={query}
           />
@@ -254,6 +256,7 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
                       <ProductThumbnail item={item} />
                       <div className={styles.productText}>
                         <strong>{item.name}</strong>
+                        <span>{item.catalogNumber || "Catalog number pending"}</span>
                         <span>{item.routePath}</span>
                         {!item.hasImage ? <em>Missing hero image</em> : null}
                       </div>
@@ -365,6 +368,8 @@ function ProductThumbnail({ item }: { item: AdminProductListItem }) {
 }
 
 function formatCategoryLabel(category: AdminProductListItem["category"]) {
+  if (category === "vintage") return "Vintage Rugs";
+  if (category === "decor") return "Decor & Antiques";
   return category.charAt(0).toUpperCase() + category.slice(1);
 }
 

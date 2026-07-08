@@ -245,7 +245,7 @@ export const lookbookItems: LookbookItem[] = [
     description:
       "A Moroccan interior with vintage rugs and woven textiles. Warm terracotta tones, pendant light, and layered natural materials.",
     ctaLabel: "Shop the vintage rugs",
-    href: "/shop/rugs/vintage",
+    href: "/shop/vintage",
     imageSrc: "",
     imageAlt:
       "A Moroccan interior scene with textiles, a pouf, and terracotta, wood, and woven materials.",

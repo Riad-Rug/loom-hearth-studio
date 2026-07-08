@@ -214,7 +214,7 @@ function inferCategoryFromProductHref(productHref: string | undefined): ProductC
     return "decor";
   }
 
-  if (productHref.includes("/shop/rugs/vintage/")) {
+  if (productHref.includes("/shop/vintage/")) {
     return "vintage";
   }
 

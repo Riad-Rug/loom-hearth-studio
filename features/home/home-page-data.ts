@@ -345,7 +345,7 @@ const defaultHomePageContent: HomePageContent = {
       {
         id: "category-vintage",
         title: "Vintage Rugs",
-        href: "/shop/rugs/vintage",
+        href: "/shop/vintage",
         visible: true,
         description:
           "ONE OF A KIND vintage Moroccan rugs. Selected for construction integrity, visible age, and pile condition.",
@@ -468,7 +468,7 @@ const defaultHomePageContent: HomePageContent = {
         description:
           "ONE OF A KIND vintage Moroccan rugs selected for construction integrity, visible age, and pile condition.",
         priceLabel: "SHOP VINTAGE",
-        href: "/shop/rugs/vintage",
+        href: "/shop/vintage",
         visible: true,
         image: {
           src: "https://images.pexels.com/photos/28582589/pexels-photo-28582589.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1600",
@@ -603,7 +603,7 @@ const defaultHomePageContent: HomePageContent = {
     collectionsHeading: "Collections",
     collectionLinks: [
       { href: "/shop/rugs", label: "Moroccan rugs" },
-      { href: "/shop/rugs/vintage", label: "Vintage rugs" },
+      { href: "/shop/vintage", label: "Vintage rugs" },
       { href: "/shop/poufs", label: "Poufs" },
       { href: "/shop/pillows", label: "Pillows" },
       { href: "/shop/decor", label: "Home decor" },

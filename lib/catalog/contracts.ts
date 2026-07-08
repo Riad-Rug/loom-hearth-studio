@@ -61,6 +61,7 @@ export type ProductSupportPanelViewModel = {
 
 type ProductDetailPageViewModelBase = {
   id: string;
+  catalogNumber: string;
   slug: string;
   name: string;
   subtitle: string;

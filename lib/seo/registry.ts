@@ -207,7 +207,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     label: rugStyleCollections.vintage.title,
     entityType: "category",
     entityKey: "rugs-vintage",
-    path: "/shop/rugs/vintage",
+    path: "/shop/vintage",
     fallbackTitle: rugStyleCollections.vintage.title,
     fallbackDescription: rugStyleCollections.vintage.description,
   },

@@ -40,15 +40,29 @@ type ProductImageRow = AdminProductFormValues["images"][number] & {
   id: string;
 };
 
+const ageClassOptions = ["Contemporary", "Vintage, estimated", "Antique, estimated"] as const;
+const provenanceLabelOptions = ["Verified", "Attributed", "Not Stated"] as const;
+
 export function AdminProductForm(props: AdminProductFormProps) {
   const [state, formAction] = useActionState(props.action, initialAdminProductActionState);
   const [type, setType] = useState(props.product.type);
+  const [catalogNumber, setCatalogNumber] = useState(props.product.catalogNumber);
   const [slug, setSlug] = useState(props.product.slug);
   const [name, setName] = useState(props.product.name);
   const [category, setCategory] = useState(props.product.category);
   const [description, setDescription] = useState(props.product.description);
   const [priceUsd, setPriceUsd] = useState(props.product.priceUsd);
   const [origin, setOrigin] = useState(props.product.origin);
+  const [attributionRegion, setAttributionRegion] = useState(props.product.attributionRegion);
+  const [attributionConfidence, setAttributionConfidence] = useState(props.product.attributionConfidence);
+  const [provenanceNote, setProvenanceNote] = useState(props.product.provenanceNote);
+  const [sourcingNote, setSourcingNote] = useState(props.product.sourcingNote);
+  const [conditionNote, setConditionNote] = useState(props.product.conditionNote);
+  const [ageClass, setAgeClass] = useState(props.product.ageClass);
+  const [ageBasis, setAgeBasis] = useState(props.product.ageBasis);
+  const [verificationNotes, setVerificationNotes] = useState(props.product.verificationNotes.join("\n"));
+  const [shippingNotes, setShippingNotes] = useState(props.product.shippingNotes.join("\n"));
+  const [careNote, setCareNote] = useState(props.product.careNote);
   const [status, setStatus] = useState(props.product.status);
   const [seoTitle, setSeoTitle] = useState(props.product.seoTitle);
   const [seoDescription, setSeoDescription] = useState(props.product.seoDescription);
@@ -103,12 +117,23 @@ export function AdminProductForm(props: AdminProductFormProps) {
 
   useEffect(() => {
     setType(props.product.type);
+    setCatalogNumber(props.product.catalogNumber);
     setSlug(props.product.slug);
     setName(props.product.name);
     setCategory(props.product.category);
     setDescription(props.product.description);
     setPriceUsd(props.product.priceUsd);
     setOrigin(props.product.origin);
+    setAttributionRegion(props.product.attributionRegion);
+    setAttributionConfidence(props.product.attributionConfidence);
+    setProvenanceNote(props.product.provenanceNote);
+    setSourcingNote(props.product.sourcingNote);
+    setConditionNote(props.product.conditionNote);
+    setAgeClass(props.product.ageClass);
+    setAgeBasis(props.product.ageBasis);
+    setVerificationNotes(props.product.verificationNotes.join("\n"));
+    setShippingNotes(props.product.shippingNotes.join("\n"));
+    setCareNote(props.product.careNote);
     setStatus(props.product.status);
     setSeoTitle(props.product.seoTitle);
     setSeoDescription(props.product.seoDescription);
@@ -305,16 +330,33 @@ export function AdminProductForm(props: AdminProductFormProps) {
               onChange={(event) => {
                 const nextType = event.target.value as typeof type;
                 setType(nextType);
-                setCategory(nextType === "rug" ? "rugs" : "poufs");
+                setCategory(
+                  nextType === "rug"
+                    ? category === "vintage" ? "vintage" : "rugs"
+                    : category === "rugs" || category === "vintage" ? "poufs" : category,
+                );
               }}
             >
               {adminProductTypeOptions.map((option) => (
                 <option key={option} value={option}>
-                  {option === "rug" ? "One of a kind" : "Multi-unit"}
+                  {option === "rug" ? "One-of-a-kind rug" : "Object or textile"}
                 </option>
               ))}
             </select>
             <em>{state.fieldErrors.type}</em>
+          </label>
+          <label className={styles.formField}>
+            <span>Catalog number</span>
+            <input
+              autoCapitalize="characters"
+              name="catalogNumber"
+              placeholder={getCatalogNumberPlaceholder(category)}
+              type="text"
+              value={catalogNumber}
+              onChange={(event) => setCatalogNumber(event.target.value.toUpperCase())}
+            />
+            <em>Permanent stockroom ID. Required to publish; never reuse a sold number.</em>
+            <em>{state.fieldErrors.catalogNumber}</em>
           </label>
           <label className={styles.formField}>
             <span>Name</span>
@@ -344,8 +386,16 @@ export function AdminProductForm(props: AdminProductFormProps) {
               onChange={(event) => setCategory(event.target.value as typeof category)}
             >
               {adminProductCategoryOptions.map((option) => (
-                <option key={option} value={option} disabled={type === "rug" && option !== "rugs"}>
-                  {option}
+                <option
+                  key={option}
+                  value={option}
+                  disabled={
+                    type === "rug"
+                      ? option !== "rugs" && option !== "vintage"
+                      : option === "rugs" || option === "vintage"
+                  }
+                >
+                  {formatProductCategory(option)}
                 </option>
               ))}
             </select>
@@ -381,6 +431,90 @@ export function AdminProductForm(props: AdminProductFormProps) {
               onChange={(event) => setOrigin(event.target.value)}
             />
             <em>{state.fieldErrors.origin}</em>
+          </label>
+        </section>
+
+        <section className={styles.card}>
+          <p className={styles.cardEyebrow}>Physical facts</p>
+          <div className={styles.inlineGroup}>
+            <label className={styles.formField}>
+              <span>Length (cm)</span>
+              <input name="dimensionsCmLength" step="0.1" type="number" value={dimensionsCmLength} onChange={(event) => setDimensionsCmLength(event.target.value)} />
+              <em>{state.fieldErrors.dimensionsCmLength}</em>
+            </label>
+            <label className={styles.formField}>
+              <span>Width (cm)</span>
+              <input name="dimensionsCmWidth" step="0.1" type="number" value={dimensionsCmWidth} onChange={(event) => setDimensionsCmWidth(event.target.value)} />
+              <em>{state.fieldErrors.dimensionsCmWidth}</em>
+            </label>
+          </div>
+          <label className={styles.formField}>
+            <span>Weight (kg)</span>
+            <input name="weightKg" step="0.01" type="number" value={weightKg} onChange={(event) => setWeightKg(event.target.value)} />
+            <em>{state.fieldErrors.weightKg}</em>
+          </label>
+          <label className={styles.formField}>
+            <span>Age class</span>
+            <select name="ageClass" value={ageClass} onChange={(event) => setAgeClass(event.target.value)}>
+              <option value="">Choose age class</option>
+              {ageClassOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
+            <em>{state.fieldErrors.ageClass}</em>
+          </label>
+          <label className={styles.formField}>
+            <span>Age estimate basis</span>
+            <textarea name="ageBasis" placeholder="What construction, wear, record, or maker information supports the estimate?" rows={3} value={ageBasis} onChange={(event) => setAgeBasis(event.target.value)} />
+            <em>{state.fieldErrors.ageBasis}</em>
+          </label>
+        </section>
+
+        <section className={styles.card}>
+          <p className={styles.cardEyebrow}>Condition & provenance</p>
+          <label className={styles.formField}>
+            <span>Piece-specific condition</span>
+            <textarea name="conditionNote" placeholder="Record wear, repairs, marks, pile variance, seams, chips, or cracks and where they appear." rows={5} value={conditionNote} onChange={(event) => setConditionNote(event.target.value)} />
+            <em>Required to publish. Do not use generic handmade-variation copy.</em>
+            <em>{state.fieldErrors.conditionNote}</em>
+          </label>
+          <label className={styles.formField}>
+            <span>Attribution region</span>
+            <input name="attributionRegion" placeholder="High Atlas, Taznakht, Marrakech…" type="text" value={attributionRegion} onChange={(event) => setAttributionRegion(event.target.value)} />
+          </label>
+          <label className={styles.formField}>
+            <span>Provenance label</span>
+            <select name="attributionConfidence" value={attributionConfidence} onChange={(event) => setAttributionConfidence(event.target.value)}>
+              <option value="">Choose provenance label</option>
+              {provenanceLabelOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
+            <em>{state.fieldErrors.attributionConfidence}</em>
+          </label>
+          <label className={styles.formField}>
+            <span>Provenance basis</span>
+            <textarea name="provenanceNote" placeholder="Explain why the label is Verified, Attributed, or Not Stated." rows={4} value={provenanceNote} onChange={(event) => setProvenanceNote(event.target.value)} />
+            <em>{state.fieldErrors.provenanceNote}</em>
+          </label>
+          <label className={styles.formField}>
+            <span>Sourcing note</span>
+            <textarea name="sourcingNote" placeholder="Write 2–4 factual first-person lines and sign — Riad." rows={5} value={sourcingNote} onChange={(event) => setSourcingNote(event.target.value)} />
+            <em>{state.fieldErrors.sourcingNote}</em>
+          </label>
+        </section>
+
+        <section className={styles.card}>
+          <p className={styles.cardEyebrow}>Buyer notes</p>
+          <label className={styles.formField}>
+            <span>Verification notes</span>
+            <textarea name="verificationNotes" rows={4} value={verificationNotes} onChange={(event) => setVerificationNotes(event.target.value)} />
+            <em>One buyer-facing point per line.</em>
+          </label>
+          <label className={styles.formField}>
+            <span>Shipping notes</span>
+            <textarea name="shippingNotes" rows={4} value={shippingNotes} onChange={(event) => setShippingNotes(event.target.value)} />
+            <em>One factual point per line; state duty treatment only when verified.</em>
+          </label>
+          <label className={styles.formField}>
+            <span>Care note</span>
+            <textarea name="careNote" rows={4} value={careNote} onChange={(event) => setCareNote(event.target.value)} />
           </label>
         </section>
 
@@ -515,7 +649,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
             <div className={styles.sessionPanel}>
               <strong>Cloudinary upload</strong>
               <span>
-                Add an image slot, then upload directly into that slot and fine-tune its metadata below.
+                {getPhotoChecklist(category)}
               </span>
             </div>
             {images.map((image, index) => (
@@ -664,39 +798,6 @@ export function AdminProductForm(props: AdminProductFormProps) {
                 onChange={(event) => setRugStyle(event.target.value)}
               />
               <em>{state.fieldErrors.rugStyle}</em>
-            </label>
-            <div className={styles.inlineGroup}>
-              <label className={styles.formField}>
-                <span>Length (cm)</span>
-                <input
-                  name="dimensionsCmLength"
-                  type="number"
-                  value={dimensionsCmLength}
-                  onChange={(event) => setDimensionsCmLength(event.target.value)}
-                />
-                <em>{state.fieldErrors.dimensionsCmLength}</em>
-              </label>
-              <label className={styles.formField}>
-                <span>Width (cm)</span>
-                <input
-                  name="dimensionsCmWidth"
-                  type="number"
-                  value={dimensionsCmWidth}
-                  onChange={(event) => setDimensionsCmWidth(event.target.value)}
-                />
-                <em>{state.fieldErrors.dimensionsCmWidth}</em>
-              </label>
-            </div>
-            <label className={styles.formField}>
-              <span>Weight (kg)</span>
-              <input
-                name="weightKg"
-                step="0.01"
-                type="number"
-                value={weightKg}
-                onChange={(event) => setWeightKg(event.target.value)}
-              />
-              <em>{state.fieldErrors.weightKg}</em>
             </label>
             <div className={styles.stack}>
               <p className={styles.cardEyebrow}>Palette</p>
@@ -864,6 +965,40 @@ function createDefaultImageAltText(fileName: string, productName: string, imageN
   }
 
   return cleanedFileName || `Product image ${imageNumber}`;
+}
+
+function formatProductCategory(category: AdminProductFormValues["category"]) {
+  switch (category) {
+    case "rugs": return "Rugs";
+    case "vintage": return "Vintage Rugs";
+    case "poufs": return "Poufs";
+    case "pillows": return "Pillows";
+    case "decor": return "Decor & Antiques";
+  }
+}
+
+function getCatalogNumberPlaceholder(category: AdminProductFormValues["category"]) {
+  switch (category) {
+    case "rugs": return "LH-R-0001";
+    case "vintage": return "LH-R-0001";
+    case "poufs": return "LH-P-0001";
+    case "pillows": return "LH-X-0001";
+    case "decor": return "LH-D-0001 or LH-A-0001";
+  }
+}
+
+function getPhotoChecklist(category: AdminProductFormValues["category"]) {
+  switch (category) {
+    case "rugs":
+    case "vintage":
+      return "Required sequence: overhead flat, angle, pile or weave close-up, back, edge or fringe, every flaw, then scale or context.";
+    case "poufs":
+      return "Required sequence: top, side, seam or zip, underside, every flaw, then scale beside a chair or person.";
+    case "pillows":
+      return "Required sequence: front, back, closure, texture close-up, every mark, and an image confirming whether an insert is included.";
+    case "decor":
+      return "Required sequence: all sides, base and marks, every chip or repair, then a scale image. Antiques also need signatures and construction details.";
+  }
 }
 
 function createEmptyImageRow(input: {

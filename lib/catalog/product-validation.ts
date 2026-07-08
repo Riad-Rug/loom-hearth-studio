@@ -84,6 +84,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
 
   const sharedFields = {
     id: readOptionalString(formData, "id"),
+    catalogNumber: readOptionalString(formData, "catalogNumber"),
     type: typeValue,
     slug: normalizeSlug(readString(formData, "slug")),
     name: readString(formData, "name"),
@@ -94,6 +95,16 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     materials: parseMaterials(readString(formData, "materialsJson")),
     palette: parsePalette(readString(formData, "paletteJson")),
     origin: readString(formData, "origin"),
+    attributionRegion: readOptionalString(formData, "attributionRegion"),
+    attributionConfidence: readOptionalString(formData, "attributionConfidence"),
+    provenanceNote: readOptionalString(formData, "provenanceNote"),
+    sourcingNote: readOptionalString(formData, "sourcingNote"),
+    conditionNote: readOptionalString(formData, "conditionNote"),
+    ageClass: readOptionalString(formData, "ageClass"),
+    ageBasis: readOptionalString(formData, "ageBasis"),
+    verificationNotes: parseLineList(readString(formData, "verificationNotes")),
+    shippingNotes: parseLineList(readString(formData, "shippingNotes")),
+    careNote: readOptionalString(formData, "careNote"),
     status: readString(formData, "status"),
     seoTitle: readString(formData, "seoTitle"),
     seoDescription: readString(formData, "seoDescription"),
@@ -139,6 +150,8 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
       lowStockThreshold: readInteger(formData, "lowStockThreshold"),
       variants: parseVariants(readString(formData, "variantsJson")),
       notifyMeEnabled: readBoolean(formData, "notifyMeEnabled"),
+      dimensionsCm: createOptionalDimensions(formData),
+      weightKg: readOptionalPositiveNumber(formData, "weightKg"),
     },
     urlState,
   };
@@ -178,6 +191,44 @@ export function validateProductMutationInput(
     fieldErrors.origin = "Origin is required.";
   }
 
+  if (input.catalogNumber && !/^LH-[RPXDA]-\d{4}$/u.test(input.catalogNumber)) {
+    fieldErrors.catalogNumber = "Use the catalog format LH-R-0001, LH-P-0001, LH-X-0001, LH-D-0001, or LH-A-0001.";
+  }
+
+  if (input.catalogNumber && !isCatalogNumberValidForCategory(input.catalogNumber, input.category)) {
+    fieldErrors.catalogNumber = "Catalog prefix does not match the selected category.";
+  }
+
+  if (input.status === "active") {
+    if (!input.catalogNumber) {
+      fieldErrors.catalogNumber = "Catalog number is required before publishing.";
+    }
+
+    if (!input.conditionNote?.trim()) {
+      fieldErrors.conditionNote = "Add a piece-specific condition note before publishing.";
+    }
+
+    if (!input.ageClass?.trim()) {
+      fieldErrors.ageClass = "Choose an age class before publishing.";
+    }
+
+    if (input.ageClass && input.ageClass !== "Contemporary" && !input.ageBasis?.trim()) {
+      fieldErrors.ageBasis = "Explain the basis for a vintage or antique age estimate.";
+    }
+
+    if (!input.attributionConfidence?.trim()) {
+      fieldErrors.attributionConfidence = "Choose a provenance label before publishing.";
+    }
+
+    if (!input.provenanceNote?.trim()) {
+      fieldErrors.provenanceNote = "Explain the basis for the provenance label before publishing.";
+    }
+
+    if (!input.sourcingNote?.trim()) {
+      fieldErrors.sourcingNote = "Add a first-person sourcing note before publishing.";
+    }
+  }
+
   if (!isProductStatus(input.status)) {
     fieldErrors.status = "Choose draft, active, or archived.";
   }
@@ -206,8 +257,8 @@ export function validateProductMutationInput(
   }
 
   if (input.type === "rug") {
-    if (input.category !== "rugs") {
-      fieldErrors.category = 'Rug products must use the "rugs" category.';
+    if (input.category !== "rugs" && input.category !== "vintage") {
+      fieldErrors.category = 'Rug products must use the "rugs" or "vintage" category.';
     }
 
     if (!input.rugStyle.trim()) {
@@ -235,7 +286,7 @@ export function validateProductMutationInput(
     }
 
     if (input.status === "active") {
-      const requiredRugImageRoles = ["hero", "styled", "detail", "edge", "back", "scale", "motif"] as const;
+      const requiredRugImageRoles = ["hero", "detail", "edge", "back", "scale"] as const;
       const imageRoles = new Set(
         input.images
           .filter((image) => image.mediaType === "image" && image.publicId.trim())
@@ -244,7 +295,7 @@ export function validateProductMutationInput(
       const missingRoles = requiredRugImageRoles.filter((role) => !imageRoles.has(role));
 
       if (missingRoles.length) {
-        fieldErrors.images = `Active rugs need seven product images: full flat-lay, in-room styled shot, knot density close-up, fringe/edge detail, reverse side, scale reference, and motif detail. Missing roles: ${missingRoles.join(", ")}.`;
+        fieldErrors.images = `Active rugs need distinct truthful views: full flat-lay, texture/detail close-up, fringe/edge, reverse side, and scale reference. Missing roles: ${missingRoles.join(", ")}. Add every flaw as an additional gallery image.`;
       }
     }
   }
@@ -291,8 +342,7 @@ export function validateProductMutationInput(
   if (Object.keys(fieldErrors).length > 0) {
     return {
       status: "invalid",
-      message:
-        "Product save request is incomplete or invalid. Draft and active products must both be fully complete before save.",
+      message: "Product save request is incomplete or invalid. Review the highlighted listing fields.",
       fieldErrors,
     };
   }
@@ -327,6 +377,10 @@ export function getProductRoutePreview(input: {
   }
 
   if (input.type === "rug") {
+    if (input.category === "vintage") {
+      return `/shop/vintage/${input.slug}`;
+    }
+
     const rugStyle = normalizeSlug(input.rugStyle ?? "");
     return rugStyle ? `/shop/rugs/${rugStyle}/${input.slug}` : "";
   }
@@ -357,6 +411,34 @@ function readInteger(formData: FormData, key: string) {
 function readOptionalInteger(formData: FormData, key: string) {
   const value = readString(formData, key);
   return value ? readStrictInteger(value, Number.NaN) : null;
+}
+
+function readOptionalPositiveNumber(formData: FormData, key: string) {
+  const value = readString(formData, key);
+  const parsed = value ? Number(value) : Number.NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function createOptionalDimensions(formData: FormData) {
+  const length = readOptionalPositiveNumber(formData, "dimensionsCmLength");
+  const width = readOptionalPositiveNumber(formData, "dimensionsCmWidth");
+  return length && width ? { length, width } : undefined;
+}
+
+function parseLineList(raw: string) {
+  return raw
+    .split(/\r?\n/u)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function isCatalogNumberValidForCategory(catalogNumber: string, category: Product["category"]) {
+  const prefix = catalogNumber.slice(0, 4);
+
+  if (category === "rugs" || category === "vintage") return prefix === "LH-R";
+  if (category === "poufs") return prefix === "LH-P";
+  if (category === "pillows") return prefix === "LH-X";
+  return prefix === "LH-D" || prefix === "LH-A";
 }
 
 function readBoolean(formData: FormData, key: string) {

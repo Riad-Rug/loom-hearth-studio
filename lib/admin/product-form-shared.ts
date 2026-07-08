@@ -7,6 +7,7 @@ import type { Product } from "@/types/domain";
 
 export type AdminProductFormValues = {
   id?: string;
+  catalogNumber: string;
   type: Product["type"];
   slug: string;
   name: string;
@@ -17,6 +18,16 @@ export type AdminProductFormValues = {
   materials: string[];
   palette: string[];
   origin: string;
+  attributionRegion: string;
+  attributionConfidence: string;
+  provenanceNote: string;
+  sourcingNote: string;
+  conditionNote: string;
+  ageClass: string;
+  ageBasis: string;
+  verificationNotes: string[];
+  shippingNotes: string[];
+  careNote: string;
   status: Product["status"];
   seoTitle: string;
   seoDescription: string;

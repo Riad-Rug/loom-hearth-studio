@@ -10,7 +10,7 @@ const staticRoutes = [
   "/shop",
   "/shop/rugs",
   "/shop/rugs/beni-ourain",
-  "/shop/rugs/vintage",
+  "/shop/vintage",
   "/shop/poufs",
   "/shop/pillows",
   "/shop/decor",

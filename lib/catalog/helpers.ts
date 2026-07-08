@@ -11,13 +11,17 @@ export function formatProductPriceUsd(priceUsd: number) {
 }
 
 export function getProductRoutePath(product: Product) {
-  return product.type === "rug"
+  return product.type === "rug" && product.category === "vintage"
+    ? `/shop/vintage/${product.slug}`
+    : product.type === "rug"
     ? `/shop/rugs/${normalizeSlug(product.rugStyle)}/${product.slug}`
     : `/shop/${product.category}/${product.slug}`;
 }
 
 export function getProductRoutePattern(product: Product) {
-  return product.type === "rug" ? "/shop/rugs/[style]/[slug]" : "/shop/[category]/[slug]";
+  return product.type === "rug" && product.category !== "vintage"
+    ? "/shop/rugs/[style]/[slug]"
+    : "/shop/[category]/[slug]";
 }
 
 export function getProductBadgeLabel(product: Product) {
@@ -49,7 +53,7 @@ export function getCategoryLabel(category: ProductCategory) {
     case "vintage":
       return "Vintage rugs";
     case "decor":
-      return "Decor";
+      return "Decor & antiques";
     case "pillows":
       return "Pillows";
     case "poufs":

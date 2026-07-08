@@ -189,6 +189,7 @@ model OrderLineItemRecord {
 
 model CatalogProduct {
   id               String          @id @default(cuid())
+  catalogNumber    String?         @unique
   type             String
   slug             String
   name             String
@@ -196,6 +197,16 @@ model CatalogProduct {
   description      String          @db.Text
   priceUsd         Decimal         @db.Decimal(10, 2)
   origin           String
+  attributionRegion String?
+  attributionConfidence String?
+  provenanceNote   String?         @db.Text
+  sourcingNote     String?         @db.Text
+  conditionNote    String?         @db.Text
+  ageClass         String?
+  ageBasis         String?         @db.Text
+  verificationNotes Json?
+  shippingNotes    Json?
+  careNote         String?         @db.Text
   status           String
   images           Json
   materials        Json
