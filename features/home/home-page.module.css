@@ -86,7 +86,6 @@
 .primaryAction:focus-visible {
   border-color: var(--button-primary-bg-hover);
   background: var(--button-primary-bg-hover);
-  outline: none;
 }
 
 .secondaryAction:hover,
@@ -95,7 +94,6 @@
 .filterChip:focus-visible {
   border-color: rgba(20, 20, 20, 0.24);
   background: rgba(20, 20, 20, 0.03);
-  outline: none;
 }
 
 .heroMedia,
@@ -385,15 +383,38 @@
 @media (max-width: 700px) {
   .page {
     gap: var(--space-6);
+    width: min(100% - 1rem, var(--container-width-wide));
   }
 
-  .hero,
   .inventorySection,
   .categoriesSection,
   .storySection,
   .newsletterSection,
   .howItWorksSection {
     padding: var(--space-5);
+  }
+
+  .hero {
+    gap: 1.25rem;
+    padding: var(--space-4);
+  }
+
+  .heroCopy {
+    gap: var(--space-3);
+  }
+
+  .heroCopy h1 {
+    font-size: 2.25rem;
+    line-height: 1.04;
+  }
+
+  .heroBody {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .heroMedia {
+    min-height: 20rem;
   }
 
   .productGrid,
