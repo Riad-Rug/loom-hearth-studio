@@ -21,7 +21,7 @@ import type {
 } from "@/lib/catalog/contracts";
 import type { ProductCategory } from "@/types/domain";
 
-import styles from "./product-detail-page.module.css";
+import "./tailwind.css";
 
 type ProductDetailPageViewProps = {
   product: ProductDetailPageViewModel;
@@ -30,6 +30,12 @@ type ProductDetailPageViewProps = {
 type DisplayGalleryItem = ProductDetailPageViewModel["gallery"][number] & {
   tone?: "neutral" | "condition";
 };
+
+const PANEL_CARD = "grid gap-[var(--space-3)] p-[var(--space-4)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)]";
+const PANEL_EYEBROW = "text-[var(--color-green)] text-[0.72rem] font-semibold tracking-[0.08em] uppercase";
+const DETAIL_SECTIONS_CARD = "grid gap-[var(--space-3)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] p-[var(--space-4)] bg-[var(--color-panel)]";
+const PRIMARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium";
+const PURCHASE_MICROCOPY = "text-[var(--color-text-muted)] text-[0.92rem]";
 
 export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   const gallery = useMemo(() => createDisplayGallery(product), [product]);
@@ -101,21 +107,21 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   const { gallerySections, infoSections } = splitDetailSections(product.detailSections);
 
   return (
-    <div className={styles.page}>
+    <div className="grid gap-[var(--space-7)] max-[700px]:pb-[5rem]">
       <Section width="wide">
-        <div className={styles.layout}>
-          <div className={styles.galleryColumn}>
-            <div className={styles.primaryMedia}>
+        <div className="grid grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] gap-[var(--space-6)] items-start max-[1100px]:grid-cols-1">
+          <div className="grid gap-[var(--space-4)]">
+            <div className="aspect-[3/4] overflow-hidden border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)]">
               {activeImage?.src && !activeImageBroken ? (
                 <button
                   aria-label={`Zoom in on ${activeImageAlt}`}
-                  className={styles.primaryMediaButton}
+                  className="block w-full h-full p-0 border-0 cursor-zoom-in"
                   type="button"
                   onClick={() => setIsLightboxOpen(true)}
                 >
                   <img
                     alt={activeImageAlt}
-                    className={styles.primaryImage}
+                    className="block w-full h-full object-contain"
                     src={activeImage.src}
                     onError={() => handleImageError(activeImage.id)}
                   />
@@ -132,81 +138,103 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               )}
             </div>
 
-            <div className={styles.thumbnailGrid}>
-              {gallery.map((item, index) => (
-                <button
-                  key={item.id}
-                  aria-current={activeImageIndex === index ? "true" : undefined}
-                  className={`${styles.thumbnailCard} ${
-                    activeImageIndex === index ? styles.thumbnailCardActive : ""
-                  }`}
-                  type="button"
-                  onClick={() => setActiveImageIndex(index)}
-                >
-                  {item.src && !failedImageIds.has(item.id) ? (
-                    <img
-                      alt={item.altText || `${product.name} ${item.label}`}
-                      className={styles.thumbnailImage}
-                      loading="lazy"
-                      src={item.src}
-                      onError={() => handleImageError(item.id)}
-                    />
-                  ) : (
-                    <PlaceholderMedia
-                      alt={item.label}
-                      aspectRatio="1 / 1"
-                      label={item.label}
-                      sizes="6rem"
-                      tone={item.tone === "condition" ? "condition" : "neutral"}
-                    />
-                  )}
-                  <span className={styles.thumbnailLabel}>{item.label}</span>
-                </button>
-              ))}
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] gap-[var(--space-2)] max-[700px]:grid-cols-1">
+              {gallery.map((item, index) => {
+                const isActive = activeImageIndex === index;
+
+                return (
+                  <button
+                    key={item.id}
+                    aria-current={isActive ? "true" : undefined}
+                    className={`grid gap-[0.4rem] p-0 rounded-[var(--radius-md)] bg-[var(--color-bg)] overflow-hidden text-left ${
+                      isActive
+                        ? "border-2 border-[color:var(--color-green)] shadow-[0_0_0_1px_var(--color-green)]"
+                        : "border border-[color:var(--color-border)]"
+                    }`}
+                    type="button"
+                    onClick={() => setActiveImageIndex(index)}
+                  >
+                    {item.src && !failedImageIds.has(item.id) ? (
+                      <img
+                        alt={item.altText || `${product.name} ${item.label}`}
+                        className="w-full aspect-square object-contain bg-[var(--color-panel)]"
+                        loading="lazy"
+                        src={item.src}
+                        onError={() => handleImageError(item.id)}
+                      />
+                    ) : (
+                      <PlaceholderMedia
+                        alt={item.label}
+                        aspectRatio="1 / 1"
+                        label={item.label}
+                        sizes="6rem"
+                        tone={item.tone === "condition" ? "condition" : "neutral"}
+                      />
+                    )}
+                    <span className="px-[0.45rem] pb-[0.45rem] text-[var(--color-text-subtle)] text-[0.72rem]">
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             {product.description ? (
-              <section className={styles.descriptionSection} aria-label="Description">
-                <p className={styles.panelEyebrow}>Description</p>
-                <p>{product.description}</p>
+              <section className={PANEL_CARD} aria-label="Description">
+                <p className={PANEL_EYEBROW}>Description</p>
+                <p className="leading-[1.65]">{product.description}</p>
               </section>
             ) : null}
 
             {gallerySections.length > 0 && (
-              <div className={styles.detailSections}>
+              <div className={DETAIL_SECTIONS_CARD}>
                 {gallerySections.map((section) => (
-                  <section key={section.title} className={styles.detailSection}>
-                    <h3 className={styles.detailSectionTitle}>{section.title}</h3>
-                    <p className={styles.detailSectionBody}>{section.body}</p>
+                  <section
+                    key={section.title}
+                    className="grid gap-[0.4rem] pb-[var(--space-3)] border-b border-[color:var(--color-border-soft)] last:pb-0 last:border-b-0"
+                  >
+                    <h3 className={PANEL_EYEBROW}>{section.title}</h3>
+                    <p className="text-[var(--color-ink)] leading-[1.65]">{section.body}</p>
                   </section>
                 ))}
               </div>
             )}
           </div>
 
-          <div className={styles.infoColumn}>
+          <div className="grid gap-[var(--space-4)] p-[var(--space-5)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-bg)]">
             <ProductBreadcrumb product={product} />
 
-            <div className={styles.badges}>
-              <span className={styles.monoBadge}>{product.status === "sold" ? "SOLD" : "1 OF 1"}</span>
-              <span className={styles.catalogBadge}>{product.catalogNumber}</span>
+            <div className="flex flex-wrap gap-[0.6rem]">
+              <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-green)] rounded-full text-[var(--color-green)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
+                {product.status === "sold" ? "SOLD" : "1 OF 1"}
+              </span>
+              <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-border)] rounded-full text-[var(--color-text-subtle)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
+                {product.catalogNumber}
+              </span>
             </div>
 
-            <h1>{product.name}</h1>
-            <p className={styles.subtitle}>{product.subtitle}</p>
-            <p className={styles.price}>{product.priceUsdLabel}</p>
+            <h1 className="text-[clamp(2.35rem,4vw,3.5rem)]">{product.name}</h1>
+            <p className="text-[var(--color-text-muted)] text-base leading-[1.7]">{product.subtitle}</p>
+            <p className="text-[var(--color-green)] text-[clamp(1.8rem,3vw,2.3rem)] leading-[1.05]">
+              {product.priceUsdLabel}
+            </p>
 
-            <dl className={styles.specTable}>
+            <dl className="grid border-t border-b border-[color:var(--color-border)]">
               {specRows.map((row) => (
-                <div key={row.label} className={styles.specRow}>
-                  <dt>{row.label}</dt>
-                  <dd>{row.value}</dd>
+                <div
+                  key={row.label}
+                  className="grid grid-cols-[8rem_1fr] gap-[var(--space-3)] py-[0.8rem] border-t border-[color:var(--color-border-soft)] first:border-t-0 max-[700px]:grid-cols-1 max-[700px]:gap-[0.35rem]"
+                >
+                  <dt className="text-[var(--color-text-subtle)] text-[0.82rem] uppercase tracking-[0.08em]">
+                    {row.label}
+                  </dt>
+                  <dd className="m-0 text-[var(--color-ink)] leading-[1.65]">{row.value}</dd>
                 </div>
               ))}
             </dl>
 
-            <section className={styles.verificationPanel} aria-label="Verification promise">
-              <p className={styles.panelEyebrow}>Verification promise</p>
+            <section className={PANEL_CARD} aria-label="Verification promise">
+              <p className={PANEL_EYEBROW}>Verification promise</p>
               <p>
                 We send daylight photos of the exact piece, including wear and condition, before the charge is captured.
               </p>
@@ -220,8 +248,8 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               <MultiUnitPurchaseShell product={product} />
             )}
 
-            <section className={styles.checklistSection} aria-label="Shipping and returns">
-              <ul className={styles.checklist}>
+            <section className={PANEL_CARD} aria-label="Shipping and returns">
+              <ul className="grid gap-[0.6rem] m-0 pl-[1.1rem] text-[var(--color-ink)] marker:text-[var(--color-green)]">
                 <li>Tracked shipping from Casablanca.</li>
                 <li>Approval before payment capture.</li>
                 <li>Condition is shown in photos, not softened in copy.</li>
@@ -229,17 +257,20 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               </ul>
             </section>
 
-            <section className={styles.founderNote}>
-              <p className={styles.panelEyebrow}>Founder sourcing note</p>
+            <section className={PANEL_CARD}>
+              <p className={PANEL_EYEBROW}>Founder sourcing note</p>
               <p>{product.merchandisingNote}</p>
             </section>
 
             {infoSections.length > 0 && (
-              <div className={styles.detailSections}>
+              <div className={DETAIL_SECTIONS_CARD}>
                 {infoSections.map((section) => (
-                  <section key={section.title} className={styles.detailSection}>
-                    <h3 className={styles.detailSectionTitle}>{section.title}</h3>
-                    <p className={styles.detailSectionBody}>{section.body}</p>
+                  <section
+                    key={section.title}
+                    className="grid gap-[0.4rem] pb-[var(--space-3)] border-b border-[color:var(--color-border-soft)] last:pb-0 last:border-b-0"
+                  >
+                    <h3 className={PANEL_EYEBROW}>{section.title}</h3>
+                    <p className="text-[var(--color-ink)] leading-[1.65]">{section.body}</p>
                   </section>
                 ))}
               </div>
@@ -250,12 +281,15 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 
       {displayedRecommendations.length ? (
         <Section width="wide">
-          <div className={styles.recommendationSection}>
-            <div className={styles.sectionHeader}>
-              <p className={styles.eyebrow}>{recommendationPresentation.eyebrow}</p>
-              <h2>{recommendationPresentation.heading}</h2>
+          <div className="grid gap-[var(--space-4)]">
+            <div className="grid gap-[var(--space-2)]">
+              <p className={PANEL_EYEBROW}>{recommendationPresentation.eyebrow}</p>
+              <h2 className="text-[clamp(1.8rem,3vw,2.6rem)]">{recommendationPresentation.heading}</h2>
             </div>
-            <div className={styles.recommendationGrid} aria-label={recommendationPresentation.ariaLabel}>
+            <div
+              className="grid grid-cols-4 gap-[var(--space-4)] max-[1100px]:grid-cols-2 max-[700px]:grid-cols-1"
+              aria-label={recommendationPresentation.ariaLabel}
+            >
               {displayedRecommendations.map((item) => (
                 <ProductCard key={item.id} product={item} />
               ))}
@@ -266,12 +300,15 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 
       {displayedCrossSellRecommendations.length ? (
         <Section width="wide">
-          <div className={styles.recommendationSection}>
-            <div className={styles.sectionHeader}>
-              <p className={styles.eyebrow}>{crossSellPresentation.eyebrow}</p>
-              <h2>{crossSellPresentation.heading}</h2>
+          <div className="grid gap-[var(--space-4)]">
+            <div className="grid gap-[var(--space-2)]">
+              <p className={PANEL_EYEBROW}>{crossSellPresentation.eyebrow}</p>
+              <h2 className="text-[clamp(1.8rem,3vw,2.6rem)]">{crossSellPresentation.heading}</h2>
             </div>
-            <div className={styles.recommendationGrid} aria-label={crossSellPresentation.ariaLabel}>
+            <div
+              className="grid grid-cols-4 gap-[var(--space-4)] max-[1100px]:grid-cols-2 max-[700px]:grid-cols-1"
+              aria-label={crossSellPresentation.ariaLabel}
+            >
               {displayedCrossSellRecommendations.map((item) => (
                 <ProductCard key={item.id} product={item} />
               ))}
@@ -281,9 +318,16 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
       ) : null}
 
       {product.status !== "sold" ? (
-        <div className={styles.mobileStickyBar}>
-          <span className={styles.mobileStickyPrice}>{product.priceUsdLabel}</span>
-          <Link className={styles.mobileStickyAction} href={buildInquiryHref(product) as Route}>
+        <div
+          className="hidden max-[700px]:fixed max-[700px]:inset-x-0 max-[700px]:bottom-0 max-[700px]:z-40 max-[700px]:flex max-[700px]:items-center max-[700px]:justify-between max-[700px]:gap-[var(--space-3)] max-[700px]:px-[var(--space-4)] max-[700px]:py-[var(--space-3)] max-[700px]:pb-[calc(var(--space-3)_+_env(safe-area-inset-bottom))] max-[700px]:border-t max-[700px]:border-[color:var(--color-border)] max-[700px]:bg-[var(--color-bg)] max-[700px]:shadow-[0_-4px_12px_rgba(20,20,20,0.12)]"
+        >
+          <span className="text-[var(--color-green)] text-[1.1rem] font-semibold whitespace-nowrap">
+            {product.priceUsdLabel}
+          </span>
+          <Link
+            className="inline-flex items-center justify-center min-h-[3rem] px-[1.2rem] py-[0.7rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium whitespace-nowrap"
+            href={buildInquiryHref(product) as Route}
+          >
             {product.type === "rug" ? "Reserve this piece" : "Request this piece"}
           </Link>
         </div>
@@ -330,11 +374,16 @@ function ImageLightbox({
   }, [onClose]);
 
   return createPortal(
-    <div className={styles.lightboxOverlay} role="dialog" aria-modal="true" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center p-[var(--space-5)] bg-[rgba(20,20,20,0.9)]"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
       <button
         ref={closeButtonRef}
         aria-label="Close zoomed image"
-        className={styles.lightboxClose}
+        className="absolute top-[var(--space-4)] right-[var(--space-4)] px-[1rem] py-[0.6rem] border border-[color:var(--color-bg)] rounded-full bg-transparent text-[var(--color-bg)] text-[0.85rem]"
         type="button"
         onClick={onClose}
       >
@@ -342,7 +391,7 @@ function ImageLightbox({
       </button>
       <img
         alt={alt}
-        className={styles.lightboxImage}
+        className="block max-w-full max-h-full object-contain cursor-default"
         src={src}
         onClick={(event) => event.stopPropagation()}
       />
@@ -439,10 +488,13 @@ function ProductBreadcrumb({ product }: { product: ProductDetailPageViewModel })
   ];
 
   return (
-    <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-      <ol>
+    <nav aria-label="Breadcrumb">
+      <ol className="flex flex-wrap gap-[0.35rem] m-0 p-0 list-none text-[var(--color-text-subtle)] text-[0.78rem]">
         {items.map((item) => (
-          <li key={item.label}>
+          <li
+            key={item.label}
+            className="inline-flex gap-[0.35rem] items-center [&:not(:last-child)]:after:content-['/']"
+          >
             {item.href ? <Link href={item.href}>{item.label}</Link> : <span aria-current="page">{item.label}</span>}
           </li>
         ))}
@@ -552,11 +604,11 @@ function RugPurchaseShell({
   product: Extract<ProductDetailPageViewModel, { type: "rug" }>;
 }) {
   return (
-    <div className={styles.purchaseCard}>
-      <Link className={styles.primaryAction} href={buildInquiryHref(product) as Route}>
+    <div className={PANEL_CARD}>
+      <Link className={PRIMARY_ACTION} href={buildInquiryHref(product) as Route}>
         Reserve this piece — {product.priceUsdLabel}
       </Link>
-      <p className={styles.purchaseMicrocopy}>
+      <p className={PURCHASE_MICROCOPY}>
         Card authorized now, charged only after your approval.
       </p>
     </div>
@@ -565,9 +617,9 @@ function RugPurchaseShell({
 
 function SoldPurchaseShell() {
   return (
-    <div className={styles.purchaseCard}>
+    <div className={PANEL_CARD}>
       <strong>This piece is sold.</strong>
-      <p className={styles.purchaseMicrocopy}>
+      <p className={PURCHASE_MICROCOPY}>
         It remains in the catalog as a record. Browse the collection for available pieces.
       </p>
     </div>
@@ -580,11 +632,11 @@ function MultiUnitPurchaseShell({
   product: MultiUnitProductDetailPageViewModel;
 }) {
   return (
-    <div className={styles.purchaseCard}>
-      <Link className={styles.primaryAction} href={buildInquiryHref(product) as Route}>
+    <div className={PANEL_CARD}>
+      <Link className={PRIMARY_ACTION} href={buildInquiryHref(product) as Route}>
         Request this piece — {product.priceUsdLabel}
       </Link>
-      <p className={styles.purchaseMicrocopy}>
+      <p className={PURCHASE_MICROCOPY}>
         Availability is confirmed before any charge is captured.
       </p>
     </div>

@@ -1,0 +1,11 @@
+/*
+ * Scoped Tailwind entry for the PDP pilot. Intentionally omits the
+ * preflight/base reset layer: this stylesheet is bundled into every
+ * page that renders ProductDetailPageView, which also renders the
+ * site-wide header/footer/cookie-banner/back-to-top button from
+ * app/globals.css. Loading Tailwind's reset here would leak into
+ * those shared components too, since CSS has no import-scoping to a
+ * specific subtree.
+ */
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);

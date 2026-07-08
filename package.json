@@ -21,10 +21,13 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/client": "^6.16.2",
+    "@tailwindcss/postcss": "^4.3.2",
     "next": "^15.2.0",
     "next-auth": "^4.24.13",
+    "postcss": "^8.5.16",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.3.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
@@ -36,5 +39,8 @@
     "playwright": "^1.61.0",
     "prisma": "^6.16.2",
     "typescript": "^5.7.2"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.3.2"
   }
 }
