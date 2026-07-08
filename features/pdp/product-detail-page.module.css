@@ -18,6 +18,7 @@
 }
 
 .primaryMedia {
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -27,8 +28,8 @@
 .primaryImage {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
+  height: 100%;
+  object-fit: contain;
 }
 
 .thumbnailGrid {
@@ -55,7 +56,8 @@
 .thumbnailImage {
   width: 100%;
   aspect-ratio: 1 / 1;
-  object-fit: cover;
+  object-fit: contain;
+  background: var(--color-panel);
 }
 
 .thumbnailLabel {
