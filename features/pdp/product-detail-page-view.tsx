@@ -98,6 +98,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
     preferredHistoryCategory,
   );
   const specRows = buildSpecificationRows(product);
+  const { gallerySections, infoSections } = splitDetailSections(product.detailSections);
 
   return (
     <div className={styles.page}>
@@ -170,6 +171,17 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                 <p>{product.description}</p>
               </section>
             ) : null}
+
+            {gallerySections.length > 0 && (
+              <div className={styles.detailSections}>
+                {gallerySections.map((section) => (
+                  <section key={section.title} className={styles.detailSection}>
+                    <h3 className={styles.detailSectionTitle}>{section.title}</h3>
+                    <p className={styles.detailSectionBody}>{section.body}</p>
+                  </section>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className={styles.infoColumn}>
@@ -222,9 +234,9 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               <p>{product.merchandisingNote}</p>
             </section>
 
-            {product.detailSections.length > 0 && (
+            {infoSections.length > 0 && (
               <div className={styles.detailSections}>
-                {product.detailSections.map((section) => (
+                {infoSections.map((section) => (
                   <section key={section.title} className={styles.detailSection}>
                     <h3 className={styles.detailSectionTitle}>{section.title}</h3>
                     <p className={styles.detailSectionBody}>{section.body}</p>
@@ -365,6 +377,19 @@ function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalle
   }
 
   return padded;
+}
+
+const GALLERY_DETAIL_SECTION_TITLES = new Set(["construction", "condition"]);
+
+function splitDetailSections(sections: ProductDetailPageViewModel["detailSections"]) {
+  const gallerySections = sections.filter((section) =>
+    GALLERY_DETAIL_SECTION_TITLES.has(section.title.toLowerCase()),
+  );
+  const infoSections = sections.filter(
+    (section) => !GALLERY_DETAIL_SECTION_TITLES.has(section.title.toLowerCase()),
+  );
+
+  return { gallerySections, infoSections };
 }
 
 function buildSpecificationRows(product: ProductDetailPageViewModel) {
