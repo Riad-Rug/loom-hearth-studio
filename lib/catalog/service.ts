@@ -738,15 +738,7 @@ function createProvenanceDescription(product: Product) {
 
 function createConditionDescription(product: Product) {
   const conditionNote = normalizeDimensionSeparators(product.conditionNote?.trim() || "");
-  const general =
-    product.type === "rug"
-      ? "ONE OF A KIND handmade rugs can show natural variation in pile height, edge line, and color."
-      : "Handmade pieces can show natural variation in color, texture, and finish.";
-  const thisPiece = conditionNote || "No additional condition issue is listed for this piece.";
-
-  return [`General: ${general}`, `This piece: ${thisPiece}`, "Final condition is confirmed in the exact-piece video before payment."].join(
-    "\n",
-  );
+  return conditionNote;
 }
 
 function createCareDescription(product: Product) {
