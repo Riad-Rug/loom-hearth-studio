@@ -57,6 +57,7 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
     .map(normalizeHomepageProductImages)
     .slice(0, 8);
   const heroImage = getCloudinaryImage(content.hero.image.src);
+  const hasHeroActions = content.hero.primaryCta.visible || content.hero.secondaryCta.visible;
 
   return (
     <div className={styles.page}>
@@ -65,14 +66,26 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
           <p className={styles.eyebrow}>{content.hero.eyebrow}</p>
           <h1>{content.hero.title}</h1>
           <p className={styles.heroBody}>{content.hero.paragraph}</p>
-          <div className={styles.heroActions}>
-            <Link className={styles.primaryAction} href={content.hero.primaryCta.href as Route}>
-              Shop rugs
-            </Link>
-            <Link className={styles.secondaryAction} href="/shop">
-              Shop everything
-            </Link>
-          </div>
+          {hasHeroActions ? (
+            <div className={styles.heroActions}>
+              {content.hero.primaryCta.visible ? (
+                <Link
+                  className={styles.primaryAction}
+                  href={content.hero.primaryCta.href as Route}
+                >
+                  {content.hero.primaryCta.label}
+                </Link>
+              ) : null}
+              {content.hero.secondaryCta.visible ? (
+                <Link
+                  className={styles.secondaryAction}
+                  href={content.hero.secondaryCta.href as Route}
+                >
+                  {content.hero.secondaryCta.label}
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         <div className={styles.heroMedia}>
@@ -82,7 +95,7 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
               className={styles.heroImage}
               fill
               priority
-              sizes="(max-width: 980px) 100vw, 42vw"
+              sizes="(max-width: 700px) calc(100vw - 3rem), (max-width: 980px) calc(100vw - 6rem), 42vw"
               src={heroImage}
             />
           ) : (
@@ -91,7 +104,7 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
               aspectRatio="4 / 5"
               label="Texture photo pending"
               priority
-              sizes="(max-width: 980px) 100vw, 42vw"
+              sizes="(max-width: 700px) calc(100vw - 3rem), (max-width: 980px) calc(100vw - 6rem), 42vw"
             />
           )}
         </div>
