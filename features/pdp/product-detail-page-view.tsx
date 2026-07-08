@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
@@ -34,10 +34,23 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   const gallery = useMemo(() => createDisplayGallery(product), [product]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [preferredHistoryCategory, setPreferredHistoryCategory] = useState<ProductCategory | null>(null);
+  const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   useEffect(() => {
     setActiveImageIndex(0);
+    setFailedImageIds(new Set());
+    setIsLightboxOpen(false);
   }, [product.id]);
+
+  const handleImageError = (id: string) => {
+    setFailedImageIds((previous) => {
+      if (previous.has(id)) {
+        return previous;
+      }
+      return new Set(previous).add(id);
+    });
+  };
 
   useEffect(() => {
     setPreferredHistoryCategory(getTopRecommendationHistoryCategory());
@@ -62,6 +75,8 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   }, [product.category, product.id, product.name, product.priceUsd]);
 
   const activeImage = gallery[activeImageIndex] ?? gallery[0] ?? null;
+  const activeImageBroken = activeImage ? failedImageIds.has(activeImage.id) : false;
+  const activeImageAlt = activeImage?.altText || product.name;
   const displayedRecommendations = getDisplayedRecommendations(
     product.similarRugs,
     preferredHistoryCategory,
@@ -89,8 +104,20 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         <div className={styles.layout}>
           <div className={styles.galleryColumn}>
             <div className={styles.primaryMedia}>
-              {activeImage?.src ? (
-                <img alt={activeImage.altText || product.name} className={styles.primaryImage} src={activeImage.src} />
+              {activeImage?.src && !activeImageBroken ? (
+                <button
+                  aria-label={`Zoom in on ${activeImageAlt}`}
+                  className={styles.primaryMediaButton}
+                  type="button"
+                  onClick={() => setIsLightboxOpen(true)}
+                >
+                  <img
+                    alt={activeImageAlt}
+                    className={styles.primaryImage}
+                    src={activeImage.src}
+                    onError={() => handleImageError(activeImage.id)}
+                  />
+                </button>
               ) : (
                 <PlaceholderMedia
                   alt={product.name}
@@ -107,17 +134,20 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               {gallery.map((item, index) => (
                 <button
                   key={item.id}
+                  aria-current={activeImageIndex === index ? "true" : undefined}
                   className={`${styles.thumbnailCard} ${
                     activeImageIndex === index ? styles.thumbnailCardActive : ""
                   }`}
                   type="button"
                   onClick={() => setActiveImageIndex(index)}
                 >
-                  {item.src ? (
+                  {item.src && !failedImageIds.has(item.id) ? (
                     <img
                       alt={item.altText || `${product.name} ${item.label}`}
                       className={styles.thumbnailImage}
+                      loading="lazy"
                       src={item.src}
+                      onError={() => handleImageError(item.id)}
                     />
                   ) : (
                     <PlaceholderMedia
@@ -188,7 +218,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               <div className={styles.detailSections}>
                 {product.detailSections.map((section) => (
                   <section key={section.title} className={styles.detailSection}>
-                    <p className={styles.detailSectionTitle}>{section.title}</p>
+                    <h3 className={styles.detailSectionTitle}>{section.title}</h3>
                     <p className={styles.detailSectionBody}>{section.body}</p>
                   </section>
                 ))}
@@ -229,6 +259,73 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           </div>
         </Section>
       ) : null}
+
+      {product.status !== "sold" ? (
+        <div className={styles.mobileStickyBar}>
+          <span className={styles.mobileStickyPrice}>{product.priceUsdLabel}</span>
+          <Link className={styles.mobileStickyAction} href={buildInquiryHref(product) as Route}>
+            {product.type === "rug" ? "Reserve this piece" : "Request this piece"}
+          </Link>
+        </div>
+      ) : null}
+
+      {isLightboxOpen && activeImage?.src && !activeImageBroken ? (
+        <ImageLightbox
+          alt={activeImageAlt}
+          src={activeImage.src}
+          onClose={() => setIsLightboxOpen(false)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function ImageLightbox({
+  alt,
+  src,
+  onClose,
+}: {
+  alt: string;
+  src: string;
+  onClose: () => void;
+}) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div className={styles.lightboxOverlay} role="dialog" aria-modal="true" onClick={onClose}>
+      <button
+        ref={closeButtonRef}
+        aria-label="Close zoomed image"
+        className={styles.lightboxClose}
+        type="button"
+        onClick={onClose}
+      >
+        Close
+      </button>
+      <img
+        alt={alt}
+        className={styles.lightboxImage}
+        src={src}
+        onClick={(event) => event.stopPropagation()}
+      />
     </div>
   );
 }
@@ -278,8 +375,13 @@ function buildSpecificationRows(product: ProductDetailPageViewModel) {
   rows.push(
     { label: "Age", value: product.category === "vintage" ? "Vintage" : "Handmade contemporary piece" },
     { label: "Condition", value: extractConditionNote(product) },
-    { label: "Weight", value: product.type === "rug" ? product.weightLabel : product.inventoryMessage },
   );
+
+  if (product.type === "rug") {
+    rows.push({ label: "Weight", value: product.weightLabel });
+  } else {
+    rows.push({ label: "Availability", value: product.inventoryMessage });
+  }
 
   return rows;
 }
