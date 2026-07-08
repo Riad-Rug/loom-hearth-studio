@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import type { AdminProductActionState } from "@/lib/admin/product-actions-shared";
@@ -46,6 +46,7 @@ const provenanceLabelOptions = ["Verified", "Attributed", "Not Stated"] as const
 
 export function AdminProductForm(props: AdminProductFormProps) {
   const [state, formAction] = useActionState(props.action, initialAdminProductActionState);
+  const feedbackRef = useRef<HTMLDivElement | null>(null);
   const [type, setType] = useState(props.product.type);
   const [catalogNumber, setCatalogNumber] = useState(props.product.catalogNumber);
   const [slug, setSlug] = useState(props.product.slug);
@@ -114,6 +115,15 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const hasUrlChange = Boolean(
     props.product.routePath && routePreview && props.product.routePath !== routePreview,
   );
+
+  useEffect(() => {
+    if (state.status === "idle" || !feedbackRef.current) {
+      return;
+    }
+
+    feedbackRef.current.focus();
+    feedbackRef.current.scrollIntoView({ behavior: "auto", block: "center" });
+  }, [state]);
 
   useEffect(() => {
     setType(props.product.type);
@@ -306,9 +316,24 @@ export function AdminProductForm(props: AdminProductFormProps) {
       </header>
 
       {state.message ? (
-        <div className={state.status === "success" ? styles.successPanel : styles.gatePanel}>
+        <div
+          ref={feedbackRef}
+          aria-live={state.status === "error" ? "assertive" : "polite"}
+          className={state.status === "success" ? styles.successPanel : styles.gatePanel}
+          role={state.status === "error" ? "alert" : "status"}
+          tabIndex={-1}
+        >
           <strong>{state.status === "success" ? "Saved" : "Needs attention"}</strong>
           <p>{state.message}</p>
+          {state.status === "error" && Object.keys(state.fieldErrors).length ? (
+            <ul>
+              {Object.entries(state.fieldErrors).map(([field, message]) => (
+                <li key={field}>
+                  <strong>{formatFieldErrorLabel(field)}:</strong> {message}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       ) : null}
 
@@ -951,6 +976,13 @@ function formatProductCategory(category: AdminProductFormValues["category"]) {
     case "pillows": return "Pillows";
     case "decor": return "Decor & Antiques";
   }
+}
+
+function formatFieldErrorLabel(field: string) {
+  return field
+    .replace(/([a-z])([A-Z])/gu, "$1 $2")
+    .replace(/\.(\d+)\./gu, " $1 ")
+    .replace(/^./u, (character) => character.toUpperCase());
 }
 
 function getCatalogNumberPlaceholder(category: AdminProductFormValues["category"]) {

@@ -25,26 +25,7 @@ export async function createAdminProductAction(
     };
   }
 
-  console.log("ADMIN_CREATE_PERMISSION_ALLOWED");
-
-  console.log("ADMIN_CREATE_FORMDATA", {
-    name: formData.get("name"),
-    description: formData.get("description"),
-    origin: formData.get("origin"),
-    seoTitle: formData.get("seoTitle"),
-    seoDescription: formData.get("seoDescription"),
-    dimensionsCmLength: formData.get("dimensionsCmLength"),
-    dimensionsCmWidth: formData.get("dimensionsCmWidth"),
-    weightKg: formData.get("weightKg"),
-    fixedQuantity: formData.get("fixedQuantity"),
-    imagesJson: formData.get("imagesJson"),
-  });
-
   const validation = validateProductMutationInput(parseProductFormData(formData));
-
-  console.log("ADMIN_CREATE_VALIDATION_RESULT", {
-    status: validation.status,
-  });
 
   if (validation.status === "invalid") {
     return {
@@ -56,36 +37,16 @@ export async function createAdminProductAction(
 
   const repository = createProductRepository();
 
-  console.log("ADMIN_CREATE_BEFORE_SLUG_EXISTS", {
-    slug: validation.value.slug,
-  });
-
-  if (await repository.slugExists({ slug: validation.value.slug })) {
-    console.log("ADMIN_CREATE_SLUG_EXISTS_TRUE", {
-      slug: validation.value.slug,
-    });
-
-    return {
-      status: "error",
-      message: "A persisted product already uses that slug. Slugs must remain globally unique in v1.",
-      fieldErrors: {
-        slug: "Choose a different slug.",
-      },
-    };
-  }
-
   try {
-    console.log("ADMIN_CREATE_BEFORE_REPOSITORY_CREATE", {
-      slug: validation.value.slug,
-      type: validation.value.type,
-      category: validation.value.category,
-    });
+    if (await repository.slugExists({ slug: validation.value.slug })) {
+      return {
+        status: "error",
+        message: "A persisted product already uses that slug.",
+        fieldErrors: { slug: "Choose a different slug." },
+      };
+    }
 
     const createdProduct = await repository.create(validation.value);
-
-    console.log("ADMIN_CREATE_AFTER_REPOSITORY_CREATE", {
-      id: createdProduct.id,
-    });
 
     revalidateCatalogPaths({
       productId: createdProduct.id,
@@ -115,7 +76,7 @@ export async function createAdminProductAction(
 
     return {
       status: "error",
-      message: "Product create request failed before a persisted response was returned.",
+      message: getProductPersistenceErrorMessage(error, "create"),
       fieldErrors: {},
     };
   }
@@ -148,17 +109,15 @@ export async function updateAdminProductAction(
 
   const repository = createProductRepository();
 
-  if (await repository.slugExists({ slug: validation.value.slug, excludeId: productId })) {
-    return {
-      status: "error",
-      message: "A persisted product already uses that slug. Slugs must remain globally unique in v1.",
-      fieldErrors: {
-        slug: "Choose a different slug.",
-      },
-    };
-  }
-
   try {
+    if (await repository.slugExists({ slug: validation.value.slug, excludeId: productId })) {
+      return {
+        status: "error",
+        message: "A persisted product already uses that slug.",
+        fieldErrors: { slug: "Choose a different slug." },
+      };
+    }
+
     const updatedProduct = await repository.update({
       ...validation.value,
       id: productId,
@@ -188,9 +147,11 @@ export async function updateAdminProductAction(
       };
     }
 
+    console.error("ADMIN_UPDATE_CATCH_ERROR", error);
+
     return {
       status: "error",
-      message: "Product update request failed before a persisted response was returned.",
+      message: getProductPersistenceErrorMessage(error, "update"),
       fieldErrors: {},
     };
   }
@@ -379,4 +340,21 @@ function getBulkStatus(action: Exclude<BulkProductAction, "delete">) {
   }
 
   return "draft" as const;
+}
+
+function getProductPersistenceErrorMessage(error: unknown, operation: "create" | "update") {
+  const code =
+    error && typeof error === "object" && "code" in error
+      ? String((error as { code?: unknown }).code ?? "")
+      : "";
+
+  if (code === "P2022") {
+    return "The product database is missing a required column. Deploy the latest database migrations, then try again.";
+  }
+
+  if (code === "P1001" || code === "P1002") {
+    return "The product database could not be reached. Try again shortly; if it continues, check the database connection.";
+  }
+
+  return `Product ${operation} failed. No changes were saved. Check the server log for ADMIN_${operation.toUpperCase()}_CATCH_ERROR.`;
 }
