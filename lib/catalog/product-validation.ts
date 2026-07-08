@@ -1,7 +1,7 @@
 import type { EntityStatus, MediaAsset, Product, ProductVariant } from "@/types/domain";
 
 export const productTypeOptions = ["rug", "multiUnit"] as const;
-export const productStatusOptions = ["draft", "active", "archived"] as const;
+export const productStatusOptions = ["draft", "active", "sold", "archived"] as const;
 export const productCategoryOptions = [
   "rugs",
   "poufs",
@@ -9,6 +9,17 @@ export const productCategoryOptions = [
   "decor",
   "vintage",
 ] as const satisfies ReadonlyArray<Product["category"]>;
+export const productRugStyleOptions = [
+  "Boujad-style",
+  "Azilal-style",
+  "Beni Ourain-style",
+  "Beni M'Guild-style",
+  "Zemmour-style",
+  "Boucherouite",
+  "Flatweave (Hanbel)",
+  "Mixed technique",
+  "Unclassified",
+] as const;
 export const cloudinaryAssetRoleOptions = [
   "hero",
   "gallery",
@@ -27,12 +38,17 @@ export const mediaTypeOptions = ["image", "video"] as const satisfies ReadonlyAr
   MediaAsset["mediaType"]
 >;
 
+type InternalProductFields = {
+  acquisitionCostMad?: number;
+  soldAt?: string;
+};
+
 export type ProductMutationInput =
   | (Omit<Extract<Product, { type: "rug" }>, "id" | "fixedQuantity"> & {
       id?: string;
       fixedQuantity: number;
-    })
-  | (Omit<Extract<Product, { type: "multiUnit" }>, "id"> & { id?: string });
+    } & InternalProductFields)
+  | (Omit<Extract<Product, { type: "multiUnit" }>, "id"> & { id?: string } & InternalProductFields);
 
 export type ProductMutationFieldErrors = Partial<Record<string, string>>;
 
@@ -91,6 +107,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     category: readString(formData, "category"),
     description: readString(formData, "description"),
     priceUsd: readNumber(formData, "priceUsd"),
+    acquisitionCostMad: readOptionalNonNegativeNumber(formData, "acquisitionCostMad"),
     images: parseImages(readString(formData, "imagesJson")),
     materials: parseMaterials(readString(formData, "materialsJson")),
     palette: parsePalette(readString(formData, "paletteJson")),
@@ -106,6 +123,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     shippingNotes: parseLineList(readString(formData, "shippingNotes")),
     careNote: readOptionalString(formData, "careNote"),
     status: readString(formData, "status"),
+    soldAt: readOptionalString(formData, "soldAt"),
     seoTitle: readString(formData, "seoTitle"),
     seoDescription: readString(formData, "seoDescription"),
     homepageFeatured: readBoolean(formData, "homepageFeatured"),
@@ -199,7 +217,7 @@ export function validateProductMutationInput(
     fieldErrors.catalogNumber = "Catalog prefix does not match the selected category.";
   }
 
-  if (input.status === "active") {
+  if (input.status === "active" || input.status === "sold") {
     if (!input.catalogNumber) {
       fieldErrors.catalogNumber = "Catalog number is required before publishing.";
     }
@@ -230,7 +248,15 @@ export function validateProductMutationInput(
   }
 
   if (!isProductStatus(input.status)) {
-    fieldErrors.status = "Choose draft, active, or archived.";
+    fieldErrors.status = "Choose draft, active, sold, or archived.";
+  }
+
+  if (input.acquisitionCostMad !== undefined && (!Number.isFinite(input.acquisitionCostMad) || input.acquisitionCostMad < 0)) {
+    fieldErrors.acquisitionCostMad = "Acquisition cost must be zero or greater.";
+  }
+
+  if (input.status === "sold" && !isValidDateInput(input.soldAt)) {
+    fieldErrors.soldAt = "Sold date is required when status is sold.";
   }
 
   if (!Array.isArray(input.materials) || input.materials.length === 0) {
@@ -263,6 +289,8 @@ export function validateProductMutationInput(
 
     if (!input.rugStyle.trim()) {
       fieldErrors.rugStyle = "Rug style is required.";
+    } else if (!(productRugStyleOptions as readonly string[]).includes(input.rugStyle)) {
+      fieldErrors.rugStyle = "Choose one of the canonical rug styles.";
     }
 
     if (!Number.isFinite(input.dimensionsCm.length) || input.dimensionsCm.length <= 0) {
@@ -281,11 +309,7 @@ export function validateProductMutationInput(
       fieldErrors.fixedQuantity = "Rugs must keep fixed quantity at 1.";
     }
 
-    if (input.palette.length !== 5) {
-      fieldErrors.palette = "Rugs need exactly five palette colors.";
-    }
-
-    if (input.status === "active") {
+    if (input.status === "active" || input.status === "sold") {
       const requiredRugImageRoles = ["hero", "detail", "edge", "back", "scale"] as const;
       const imageRoles = new Set(
         input.images
@@ -417,6 +441,17 @@ function readOptionalPositiveNumber(formData: FormData, key: string) {
   const value = readString(formData, key);
   const parsed = value ? Number(value) : Number.NaN;
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function readOptionalNonNegativeNumber(formData: FormData, key: string) {
+  const value = readString(formData, key);
+  if (!value) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+}
+
+function isValidDateInput(value: string | undefined) {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/u.test(value) && !Number.isNaN(Date.parse(value)));
 }
 
 function createOptionalDimensions(formData: FormData) {

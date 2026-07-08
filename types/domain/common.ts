@@ -1,4 +1,4 @@
-export type EntityStatus = "draft" | "active" | "archived";
+export type EntityStatus = "draft" | "active" | "sold" | "archived";
 
 export type SeoFields = {
   seoTitle: string;

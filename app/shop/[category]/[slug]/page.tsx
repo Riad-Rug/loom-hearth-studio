@@ -43,7 +43,8 @@ export default async function CategoryProductPage({
           category: product.category,
           imageUrls: product.gallery.map((image) => image.src),
           availability:
-            product.type === "multiUnit" && product.inventoryState === "outOfStock"
+            product.status === "sold" ||
+            (product.type === "multiUnit" && product.inventoryState === "outOfStock")
               ? "outOfStock"
               : "inStock",
           isOneOfOne: product.category === "vintage",

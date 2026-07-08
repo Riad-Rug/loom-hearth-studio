@@ -25,7 +25,7 @@ export class PrismaProductRepository implements ProductRepository {
   async listAll() {
     const products = await this.context.client.catalogProduct.findMany({
       where: {
-        status: "active",
+        status: { in: ["active", "sold"] },
       },
       orderBy: {
         updatedAt: "desc",
@@ -39,7 +39,7 @@ export class PrismaProductRepository implements ProductRepository {
     const products = await this.context.client.catalogProduct.findMany({
       where: {
         category,
-        status: "active",
+        status: { in: ["active", "sold"] },
       },
       orderBy: {
         updatedAt: "desc",
@@ -86,7 +86,7 @@ export class PrismaProductRepository implements ProductRepository {
     const product = await this.context.client.catalogProduct.findFirst({
       where: {
         slug,
-        status: "active",
+        status: { in: ["active", "sold"] },
       },
     });
 

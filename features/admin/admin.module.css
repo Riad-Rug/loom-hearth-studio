@@ -708,6 +708,11 @@
   justify-content: stretch;
 }
 
+.statusBadgeSold {
+  background: rgba(184, 94, 59, 0.14);
+  color: #7c3924;
+}
+
 .actionCluster .inlineActionLink,
 .actionCluster .dangerAction {
   width: 100%;

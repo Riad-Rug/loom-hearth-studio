@@ -17,6 +17,7 @@ import {
   getProductRoutePreview,
   mediaTypeOptions,
   normalizeSlug,
+  productRugStyleOptions,
 } from "@/lib/catalog/product-validation";
 import type {
   CloudinaryBrowserUploadResult,
@@ -52,6 +53,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [category, setCategory] = useState(props.product.category);
   const [description, setDescription] = useState(props.product.description);
   const [priceUsd, setPriceUsd] = useState(props.product.priceUsd);
+  const [acquisitionCostMad, setAcquisitionCostMad] = useState(props.product.acquisitionCostMad);
   const [origin, setOrigin] = useState(props.product.origin);
   const [attributionRegion, setAttributionRegion] = useState(props.product.attributionRegion);
   const [attributionConfidence, setAttributionConfidence] = useState(props.product.attributionConfidence);
@@ -64,6 +66,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [shippingNotes, setShippingNotes] = useState(props.product.shippingNotes.join("\n"));
   const [careNote, setCareNote] = useState(props.product.careNote);
   const [status, setStatus] = useState(props.product.status);
+  const [soldAt, setSoldAt] = useState(props.product.soldAt);
   const [seoTitle, setSeoTitle] = useState(props.product.seoTitle);
   const [seoDescription, setSeoDescription] = useState(props.product.seoDescription);
   const [rugStyle, setRugStyle] = useState(props.product.rugStyle);
@@ -75,9 +78,6 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [lowStockThreshold, setLowStockThreshold] = useState(props.product.lowStockThreshold);
   const [materials, setMaterials] = useState(
     props.product.materials.length ? props.product.materials : [""],
-  );
-  const [palette, setPalette] = useState(
-    props.product.palette.length ? props.product.palette : ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"],
   );
   const [images, setImages] = useState<ProductImageRow[]>(
     props.product.images.length
@@ -123,6 +123,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setCategory(props.product.category);
     setDescription(props.product.description);
     setPriceUsd(props.product.priceUsd);
+    setAcquisitionCostMad(props.product.acquisitionCostMad);
     setOrigin(props.product.origin);
     setAttributionRegion(props.product.attributionRegion);
     setAttributionConfidence(props.product.attributionConfidence);
@@ -135,6 +136,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setShippingNotes(props.product.shippingNotes.join("\n"));
     setCareNote(props.product.careNote);
     setStatus(props.product.status);
+    setSoldAt(props.product.soldAt);
     setSeoTitle(props.product.seoTitle);
     setSeoDescription(props.product.seoDescription);
     setRugStyle(props.product.rugStyle);
@@ -145,9 +147,6 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setInventory(props.product.inventory);
     setLowStockThreshold(props.product.lowStockThreshold);
     setMaterials(props.product.materials.length ? props.product.materials : [""]);
-    setPalette(
-      props.product.palette.length ? props.product.palette : ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"],
-    );
     setImages(
       props.product.images.length
         ? props.product.images.map((image) => ({
@@ -176,12 +175,6 @@ export function AdminProductForm(props: AdminProductFormProps) {
       current.map((variant, variantIndex) =>
         variantIndex === index ? { ...variant, ...patch } : variant,
       ),
-    );
-  }
-
-  function updatePaletteColor(index: number, value: string) {
-    setPalette((current) =>
-      current.map((color, colorIndex) => (colorIndex === index ? value : color)),
     );
   }
 
@@ -299,7 +292,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
       <input name="id" type="hidden" value={props.product.id ?? ""} />
       <input name="imagesJson" type="hidden" value={JSON.stringify(images)} />
       <input name="materialsJson" type="hidden" value={JSON.stringify(materials)} />
-      <input name="paletteJson" type="hidden" value={JSON.stringify(palette)} />
+      <input name="paletteJson" type="hidden" value={JSON.stringify(props.product.palette)} />
       <input name="variantsJson" type="hidden" value={JSON.stringify(variants)} />
       <input name="originalRoutePath" type="hidden" value={props.product.routePath} />
       <input name="confirmUrlChange" type="hidden" value={confirmUrlChange ? "true" : "false"} />
@@ -423,6 +416,19 @@ export function AdminProductForm(props: AdminProductFormProps) {
             <em>{state.fieldErrors.priceUsd}</em>
           </label>
           <label className={styles.formField}>
+            <span>Acquisition cost (MAD)</span>
+            <input
+              name="acquisitionCostMad"
+              min="0"
+              step="0.01"
+              type="number"
+              value={acquisitionCostMad}
+              onChange={(event) => setAcquisitionCostMad(event.target.value)}
+            />
+            <em>Internal only. Never shown on the storefront.</em>
+            <em>{state.fieldErrors.acquisitionCostMad}</em>
+          </label>
+          <label className={styles.formField}>
             <span>Origin</span>
             <input
               name="origin"
@@ -535,6 +541,18 @@ export function AdminProductForm(props: AdminProductFormProps) {
             </select>
             <em>{state.fieldErrors.status}</em>
           </label>
+          {status === "sold" ? (
+            <label className={styles.formField}>
+              <span>Sold date</span>
+              <input
+                name="soldAt"
+                type="date"
+                value={soldAt}
+                onChange={(event) => setSoldAt(event.target.value)}
+              />
+              <em>{state.fieldErrors.soldAt}</em>
+            </label>
+          ) : null}
           <div className={styles.sessionPanel}>
             <strong>Route preview</strong>
             <span>{routePreview || "Complete slug and route fields to generate a path."}</span>
@@ -731,32 +749,6 @@ export function AdminProductForm(props: AdminProductFormProps) {
                     ))}
                   </select>
                 </label>
-                <div className={styles.inlineGroup}>
-                  <label className={styles.formField}>
-                    <span>Width</span>
-                    <input
-                      type="number"
-                      value={image.width ?? ""}
-                      onChange={(event) =>
-                        updateImage(index, {
-                          width: event.target.value ? Number.parseInt(event.target.value, 10) : undefined,
-                        })
-                      }
-                    />
-                  </label>
-                  <label className={styles.formField}>
-                    <span>Height</span>
-                    <input
-                      type="number"
-                      value={image.height ?? ""}
-                      onChange={(event) =>
-                        updateImage(index, {
-                          height: event.target.value ? Number.parseInt(event.target.value, 10) : undefined,
-                        })
-                      }
-                    />
-                  </label>
-                </div>
                 <button
                   className={styles.textButton}
                   type="button"
@@ -791,34 +783,18 @@ export function AdminProductForm(props: AdminProductFormProps) {
             <p className={styles.cardEyebrow}>Rug details</p>
             <label className={styles.formField}>
               <span>Rug style</span>
-              <input
+              <select
                 name="rugStyle"
-                type="text"
                 value={rugStyle}
                 onChange={(event) => setRugStyle(event.target.value)}
-              />
+              >
+                <option value="">Choose rug style</option>
+                {productRugStyleOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
               <em>{state.fieldErrors.rugStyle}</em>
             </label>
-            <div className={styles.stack}>
-              <p className={styles.cardEyebrow}>Palette</p>
-              {palette.map((color, index) => (
-                <div key={`palette-${index + 1}`} className={styles.inlineGroup}>
-                  <input
-                    aria-label={`Palette color ${index + 1}`}
-                    type="color"
-                    value={color}
-                    onChange={(event) => updatePaletteColor(index, event.target.value)}
-                  />
-                  <input
-                    aria-label={`Palette hex ${index + 1}`}
-                    type="text"
-                    value={color}
-                    onChange={(event) => updatePaletteColor(index, event.target.value)}
-                  />
-                </div>
-              ))}
-              <em>{state.fieldErrors.palette}</em>
-            </div>
             <label className={styles.formField}>
               <span>Fixed quantity</span>
               <input
@@ -1012,8 +988,8 @@ function createEmptyImageRow(input: {
     sortOrder: input.sortOrder,
     role: input.role,
     mediaType: "image" as const,
-    width: input.role === "hero" ? 1600 : undefined,
-    height: input.role === "hero" ? 1200 : undefined,
+    width: undefined,
+    height: undefined,
   };
 }
 

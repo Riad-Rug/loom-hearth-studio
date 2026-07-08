@@ -73,6 +73,10 @@ export function mapProductMutationInputToCreateInput(
     category: mapDomainProductCategoryToPrisma(input.category),
     description: input.description,
     priceUsd: createPrismaDecimal(input.priceUsd),
+    acquisitionCostMad:
+      input.acquisitionCostMad === undefined
+        ? undefined
+        : createPrismaDecimal(input.acquisitionCostMad),
     origin: input.origin,
     attributionRegion: input.attributionRegion || null,
     attributionConfidence: input.attributionConfidence || null,
@@ -85,6 +89,7 @@ export function mapProductMutationInputToCreateInput(
     shippingNotes: sanitizeJsonValue(input.shippingNotes) as Prisma.InputJsonValue,
     careNote: input.careNote || null,
     status: input.status,
+    soldAt: input.status === "sold" && input.soldAt ? new Date(input.soldAt) : null,
     images: sanitizeJsonValue(input.images) as Prisma.InputJsonValue,
     materials: sanitizeJsonValue(input.materials) as Prisma.InputJsonValue,
     palette: sanitizeJsonValue(input.palette) as Prisma.InputJsonValue,
@@ -126,6 +131,10 @@ export function mapProductMutationInputToUpdateInput(
     category: mapDomainProductCategoryToPrisma(input.category),
     description: input.description,
     priceUsd: createPrismaDecimal(input.priceUsd),
+    acquisitionCostMad:
+      input.acquisitionCostMad === undefined
+        ? undefined
+        : createPrismaDecimal(input.acquisitionCostMad),
     origin: input.origin,
     attributionRegion: input.attributionRegion || null,
     attributionConfidence: input.attributionConfidence || null,
@@ -138,6 +147,7 @@ export function mapProductMutationInputToUpdateInput(
     shippingNotes: sanitizeJsonValue(input.shippingNotes) as Prisma.InputJsonValue,
     careNote: input.careNote || null,
     status: input.status,
+    soldAt: input.status === "sold" && input.soldAt ? new Date(input.soldAt) : null,
     images: sanitizeJsonValue(input.images) as Prisma.InputJsonValue,
     materials: sanitizeJsonValue(input.materials) as Prisma.InputJsonValue,
     palette: sanitizeJsonValue(input.palette) as Prisma.InputJsonValue,
@@ -192,7 +202,7 @@ function sanitizeJsonValue<T>(value: T): T {
 }
 
 function mapStatus(status: string): Product["status"] {
-  if (status === "draft" || status === "active" || status === "archived") {
+  if (status === "draft" || status === "active" || status === "sold" || status === "archived") {
     return status;
   }
 
