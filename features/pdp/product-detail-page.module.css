@@ -17,6 +17,13 @@
   gap: var(--space-4);
 }
 
+.moreInfoSection {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 46rem;
+  margin-top: var(--space-6);
+}
+
 .primaryMedia {
   aspect-ratio: 3 / 4;
   overflow: hidden;
