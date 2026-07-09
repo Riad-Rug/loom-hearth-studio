@@ -1,9 +1,18 @@
 "use client";
 
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from "@headlessui/react";
 import type { Route } from "next";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
@@ -33,7 +42,6 @@ type DisplayGalleryItem = ProductDetailPageViewModel["gallery"][number] & {
 
 const PANEL_CARD = "grid gap-[var(--space-3)] p-[var(--space-4)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)]";
 const PANEL_EYEBROW = "text-[var(--color-green)] text-[0.72rem] font-semibold tracking-[0.08em] uppercase";
-const DETAIL_SECTIONS_CARD = "grid gap-[var(--space-3)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] p-[var(--space-4)] bg-[var(--color-panel)]";
 const PRIMARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium";
 const PURCHASE_MICROCOPY = "text-[var(--color-text-muted)] text-[0.92rem]";
 
@@ -104,104 +112,87 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
     preferredHistoryCategory,
   );
   const specRows = buildSpecificationRows(product);
-  const { gallerySections, infoSections } = splitDetailSections(product.detailSections);
 
   return (
     <div className="grid gap-[var(--space-7)] max-[700px]:pb-[5rem]">
       <Section width="wide">
-        <div className="grid grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] gap-[var(--space-6)] items-start max-[1100px]:grid-cols-1">
-          <div className="grid gap-[var(--space-4)]">
-            <div className="aspect-[3/4] overflow-hidden border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)]">
-              {activeImage?.src && !activeImageBroken ? (
-                <button
-                  aria-label={`Zoom in on ${activeImageAlt}`}
-                  className="block w-full h-full p-0 border-0 cursor-zoom-in"
-                  type="button"
-                  onClick={() => setIsLightboxOpen(true)}
-                >
-                  <img
-                    alt={activeImageAlt}
-                    className="block w-full h-full object-contain"
-                    src={activeImage.src}
-                    onError={() => handleImageError(activeImage.id)}
-                  />
-                </button>
-              ) : (
-                <PlaceholderMedia
-                  alt={product.name}
-                  aspectRatio="4 / 5"
-                  label="Photo pending"
-                  priority
-                  sizes="(max-width: 1100px) 100vw, 56vw"
-                  tone={activeImage?.tone === "condition" ? "condition" : "neutral"}
-                />
-              )}
-            </div>
+        <div className="grid grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] gap-[var(--space-7)] items-start max-[1100px]:grid-cols-1 max-[1100px]:gap-[var(--space-6)]">
+          <div>
+            <TabGroup as={Fragment} selectedIndex={activeImageIndex} onChange={setActiveImageIndex}>
+              <div className="grid grid-cols-[5rem_1fr] gap-[var(--space-3)] items-start max-[700px]:grid-cols-1">
+                <TabList className="grid gap-[8px] content-start max-[700px]:order-2 max-[700px]:grid-flow-col max-[700px]:auto-cols-[4.5rem] max-[700px]:overflow-x-auto max-[700px]:pb-[0.3rem]">
+                  {gallery.map((item) => (
+                    <Tab
+                      key={item.id}
+                      className={({ selected }) =>
+                        `block aspect-square p-0 border-0 rounded-[var(--radius-md)] bg-[var(--color-panel)] overflow-hidden focus:outline-none ${
+                          selected
+                            ? "ring-2 ring-inset ring-[color:var(--color-green)]"
+                            : "ring-1 ring-inset ring-[color:var(--color-border)]"
+                        }`
+                      }
+                    >
+                      {item.src && !failedImageIds.has(item.id) ? (
+                        <img
+                          alt={item.altText ? `${item.altText} — ${item.label}` : `${product.name} — ${item.label}`}
+                          className="block w-full h-full object-cover object-center"
+                          loading="lazy"
+                          src={item.src}
+                          onError={() => handleImageError(item.id)}
+                        />
+                      ) : (
+                        <PlaceholderMedia
+                          alt={`${product.name} — ${item.label}`}
+                          aspectRatio="1 / 1"
+                          label={item.label}
+                          sizes="5rem"
+                          tone={item.tone === "condition" ? "condition" : "neutral"}
+                        />
+                      )}
+                    </Tab>
+                  ))}
+                </TabList>
 
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] gap-[var(--space-2)] max-[700px]:grid-cols-1">
-              {gallery.map((item, index) => {
-                const isActive = activeImageIndex === index;
-
-                return (
-                  <button
-                    key={item.id}
-                    aria-current={isActive ? "true" : undefined}
-                    className={`grid gap-[0.4rem] p-0 rounded-[var(--radius-md)] bg-[var(--color-bg)] overflow-hidden text-left ${
-                      isActive
-                        ? "border-2 border-[color:var(--color-green)] shadow-[0_0_0_1px_var(--color-green)]"
-                        : "border border-[color:var(--color-border)]"
-                    }`}
-                    type="button"
-                    onClick={() => setActiveImageIndex(index)}
-                  >
-                    {item.src && !failedImageIds.has(item.id) ? (
-                      <img
-                        alt={item.altText || `${product.name} ${item.label}`}
-                        className="w-full aspect-square object-contain bg-[var(--color-panel)]"
-                        loading="lazy"
-                        src={item.src}
-                        onError={() => handleImageError(item.id)}
-                      />
-                    ) : (
-                      <PlaceholderMedia
-                        alt={item.label}
-                        aspectRatio="1 / 1"
-                        label={item.label}
-                        sizes="6rem"
-                        tone={item.tone === "condition" ? "condition" : "neutral"}
-                      />
-                    )}
-                    <span className="px-[0.45rem] pb-[0.45rem] text-[var(--color-text-subtle)] text-[0.72rem]">
-                      {item.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {product.description ? (
-              <section className={PANEL_CARD} aria-label="Description">
-                <p className={PANEL_EYEBROW}>Description</p>
-                <p className="leading-[1.65]">{product.description}</p>
-              </section>
-            ) : null}
-
-            {gallerySections.length > 0 && (
-              <div className={DETAIL_SECTIONS_CARD}>
-                {gallerySections.map((section) => (
-                  <section
-                    key={section.title}
-                    className="grid gap-[0.4rem] pb-[var(--space-3)] border-b border-[color:var(--color-border-soft)] last:pb-0 last:border-b-0"
-                  >
-                    <h3 className={PANEL_EYEBROW}>{section.title}</h3>
-                    <p className="text-[var(--color-ink)] leading-[1.65]">{section.body}</p>
-                  </section>
-                ))}
+                <TabPanels as={Fragment}>
+                  {gallery.map((item) => (
+                    <TabPanel
+                      key={item.id}
+                      className="aspect-[4/5] overflow-hidden border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)] max-[700px]:order-1"
+                    >
+                      {item.src && !failedImageIds.has(item.id) ? (
+                        <button
+                          aria-label={`Zoom in on ${item.altText || product.name}`}
+                          className="block w-full h-full p-0 border-0 cursor-zoom-in"
+                          type="button"
+                          onClick={() => setIsLightboxOpen(true)}
+                        >
+                          <img
+                            alt={item.altText || product.name}
+                            className="block w-full h-full object-cover object-center"
+                            src={item.src}
+                            onError={() => handleImageError(item.id)}
+                          />
+                        </button>
+                      ) : (
+                        <PlaceholderMedia
+                          alt={product.name}
+                          aspectRatio="4 / 5"
+                          label="Photo pending"
+                          priority
+                          sizes="(max-width: 700px) 100vw, (max-width: 1100px) 90vw, 52vw"
+                          tone={item.tone === "condition" ? "condition" : "neutral"}
+                        />
+                      )}
+                    </TabPanel>
+                  ))}
+                </TabPanels>
               </div>
-            )}
+            </TabGroup>
           </div>
 
-          <div className="grid gap-[var(--space-4)] p-[var(--space-5)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-bg)]">
+          <div
+            className="grid gap-[var(--space-4)] p-[var(--space-5)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-bg)] col-start-2 row-start-1 row-span-3 self-start sticky top-[var(--site-header-scroll-offset)] max-[1100px]:static max-[1100px]:col-start-auto max-[1100px]:row-start-auto max-[1100px]:row-span-1"
+          >
             <ProductBreadcrumb product={product} />
 
             <div className="flex flex-wrap gap-[0.6rem]">
@@ -214,31 +205,9 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             </div>
 
             <h1 className="text-[clamp(2.35rem,4vw,3.5rem)]">{product.name}</h1>
-            <p className="text-[var(--color-text-muted)] text-base leading-[1.7]">{product.subtitle}</p>
             <p className="text-[var(--color-green)] text-[clamp(1.8rem,3vw,2.3rem)] leading-[1.05]">
               {product.priceUsdLabel}
             </p>
-
-            <dl className="grid border-t border-b border-[color:var(--color-border)]">
-              {specRows.map((row) => (
-                <div
-                  key={row.label}
-                  className="grid grid-cols-[8rem_1fr] gap-[var(--space-3)] py-[0.8rem] border-t border-[color:var(--color-border-soft)] first:border-t-0 max-[700px]:grid-cols-1 max-[700px]:gap-[0.35rem]"
-                >
-                  <dt className="text-[var(--color-text-subtle)] text-[0.82rem] uppercase tracking-[0.08em]">
-                    {row.label}
-                  </dt>
-                  <dd className="m-0 text-[var(--color-ink)] leading-[1.65]">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
-
-            <section className={PANEL_CARD} aria-label="Verification promise">
-              <p className={PANEL_EYEBROW}>Verification promise</p>
-              <p>
-                We send daylight photos of the exact piece, including wear and condition, before the charge is captured.
-              </p>
-            </section>
 
             {product.status === "sold" ? (
               <SoldPurchaseShell />
@@ -247,6 +216,15 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             ) : (
               <MultiUnitPurchaseShell product={product} />
             )}
+
+            <p className="text-[var(--color-text-muted)] text-base leading-[1.7]">{product.subtitle}</p>
+
+            <section className={PANEL_CARD} aria-label="Verification promise">
+              <p className={PANEL_EYEBROW}>Verification promise</p>
+              <p>
+                We send daylight photos of the exact piece, including wear and condition, before the charge is captured.
+              </p>
+            </section>
 
             <section className={PANEL_CARD} aria-label="Shipping and returns">
               <ul className="grid gap-[0.6rem] m-0 pl-[1.1rem] text-[var(--color-ink)] marker:text-[var(--color-green)]">
@@ -261,21 +239,42 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               <p className={PANEL_EYEBROW}>Founder sourcing note</p>
               <p>{product.merchandisingNote}</p>
             </section>
-
-            {infoSections.length > 0 && (
-              <div className={DETAIL_SECTIONS_CARD}>
-                {infoSections.map((section) => (
-                  <section
-                    key={section.title}
-                    className="grid gap-[0.4rem] pb-[var(--space-3)] border-b border-[color:var(--color-border-soft)] last:pb-0 last:border-b-0"
-                  >
-                    <h3 className={PANEL_EYEBROW}>{section.title}</h3>
-                    <p className="text-[var(--color-ink)] leading-[1.65]">{section.body}</p>
-                  </section>
-                ))}
-              </div>
-            )}
           </div>
+
+          <div className="grid gap-[var(--space-3)]">
+            <p className={PANEL_EYEBROW}>Specifications</p>
+            <dl className="grid border-t border-b border-[color:var(--color-border)]">
+              {specRows.map((row) => (
+                <div
+                  key={row.label}
+                  className="grid grid-cols-[8rem_1fr] gap-[var(--space-3)] py-[0.8rem] border-t border-[color:var(--color-border-soft)] first:border-t-0 max-[700px]:grid-cols-1 max-[700px]:gap-[0.35rem]"
+                >
+                  <dt className="text-[var(--color-text-subtle)] text-[0.82rem] uppercase tracking-[0.08em]">
+                    {row.label}
+                  </dt>
+                  <dd className="m-0 text-[var(--color-ink)] leading-[1.65]">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          {product.description || product.detailSections.length > 0 ? (
+            <div className="grid gap-[var(--space-5)] max-w-[34rem]">
+              {product.description ? (
+                <section aria-label="Description">
+                  <p className={PANEL_EYEBROW}>Description</p>
+                  <p className="leading-[1.65]">{product.description}</p>
+                </section>
+              ) : null}
+
+              {product.detailSections.map((section) => (
+                <section key={section.title}>
+                  <h3 className={PANEL_EYEBROW}>{section.title}</h3>
+                  <p className="text-[var(--color-ink)] leading-[1.65]">{section.body}</p>
+                </section>
+              ))}
+            </div>
+          ) : null}
         </div>
       </Section>
 
@@ -333,70 +332,33 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
         </div>
       ) : null}
 
-      {isLightboxOpen && activeImage?.src && !activeImageBroken ? (
-        <ImageLightbox
-          alt={activeImageAlt}
-          src={activeImage.src}
+      {activeImage?.src && !activeImageBroken ? (
+        <Dialog
+          className="relative z-[1000]"
+          open={isLightboxOpen}
           onClose={() => setIsLightboxOpen(false)}
-        />
+        >
+          <DialogBackdrop className="fixed inset-0 bg-[rgba(20,20,20,0.9)]" />
+          <div className="fixed inset-0 flex items-center justify-center p-[var(--space-5)]">
+            <button
+              aria-label="Close zoomed image"
+              className="absolute top-[var(--space-4)] right-[var(--space-4)] px-[1rem] py-[0.6rem] border border-[color:var(--color-bg)] rounded-full bg-transparent text-[var(--color-bg)] text-[0.85rem]"
+              type="button"
+              onClick={() => setIsLightboxOpen(false)}
+            >
+              Close
+            </button>
+            <DialogPanel className="max-w-full max-h-full">
+              <img
+                alt={activeImageAlt}
+                className="block max-w-full max-h-full object-contain"
+                src={activeImage.src}
+              />
+            </DialogPanel>
+          </div>
+        </Dialog>
       ) : null}
     </div>
-  );
-}
-
-function ImageLightbox({
-  alt,
-  src,
-  onClose,
-}: {
-  alt: string;
-  src: string;
-  onClose: () => void;
-}) {
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    closeButtonRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [onClose]);
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center p-[var(--space-5)] bg-[rgba(20,20,20,0.9)]"
-      role="dialog"
-      aria-modal="true"
-      onClick={onClose}
-    >
-      <button
-        ref={closeButtonRef}
-        aria-label="Close zoomed image"
-        className="absolute top-[var(--space-4)] right-[var(--space-4)] px-[1rem] py-[0.6rem] border border-[color:var(--color-bg)] rounded-full bg-transparent text-[var(--color-bg)] text-[0.85rem]"
-        type="button"
-        onClick={onClose}
-      >
-        Close
-      </button>
-      <img
-        alt={alt}
-        className="block max-w-full max-h-full object-contain cursor-default"
-        src={src}
-        onClick={(event) => event.stopPropagation()}
-      />
-    </div>,
-    document.body,
   );
 }
 
@@ -426,19 +388,6 @@ function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalle
   }
 
   return padded;
-}
-
-const GALLERY_DETAIL_SECTION_TITLES = new Set(["construction", "condition"]);
-
-function splitDetailSections(sections: ProductDetailPageViewModel["detailSections"]) {
-  const gallerySections = sections.filter((section) =>
-    GALLERY_DETAIL_SECTION_TITLES.has(section.title.toLowerCase()),
-  );
-  const infoSections = sections.filter(
-    (section) => !GALLERY_DETAIL_SECTION_TITLES.has(section.title.toLowerCase()),
-  );
-
-  return { gallerySections, infoSections };
 }
 
 function buildSpecificationRows(product: ProductDetailPageViewModel) {
