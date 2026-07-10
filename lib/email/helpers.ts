@@ -77,7 +77,7 @@ export function createOrderConfirmationEmailBoundary(): OrderConfirmationEmailBo
     source: "order-creation",
     deliveryProvider: "postmark",
     status: "ready-placeholder",
-    acceptedPaymentStatuses: ["paid"],
+    acceptedPaymentStatuses: ["paid", "authorized"],
   };
 }
 
@@ -95,7 +95,6 @@ export function createOrderConfirmationEmailRequestFromCreatedOrder(input: {
   >;
   orderCreationRequest: OrderCreationRequest | null;
 }): OrderConfirmationEmailDeliveryResult {
-  const boundary = createOrderConfirmationEmailBoundary();
   const { order, orderCreationRequest } = input;
   const itemSummaryLines = order.items.map((item) =>
     createEmailItemSummaryLine({
@@ -117,11 +116,11 @@ export function createOrderConfirmationEmailRequestFromCreatedOrder(input: {
     };
   }
 
-  if (order.paymentStatus !== "paid") {
+  if (order.paymentStatus !== "paid" && order.paymentStatus !== "authorized") {
     return {
       status: "ignored",
       request: null,
-      message: "Only created paid orders can hand off into confirmation email delivery.",
+      message: "Only created paid or authorized orders can hand off into confirmation email delivery.",
     };
   }
 
@@ -138,7 +137,7 @@ export function createOrderConfirmationEmailRequestFromCreatedOrder(input: {
     itemSummaryLines,
     shippingAddressLabel,
     placedAtLabel,
-    paymentStatus: boundary.acceptedPaymentStatuses[0],
+    paymentStatus: order.paymentStatus,
     message: createLaunchOrderConfirmationMessage({
       to: order.shippingAddress.email,
       orderNumber: order.orderNumber,
@@ -203,7 +202,7 @@ function createLaunchOrderConfirmationMessage(input: {
       `<p><strong>Items (${input.itemCount})</strong></p>`,
       `<ul>${itemListHtml}</ul>`,
       `<p><strong>Shipping address</strong><br />${escapeHtml(input.shippingAddressLabel).replace(/\n/g, "<br />")}</p>`,
-      "<p>Launch shipping is fixed at $0.00 for the United States, Canada, and Australia. Inquiries from other countries are reviewed case by case before payment is captured.</p>",
+      "<p>Shipping to the United States, Canada, and Australia is free on orders of $150 or more; orders under $150 ship for a flat $50, included in your total above. Inquiries from other countries are reviewed case by case before payment is captured.</p>",
       "<p>If you need help with this order, reply to this email and we will assist you.</p>",
       "<p>Thank you,<br />Loom & Hearth Studio</p>",
     ].join(""),
@@ -225,7 +224,7 @@ function createLaunchOrderConfirmationMessage(input: {
       "Shipping address",
       input.shippingAddressLabel,
       "",
-      "Launch shipping is fixed at $0.00 for the United States, Canada, and Australia. Inquiries from other countries are reviewed case by case before payment is captured.",
+      "Shipping to the United States, Canada, and Australia is free on orders of $150 or more; orders under $150 ship for a flat $50, included in your total above. Inquiries from other countries are reviewed case by case before payment is captured.",
       "If you need help with this order, reply to this email and we will assist you.",
       "",
       "Thank you,",

@@ -13,9 +13,14 @@ export interface OrderRepository {
   create(input: OrderPersistenceRequest): Promise<Order>;
   getById(orderId: string): Promise<Order | null>;
   getByCheckoutSessionId(checkoutSessionId: string): Promise<Order | null>;
+  getByPaymentIntentId(paymentIntentId: string): Promise<Order | null>;
   getByCustomerEmail(customerEmail: string): Promise<Order[]>;
   listAll(): Promise<Order[]>;
   updateStatus(orderId: string, status: Order["status"]): Promise<Order>;
+  updatePaymentTransition(
+    orderId: string,
+    transition: { status: Order["status"]; paymentStatus: Order["paymentStatus"] },
+  ): Promise<Order>;
 }
 
 type OrderRecordWithLineItems = Prisma.OrderRecordGetPayload<{
@@ -64,6 +69,19 @@ export class PrismaOrderRepository implements OrderRepository {
     return order ? mapOrderRecordToDomainOrder(order) : null;
   }
 
+  async getByPaymentIntentId(paymentIntentId: string) {
+    const order = await this.context.client.orderRecord.findUnique({
+      where: {
+        paymentIntentId,
+      },
+      include: {
+        lineItems: true,
+      },
+    });
+
+    return order ? mapOrderRecordToDomainOrder(order) : null;
+  }
+
   async getByCustomerEmail(customerEmail: string) {
     const orders = await this.context.client.orderRecord.findMany({
       where: {
@@ -100,6 +118,26 @@ export class PrismaOrderRepository implements OrderRepository {
       },
       data: {
         status: mapOrderStatusToPrisma(status),
+      },
+      include: {
+        lineItems: true,
+      },
+    });
+
+    return mapOrderRecordToDomainOrder(updatedOrder);
+  }
+
+  async updatePaymentTransition(
+    orderId: string,
+    transition: { status: Order["status"]; paymentStatus: Order["paymentStatus"] },
+  ) {
+    const updatedOrder = await this.context.client.orderRecord.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        status: mapOrderStatusToPrisma(transition.status),
+        paymentStatus: mapPaymentStatusToPrisma(transition.paymentStatus),
       },
       include: {
         lineItems: true,

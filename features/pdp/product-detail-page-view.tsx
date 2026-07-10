@@ -12,10 +12,12 @@ import {
 } from "@headlessui/react";
 import type { Route } from "next";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
+import { useCart } from "@/features/cart/cart-provider";
 import { ProductCard } from "@/features/catalog/product-card";
 import { trackViewItem } from "@/lib/analytics/gtag";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
@@ -51,6 +53,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   const [preferredHistoryCategory, setPreferredHistoryCategory] = useState<ProductCategory | null>(null);
   const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const reserveProduct = useReserveProduct(product);
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -323,12 +326,13 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           <span className="text-[var(--color-green)] text-[1.1rem] font-semibold whitespace-nowrap">
             {product.priceUsdLabel}
           </span>
-          <Link
-            className="inline-flex items-center justify-center min-h-[3rem] px-[1.2rem] py-[0.7rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium whitespace-nowrap"
-            href={buildInquiryHref(product) as Route}
+          <button
+            className="inline-flex items-center justify-center min-h-[3rem] px-[1.2rem] py-[0.7rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium whitespace-nowrap cursor-pointer"
+            type="button"
+            onClick={reserveProduct}
           >
-            {product.type === "rug" ? "Reserve this piece" : "Request this piece"}
-          </Link>
+            Reserve this piece
+          </button>
         </div>
       ) : null}
 
@@ -552,11 +556,13 @@ function RugPurchaseShell({
 }: {
   product: Extract<ProductDetailPageViewModel, { type: "rug" }>;
 }) {
+  const reserve = useReserveProduct(product);
+
   return (
     <div className={PANEL_CARD}>
-      <Link className={PRIMARY_ACTION} href={buildInquiryHref(product) as Route}>
+      <button className={`${PRIMARY_ACTION} cursor-pointer`} type="button" onClick={reserve}>
         Reserve this piece — {product.priceUsdLabel}
-      </Link>
+      </button>
       <p className={PURCHASE_MICROCOPY}>
         Card authorized now, charged only after your approval.
       </p>
@@ -580,11 +586,13 @@ function MultiUnitPurchaseShell({
 }: {
   product: MultiUnitProductDetailPageViewModel;
 }) {
+  const reserve = useReserveProduct(product);
+
   return (
     <div className={PANEL_CARD}>
-      <Link className={PRIMARY_ACTION} href={buildInquiryHref(product) as Route}>
-        Request this piece — {product.priceUsdLabel}
-      </Link>
+      <button className={`${PRIMARY_ACTION} cursor-pointer`} type="button" onClick={reserve}>
+        Reserve this piece — {product.priceUsdLabel}
+      </button>
       <p className={PURCHASE_MICROCOPY}>
         Availability is confirmed before any charge is captured.
       </p>
@@ -592,16 +600,12 @@ function MultiUnitPurchaseShell({
   );
 }
 
-function buildInquiryHref(product: ProductDetailPageViewModel) {
-  const params = new URLSearchParams({
-    inquiryType: "product-inquiry",
-    productName: product.name,
-    productHref: getProductPath(product),
-  });
+function useReserveProduct(product: ProductDetailPageViewModel) {
+  const { addProduct } = useCart();
+  const router = useRouter();
 
-  return `/contact?${params.toString()}`;
-}
-
-function getProductPath(product: ProductDetailPageViewModel) {
-  return `/shop/${product.category}/${product.slug}`;
+  return () => {
+    addProduct({ product: product.cartProduct, quantity: 1 });
+    router.push("/checkout");
+  };
 }

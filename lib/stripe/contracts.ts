@@ -180,7 +180,7 @@ export type StripeCheckoutPaymentConfirmation = {
   source: "webhook";
   eventId: string;
   eventType: StripeCheckoutWebhookEventType;
-  paymentStatus: Extract<PaymentStatus, "pending" | "paid" | "failed">;
+  paymentStatus: Extract<PaymentStatus, "pending" | "authorized" | "paid" | "failed">;
   checkoutSessionId: string;
   paymentIntentId: string | null;
   customerEmail: string | null;
@@ -195,6 +195,16 @@ export type StripeCheckoutPaymentConfirmationResult = {
   message: string;
 };
 
+export type StripePaymentIntentWebhookEventType =
+  | "payment_intent.succeeded"
+  | "payment_intent.canceled";
+
+export type StripePaymentIntentWebhookEvent = {
+  id: string;
+  type: StripePaymentIntentWebhookEventType;
+  paymentIntentId: string;
+};
+
 export type StripeWebhookSignature = {
   timestamp: string;
   signatures: string[];
@@ -202,7 +212,13 @@ export type StripeWebhookSignature = {
 };
 
 export type StripeWebhookSignatureVerificationResult = {
-  status: "verified" | "missing-header" | "invalid-header" | "configuration-error" | "mismatch";
+  status:
+    | "verified"
+    | "missing-header"
+    | "invalid-header"
+    | "configuration-error"
+    | "mismatch"
+    | "stale-timestamp";
   message: string;
 };
 

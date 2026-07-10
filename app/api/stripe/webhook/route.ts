@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { persistConfirmedStripeCheckoutOrder } from "@/lib/order/service";
+import {
+  applyStripePaymentIntentTransition,
+  persistConfirmedStripeCheckoutOrder,
+} from "@/lib/order/service";
 import {
   createStripeCheckoutWebhookReceipt,
   getStripeWebhookSignatureHeader,
+  parseStripePaymentIntentWebhookEvent,
   stripeConfirmationTodo,
 } from "@/lib/stripe";
 import { verifyStripeCheckoutWebhookSignature } from "@/lib/stripe/service";
@@ -17,6 +21,27 @@ export async function POST(request: Request) {
     payload,
     signatureHeader,
   });
+
+  if (signatureVerification.status === "verified") {
+    const paymentIntentEvent = parseStripePaymentIntentWebhookEvent(payload);
+
+    if (paymentIntentEvent) {
+      const transitionResult = await applyStripePaymentIntentTransition({
+        event: paymentIntentEvent,
+      });
+
+      return NextResponse.json(
+        {
+          status: transitionResult.status,
+          eventType: paymentIntentEvent.type,
+          eventId: paymentIntentEvent.id,
+          message: transitionResult.message,
+        },
+        { status: 200 },
+      );
+    }
+  }
+
   const receipt = createStripeCheckoutWebhookReceipt({
     payload,
     signatureHeader,

@@ -26,13 +26,11 @@ const founderNoteDesktop =
   "I photograph every piece myself in Casablanca. You approve the exact photos — daylight, wear included — before you pay.";
 const founderNoteMobile = "I photograph every piece myself. You approve before you pay.";
 
-// Payment-link flow: the storefront has no Stripe authorize-then-capture
-// integration, so the steps must not promise a card authorization.
 const howItWorksSteps = [
   {
     number: "1",
-    title: "You request the piece",
-    body: "It comes off the floor. No payment details yet.",
+    title: "You reserve the piece",
+    body: "Card authorized, not charged. The piece comes off the floor.",
   },
   {
     number: "2",
@@ -41,8 +39,8 @@ const howItWorksSteps = [
   },
   {
     number: "3",
-    title: "You approve, I send a payment link",
-    body: "Pay only if you still want it.",
+    title: "You approve, then pay",
+    body: "Captured only after you confirm. Change your mind — no charge.",
   },
   {
     number: "4",

@@ -86,7 +86,7 @@ export function getStripeCheckoutServiceConfig(): StripeCheckoutServiceConfig {
     secretKey: serverConfig.secretKey,
     webhookSecret: serverConfig.webhookSecret,
     sessionEndpointPath: "/api/stripe/checkout-session",
-    successUrl: new URL("/checkout/success", siteConfig.siteUrl).toString(),
+    successUrl: `${new URL("/checkout/success", siteConfig.siteUrl).toString()}?session_id={CHECKOUT_SESSION_ID}`,
     cancelUrl: new URL("/checkout/payment", siteConfig.siteUrl).toString(),
     missingClientConfig: publicConfig.publishableKey
       ? []

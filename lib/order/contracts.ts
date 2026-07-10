@@ -65,7 +65,7 @@ export type OrderCreationRequest = {
   checkoutSessionId: string;
   paymentIntentId: string | null;
   paymentMethod: "stripe-checkout";
-  paymentStatus: Extract<PaymentStatus, "paid">;
+  paymentStatus: Extract<PaymentStatus, "paid" | "authorized">;
   customerEmail: string | null;
   orderReference: string | null;
   lineItems: Array<{
@@ -92,7 +92,7 @@ export type OrderCreationBoundary = {
   source: "stripe-checkout-confirmation";
   paymentProvider: "stripe";
   status: "ready-placeholder";
-  acceptedPaymentStatuses: ReadonlyArray<Extract<PaymentStatus, "paid">>;
+  acceptedPaymentStatuses: ReadonlyArray<Extract<PaymentStatus, "paid" | "authorized">>;
 };
 
 export type OrderPersistenceRequest = {
@@ -105,7 +105,7 @@ export type OrderPersistenceRequest = {
   orderReference: string | null;
   customerEmail: string | null;
   shippingAddress: Order["shippingAddress"];
-  status: Extract<OrderStatus, "paid">;
+  status: Extract<OrderStatus, "paid" | "pending">;
   paymentStatus: OrderCreationRequest["paymentStatus"];
   items: Order["items"];
   promoCode?: string;
@@ -130,7 +130,7 @@ export type OrderPersistenceBoundary = {
   source: "order-creation";
   repository: "OrderRepository";
   status: "ready-placeholder";
-  acceptedOrderStatuses: ReadonlyArray<Extract<OrderStatus, "paid">>;
+  acceptedOrderStatuses: ReadonlyArray<Extract<OrderStatus, "paid" | "pending">>;
 };
 
 export type PersistConfirmedOrderResult = {

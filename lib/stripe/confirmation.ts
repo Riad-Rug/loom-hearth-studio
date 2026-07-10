@@ -10,6 +10,7 @@ import type {
   StripeCheckoutWebhookEvent,
   StripeCheckoutWebhookEventType,
   StripeCheckoutConfirmationBoundary,
+  StripePaymentIntentWebhookEvent,
   StripeWebhookSignatureVerificationResult,
 } from "@/lib/stripe/contracts";
 
@@ -88,9 +89,17 @@ export function parseStripeCheckoutWebhookEvent(
       };
     }
 
+    const event = parsedPayload as StripeCheckoutWebhookEvent;
+
     return {
       status: "parsed",
-      event: parsedPayload as StripeCheckoutWebhookEvent,
+      event: {
+        ...event,
+        data: {
+          ...event.data,
+          object: normalizeStripeCheckoutSessionObject(event.data.object),
+        },
+      },
       message: "Stripe webhook payload parsed.",
     };
   } catch {
@@ -104,9 +113,11 @@ export function parseStripeCheckoutWebhookEvent(
 
 export function deriveStripeCheckoutConfirmationStatus(
   event: Pick<StripeCheckoutWebhookEvent, "type" | "data">,
-): Extract<PaymentStatus, "pending" | "paid" | "failed"> | null {
+): Extract<PaymentStatus, "pending" | "authorized" | "paid" | "failed"> | null {
   if (event.type === "checkout.session.completed") {
-    return event.data.object.paymentStatus === "paid" ? "paid" : "pending";
+    // With manual capture, a completed session reports payment_status
+    // "unpaid": the card is authorized but the funds are not yet captured.
+    return event.data.object.paymentStatus === "paid" ? "paid" : "authorized";
   }
 
   if (
@@ -178,6 +189,35 @@ export function createStripeCheckoutPaymentConfirmation(
     confirmation,
     message: `Stripe Checkout webhook event ${event.type} mapped to payment status ${paymentStatus}.`,
   };
+}
+
+export function parseStripePaymentIntentWebhookEvent(
+  payload: string,
+): StripePaymentIntentWebhookEvent | null {
+  try {
+    const parsedPayload = JSON.parse(payload) as {
+      id?: string;
+      type?: string;
+      data?: { object?: { id?: string; object?: string } };
+    };
+
+    if (
+      typeof parsedPayload.id !== "string" ||
+      (parsedPayload.type !== "payment_intent.succeeded" &&
+        parsedPayload.type !== "payment_intent.canceled") ||
+      typeof parsedPayload.data?.object?.id !== "string"
+    ) {
+      return null;
+    }
+
+    return {
+      id: parsedPayload.id,
+      type: parsedPayload.type,
+      paymentIntentId: parsedPayload.data.object.id,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function createStripeCheckoutWebhookReceipt(input: {
@@ -267,6 +307,40 @@ export const stripeConfirmationTodo = {
   route:
     "TODO: Keep the webhook route limited to Checkout confirmation plus paid-order persistence until later email and fulfillment side effects are implemented.",
 } as const;
+
+// Stripe's raw webhook JSON uses snake_case (payment_status, payment_intent,
+// customer_email). Normalize to the camelCase session shape the rest of the
+// confirmation pipeline consumes, accepting either style.
+function normalizeStripeCheckoutSessionObject(
+  rawObject: StripeCheckoutWebhookEvent["data"]["object"] &
+    Partial<{
+      payment_status: string;
+      payment_intent: string | { id?: string } | null;
+      customer_email: string | null;
+      customer_details: { email?: string | null } | null;
+    }>,
+): StripeCheckoutWebhookEvent["data"]["object"] {
+  const rawPaymentIntent = rawObject.payment_intent;
+  const paymentIntentId =
+    typeof rawPaymentIntent === "string"
+      ? rawPaymentIntent
+      : rawPaymentIntent && typeof rawPaymentIntent === "object" && typeof rawPaymentIntent.id === "string"
+        ? rawPaymentIntent.id
+        : rawObject.paymentIntentId;
+
+  return {
+    ...rawObject,
+    paymentStatus:
+      (rawObject.payment_status as StripeCheckoutWebhookEvent["data"]["object"]["paymentStatus"]) ??
+      rawObject.paymentStatus,
+    paymentIntentId,
+    customerEmail: rawObject.customer_email ?? rawObject.customerEmail ?? undefined,
+    customerDetails: rawObject.customer_details
+      ? { email: rawObject.customer_details.email ?? undefined }
+      : rawObject.customerDetails,
+    metadata: rawObject.metadata ?? {},
+  };
+}
 
 function getStripeCheckoutMetadataValue(
   metadata: StripeCheckoutWebhookEvent["data"]["object"]["metadata"],

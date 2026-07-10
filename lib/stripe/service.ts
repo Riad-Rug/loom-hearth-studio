@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 
 import {
   getStripeCheckoutServiceConfig,
@@ -14,6 +14,9 @@ import type {
   StripeWebhookSignature,
   StripeWebhookSignatureVerificationResult,
 } from "@/lib/stripe/contracts";
+
+const stripeApiVersion = "2026-06-24.dahlia";
+const stripeWebhookToleranceSeconds = 300;
 
 export async function createStripeCheckoutSession(
   input: StripeCheckoutSessionRequest,
@@ -47,6 +50,8 @@ export async function createStripeCheckoutSessionWithResult(
     headers: {
       Authorization: `Basic ${Buffer.from(`${config.secretKey}:`).toString("base64")}`,
       "Content-Type": "application/x-www-form-urlencoded",
+      "Stripe-Version": stripeApiVersion,
+      "Idempotency-Key": randomUUID(),
     },
     body: createStripeCheckoutSessionFormBody(input),
     cache: "no-store",
@@ -120,6 +125,19 @@ export function verifyStripeCheckoutWebhookSignature(input: {
     };
   }
 
+  const timestampSeconds = Number(parsedSignature.timestamp);
+  const nowSeconds = Math.floor(Date.now() / 1000);
+
+  if (
+    !Number.isFinite(timestampSeconds) ||
+    Math.abs(nowSeconds - timestampSeconds) > stripeWebhookToleranceSeconds
+  ) {
+    return {
+      status: "stale-timestamp",
+      message: `Stripe webhook timestamp is outside the ${stripeWebhookToleranceSeconds}s tolerance window.`,
+    };
+  }
+
   const expectedSignature = createHmac("sha256", config.webhookSecret)
     .update(`${parsedSignature.timestamp}.${input.payload}`)
     .digest("hex");
@@ -142,6 +160,10 @@ function createStripeCheckoutSessionFormBody(input: StripeCheckoutSessionRequest
   const formBody = new URLSearchParams();
 
   formBody.set("mode", "payment");
+  // Hold-then-capture: authorize the card at checkout, capture manually
+  // after the customer approves the pre-shipment photos. Holds expire
+  // after ~7 days if not captured.
+  formBody.set("payment_intent_data[capture_method]", "manual");
   formBody.set("success_url", input.successUrl);
   formBody.set("cancel_url", input.cancelUrl);
 

@@ -35,7 +35,7 @@ export type OrderConfirmationEmailRequest = {
   itemSummaryLines: string[];
   shippingAddressLabel: string;
   placedAtLabel: string;
-  paymentStatus: Extract<Order["paymentStatus"], "paid">;
+  paymentStatus: Extract<Order["paymentStatus"], "paid" | "authorized">;
   message: EmailMessage;
 };
 
@@ -49,7 +49,7 @@ export type OrderConfirmationEmailBoundary = {
   source: "order-creation";
   deliveryProvider: "postmark";
   status: "ready-placeholder";
-  acceptedPaymentStatuses: ReadonlyArray<Extract<Order["paymentStatus"], "paid">>;
+  acceptedPaymentStatuses: ReadonlyArray<Extract<Order["paymentStatus"], "paid" | "authorized">>;
 };
 
 export type PostmarkEmailPayload = {

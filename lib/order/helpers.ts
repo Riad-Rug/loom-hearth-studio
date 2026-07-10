@@ -98,7 +98,7 @@ export function createOrderCreationBoundary(): OrderCreationBoundary {
     source: "stripe-checkout-confirmation",
     paymentProvider: "stripe",
     status: "ready-placeholder",
-    acceptedPaymentStatuses: ["paid"],
+    acceptedPaymentStatuses: ["paid", "authorized"],
   };
 }
 
@@ -115,12 +115,16 @@ export function createOrderCreationRequestFromStripeConfirmation(
     };
   }
 
-  if (confirmation.paymentStatus !== "paid") {
+  if (
+    !boundary.acceptedPaymentStatuses.includes(
+      confirmation.paymentStatus as (typeof boundary.acceptedPaymentStatuses)[number],
+    )
+  ) {
     return {
       status: "ignored",
       request: null,
       message:
-        "Only confirmed paid Stripe Checkout events can hand off into backend order creation.",
+        "Only confirmed paid or authorized Stripe Checkout events can hand off into backend order creation.",
     };
   }
 
@@ -130,7 +134,7 @@ export function createOrderCreationRequestFromStripeConfirmation(
     checkoutSessionId: confirmation.checkoutSessionId,
     paymentIntentId: confirmation.paymentIntentId,
     paymentMethod: "stripe-checkout",
-    paymentStatus: boundary.acceptedPaymentStatuses[0],
+    paymentStatus: confirmation.paymentStatus as OrderCreationRequest["paymentStatus"],
     customerEmail: confirmation.customerEmail,
     orderReference: confirmation.orderReference,
     lineItems: [],
@@ -155,7 +159,7 @@ export function createOrderPersistenceBoundary(): OrderPersistenceBoundary {
     source: "order-creation",
     repository: "OrderRepository",
     status: "ready-placeholder",
-    acceptedOrderStatuses: ["paid"],
+    acceptedOrderStatuses: ["paid", "pending"],
   };
 }
 
@@ -193,7 +197,7 @@ export function createOrderPersistenceRequestFromOrderCreation(
     orderReference: orderCreationRequest.orderReference,
     customerEmail: orderCreationRequest.customerEmail,
     shippingAddress: orderCreationRequest.orderSnapshot.shippingAddress,
-    status: boundary.acceptedOrderStatuses[0],
+    status: orderCreationRequest.paymentStatus === "paid" ? "paid" : "pending",
     paymentStatus: orderCreationRequest.paymentStatus,
     items: orderCreationRequest.orderSnapshot.items,
     promoCode: orderCreationRequest.orderSnapshot.promoCode,
