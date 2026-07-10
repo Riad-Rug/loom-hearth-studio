@@ -197,7 +197,7 @@ function createProductDetailPageViewModel(
     id: product.id,
     catalogNumber: product.catalogNumber ?? "Catalog number pending",
     slug: product.slug,
-    name: createDisplayProductTitle(product),
+    name: product.name,
     subtitle: createProductSubtitle(product),
     category: product.category,
     status: product.status,
