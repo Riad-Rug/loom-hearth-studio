@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { getCategoryLabel, getProductRoutePath } from "@/lib/catalog/helpers";
+import { calculateShippingUsd } from "@/lib/order/shipping";
 import type { Product } from "@/types/domain";
 
 const CART_STORAGE_KEY = "loom-hearth-studio.cart";
@@ -45,7 +46,7 @@ type CartContextValue = {
   discountUsd: number;
   promoCode: string | null;
   promoMessage: string | null;
-  shippingUsd: 0;
+  shippingUsd: number;
   totalUsd: number;
   addProduct: (input: AddCartProductInput) => void;
   removeItem: (id: string) => void;
@@ -139,6 +140,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       items.reduce((runningTotal, item) => runningTotal + item.priceUsd * item.quantity, 0),
     );
     const discountUsd = Math.min(appliedPromo?.discountUsd ?? 0, subtotalUsd);
+    const shippingUsd = calculateShippingUsd(subtotalUsd - discountUsd);
 
     return {
       items,
@@ -147,8 +149,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       discountUsd,
       promoCode: appliedPromo?.code ?? null,
       promoMessage: appliedPromo?.message ?? null,
-      shippingUsd: 0,
-      totalUsd: roundCurrency(subtotalUsd - discountUsd),
+      shippingUsd,
+      totalUsd: roundCurrency(subtotalUsd - discountUsd + shippingUsd),
       addProduct(input) {
         setItems((currentItems) => addProductToCart(currentItems, input));
       },

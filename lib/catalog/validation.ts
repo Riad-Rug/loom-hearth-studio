@@ -6,6 +6,7 @@ import type {
   LaunchCheckoutValidationResult,
 } from "@/lib/catalog/contracts";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
+import { calculateShippingUsd, flatShippingUsd, freeShippingThresholdUsd } from "@/lib/order/shipping";
 import type {
   StripeCheckoutOrderSnapshot,
   StripeCheckoutSessionRequest,
@@ -39,12 +40,8 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
     });
   }
 
-  if (input.request.shippingUsd !== 0) {
-    issues.push({
-      code: "invalid-shipping",
-      message: "Launch shipping must remain fixed at $0.00.",
-    });
-  }
+  // Shipping is validated against the recomputed subtotal/discount below,
+  // once line items and promo codes have been verified.
 
   if (input.request.taxUsd !== 0) {
     issues.push({
@@ -163,8 +160,16 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
     }
   }
 
+  const validatedShippingUsd = calculateShippingUsd(validatedSubtotalUsd - validatedDiscountUsd);
   const validatedTotalUsd =
-    validatedSubtotalUsd - validatedDiscountUsd + input.request.shippingUsd + input.request.taxUsd;
+    validatedSubtotalUsd - validatedDiscountUsd + validatedShippingUsd + input.request.taxUsd;
+
+  if (input.request.shippingUsd !== validatedShippingUsd) {
+    issues.push({
+      code: "invalid-shipping",
+      message: `Checkout shipping must be $${validatedShippingUsd.toFixed(2)} for this order (free at $${freeShippingThresholdUsd}+, otherwise $${flatShippingUsd} flat).`,
+    });
+  }
 
   if (input.request.subtotalUsd !== validatedSubtotalUsd) {
     issues.push({
@@ -222,7 +227,7 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
       variant: lineItem.variant,
     })),
     subtotalUsd: validatedSubtotalUsd,
-    shippingUsd: 0,
+    shippingUsd: validatedShippingUsd,
     taxUsd: 0,
     totalUsd: validatedTotalUsd,
     currency: "USD",
@@ -239,7 +244,7 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
       promoCode: input.request.promoCode,
       discountUsd: validatedDiscountUsd,
       subtotalUsd: validatedSubtotalUsd,
-      shippingUsd: 0,
+      shippingUsd: validatedShippingUsd,
       taxUsd: 0,
       totalUsd: validatedTotalUsd,
       lineItems: validatedLineItems,

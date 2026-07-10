@@ -44,7 +44,7 @@ export function NewsletterSignupIntentForm(props: NewsletterSignupIntentFormProp
           className={styles.newsletterInput}
           name="email"
           type="email"
-          placeholder="name@example.com"
+          placeholder={props.inputPlaceholder}
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           autoCapitalize="none"

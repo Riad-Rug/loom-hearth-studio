@@ -348,13 +348,13 @@ Every item in the Loom & Hearth Studio collection is sourced and stored in Moroc
 
 ## 2. Where we ship
 
-We currently ship to the **United States, Canada, and Australia**. Shipping is included in the product price for these currently supported markets. If you are outside these markets, you can still send an inquiry and we will review shipping availability case by case before payment is captured.
+We currently ship to the **United States, Canada, and Australia**. If you are outside these markets, you can still send an inquiry and we will review shipping availability case by case before payment is captured.
 
 ---
 
 ## 3. Shipping cost
 
-Shipping is included in the price of every item for the United States, Canada, and Australia. What you see on the product page is what you pay for the item and shipping from Morocco to your delivery address in a currently supported market. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
+Shipping to the United States, Canada, and Australia is **free on orders of $150 or more**. Orders under $150 ship for a **flat $50**. The shipping amount is shown at checkout before payment. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
 
 ---
 
@@ -944,7 +944,7 @@ If we cancel your order, we will notify you promptly by email and release any pa
 
 ### 4.1 Prices
 
-All prices are displayed in United States Dollars (USD). Prices include the cost of the item and shipping for the United States, Canada, and Australia. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
+All prices are displayed in United States Dollars (USD). Shipping to the United States, Canada, and Australia is free on orders of $150 or more; orders under $150 ship for a flat $50, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
 
 We reserve the right to correct pricing errors on the site at any time. If an error is identified after you have placed an order, we will contact you to confirm whether you wish to proceed at the correct price, or cancel for a full release of any held funds.
 

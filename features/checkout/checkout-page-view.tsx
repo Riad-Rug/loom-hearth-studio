@@ -272,7 +272,11 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
                 <span>Shipping</span>
                 <strong>{summary.shippingUsdLabel}</strong>
               </div>
-              <div className={styles.freeShippingLine}>Shipping fixed at $0.00</div>
+              <div className={styles.freeShippingLine}>
+                {items.length > 0 && shippingUsd === 0
+                  ? "Free shipping — order over $150"
+                  : "Free shipping on orders of $150 or more"}
+              </div>
               <form className={styles.promoForm} onSubmit={handlePromoSubmit}>
                 <label className={styles.promoLabel} htmlFor="checkout-promo-code">
                   Promo Code
@@ -385,7 +389,7 @@ type CheckoutStepRenderProps = {
     } | null;
     shippingMethod: {
       label: string;
-      priceUsd: 0;
+      priceUsd: number;
     } | null;
     promoCode?: string | null;
     discountUsd: number;
@@ -547,7 +551,7 @@ type CheckoutStepRenderProps = {
   } | null;
   shippingMethod: {
     label: string;
-    priceUsd: 0;
+    priceUsd: number;
   } | null;
   stripePaymentDraft: {
     provider: "stripe";
@@ -580,7 +584,7 @@ type CheckoutStepRenderProps = {
       cancelUrl: string;
       currency: "USD";
       subtotalUsd: number;
-      shippingUsd: 0;
+      shippingUsd: number;
       taxUsd: number;
       totalUsd: number;
       lineItems: Array<{

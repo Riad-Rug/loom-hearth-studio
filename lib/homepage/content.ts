@@ -52,14 +52,14 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.pageSeo.description =
     "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.";
 
-  next.hero.title = "Woven by hand in the Atlas. Warm underfoot in your home.";
+  next.hero.title = "Woven by hand in Morocco. Warm underfoot in your home.";
   next.hero.eyebrow = "DIRECT FROM CASABLANCA";
   next.hero.paragraph =
-    "One-of-a-kind rugs, poufs and antiques, found and shipped by one person in Morocco — from $30.";
-  next.hero.primaryCta = { ...next.hero.primaryCta, label: "SHOP RUGS" };
+    "Rugs, poufs, pillows and antiques — one of each, found and shipped by one person in Casablanca. You approve daylight photos of your exact piece before payment.";
+  next.hero.primaryCta = { ...next.hero.primaryCta, label: "Shop rugs" };
   next.hero.secondaryCta = {
     ...next.hero.secondaryCta,
-    label: "SHOP EVERYTHING",
+    label: "Shop everything",
     href: "/shop",
   };
   next.hero.seo = {
@@ -72,7 +72,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.badges.items = next.badges.items.map((item) => {
     if (item.id === "badge-1") return { ...item, label: "Exact-piece verification" };
     if (item.id === "badge-2") return { ...item, label: "Direct from Morocco" };
-    if (item.id === "badge-3") return { ...item, label: "Free shipping to the US, Canada, and Australia" };
+    if (item.id === "badge-3") return { ...item, label: "Free shipping over $150 to the US, Canada, and Australia" };
     if (item.id === "badge-4") return { ...item, label: "14-day returns" };
     return item;
   });
@@ -80,7 +80,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.categories.eyebrow = "SHOP BY CATEGORY";
   next.categories.title = "Handmade Moroccan rugs, poufs, pillows, decor, and antiques.";
   next.categories.paragraph =
-    "Every piece is sourced one at a time and sold as the exact item shown. Moroccan rugs lead the collection, then poufs, pillows, decor, and antiques follow around them.";
+    "Every piece is sourced one at a time and sold as the exact item shown. Rugs lead the collection; poufs, pillows, decor and antiques follow around them.";
   next.categories.cards = next.categories.cards.map((card) => {
     if (card.id === "category-rugs") {
       return {
@@ -216,8 +216,8 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
   next.newsletter.eyebrow = "JOIN THE LIST";
   next.newsletter.title = "New arrivals, sourcing stories, and first access to pieces before wider release.";
   next.newsletter.paragraph =
-    "New handmade Moroccan rugs, poufs, pillows and antiques arrive in small batches. Join the list to see them before they sell through.";
-  next.newsletter.inputPlaceholder = "Your email address";
+    "New rugs, poufs, pillows and antiques land in small batches. The list sees them first — many pieces go before wider release.";
+  next.newsletter.inputPlaceholder = "your@email.com";
   next.newsletter.ctaLabel = "JOIN";
 
   next.faq.eyebrow = "BEFORE YOU BUY";
@@ -257,7 +257,7 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
         ...item,
         question: "What is included in the price?",
         answer:
-          "The listed price includes the piece, pre-shipment verification, DHL tracked delivery, and duties to the United States, Canada, and Australia. Prices are shown in USD.",
+          "The listed price includes the piece, pre-shipment verification, and duties to the United States, Canada, and Australia. Shipping is free on orders of $150 or more; orders under $150 ship for a flat $50. Prices are shown in USD.",
       };
     }
 
@@ -282,8 +282,9 @@ function normalizeHomepageCopyAudit(content: HomePageContent): HomePageContent {
     return item;
   });
 
-  next.footer.introBody = "";
-  next.footer.introMeta = "Prices in USD. Ships from Casablanca with free shipping to the US, Canada, and Australia.";
+  next.footer.introBody =
+    "One of each, sold direct from Casablanca — every piece photographed individually and approved in daylight before payment.";
+  next.footer.introMeta = "Prices in USD. Free shipping over $150 to the US, Canada, and Australia.";
 
   return next;
 }

@@ -248,6 +248,20 @@ h6 {
   font-weight: 500;
 }
 
+.site-header__announcement-mobile {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .site-header__announcement-desktop {
+    display: none;
+  }
+
+  .site-header__announcement-mobile {
+    display: inline;
+  }
+}
+
 .site-header__bar {
   display: grid;
   grid-template-columns: auto 1fr auto;

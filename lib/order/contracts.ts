@@ -28,7 +28,7 @@ export type OrderSubmissionPayload = {
   promoCode?: string;
   discountUsd: number;
   subtotalUsd: number;
-  shippingUsd: 0;
+  shippingUsd: number;
   taxUsd: number;
   totalUsd: number;
   currency: "USD";
@@ -111,7 +111,7 @@ export type OrderPersistenceRequest = {
   promoCode?: string;
   discountUsd: number;
   subtotalUsd: number;
-  shippingUsd: 0;
+  shippingUsd: number;
   taxUsd: number;
   totalUsd: number;
   currency: "USD";

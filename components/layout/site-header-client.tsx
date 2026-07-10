@@ -21,7 +21,8 @@ type SiteHeaderNavItem =
     };
 
 type SiteHeaderClientProps = {
-  announcementItems: readonly string[];
+  announcementDesktop: string;
+  announcementMobile: string;
   brandName: string;
   primaryNav: readonly SiteHeaderNavItem[];
   isAuthenticated: boolean;
@@ -33,8 +34,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const headerRef = useRef<HTMLElement | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [primaryAnnouncement, ...supportingAnnouncements] = props.announcementItems;
-  const announcementText = props.announcementItems.join(" / ");
   const showAnnouncement = pathname !== "/contact";
 
   useEffect(() => {
@@ -77,10 +76,10 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
         <div className="site-header__announcement">
           <Container width="wide">
             <p className="site-header__announcement-copy">
-              <strong>{primaryAnnouncement}</strong>
-              {supportingAnnouncements.length ? <span>{supportingAnnouncements.join(" / ")}</span> : null}
+              <strong className="site-header__announcement-desktop">{props.announcementDesktop}</strong>
+              <strong className="site-header__announcement-mobile">{props.announcementMobile}</strong>
             </p>
-            <span className="site-header__sr-only">{announcementText}</span>
+            <span className="site-header__sr-only">{props.announcementDesktop}</span>
           </Container>
         </div>
       ) : null}

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 
 import { HomePageView } from "@/features/home/home-page-view";
-import { listHomepageFeaturedProductCards } from "@/lib/catalog/service";
+import { listCatalogProductCards, listHomepageFeaturedProductCards } from "@/lib/catalog/service";
 import { getHomepageContent } from "@/lib/homepage/content";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
+import type { ProductCategory } from "@/types/domain";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getHomepageContent();
@@ -19,10 +20,24 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [content, featuredProducts] = await Promise.all([
+  const [content, featuredProducts, allProducts] = await Promise.all([
     getHomepageContent(),
     listHomepageFeaturedProductCards({ limit: 8 }),
+    listCatalogProductCards(),
   ]);
+  const liveCategories = [
+    ...new Set<ProductCategory>(
+      allProducts
+        .filter((product) => product.status === "active")
+        .map((product) => product.category),
+    ),
+  ];
 
-  return <HomePageView content={content} featuredProducts={featuredProducts} />;
+  return (
+    <HomePageView
+      content={content}
+      featuredProducts={featuredProducts}
+      liveCategories={liveCategories}
+    />
+  );
 }

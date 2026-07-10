@@ -34,7 +34,7 @@ export type StripeOrderPaymentInput = {
   promoCode?: string;
   discountUsd: number;
   subtotalUsd: number;
-  shippingUsd: 0;
+  shippingUsd: number;
   taxUsd: number;
   totalUsd: number;
   currency: "USD";
@@ -66,7 +66,7 @@ export type StripeCheckoutOrderSnapshot = {
     variant?: ProductVariant;
   }>;
   subtotalUsd: number;
-  shippingUsd: 0;
+  shippingUsd: number;
   taxUsd: number;
   totalUsd: number;
   currency: "USD";

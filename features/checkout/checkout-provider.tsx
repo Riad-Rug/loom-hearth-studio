@@ -43,7 +43,7 @@ type CheckoutShippingMethod = {
   id: "standard";
   label: "Standard shipping";
   market: typeof defaultSupportedCheckoutCountry;
-  priceUsd: 0;
+  priceUsd: number;
 };
 
 export type OrderDraft = {
@@ -54,7 +54,7 @@ export type OrderDraft = {
   promoCode: string | null;
   discountUsd: number;
   subtotalUsd: number;
-  shippingUsd: 0;
+  shippingUsd: number;
   taxUsd: 0;
   totalUsd: number;
   currency: "USD";

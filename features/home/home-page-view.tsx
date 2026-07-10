@@ -8,6 +8,7 @@ import { aboutBridge } from "@/features/content-pages/content-pages-data";
 import type { HomePageContent } from "@/features/home/home-page-data";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
+import type { ProductCategory } from "@/types/domain";
 
 import { LiveProductCardImage } from "./live-product-card-image";
 import styles from "./home-page.module.css";
@@ -15,33 +16,82 @@ import styles from "./home-page.module.css";
 type HomePageViewProps = {
   content: HomePageContent;
   featuredProducts?: CatalogProductCardViewModel[];
+  liveCategories?: ProductCategory[];
 };
 
-const founderNote =
-  "I photograph every piece myself in Casablanca. You approve the exact photos of your piece — in daylight — before your card is charged.";
+const heroParagraphMobile =
+  "One of each, shipped from Casablanca by the person who found it. You approve photos of your exact piece before payment.";
 
+const founderNoteDesktop =
+  "I photograph every piece myself in Casablanca. You approve the exact photos — daylight, wear included — before you pay.";
+const founderNoteMobile = "I photograph every piece myself. You approve before you pay.";
+
+// Payment-link flow: the storefront has no Stripe authorize-then-capture
+// integration, so the steps must not promise a card authorization.
 const howItWorksSteps = [
   {
     number: "1",
-    title: "You order the piece",
-    body: "Card authorized, not charged; piece reserved.",
+    title: "You request the piece",
+    body: "It comes off the floor. No payment details yet.",
   },
   {
     number: "2",
     title: "I photograph it for you",
-    body: "Daylight, wear included.",
+    body: "Daylight, within 72 hours. Wear included.",
   },
   {
     number: "3",
-    title: "You approve, then pay",
-    body: "Captured only after you confirm; change your mind — no charge.",
+    title: "You approve, I send a payment link",
+    body: "Pay only if you still want it.",
   },
   {
     number: "4",
     title: "Tracked to your door",
-    body: "From Casablanca, 5–10 days US/UK/EU/AU.",
+    body: "From Casablanca in 5–10 days. US · CA · AU.",
   },
 ] as const;
+
+const storyBodyDesktop =
+  "My grandfather traded rugs from a bazaar in Marrakech. The bazaar was sold after he passed; the trade wasn't. I source across Morocco myself — every piece checked in person for construction, fibre, and condition before it enters the stockroom.";
+const storyBodyMobile =
+  "My grandfather traded rugs; his bazaar is gone, the trade isn't. I check every piece in person before it enters the stockroom.";
+
+const newsletterTitleMobile = "See new pieces before they sell through.";
+
+const categoryCardCopy: Record<string, { desktop: string; mobile: string }> = {
+  "category-rugs": {
+    desktop:
+      "Hand-knotted and flatwoven rugs, selected for pile density, construction, and weight underfoot.",
+    mobile: "Hand-knotted and flatwoven, chosen for construction and weight.",
+  },
+  "category-poufs": {
+    desktop:
+      "Rug-made and leather poufs. Real seating with a quieter footprint than upholstered furniture.",
+    mobile: "Rug-made and leather. Real seating, small footprint.",
+  },
+  "category-pillows": {
+    desktop: "Cactus-silk (sabra) and rug-based pillows. Flat-woven, low-shed, strong colour.",
+    mobile: "Sabra and rug-based. Low-shed, strong colour.",
+  },
+  "category-decor": {
+    desktop:
+      "Handmade Moroccan objects for shelves, consoles, and flat surfaces — brass, wood, clay.",
+    mobile: "Objects for shelves and consoles — brass, wood, clay.",
+  },
+  "category-vintage": {
+    desktop:
+      "Vintage pieces chosen for construction integrity, visible age, and honest condition — one of each, never restocked.",
+    mobile: "Chosen for construction, age, and honest condition.",
+  },
+};
+
+const categoryCardCategoryKey: Record<string, ProductCategory> = {
+  "category-rugs": "rugs",
+  "category-poufs": "poufs",
+  "category-pillows": "pillows",
+  "category-decor": "decor",
+  "category-vintage": "vintage",
+};
 
 const inventoryChips = [
   { label: "All", href: "/shop" },
@@ -51,8 +101,20 @@ const inventoryChips = [
   { label: "Decor & Antiques", href: "/shop/decor" },
 ] as const;
 
-export function HomePageView({ content, featuredProducts = [] }: HomePageViewProps) {
-  const categoryCards = content.categories.cards.filter((card) => card.visible);
+export function HomePageView({ content, featuredProducts = [], liveCategories }: HomePageViewProps) {
+  const liveCategorySet = liveCategories ? new Set(liveCategories) : null;
+  const categoryCards = content.categories.cards.filter((card) => {
+    if (!card.visible) {
+      return false;
+    }
+
+    if (!liveCategorySet) {
+      return true;
+    }
+
+    const categoryKey = categoryCardCategoryKey[card.id];
+    return categoryKey ? liveCategorySet.has(categoryKey) : true;
+  });
   const normalizedFeaturedProducts = featuredProducts
     .map(normalizeHomepageProductImages)
     .slice(0, 8);
@@ -65,7 +127,8 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>{content.hero.eyebrow}</p>
           <h1>{content.hero.title}</h1>
-          <p className={styles.heroBody}>{content.hero.paragraph}</p>
+          <p className={`${styles.heroBody} ${styles.desktopCopy}`}>{content.hero.paragraph}</p>
+          <p className={`${styles.heroBody} ${styles.mobileCopy}`}>{heroParagraphMobile}</p>
           {hasHeroActions ? (
             <div className={styles.heroActions}>
               {content.hero.primaryCta.visible ? (
@@ -111,8 +174,10 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
       </section>
 
       <section className={styles.founderStrip}>
-        <p>{founderNote}</p>
-        <span>— the founder</span>
+        <p className={styles.desktopCopy}>{founderNoteDesktop}</p>
+        <p className={styles.mobileCopy}>{founderNoteMobile}</p>
+        <span className={styles.desktopCopy}>— Riad, founder</span>
+        <span className={styles.mobileCopy}>— Riad</span>
       </section>
 
       <section className={styles.inventorySection}>
@@ -131,6 +196,13 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
             </Link>
           ))}
         </div>
+
+        {normalizedFeaturedProducts.length === 0 ? (
+          <p className={styles.inventoryEmptyState}>
+            Nothing here right now — new pieces land most weeks. Join the list below to see them
+            first.
+          </p>
+        ) : null}
 
         <div className={styles.productGrid}>
           {normalizedFeaturedProducts.map((product) => (
@@ -161,7 +233,7 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
             <p className={styles.eyebrow}>How it works</p>
             <h2>See the exact piece before the charge settles.</h2>
           </div>
-          <p>The buying flow stays direct, explicit, and tied to the actual rug, pouf, pillow, or antique in hand.</p>
+          <p>No stock photos, no substitutions. Every step is tied to the physical piece on my floor in Casablanca.</p>
         </div>
 
         <div className={styles.stepsGrid}>
@@ -210,7 +282,12 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
                 </div>
                 <div className={styles.categoryBody}>
                   <h3>{card.title}</h3>
-                  <p>{card.description}</p>
+                  <p className={styles.desktopCopy}>
+                    {categoryCardCopy[card.id]?.desktop ?? card.description}
+                  </p>
+                  <p className={styles.mobileCopy}>
+                    {categoryCardCopy[card.id]?.mobile ?? card.description}
+                  </p>
                 </div>
               </Link>
             );
@@ -222,7 +299,8 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
         <div className={styles.storyCopy}>
           <p className={styles.eyebrow}>{aboutBridge.eyebrow}</p>
           <h2>This shop carries on my grandfather&apos;s bazaar.</h2>
-          <p>{aboutBridge.body}</p>
+          <p className={styles.desktopCopy}>{storyBodyDesktop}</p>
+          <p className={styles.mobileCopy}>{storyBodyMobile}</p>
         </div>
         <div className={styles.storyActions}>
           <Link className={styles.primaryAction} href="/about">
@@ -238,7 +316,8 @@ export function HomePageView({ content, featuredProducts = [] }: HomePageViewPro
         <div className={styles.sectionHeader}>
           <div>
             <p className={styles.eyebrow}>{content.newsletter.eyebrow}</p>
-            <h2>{content.newsletter.title}</h2>
+            <h2 className={styles.desktopCopy}>{content.newsletter.title}</h2>
+            <h2 className={styles.mobileCopy}>{newsletterTitleMobile}</h2>
           </div>
           <p>{content.newsletter.paragraph}</p>
         </div>

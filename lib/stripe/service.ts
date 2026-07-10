@@ -167,6 +167,20 @@ function createStripeCheckoutSessionFormBody(input: StripeCheckoutSessionRequest
     formBody.set(`line_items[${index}][price_data][product_data][name]`, item.name);
   });
 
+  formBody.set("shipping_options[0][shipping_rate_data][type]", "fixed_amount");
+  formBody.set(
+    "shipping_options[0][shipping_rate_data][fixed_amount][amount]",
+    String(Math.round(input.shippingUsd * 100)),
+  );
+  formBody.set(
+    "shipping_options[0][shipping_rate_data][fixed_amount][currency]",
+    input.currency.toLowerCase(),
+  );
+  formBody.set(
+    "shipping_options[0][shipping_rate_data][display_name]",
+    input.shippingUsd === 0 ? "Free shipping" : "Standard shipping",
+  );
+
   return formBody;
 }
 

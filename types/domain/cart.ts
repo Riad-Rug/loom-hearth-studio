@@ -15,7 +15,7 @@ export type Cart = {
   id: string;
   items: CartItem[];
   promoCode?: string;
-  shippingUsd: 0;
+  shippingUsd: number;
   subtotalUsd: number;
   totalUsd: number;
   currency: "USD";

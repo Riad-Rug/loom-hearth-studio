@@ -7,7 +7,8 @@ export async function SiteHeader() {
 
   return (
     <SiteHeaderClient
-      announcementItems={siteConfig.announcementItems}
+      announcementDesktop={siteConfig.announcementDesktop}
+      announcementMobile={siteConfig.announcementMobile}
       brandName={siteConfig.name}
       primaryNav={siteConfig.primaryNav}
       isAuthenticated={isAuthenticated}
