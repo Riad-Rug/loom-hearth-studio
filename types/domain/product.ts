@@ -12,6 +12,7 @@ export type ProductBase = SeoFields & {
   catalogNumber?: string;
   slug: string;
   name: string;
+  cardName?: string;
   category: ProductCategory;
   description: string;
   priceUsd: number;

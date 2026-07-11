@@ -104,6 +104,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     type: typeValue,
     slug: normalizeSlug(readString(formData, "slug")),
     name: readString(formData, "name"),
+    cardName: readOptionalString(formData, "cardName"),
     category: readString(formData, "category"),
     description: readString(formData, "description"),
     priceUsd: readNumber(formData, "priceUsd"),
@@ -187,6 +188,10 @@ export function validateProductMutationInput(
 
   if (!input.name.trim()) {
     fieldErrors.name = "Name is required.";
+  }
+
+  if (input.cardName && input.cardName.length > 60) {
+    fieldErrors.cardName = "Card name must be 60 characters or fewer.";
   }
 
   if (!input.slug) {

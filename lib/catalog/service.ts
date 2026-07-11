@@ -20,13 +20,22 @@ import type {
   ProductSupportPanelViewModel,
   RugProductDetailPageViewModel,
 } from "@/lib/catalog/contracts";
+import {
+  dimensionSeparator,
+  getDisplayProductName,
+  getPrimaryColorFromTitle,
+  getProductCardName,
+  getRugConstructionLabel,
+  getRugFeatureLabel,
+  humanizeProductToken,
+  normalizeDimensionSeparators,
+  removeConstructionFromColor,
+} from "@/lib/catalog/product-card-name";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
 import type { MediaAsset, Product, ProductCategory, RugProduct } from "@/types/domain";
 
-const productTitleMaxLength = 60;
-const dimensionSeparator = " × ";
 const defaultRugPalette = ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"] as const;
 const paletteLabelsByHex = new Map([
   ["#F1E8D6", "Ivory ground"],
@@ -160,18 +169,13 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
 }
 
 function createProductCardDisplayName(product: Product) {
-  const displayName = normalizeDimensionSeparators(getDisplayProductName(product.name));
-  const titleWithoutDimensions = removeTrailingTitlePunctuation(removeProductDimensions(displayName));
-
-  if (product.type !== "rug") {
-    return limitProductTitle(titleWithoutDimensions);
-  }
-
-  if (displayName.length <= productTitleMaxLength && displayName === titleWithoutDimensions) {
-    return limitProductTitle(titleWithoutDimensions);
-  }
-
-  return limitProductTitle(createCondensedRugTitle(product, titleWithoutDimensions));
+  return getProductCardName({
+    name: product.name,
+    type: product.type,
+    category: product.category,
+    rugStyle: product.type === "rug" ? product.rugStyle : undefined,
+    cardName: product.cardName,
+  });
 }
 
 function createProductDetailPageViewModel(
@@ -615,17 +619,6 @@ function createProductDetailSections(product: Product) {
   return createProductDescriptionSections(product);
 }
 
-function getDisplayProductName(name: string) {
-  switch (name.trim().toLowerCase()) {
-    case "beni":
-      return "Beni Ourain Rug";
-    case "rug maroc":
-      return "Rug Maroc";
-    default:
-      return name;
-  }
-}
-
 function createProductDescriptionLead(product: Product) {
   if (product.type === "rug") {
     return createRugHeroDescription(product);
@@ -862,28 +855,6 @@ function createProductCardDimensionsLabel(product: Product) {
   return dimensions ? normalizeDimensionSeparators(dimensions) : undefined;
 }
 
-function createCondensedRugTitle(product: Extract<Product, { type: "rug" }>, title: string) {
-  const color = removeConstructionFromColor(getPrimaryColorFromTitle(title));
-  const construction = getRugConstructionLabel(product, title);
-  const feature = getRugFeatureLabel(title);
-
-  if (color && construction && feature) {
-    return `${color} ${construction} ${feature}`;
-  }
-
-  if (color && construction) {
-    return `${color} ${construction}`;
-  }
-
-  return title
-    .replace(/\bMixed[-\s]Technique\b/giu, "")
-    .replace(/\bMoroccan\b/giu, "")
-    .replace(/\bGround\b/giu, "")
-    .replace(/\bScattered\b/giu, "")
-    .replace(/\s+/gu, " ")
-    .trim();
-}
-
 function createProductSubtitle(product: Product) {
   if (product.type === "rug") {
     return [
@@ -897,22 +868,6 @@ function createProductSubtitle(product: Product) {
     createMaterialOriginLabel(product),
     createInventoryStateLabel(product),
   ].join(" | ");
-}
-
-function removeProductDimensions(title: string) {
-  return title
-    .replace(
-      /\b\d{1,3}(?:\.\d+)?["”]?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?["”]?\b/giu,
-      " ",
-    )
-    .replace(/\b\d{1,2}'\s*\d{0,2}"?\s*(?:[x×-]\s*)?\d{1,2}'\s*\d{0,2}"?(?=\s|$)/gu, " ")
-    .replace(
-      /\b\d{1,3}(?:\.\d+)?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)?\b/giu,
-      " ",
-    )
-    .replace(/\b\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)\b/giu, " ")
-    .replace(/\s+/gu, " ")
-    .trim();
 }
 
 function extractProductDimensions(title: string) {
@@ -929,99 +884,6 @@ function extractProductDimensions(title: string) {
     )?.[0];
 
   return titleDimensions?.replace(/\s+/gu, " ").trim() || undefined;
-}
-
-function limitProductTitle(title: string) {
-  const normalizedTitle = title.replace(/\s+/gu, " ").trim();
-
-  if (normalizedTitle.length <= productTitleMaxLength) {
-    return normalizedTitle;
-  }
-
-  const truncated = normalizedTitle.slice(0, productTitleMaxLength + 1);
-  const lastSpaceIndex = truncated.lastIndexOf(" ");
-  const candidate =
-    lastSpaceIndex > 36 ? truncated.slice(0, lastSpaceIndex) : normalizedTitle.slice(0, productTitleMaxLength);
-
-  return removeDanglingTitleEnding(candidate);
-}
-
-function removeDanglingTitleEnding(title: string) {
-  const danglingWords = new Set(["and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"]);
-  const words = removeTrailingTitlePunctuation(title).trim().split(/\s+/u);
-
-  while (words.length > 1 && danglingWords.has(words[words.length - 1].toLowerCase())) {
-    words.pop();
-  }
-
-  return removeTrailingTitlePunctuation(words.join(" "));
-}
-
-function removeTrailingTitlePunctuation(title: string) {
-  return title.replace(/[,\-–:;]+$/u, "").trim();
-}
-
-function getPrimaryColorFromTitle(title: string) {
-  const groundColor = title.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+Ground\b/u)?.[1];
-
-  if (groundColor) {
-    return groundColor;
-  }
-
-  const colorMatch = title.match(
-    /\b(Ivory|Cream|Natural|Sand|Oat|Beige|Brown|Terracotta|Clay|Rust|Red|Black|Charcoal|Indigo|Blue|Green|Olive|Gold|Ochre|White)\b/iu,
-  )?.[1];
-
-  return colorMatch ? toTitleCase(colorMatch) : "";
-}
-
-function removeConstructionFromColor(value: string) {
-  return value
-    .replace(/\b(?:Flatweave|Beni|Ourain|Kilim|Vintage|Moroccan|Rug)\b/giu, "")
-    .replace(/\s+/gu, " ")
-    .trim();
-}
-
-function getRugConstructionLabel(product: Extract<Product, { type: "rug" }>, title: string) {
-  if (/flat\s*weave|flatweave/iu.test(title)) {
-    return "Flatweave";
-  }
-
-  if (/beni\s+ourain/iu.test(title) || /beni\s+ourain/iu.test(product.rugStyle)) {
-    return "Beni Ourain Rug";
-  }
-
-  if (/kilim/iu.test(title) || /kilim/iu.test(product.rugStyle)) {
-    return "Kilim Rug";
-  }
-
-  if (/vintage/iu.test(title) || product.category === "vintage") {
-    return "Vintage Rug";
-  }
-
-  const styleLabel = humanizeProductToken(product.rugStyle);
-
-  return styleLabel ? `${styleLabel} Rug` : "Moroccan Rug";
-}
-
-function getRugFeatureLabel(title: string) {
-  if (/pile\s+motifs?/iu.test(title)) {
-    return "with Pile Motifs";
-  }
-
-  if (/diamond/iu.test(title)) {
-    return "with Diamond Motifs";
-  }
-
-  if (/stripe|striped/iu.test(title)) {
-    return "with Stripes";
-  }
-
-  if (/border/iu.test(title)) {
-    return "with Border Detail";
-  }
-
-  return "";
 }
 
 function formatRugDimensionsShort(product: Extract<Product, { type: "rug" }>) {
@@ -1054,31 +916,6 @@ function createMaterialOriginLabel(product: Product) {
   }
 
   return `${originLabel} ${materialLabel.toLowerCase()}`;
-}
-
-function humanizeProductToken(value: string) {
-  return toTitleCase(value.replace(/[-_]+/gu, " ").trim());
-}
-
-function toTitleCase(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/\b[a-z]/gu, (character) => character.toUpperCase())
-    .replace(/\bUsa\b/gu, "USA");
-}
-
-function normalizeDimensionSeparators(value: string) {
-  return value.replace(
-    /(?:\d{1,3}(?:\.\d+)?(?:'\s*\d{0,2}"?|"|inches|inch|in)\s+){1,2}\d{1,3}(?:\.\d+)?(?:'\s*\d{0,2}"?|"|inches|inch|in)/giu,
-    (match) => {
-      const tokens =
-        match.match(
-          /\d{1,3}(?:\.\d+)?(?:'\s*\d{0,2}"?|"|inches|inch|in)/giu,
-        ) ?? [];
-
-      return tokens.length > 1 ? tokens.join(dimensionSeparator) : match;
-    },
-  );
 }
 
 function createInventoryStateLabel(product: Extract<Product, { type: "multiUnit" }>) {

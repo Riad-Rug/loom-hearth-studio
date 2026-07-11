@@ -193,6 +193,7 @@ model CatalogProduct {
   type             String
   slug             String
   name             String
+  cardName         String?
   category         ProductCategory
   description      String          @db.Text
   priceUsd         Decimal         @db.Decimal(10, 2)

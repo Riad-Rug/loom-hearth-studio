@@ -11,6 +11,7 @@ export type AdminProductFormValues = {
   type: Product["type"];
   slug: string;
   name: string;
+  cardName: string;
   category: Product["category"];
   description: string;
   priceUsd: string;

@@ -13,6 +13,11 @@ import {
   type AdminProductFormValues,
 } from "@/lib/admin/product-form-shared";
 import {
+  getAutoProductCardName,
+  isProductCardNameAutoShortened,
+  productCardNameMaxLength,
+} from "@/lib/catalog/product-card-name";
+import {
   cloudinaryAssetRoleOptions,
   getProductRoutePreview,
   mediaTypeOptions,
@@ -51,6 +56,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [catalogNumber, setCatalogNumber] = useState(props.product.catalogNumber);
   const [slug, setSlug] = useState(props.product.slug);
   const [name, setName] = useState(props.product.name);
+  const [cardName, setCardName] = useState(props.product.cardName);
   const [category, setCategory] = useState(props.product.category);
   const [description, setDescription] = useState(props.product.description);
   const [priceUsd, setPriceUsd] = useState(props.product.priceUsd);
@@ -102,6 +108,17 @@ export function AdminProductForm(props: AdminProductFormProps) {
     message: null,
     imageId: null,
   });
+  const cardNameInput = useMemo(
+    () => ({
+      name,
+      type,
+      category,
+      rugStyle: type === "rug" ? rugStyle : undefined,
+    }),
+    [category, name, rugStyle, type],
+  );
+  const autoCardName = useMemo(() => getAutoProductCardName(cardNameInput), [cardNameInput]);
+  const needsCardName = Boolean(name.trim()) && isProductCardNameAutoShortened(cardNameInput);
   const routePreview = useMemo(
     () =>
       getProductRoutePreview({
@@ -130,6 +147,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setCatalogNumber(props.product.catalogNumber);
     setSlug(props.product.slug);
     setName(props.product.name);
+    setCardName(props.product.cardName);
     setCategory(props.product.category);
     setDescription(props.product.description);
     setPriceUsd(props.product.priceUsd);
@@ -386,6 +404,32 @@ export function AdminProductForm(props: AdminProductFormProps) {
             />
             <em>{state.fieldErrors.name}</em>
           </label>
+          {needsCardName ? (
+            <label className={styles.formField}>
+              <span>
+                Card name ({cardName.length} / {productCardNameMaxLength})
+              </span>
+              <input
+                maxLength={productCardNameMaxLength}
+                name="cardName"
+                type="text"
+                value={cardName}
+                onChange={(event) => setCardName(event.target.value)}
+              />
+              <em>
+                The full name is too long for shop card tiles, so cards shorten it automatically.
+                Write your own short version here; the full name still shows on the product page.
+              </em>
+              <em>
+                {cardName.trim()
+                  ? `Cards will show: “${cardName.trim()}”`
+                  : `If left blank, cards will show: “${autoCardName}”`}
+              </em>
+              <em>{state.fieldErrors.cardName}</em>
+            </label>
+          ) : (
+            <input name="cardName" type="hidden" value={cardName} />
+          )}
           <label className={styles.formField}>
             <span>Slug</span>
             <input
