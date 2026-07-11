@@ -215,7 +215,9 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
               <div className={styles.productMeta}>
                 <div className={styles.productTitleRow}>
                   <h3>{product.displayName}</h3>
-                  <span className={styles.productBadge}>1 OF 1</span>
+                  {product.status === "sold" ? (
+                    <span className={styles.productBadge}>SOLD</span>
+                  ) : null}
                 </div>
                 <p className={styles.productSubtitle}>{product.subtitle}</p>
                 <p className={styles.productPrice}>{product.priceUsdLabel}</p>

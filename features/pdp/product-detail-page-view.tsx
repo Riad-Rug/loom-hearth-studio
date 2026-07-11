@@ -200,7 +200,11 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 
             <div className="flex flex-wrap gap-[0.6rem]">
               <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-green)] rounded-full text-[var(--color-green)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
-                {product.status === "sold" ? "SOLD" : "1 OF 1"}
+                {product.status === "sold"
+                  ? "SOLD"
+                  : product.type === "rug"
+                    ? "1 OF 1"
+                    : "1 AVAILABLE"}
               </span>
               <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-border)] rounded-full text-[var(--color-text-subtle)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
                 {product.catalogNumber}

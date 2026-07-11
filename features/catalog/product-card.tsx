@@ -80,21 +80,14 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className={styles.productContent}>
         <div className={styles.productTitleRow}>
           <h3>{product.displayName}</h3>
-          <span className={styles.productMonoBadge}>1 OF 1</span>
+          {product.status === "sold" ? (
+            <span className={styles.productMonoBadge}>SOLD</span>
+          ) : null}
         </div>
-        <p className={styles.productDimensions}>{buildSizeAgeLine(product)}</p>
+        <p className={styles.productDimensions}>{product.subtitle}</p>
         <p className={styles.productPrice}>{product.priceUsdLabel}</p>
       </div>
     </Link>
   );
-}
-
-function buildSizeAgeLine(product: CatalogProductCardViewModel) {
-  const parts = [
-    product.dimensionsLabel,
-    product.category === "vintage" ? "Vintage" : product.type === "rug" ? "Handmade" : "Moroccan",
-  ].filter(Boolean);
-
-  return parts.join(" · ");
 }
 

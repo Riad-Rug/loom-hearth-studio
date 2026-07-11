@@ -856,18 +856,19 @@ function createProductCardDimensionsLabel(product: Product) {
 }
 
 function createProductSubtitle(product: Product) {
-  if (product.type === "rug") {
-    return [
-      formatRugDimensionsShort(product),
-      createMaterialOriginLabel(product),
-      "ONE OF A KIND",
-    ].join(" | ");
+  return [createProductCardDimensionsLabel(product), createPrimaryMaterialsLabel(product)]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function createPrimaryMaterialsLabel(product: Product) {
+  const materials = product.materials.map(humanizeProductToken).filter(Boolean);
+
+  if (!materials.length) {
+    return undefined;
   }
 
-  return [
-    createMaterialOriginLabel(product),
-    createInventoryStateLabel(product),
-  ].join(" | ");
+  return materials.map((label, index) => (index === 0 ? label : label.toLowerCase())).join(" & ");
 }
 
 function extractProductDimensions(title: string) {
@@ -899,23 +900,6 @@ function formatFeetAndInchesShort(valueCm: number) {
   const inches = totalInches % 12;
 
   return `${feet}'${inches}"`;
-}
-
-function createMaterialOriginLabel(product: Product) {
-  const materialLabel = product.materials.map(humanizeProductToken).filter(Boolean).join(" and ");
-  const originLabel = humanizeProductToken(
-    product.type === "rug" && product.rugStyle ? product.rugStyle : product.origin,
-  );
-
-  if (!materialLabel) {
-    return originLabel;
-  }
-
-  if (!originLabel) {
-    return materialLabel;
-  }
-
-  return `${originLabel} ${materialLabel.toLowerCase()}`;
 }
 
 function createInventoryStateLabel(product: Extract<Product, { type: "multiUnit" }>) {
