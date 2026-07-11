@@ -513,9 +513,9 @@ function getRecommendationPresentation(
     const categoryLabel = getCategoryLabel(displayedCategory);
 
     return {
-      eyebrow: "Based on your browsing",
-      heading: `More ${categoryLabel} from your recent browsing.`,
-      ariaLabel: `${categoryLabel} based on your recent browsing`,
+      eyebrow: "From the stockroom",
+      heading: "More from the stockroom.",
+      ariaLabel: `${categoryLabel} from the stockroom`,
     };
   }
 
