@@ -370,32 +370,14 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   );
 }
 
-const MIN_GALLERY_SLOTS = 5;
-
 function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalleryItem[] {
   const allImages = product.gallery;
 
-  const items: DisplayGalleryItem[] = allImages.map((item, index) => ({
+  return allImages.map((item, index) => ({
     ...item,
     label: index === allImages.length - 1 ? "Condition" : item.label,
     tone: index === allImages.length - 1 ? ("condition" as const) : ("neutral" as const),
   }));
-
-  const padded: DisplayGalleryItem[] = [...items];
-
-  while (padded.length < MIN_GALLERY_SLOTS) {
-    padded.push({
-      id: `placeholder-${padded.length}`,
-      label: padded.length === MIN_GALLERY_SLOTS - 1 ? "Condition" : `View ${padded.length + 1}`,
-      src: "",
-      publicId: "",
-      altText: "",
-      role: "placeholder",
-      tone: padded.length === MIN_GALLERY_SLOTS - 1 ? ("condition" as const) : ("neutral" as const),
-    });
-  }
-
-  return padded;
 }
 
 function buildSpecificationRows(product: ProductDetailPageViewModel) {
