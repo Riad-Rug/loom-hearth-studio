@@ -41,9 +41,7 @@ export function getProductMerchandisingNote(product: Product) {
     return "Low-stock multi-unit item.";
   }
 
-  return product.variants.length
-    ? "Multi-unit item with variant selection."
-    : "Multi-unit item with quantity controls.";
+  return product.variants.length ? "Multi-unit item with variant selection." : "";
 }
 
 export function getCategoryLabel(category: ProductCategory) {
@@ -94,6 +92,13 @@ export function formatRugDimensions(product: RugProduct) {
 
 export function formatRugWeight(product: RugProduct) {
   return `${product.weightKg.toFixed(1)} kg`;
+}
+
+export function formatMultiUnitDimensions(dimensionsCm: { length: number; width: number }) {
+  const multiplicationSymbol = "×";
+  const formatInches = (valueCm: number) => `${Math.round(valueCm / 2.54)}″`;
+
+  return `${dimensionsCm.length} ${multiplicationSymbol} ${dimensionsCm.width} cm (${formatInches(dimensionsCm.length)} ${multiplicationSymbol} ${formatInches(dimensionsCm.width)})`;
 }
 
 function formatFeetAndInches(valueCm: number) {

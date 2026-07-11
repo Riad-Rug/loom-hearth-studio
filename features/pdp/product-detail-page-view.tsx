@@ -20,7 +20,7 @@ import { Section } from "@/components/layout/section";
 import { useCart } from "@/features/cart/cart-provider";
 import { ProductCard } from "@/features/catalog/product-card";
 import { trackViewItem } from "@/lib/analytics/gtag";
-import { getCategoryLabel } from "@/lib/catalog/helpers";
+import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
 import {
   getTopRecommendationHistoryCategory,
   recordCategoryInterest,
@@ -242,10 +242,12 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               </ul>
             </section>
 
-            <section className={PANEL_CARD}>
-              <p className={PANEL_EYEBROW}>Founder sourcing note</p>
-              <p>{product.merchandisingNote}</p>
-            </section>
+            {product.merchandisingNote ? (
+              <section className={PANEL_CARD}>
+                <p className={PANEL_EYEBROW}>Founder sourcing note</p>
+                <p>{product.merchandisingNote}</p>
+              </section>
+            ) : null}
           </div>
 
           <div className="grid gap-[var(--space-3)]">
@@ -381,11 +383,23 @@ function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalle
 }
 
 function buildSpecificationRows(product: ProductDetailPageViewModel) {
-  const rows: { label: string; value: string }[] = [
-    { label: "Size", value: product.type === "rug" ? product.dimensionsLabel : "See variant options" },
+  const rows: { label: string; value: string }[] = [];
+
+  const sizeValue =
+    product.type === "rug"
+      ? product.dimensionsLabel
+      : product.dimensionsCm
+        ? formatMultiUnitDimensions(product.dimensionsCm)
+        : undefined;
+
+  if (sizeValue) {
+    rows.push({ label: "Size", value: sizeValue });
+  }
+
+  rows.push(
     { label: "Material", value: product.materialLabel || "See listing" },
     { label: "Origin", value: product.originLabel || "Morocco" },
-  ];
+  );
 
   if (product.type === "rug") {
     rows.push({ label: "Style", value: product.rugStyle ?? "Handwoven rug" });
@@ -394,10 +408,12 @@ function buildSpecificationRows(product: ProductDetailPageViewModel) {
     }
   }
 
-  rows.push(
-    { label: "Age", value: product.category === "vintage" ? "Vintage" : "Handmade contemporary piece" },
-    { label: "Condition", value: extractConditionNote(product) },
-  );
+  rows.push({ label: "Age", value: product.category === "vintage" ? "Vintage" : "Handmade contemporary piece" });
+
+  const conditionNote = extractConditionNote(product);
+  if (conditionNote) {
+    rows.push({ label: "Condition", value: conditionNote });
+  }
 
   if (product.type === "rug") {
     rows.push({ label: "Weight", value: product.weightLabel });
@@ -411,8 +427,11 @@ function buildSpecificationRows(product: ProductDetailPageViewModel) {
 function extractConditionNote(product: ProductDetailPageViewModel) {
   const conditionSection =
     product.detailSections.find((section) => /condition/i.test(section.title))?.body ||
-    product.descriptionSections.find((section) => /condition/i.test(section.title))?.body ||
-    product.description;
+    product.descriptionSections.find((section) => /condition/i.test(section.title))?.body;
+
+  if (!conditionSection) {
+    return undefined;
+  }
 
   return `${conditionSection.split(/\n|(?<=[.!?])\s/u)[0]} Photo shown in the condition view.`;
 }

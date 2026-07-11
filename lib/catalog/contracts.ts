@@ -114,6 +114,7 @@ export type RugProductDetailPageViewModel = ProductDetailPageViewModelBase & {
 
 export type MultiUnitProductDetailPageViewModel = ProductDetailPageViewModelBase & {
   type: "multiUnit";
+  dimensionsCm?: { length: number; width: number };
   variants: ProductVariant[];
   quantityMin: 1;
   inventoryState: LaunchInventoryState;

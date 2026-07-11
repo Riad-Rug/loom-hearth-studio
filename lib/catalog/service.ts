@@ -244,6 +244,7 @@ function createProductDetailPageViewModel(
   return {
     ...baseViewModel,
     type: "multiUnit",
+    dimensionsCm: product.dimensionsCm,
     variants: product.variants.map((variant) => ({
       ...variant,
       name: normalizeDimensionSeparators(variant.name),
@@ -310,13 +311,13 @@ function createProductSpecifications(product: Product): ProductSpecificationView
 
 function createProductSupportPanels(product: Product): ProductSupportPanelViewModel[] {
   const region = product.attributionRegion?.trim() || product.origin;
-  const confidence = product.attributionConfidence?.trim() || "confirmed in person";
+  const confidence = product.attributionConfidence?.trim();
   const tradition =
     product.type === "rug"
       ? createRugTraditionLabel(product)
       : `${getCategoryLabel(product.category)} sourced in Morocco`;
   const provenanceItems = [
-    `Region: ${region} (${confidence})`,
+    confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`,
     `Tradition: ${tradition}`,
   ];
 
@@ -674,17 +675,13 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
         title: "Care",
         body: createCareDescription(product),
       },
-    ];
+    ].filter((section) => section.body.trim().length > 0);
   }
 
   return [
     {
       title: "Materials",
-      body: `${product.materials.join(", ")} from ${product.origin}. ${getFirstSentence(product.description)}`,
-    },
-    {
-      title: "Construction",
-      body: "Selected as a supporting handcrafted piece for layered interiors, with availability reviewed before payment is captured.",
+      body: `${product.materials.join(", ")} from ${product.origin}.`,
     },
     {
       title: "Condition",
@@ -698,7 +695,7 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
       title: "Care",
       body: createCareDescription(product),
     },
-  ];
+  ].filter((section) => section.body.trim().length > 0);
 }
 
 function createRugConstructionDescription(product: Extract<Product, { type: "rug" }>) {
@@ -715,14 +712,14 @@ function createRugConstructionDescription(product: Extract<Product, { type: "rug
 function createProvenanceDescription(product: Product) {
   const provenance = normalizeDimensionSeparators(product.provenanceNote?.trim() || "");
   const region = product.attributionRegion?.trim() || product.origin;
-  const confidence = product.attributionConfidence?.trim() || "confirmed in person";
+  const confidence = product.attributionConfidence?.trim();
   const tradition =
     product.type === "rug"
       ? createRugTraditionLabel(product)
       : `${getCategoryLabel(product.category)} sourced in Morocco`;
   const parts = [
     provenance,
-    `Region: ${region} (${confidence})`,
+    confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`,
     `Tradition: ${tradition}`,
   ].filter(Boolean);
 
