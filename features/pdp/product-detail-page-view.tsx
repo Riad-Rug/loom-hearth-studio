@@ -140,7 +140,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                           alt={item.altText ? `${item.altText} — ${item.label}` : `${product.name} — ${item.label}`}
                           className="block w-full h-full object-cover object-center"
                           loading="lazy"
-                          src={item.src}
+                          src={item.thumbSrc}
                           onError={() => handleImageError(item.id)}
                         />
                       ) : (

@@ -153,19 +153,25 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     badge: getProductBadgeLabel(product),
     primaryImage: primaryImage
       ? {
-          src: buildCloudinaryUrl(primaryImage.publicId),
+          src: buildProductCardImageUrl(primaryImage.publicId),
           publicId: primaryImage.publicId,
           altText: primaryImage.altText,
         }
       : undefined,
     secondaryImage: secondaryImage
       ? {
-          src: buildCloudinaryUrl(secondaryImage.publicId),
+          src: buildProductCardImageUrl(secondaryImage.publicId),
           publicId: secondaryImage.publicId,
           altText: secondaryImage.altText,
         }
       : undefined,
   };
+}
+
+function buildProductCardImageUrl(publicId: string) {
+  return buildCloudinaryUrl(publicId, {
+    transformation: { c: "limit", w: 1000, f: "auto", q: "auto" },
+  });
 }
 
 function createProductCardDisplayName(product: Product) {
@@ -799,6 +805,9 @@ function createGalleryItem(image: MediaAsset, index: number) {
     label: createGalleryLabel(image, index),
     src: buildCloudinaryUrl(image.publicId, {
       transformation: { w: 1600, q: "auto", f: "auto" },
+    }),
+    thumbSrc: buildCloudinaryUrl(image.publicId, {
+      transformation: { c: "fill", g: "auto", w: 240, h: 240, q: "auto", f: "auto" },
     }),
     publicId: image.publicId,
     altText: image.altText,

@@ -80,6 +80,7 @@ type ProductDetailPageViewModelBase = {
     id: string;
     label: string;
     src: string;
+    thumbSrc: string;
     publicId: string;
     altText: string;
     role: string;

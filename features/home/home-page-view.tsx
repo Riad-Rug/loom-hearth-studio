@@ -7,7 +7,6 @@ import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { aboutBridge } from "@/features/content-pages/content-pages-data";
 import type { HomePageContent } from "@/features/home/home-page-data";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
-import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import type { ProductCategory } from "@/types/domain";
 
 import { LiveProductCardImage } from "./live-product-card-image";
@@ -113,9 +112,7 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
     const categoryKey = categoryCardCategoryKey[card.id];
     return categoryKey ? liveCategorySet.has(categoryKey) : true;
   });
-  const normalizedFeaturedProducts = featuredProducts
-    .map(normalizeHomepageProductImages)
-    .slice(0, 8);
+  const normalizedFeaturedProducts = featuredProducts.slice(0, 8);
   const heroImage = getCloudinaryImage(content.hero.image.src);
   const hasHeroActions = content.hero.primaryCta.visible || content.hero.secondaryCta.visible;
 
@@ -333,37 +330,4 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
 
 function getCloudinaryImage(src: string) {
   return src.startsWith("https://res.cloudinary.com/") ? src : "";
-}
-
-function normalizeHomepageProductImages(
-  product: CatalogProductCardViewModel,
-): CatalogProductCardViewModel {
-  return {
-    ...product,
-    primaryImage: product.primaryImage
-      ? {
-          ...product.primaryImage,
-          src: buildHomepageProductImageUrl(product.primaryImage.publicId),
-        }
-      : undefined,
-    secondaryImage: product.secondaryImage
-      ? {
-          ...product.secondaryImage,
-          src: buildHomepageProductImageUrl(product.secondaryImage.publicId),
-        }
-      : undefined,
-  };
-}
-
-function buildHomepageProductImageUrl(publicId: string) {
-  return buildCloudinaryUrl(publicId, {
-    transformation: {
-      c: "fill",
-      f: "auto",
-      g: "auto",
-      h: 1200,
-      q: "auto",
-      w: 960,
-    },
-  });
 }
