@@ -809,6 +809,11 @@ function createGalleryItem(image: MediaAsset, index: number) {
     thumbSrc: buildCloudinaryUrl(image.publicId, {
       transformation: { c: "fill", g: "auto", w: 240, h: 240, q: "auto", f: "auto" },
     }),
+    zoomSrc: buildCloudinaryUrl(image.publicId, {
+      transformation: { w: 2600, q: "auto", f: "auto" },
+    }),
+    width: image.width,
+    height: image.height,
     publicId: image.publicId,
     altText: image.altText,
     role: image.role,

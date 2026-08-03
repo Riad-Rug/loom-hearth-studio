@@ -13,7 +13,8 @@ import {
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
@@ -53,6 +54,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
   const [preferredHistoryCategory, setPreferredHistoryCategory] = useState<ProductCategory | null>(null);
   const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isPointerFine, setIsPointerFine] = useState(false);
   const reserveProduct = useReserveProduct(product);
 
   useEffect(() => {
@@ -60,6 +62,21 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
     setFailedImageIds(new Set());
     setIsLightboxOpen(false);
   }, [product.id]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+    function syncPointerMode() {
+      setIsPointerFine(mediaQuery.matches);
+    }
+
+    syncPointerMode();
+    mediaQuery.addEventListener("change", syncPointerMode);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncPointerMode);
+    };
+  }, []);
 
   const handleImageError = (id: string) => {
     setFailedImageIds((previous) => {
@@ -128,7 +145,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                     <Tab
                       key={item.id}
                       className={({ selected }) =>
-                        `block aspect-square p-0 border-0 rounded-[var(--radius-md)] bg-[var(--color-panel)] overflow-hidden focus:outline-none ${
+                        `block aspect-square p-0 border-0 rounded-[var(--radius-md)] bg-[var(--color-panel)] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-green)] focus-visible:ring-offset-2 ${
                           selected
                             ? "ring-2 ring-inset ring-[color:var(--color-green)]"
                             : "ring-1 ring-inset ring-[color:var(--color-border)]"
@@ -160,37 +177,27 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                   {gallery.map((item) => (
                     <TabPanel
                       key={item.id}
-                      className="aspect-[4/5] overflow-hidden border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)] max-[700px]:order-1"
+                      className="h-[min(78vh,40rem)] max-[700px]:h-[60vh] flex items-center justify-center overflow-hidden border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)] max-[700px]:order-1"
                     >
-                      {item.src && !failedImageIds.has(item.id) ? (
-                        <button
-                          aria-label={`Zoom in on ${item.altText || product.name}`}
-                          className="block w-full h-full p-0 border-0 cursor-zoom-in"
-                          type="button"
-                          onClick={() => setIsLightboxOpen(true)}
-                        >
-                          <img
-                            alt={item.altText || product.name}
-                            className="block w-full h-full object-cover object-center"
-                            src={item.src}
-                            onError={() => handleImageError(item.id)}
-                          />
-                        </button>
-                      ) : (
-                        <PlaceholderMedia
-                          alt={product.name}
-                          aspectRatio="4 / 5"
-                          label="Photo pending"
-                          priority
-                          sizes="(max-width: 700px) 100vw, (max-width: 1100px) 90vw, 52vw"
-                          tone={item.tone === "condition" ? "condition" : "neutral"}
-                        />
-                      )}
+                      <ProductHeroImage
+                        isBroken={failedImageIds.has(item.id)}
+                        isPointerFine={isPointerFine}
+                        item={item}
+                        productName={product.name}
+                        onImageError={handleImageError}
+                        onOpenLightbox={() => setIsLightboxOpen(true)}
+                      />
                     </TabPanel>
                   ))}
                 </TabPanels>
               </div>
             </TabGroup>
+
+            {isPointerFine ? (
+              <p className="mt-[0.6rem] text-[var(--color-text-subtle)] text-[0.78rem]">
+                Hover the photo to inspect the weave.
+              </p>
+            ) : null}
           </div>
 
           <div
@@ -370,6 +377,179 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
       ) : null}
     </div>
   );
+}
+
+const LENS_SIZE = 180;
+const LENS_ZOOM = 2.5;
+
+function ProductHeroImage({
+  item,
+  productName,
+  isBroken,
+  isPointerFine,
+  onImageError,
+  onOpenLightbox,
+}: {
+  item: DisplayGalleryItem;
+  productName: string;
+  isBroken: boolean;
+  isPointerFine: boolean;
+  onImageError: (id: string) => void;
+  onOpenLightbox: () => void;
+}) {
+  const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null);
+  const [isLensVisible, setIsLensVisible] = useState(false);
+  const [isZoomReady, setIsZoomReady] = useState(false);
+  const imageBoxRef = useRef<HTMLDivElement | null>(null);
+  const lensRef = useRef<HTMLDivElement | null>(null);
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const frameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
+  }, []);
+
+  if (!item.src || isBroken) {
+    return (
+      <PlaceholderMedia
+        alt={productName}
+        aspectRatio="4 / 5"
+        label="Photo pending"
+        priority
+        sizes="(max-width: 700px) 100vw, (max-width: 1100px) 90vw, 52vw"
+        tone={item.tone === "condition" ? "condition" : "neutral"}
+      />
+    );
+  }
+
+  const aspectRatio =
+    item.width && item.height
+      ? item.width / item.height
+      : naturalSize
+        ? naturalSize.width / naturalSize.height
+        : 4 / 5;
+
+  function updateLens() {
+    frameRef.current = null;
+
+    const box = imageBoxRef.current;
+    const lens = lensRef.current;
+    if (!box || !lens) {
+      return;
+    }
+
+    const rect = box.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      return;
+    }
+
+    const half = LENS_SIZE / 2;
+    const rawX = clamp(pointerRef.current.x - rect.left, 0, rect.width);
+    const rawY = clamp(pointerRef.current.y - rect.top, 0, rect.height);
+
+    const lensLeft = clamp(rawX - half, 0, Math.max(rect.width - LENS_SIZE, 0));
+    const lensTop = clamp(rawY - half, 0, Math.max(rect.height - LENS_SIZE, 0));
+
+    const bgWidth = rect.width * LENS_ZOOM;
+    const bgHeight = rect.height * LENS_ZOOM;
+    const bgX = -(rawX / rect.width) * (bgWidth - rect.width);
+    const bgY = -(rawY / rect.height) * (bgHeight - rect.height);
+
+    lens.style.transform = `translate3d(${lensLeft}px, ${lensTop}px, 0)`;
+    lens.style.backgroundSize = `${bgWidth}px ${bgHeight}px`;
+    lens.style.backgroundPosition = `${bgX}px ${bgY}px`;
+  }
+
+  function scheduleLensUpdate(event: ReactPointerEvent<HTMLDivElement>) {
+    pointerRef.current = { x: event.clientX, y: event.clientY };
+    if (frameRef.current === null) {
+      frameRef.current = requestAnimationFrame(updateLens);
+    }
+  }
+
+  function handlePointerEnter(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isPointerFine || event.pointerType !== "mouse") {
+      return;
+    }
+
+    if (!isZoomReady) {
+      const preload = new Image();
+      preload.onload = () => setIsZoomReady(true);
+      preload.src = item.zoomSrc;
+    }
+
+    setIsLensVisible(true);
+    scheduleLensUpdate(event);
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isPointerFine || event.pointerType !== "mouse") {
+      return;
+    }
+
+    scheduleLensUpdate(event);
+  }
+
+  function handlePointerLeave() {
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+    setIsLensVisible(false);
+  }
+
+  return (
+    <div
+      ref={imageBoxRef}
+      className="relative max-w-full h-full"
+      style={{ aspectRatio: String(aspectRatio) }}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+      onPointerMove={handlePointerMove}
+    >
+      <button
+        aria-label={`View ${item.altText || productName} full size`}
+        className="block w-full h-full p-0 border-0 cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-green)] focus-visible:ring-offset-2"
+        type="button"
+        onClick={onOpenLightbox}
+      >
+        <img
+          alt={item.altText || productName}
+          className="block w-full h-full object-contain"
+          height={item.height ?? naturalSize?.height}
+          src={item.src}
+          width={item.width ?? naturalSize?.width}
+          onError={() => onImageError(item.id)}
+          onLoad={(event) => {
+            if (item.width && item.height) {
+              return;
+            }
+            const target = event.currentTarget;
+            setNaturalSize({ width: target.naturalWidth, height: target.naturalHeight });
+          }}
+        />
+      </button>
+
+      {isPointerFine ? (
+        <div
+          ref={lensRef}
+          aria-hidden="true"
+          className={`absolute top-0 left-0 w-[180px] h-[180px] bg-no-repeat rounded-[var(--radius-md)] border-2 border-[color:var(--color-border)] shadow-[0_8px_20px_rgba(20,20,20,0.25)] pointer-events-none transition-opacity duration-75 motion-reduce:transition-none ${
+            isLensVisible ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ backgroundImage: `url(${isZoomReady ? item.zoomSrc : item.src})` }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalleryItem[] {
