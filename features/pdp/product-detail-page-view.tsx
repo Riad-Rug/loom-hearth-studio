@@ -365,10 +365,10 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             >
               Close
             </button>
-            <DialogPanel className="max-w-full max-h-full">
+            <DialogPanel>
               <img
                 alt={activeImageAlt}
-                className="block max-w-full max-h-full object-contain"
+                className="block w-auto h-auto max-w-[92vw] max-h-[85vh] object-contain"
                 src={activeImage.src}
               />
             </DialogPanel>
@@ -426,12 +426,11 @@ function ProductHeroImage({
     );
   }
 
-  const aspectRatio =
-    item.width && item.height
+  const aspectRatio = naturalSize
+    ? naturalSize.width / naturalSize.height
+    : item.width && item.height
       ? item.width / item.height
-      : naturalSize
-        ? naturalSize.width / naturalSize.height
-        : 4 / 5;
+      : 4 / 5;
 
   function updateLens() {
     frameRef.current = null;
@@ -456,8 +455,12 @@ function ProductHeroImage({
 
     const bgWidth = rect.width * LENS_ZOOM;
     const bgHeight = rect.height * LENS_ZOOM;
-    const bgX = -(rawX / rect.width) * (bgWidth - rect.width);
-    const bgY = -(rawY / rect.height) * (bgHeight - rect.height);
+
+    // background-position is relative to the lens's own box (180px), not the
+    // image box, so the pan offset must center the cursor's *scaled* position
+    // inside the lens, then clamp so no blank space past the image edges shows.
+    const bgX = clamp(half - rawX * LENS_ZOOM, Math.min(LENS_SIZE - bgWidth, 0), 0);
+    const bgY = clamp(half - rawY * LENS_ZOOM, Math.min(LENS_SIZE - bgHeight, 0), 0);
 
     lens.style.transform = `translate3d(${lensLeft}px, ${lensTop}px, 0)`;
     lens.style.backgroundSize = `${bgWidth}px ${bgHeight}px`;
@@ -520,14 +523,11 @@ function ProductHeroImage({
         <img
           alt={item.altText || productName}
           className="block w-full h-full object-contain"
-          height={item.height ?? naturalSize?.height}
+          height={naturalSize?.height ?? item.height}
           src={item.src}
-          width={item.width ?? naturalSize?.width}
+          width={naturalSize?.width ?? item.width}
           onError={() => onImageError(item.id)}
           onLoad={(event) => {
-            if (item.width && item.height) {
-              return;
-            }
             const target = event.currentTarget;
             setNaturalSize({ width: target.naturalWidth, height: target.naturalHeight });
           }}
