@@ -22,12 +22,12 @@ type LookbookItem = {
 export const aboutHero = {
   eyebrow: "ABOUT",
   title: "A direct source for handmade Moroccan rugs, poufs, pillows, and antiques.",
-  body: `My grandfather ran a bazaar in Morocco. The shop itself was later sold by the beneficiaries of his will, but the eye for rugs stayed in the family.
+  body: `My grandfather traded rugs from a bazaar in Marrakech. The trade stayed in the family, and it runs on the same thing it always did: knowing what you're holding.
 
-Loom & Hearth carries that inheritance forward in a smaller, more direct form: one person sourcing, photographing, and shipping handmade Moroccan rugs, poufs, pillows, and antiques from Casablanca.
+Loom & Hearth carries that forward in a smaller, more direct form — one person sourcing, photographing, and shipping handmade Moroccan rugs, poufs, pillows, and antiques from Casablanca. My mom designs and hand-sews every pouf and pillow cover herself.
 
-The point is not scale. The point is being close enough to the material, condition, and daylight color of each piece that the description can stay honest.`,
-  highlight: "The bazaar was sold. The habit of noticing the right rug was not.",
+The point is not scale. The point is being close enough to the material, condition, and daylight colour of each piece that the description can stay honest.`,
+  highlight: "The bazaar changed hands. The habit of noticing the right rug didn't.",
 } as const;
 
 export const aboutSections: AboutSection[] = [
@@ -35,12 +35,12 @@ export const aboutSections: AboutSection[] = [
     eyebrow: "Craft",
     title: "Built on material knowledge and direct selection.",
     body:
-      "We select based on construction and fibre quality \u2014 not trends. For rugs, that means checking pile density by weight and feel, examining the back for knot structure, and assessing warp tension. Many pieces are one of a kind. Even repeatable designs remain handmade \u2014 no two are exactly alike.\n\nOur poufs and pillows are often made from rugs or rug material, which means they carry the same fibre, weave structure, and color as the source piece.",
+      "I select on construction and fibre quality, not trends. For rugs that means checking pile density by weight and feel, examining the back for knot structure, and assessing warp tension. Many pieces are the only one of their kind. Even repeatable designs stay handmade \u2014 no two come out exactly alike.\n\nThe poufs and pillows are my mom's work. She designs and hand-sews every one \u2014 cutting, matching, and seaming each piece herself. Most are made from rugs or rug material, so they carry the same fibre, weave structure, and colour as the source piece.",
   },
   {
     eyebrow: "Direction",
     title: "A focused collection. Not a marketplace.",
-    body: `Loom & Hearth is not a marketplace. We do not list everything we encounter. The collection stays deliberately narrow \u2014 hand-knotted rugs, rug-based poufs, pillows, and a small selection of supporting decor and antiques.
+    body: `Loom & Hearth is not a marketplace. I don't list everything I come across. The collection stays deliberately narrow \u2014 hand-knotted rugs, rug-based poufs and pillows, and a small selection of supporting decor and antiques.
 
 The criterion is simple: does this piece hold up on its own, in a room, without explanation?`,
   },
@@ -48,9 +48,9 @@ The criterion is simple: does this piece hold up on its own, in a room, without 
 
 export const aboutBridge = {
   eyebrow: "How we source",
-  title: "Selected in person, not pulled from a catalog.",
+  title: "This shop carries on my grandfather's bazaar.",
   body:
-    "We work directly across Morocco to source rugs, rug-made poufs, pillows, and supporting decor. Every piece is assessed in person for construction, fibre quality, and condition before it enters the collection.",
+    "I source across Morocco myself — the High Atlas, Zemmour, Taznakht, Beni Ourain — and check every piece in person for construction, fibre, and condition before it enters the stockroom. Nothing is bought sight-unseen, and nothing is listed from a supplier photo.",
 } as const;
 
 export const contactData = {

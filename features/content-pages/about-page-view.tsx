@@ -96,7 +96,7 @@ export function AboutPageView() {
 
       <section className={styles.sectionHeader}>
         <p className={styles.eyebrow}>{aboutBridge.eyebrow}</p>
-        <h2>This shop carries on my grandfather&apos;s bazaar.</h2>
+        <h2>{aboutBridge.title}</h2>
         <p className={styles.body}>{renderLinkedText(aboutBridge.body)}</p>
       </section>
 
@@ -127,7 +127,7 @@ export function AboutPageView() {
           <p className={styles.eyebrow}>Continue</p>
           <h2>Each piece is still chosen one at a time, then shipped from Casablanca.</h2>
           <p className={styles.body}>
-            Browse Moroccan rugs, poufs, pillows, and antiques, or use the trade route if you are sourcing for a client project.
+            Browse Moroccan rugs, poufs, pillows, and antiques — or use the trade route if you&apos;re sourcing for a client project.
           </p>
           <div className={styles.policyActions}>
             <Link className={styles.primaryAction} href="/shop">
