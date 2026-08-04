@@ -26,16 +26,6 @@ export function GlobalSettingsEditor(props: SharedProps) {
   return (
     <div className={styles.stack}>
       <section className={styles.card}>
-        <p className={styles.cardEyebrow}>Brand</p>
-        <div className={styles.formGrid}>
-          <TextField label="Logo text" name="brand.logoText" onChange={props.onChange} registerField={props.registerField} value={props.content.brand.logoText} />
-          <TextField label="Tagline" name="brand.tagline" onChange={props.onChange} registerField={props.registerField} value={props.content.brand.tagline} />
-          <TextField label="Logo image URL" name="brand.logoImageUrl" onChange={props.onChange} registerField={props.registerField} value={props.content.brand.logoImageUrl} />
-          <TextField label="Logo image alt" name="brand.logoImageAlt" onChange={props.onChange} registerField={props.registerField} value={props.content.brand.logoImageAlt} />
-        </div>
-      </section>
-
-      <section className={styles.card}>
         <p className={styles.cardEyebrow}>Page SEO</p>
         <div className={styles.formGrid}>
           <TextField helper={`Target ${SEO_TITLE_MIN_LENGTH} to ${SEO_TITLE_MAX_LENGTH} characters.`} label="Page title" name="pageSeo.title" onChange={props.onChange} registerField={props.registerField} value={props.content.pageSeo.title} />
@@ -73,11 +63,8 @@ export function SectionEditor(props: SharedProps & {
       </section>
 
       {props.selectedSection === "hero" ? <HeroEditor {...props} /> : null}
-      {props.selectedSection === "badges" ? <BadgesEditor {...props} /> : null}
       {props.selectedSection === "categories" ? <CategoriesEditor {...props} /> : null}
-      {props.selectedSection === "brandStory" || props.selectedSection === "designDirection" ? <NarrativeEditor {...props} /> : null}
-      {props.selectedSection === "featured" ? <FeaturedEditor {...props} /> : null}
-      {props.selectedSection === "guide" ? <GuideEditor {...props} /> : null}
+      {props.selectedSection === "brandStory" ? <NarrativeEditor {...props} /> : null}
       {props.selectedSection === "newsletter" ? <NewsletterEditor {...props} /> : null}
       {props.selectedSection === "footer" ? <FooterEditor {...props} /> : null}
     </div>
@@ -88,26 +75,14 @@ function HeroEditor(props: Parameters<typeof SectionEditor>[0]) {
   return <section className={styles.card}><p className={styles.cardEyebrow}>Hero content</p><div className={styles.groupPanel}><strong>How this section works</strong><p className={styles.workspaceHelper}>The fields below control the hero copy, CTAs, and hero image in the preview. Use the preview image to confirm the visual and the fields here to edit it.</p></div><div className={styles.formGrid}><TextField label="Hero eyebrow" name="hero.eyebrow" onChange={props.onChange} registerField={props.registerField} value={props.content.hero.eyebrow} /><TextField label="Hero title" name="hero.title" onChange={props.onChange} registerField={props.registerField} value={props.content.hero.title} /><TextAreaField label="Hero paragraph" name="hero.paragraph" onChange={props.onChange} registerField={props.registerField} rows={5} value={props.content.hero.paragraph} /></div><div className={styles.inlineGroup}><CtaEditor heading="Primary CTA" prefix="hero.primaryCta" button={props.content.hero.primaryCta} onChange={props.onChange} registerField={props.registerField} /><CtaEditor heading="Secondary CTA" prefix="hero.secondaryCta" button={props.content.hero.secondaryCta} onChange={props.onChange} registerField={props.registerField} /></div><ImageEditor label="Hero image" description="Controls the main image in the homepage hero section." image={props.content.hero.image} onImageChange={(image) => props.onImageChange("hero.image", image)} onImageUpload={props.onImageUpload} path="hero.image" registerField={props.registerField} uploadState={props.uploadStates["hero.image"]} /></section>;
 }
 
-function BadgesEditor(props: Parameters<typeof SectionEditor>[0]) {
-  return <section className={styles.card}><p className={styles.cardEyebrow}>Value badges</p><div className={styles.stack}>{props.content.badges.items.map((item, index) => <div key={item.id} className={styles.groupPanel}><strong>Badge {index + 1}</strong><ToggleField checked={item.visible} label="Show badge" onChange={(value) => props.onChange(`badges.items.${index}.visible`, value)} /><TextField label="Label" name={`badges.items.${index}.label`} onChange={props.onChange} registerField={props.registerField} value={item.label} /></div>)}</div></section>;
-}
-
 function CategoriesEditor(props: Parameters<typeof SectionEditor>[0]) {
   return <section className={styles.card}><p className={styles.cardEyebrow}>Categories</p><div className={styles.formGrid}><TextField label="Eyebrow" name="categories.eyebrow" onChange={props.onChange} registerField={props.registerField} value={props.content.categories.eyebrow} /><TextField label="Title" name="categories.title" onChange={props.onChange} registerField={props.registerField} value={props.content.categories.title} /><TextAreaField label="Paragraph" name="categories.paragraph" onChange={props.onChange} registerField={props.registerField} rows={4} value={props.content.categories.paragraph} /></div><div className={styles.stack}>{props.content.categories.cards.map((card, index) => <div key={card.id} className={styles.groupPanel}><strong>Category card {index + 1}: {card.title || "Untitled card"}</strong><ToggleField checked={card.visible} label="Show card" onChange={(value) => props.onChange(`categories.cards.${index}.visible`, value)} /><div className={styles.formGrid}><TextField label="Title" name={`categories.cards.${index}.title`} onChange={props.onChange} registerField={props.registerField} value={card.title} /><TextField label="Link" name={`categories.cards.${index}.href`} onChange={props.onChange} registerField={props.registerField} value={card.href} /><TextAreaField label="Description" name={`categories.cards.${index}.description`} onChange={props.onChange} registerField={props.registerField} rows={3} value={card.description} /></div><ImageEditor label={`Homepage category card ${index + 1} image`} description={`Shown on the public homepage "${card.title || `category card ${index + 1}`}" card.`} image={card.image} onImageChange={(image) => props.onImageChange(`categories.cards.${index}.image`, image)} onImageUpload={props.onImageUpload} path={`categories.cards.${index}.image`} registerField={props.registerField} uploadState={props.uploadStates[`categories.cards.${index}.image`]} /></div>)}</div></section>;
 }
 
 function NarrativeEditor(props: Parameters<typeof SectionEditor>[0]) {
-  const sectionKey = props.selectedSection as "brandStory" | "designDirection";
+  const sectionKey = "brandStory" as const;
   const section = props.content[sectionKey];
   return <section className={styles.card}><p className={styles.cardEyebrow}>Editorial card</p><div className={styles.formGrid}><TextField label="Eyebrow" name={`${sectionKey}.eyebrow`} onChange={props.onChange} registerField={props.registerField} value={section.eyebrow} /><TextField label="Title" name={`${sectionKey}.title`} onChange={props.onChange} registerField={props.registerField} value={section.title} /><TextAreaField label="Paragraph" name={`${sectionKey}.paragraph`} onChange={props.onChange} registerField={props.registerField} rows={5} value={section.paragraph} /><TextField label="Link label" name={`${sectionKey}.linkLabel`} onChange={props.onChange} registerField={props.registerField} value={section.linkLabel} /><TextField label="Link" name={`${sectionKey}.href`} onChange={props.onChange} registerField={props.registerField} value={section.href} /></div></section>;
-}
-
-function FeaturedEditor(props: Parameters<typeof SectionEditor>[0]) {
-  return <section className={styles.card}><p className={styles.cardEyebrow}>Featured collections</p><div className={styles.formGrid}><TextField label="Eyebrow" name="featured.eyebrow" onChange={props.onChange} registerField={props.registerField} value={props.content.featured.eyebrow} /><TextField label="Title" name="featured.title" onChange={props.onChange} registerField={props.registerField} value={props.content.featured.title} /><TextAreaField label="Paragraph" name="featured.paragraph" onChange={props.onChange} registerField={props.registerField} rows={4} value={props.content.featured.paragraph} /></div><div className={styles.stack}>{props.content.featured.cards.map((card, index) => <div key={card.id} className={styles.groupPanel}><strong>Featured card {index + 1}: {card.title || "Untitled card"}</strong><ToggleField checked={card.visible} label="Show card" onChange={(value) => props.onChange(`featured.cards.${index}.visible`, value)} /><div className={styles.formGrid}><TextField label="Small label" name={`featured.cards.${index}.eyebrow`} onChange={props.onChange} registerField={props.registerField} value={card.eyebrow || ""} /><TextField label="Title" name={`featured.cards.${index}.title`} onChange={props.onChange} registerField={props.registerField} value={card.title} /><TextField label="Link" name={`featured.cards.${index}.href`} onChange={props.onChange} registerField={props.registerField} value={card.href} /><TextField label="Commercial label" name={`featured.cards.${index}.priceLabel`} onChange={props.onChange} registerField={props.registerField} value={card.priceLabel || ""} /><TextAreaField label="Description" name={`featured.cards.${index}.description`} onChange={props.onChange} registerField={props.registerField} rows={3} value={card.description} /></div><ImageEditor label={`Featured card ${index + 1} image`} description={`Shown on the public "${card.title || `featured card ${index + 1}`}" card.`} image={card.image} onImageChange={(image) => props.onImageChange(`featured.cards.${index}.image`, image)} onImageUpload={props.onImageUpload} path={`featured.cards.${index}.image`} registerField={props.registerField} uploadState={props.uploadStates[`featured.cards.${index}.image`]} /></div>)}</div></section>;
-}
-
-function GuideEditor(props: Parameters<typeof SectionEditor>[0]) {
-  return <section className={styles.card}><p className={styles.cardEyebrow}>Educational guide</p><div className={styles.formGrid}><TextField label="Eyebrow" name="guide.eyebrow" onChange={props.onChange} registerField={props.registerField} value={props.content.guide.eyebrow} /><TextField label="Title" name="guide.title" onChange={props.onChange} registerField={props.registerField} value={props.content.guide.title} /><TextAreaField label="Paragraph" name="guide.paragraph" onChange={props.onChange} registerField={props.registerField} rows={7} value={props.content.guide.paragraph} /></div></section>;
 }
 
 function NewsletterEditor(props: Parameters<typeof SectionEditor>[0]) {

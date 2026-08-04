@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
 
 import { HomepagePreview } from "@/features/admin/admin-homepage-preview";
 import {
@@ -18,9 +19,7 @@ import {
 import {
   homepageSectionDefinitions,
   homepageSectionKeys,
-  homepageSectionOrderKeys,
   type HomePageContent,
-  type HomePageOrderedSectionKey,
   type HomePageSectionKey,
 } from "@/features/home/home-page-data";
 import {
@@ -46,7 +45,7 @@ const allEditorSections: Array<{ key: EditorKey; label: string; description: str
   {
     key: "global",
     label: "Global",
-    description: "Brand and page-level metadata used outside the section blocks.",
+    description: "Page-level SEO metadata used outside the section blocks.",
   },
   ...homepageSectionKeys.map((key) => ({ key, ...homepageSectionDefinitions[key] })),
 ];
@@ -55,6 +54,7 @@ export function AdminHomepageForm(props: {
   initialContent: HomePageContent;
   source: "database" | "defaults";
 }) {
+  const router = useRouter();
   const [actionState, formAction] = useActionState<AdminHomepageActionState, FormData>(
     updateAdminHomepageAction,
     initialAdminHomepageActionState,
@@ -74,6 +74,16 @@ export function AdminHomepageForm(props: {
     if (!node) return;
     node.focus();
   }, [selectedField]);
+
+  useEffect(() => {
+    if (actionState.status === "success") {
+      router.refresh();
+    }
+  }, [actionState, router]);
+
+  useEffect(() => {
+    setContent(structuredClone(props.initialContent));
+  }, [props.initialContent]);
 
   function registerField(name: string) {
     return (node: FocusableElement | null) => {
@@ -100,18 +110,6 @@ export function AdminHomepageForm(props: {
     updateContent((draft) => {
       draft[section].visible = visible;
     }, `${homepageSectionDefinitions[section].label} visibility updated.`);
-  }
-
-  function moveSection(section: HomePageOrderedSectionKey, direction: -1 | 1) {
-    updateContent((draft) => {
-      const index = draft.sectionOrder.indexOf(section);
-      const nextIndex = index + direction;
-      if (index < 0 || nextIndex < 0 || nextIndex >= draft.sectionOrder.length) return;
-      const nextOrder = [...draft.sectionOrder];
-      const [item] = nextOrder.splice(index, 1);
-      nextOrder.splice(nextIndex, 0, item);
-      draft.sectionOrder = nextOrder;
-    }, `${homepageSectionDefinitions[section].label} moved ${direction < 0 ? "up" : "down"} in the homepage structure.`);
   }
 
   async function handleImageUpload(path: string, file: File) {
@@ -177,9 +175,8 @@ export function AdminHomepageForm(props: {
 
       <div className={styles.dashboardStatusBar}>
         <span className={styles.statusPill}>Source: {props.source === "database" ? "Persisted homepage record" : "Default in-repo fallback"}</span>
-        <span className={styles.statusPill}>Sections: {content.sectionOrder.length + 1} managed</span>
+        <span className={styles.statusPill}>Sections: {homepageSectionKeys.length} managed</span>
         <span className={styles.statusPill}>Uploads: Cloudinary signed flow</span>
-        <span className={styles.statusPill}>Preview: local live state</span>
       </div>
 
       {actionState.message ? <div className={actionState.status === "success" ? styles.successPanel : styles.gatePanel}><strong>{actionState.status === "success" ? "Saved" : "Needs attention"}</strong><p>{actionState.message}</p></div> : null}
@@ -189,24 +186,22 @@ export function AdminHomepageForm(props: {
         <aside className={styles.homepageWorkspaceRail}>
           <div className={styles.groupPanel}>
             <strong>1. Choose a section</strong><p className={styles.workspaceHelper}>Start here. Pick the homepage section you want to edit.</p>
-            <div className={styles.homepageSectionList}>{allEditorSections.map((section) => <button key={section.key} className={`${styles.homepageSectionButton} ${selectedEditor === section.key ? styles.homepageSectionButtonActive : ""}`} onClick={() => setSelectedEditor(section.key)} type="button"><span>{section.label}</span><small>{section.description}</small><span className={styles.homepageSectionMeta}>{section.key === "global" ? <><span>Brand</span><span>Page SEO</span></> : <><span>{content[section.key].visible ? "Visible" : "Hidden"}</span><span>SEO {sectionScores[section.key].score}/50</span></>}</span></button>)}</div>
-          </div>
-
-          <div className={styles.groupPanel}>
-            <strong>Section order</strong>
-            <p className={styles.workspaceHelper}>Adjust the public homepage sequence without leaving this workspace.</p>
-            <div className={styles.stack}>{content.sectionOrder.map((section, index) => <div key={section} className={styles.homepageOrderRow}><div><strong>{index + 1}. {homepageSectionDefinitions[section].label}</strong><p>{homepageSectionDefinitions[section].description}</p></div><div className={styles.actionRow}><button className={styles.inlineActionLink} onClick={() => moveSection(section, -1)} type="button">Up</button><button className={styles.inlineActionLink} onClick={() => moveSection(section, 1)} type="button">Down</button></div></div>)}</div>
+            <div className={styles.homepageSectionList}>{allEditorSections.map((section) => <button key={section.key} className={`${styles.homepageSectionButton} ${selectedEditor === section.key ? styles.homepageSectionButtonActive : ""}`} onClick={() => setSelectedEditor(section.key)} type="button"><span>{section.label}</span><small>{section.description}</small><span className={styles.homepageSectionMeta}>{section.key === "global" ? <span>Page SEO</span> : <><span>{content[section.key].visible ? "Visible" : "Hidden"}</span><span>SEO {sectionScores[section.key].score}/50</span></>}</span></button>)}</div>
           </div>
         </aside>
 
         <section className={styles.homepageEditorColumn}>
-          <div className={styles.groupPanel}><strong>2. Edit fields</strong><p>{selectedEditor === "global" ? "Global settings control shared brand text and homepage metadata." : `Editing ${homepageSectionDefinitions[selectedEditor].label.toLowerCase()}. ${homepageSectionDefinitions[selectedEditor].description}`}</p><p className={styles.workspaceHelper}>Changes update the preview immediately. Save only when the section looks correct.</p></div>
+          <div className={styles.groupPanel}><strong>2. Edit fields</strong><p>{selectedEditor === "global" ? "Global settings control page-level SEO metadata." : `Editing ${homepageSectionDefinitions[selectedEditor].label.toLowerCase()}. ${homepageSectionDefinitions[selectedEditor].description}`}</p><p className={styles.workspaceHelper}>Changes update the preview immediately. Save only when the section looks correct.</p></div>
           {selectedEditor === "global" ? <GlobalSettingsEditor content={content} onChange={updateField} registerField={registerField} /> : <SectionEditor content={content} onChange={updateField} onImageChange={(path, image) => updateContent((draft) => { assignValueAtPath(draft, path, image); }, "Image preview updated locally.")} onImageUpload={handleImageUpload} onVisibilityChange={updateSectionVisibility} registerField={registerField} score={sectionScores[selectedEditor]} selectedSection={selectedEditor} uploadStates={uploadStates} />}
           <div className={styles.actionRow}><SubmitButton /></div>
         </section>
 
         <section className={styles.homepagePreviewColumn}>
-          <div className={styles.groupPanel}><strong>3. Check live preview</strong><p>Use the preview to verify hierarchy and click any text or image target to jump back to the matching field.</p></div>
+          <div className={styles.groupPanel}>
+            <strong>3. Section map</strong>
+            <p>Click any text or image target to jump back to the matching field. This is a navigation aid, not a pixel-accurate preview — use the link below to check the real homepage.</p>
+            <a className={styles.inlineActionLink} href="/" rel="noopener noreferrer" target="_blank">View live homepage ↗</a>
+          </div>
           <HomepagePreview content={content} selectedSection={selectedEditor === "global" ? null : selectedEditor} onSelect={(section, field) => { setSelectedEditor(section); if (field) setSelectedField(field); }} />
         </section>
       </div>

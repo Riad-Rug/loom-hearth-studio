@@ -1,15 +1,9 @@
 import { siteConfig } from "@/config/site";
+import { allowedImageHostnames } from "@/lib/media/allowed-image-hosts";
 
 export const homepageSectionOrderKeys = [
   "hero",
-  "badges",
-  "featured",
-  "proof",
-  "howItWorks",
   "brandStory",
-  "designDirection",
-  "guide",
-  "faq",
   "newsletter",
 ] as const;
 
@@ -26,10 +20,6 @@ export const homepageSectionDefinitions: Record<
     label: "Hero",
     description: "Lead heading, summary, calls to action, and the primary hero image.",
   },
-  badges: {
-    label: "Value badges",
-    description: "Four supporting proof points shown directly under the hero.",
-  },
   categories: {
     label: "Categories",
     description: "Merchandising cards for the main collection categories.",
@@ -38,33 +28,9 @@ export const homepageSectionDefinitions: Record<
     label: "Brand story",
     description: "Editorial card linking back to the studio story.",
   },
-  designDirection: {
-    label: "Design direction",
-    description: "Editorial card that frames the visual point of view.",
-  },
-  featured: {
-    label: "Shop-first categories",
-    description: "Category-first shopping cards that lead buyers into ONE OF A KIND inventory.",
-  },
-  proof: {
-    label: "Buyer proof",
-    description: "Comparison points that explain why shoppers should buy from this store.",
-  },
-  howItWorks: {
-    label: "How it works",
-    description: "Purchase flow and color-verification steps shown on the homepage.",
-  },
-  guide: {
-    label: "Educational guide",
-    description: "SEO-supporting educational copy block on the homepage.",
-  },
   newsletter: {
     label: "Newsletter",
     description: "Signup prompt with editable copy and call to action.",
-  },
-  faq: {
-    label: "FAQ",
-    description: "Pre-purchase questions that reduce buyer hesitation before the footer.",
   },
   footer: {
     label: "Footer",
@@ -101,12 +67,6 @@ export type HomePageSectionSettings = {
   seo: HomePageSeoFields;
 };
 
-export type HomePageBadgeItem = {
-  id: string;
-  label: string;
-  visible: boolean;
-};
-
 export type HomePageImageCard = {
   id: string;
   title: string;
@@ -118,13 +78,6 @@ export type HomePageImageCard = {
   image: HomePageImage;
 };
 
-export type HomePageFaqItem = {
-  id: string;
-  question: string;
-  answer: string;
-  visible: boolean;
-};
-
 export type HomePageNarrativeSection = HomePageSectionSettings & {
   eyebrow: string;
   title: string;
@@ -134,12 +87,6 @@ export type HomePageNarrativeSection = HomePageSectionSettings & {
 };
 
 export type HomePageContent = {
-  brand: {
-    logoText: string;
-    logoImageUrl: string;
-    logoImageAlt: string;
-    tagline: string;
-  };
   pageSeo: {
     title: string;
     description: string;
@@ -153,9 +100,6 @@ export type HomePageContent = {
     secondaryCta: HomePageButton;
     image: HomePageImage;
   };
-  badges: HomePageSectionSettings & {
-    items: HomePageBadgeItem[];
-  };
   categories: HomePageSectionSettings & {
     eyebrow: string;
     title: string;
@@ -163,20 +107,6 @@ export type HomePageContent = {
     cards: HomePageImageCard[];
   };
   brandStory: HomePageNarrativeSection;
-  designDirection: HomePageNarrativeSection;
-  featured: HomePageSectionSettings & {
-    eyebrow: string;
-    title: string;
-    paragraph: string;
-    cards: HomePageImageCard[];
-  };
-  proof: HomePageSectionSettings;
-  howItWorks: HomePageSectionSettings;
-  guide: HomePageSectionSettings & {
-    eyebrow: string;
-    title: string;
-    paragraph: string;
-  };
   newsletter: HomePageSectionSettings & {
     eyebrow: string;
     title: string;
@@ -184,12 +114,6 @@ export type HomePageContent = {
     inputLabel: string;
     inputPlaceholder: string;
     ctaLabel: string;
-  };
-  faq: HomePageSectionSettings & {
-    eyebrow: string;
-    title: string;
-    paragraph: string;
-    items: HomePageFaqItem[];
   };
   footer: HomePageSectionSettings & {
     introTitle: string;
@@ -204,19 +128,9 @@ export type HomePageContent = {
   };
 };
 
-const allowedImageHosts = new Set([
-  "images.pexels.com",
-  "images.unsplash.com",
-  "res.cloudinary.com",
-]);
+const allowedImageHosts = new Set<string>(allowedImageHostnames);
 
 const defaultHomePageContent: HomePageContent = {
-  brand: {
-    logoText: siteConfig.name,
-    logoImageUrl: "/brand/logo.png",
-    logoImageAlt: `${siteConfig.name} logo`,
-    tagline: siteConfig.tagline,
-  },
   pageSeo: {
     title: "Loom & Hearth | Handmade Moroccan Rugs",
     description:
@@ -251,24 +165,6 @@ const defaultHomePageContent: HomePageContent = {
       width: null,
       height: null,
     },
-  },
-  badges: {
-    visible: true,
-    seo: {
-      seoTitle: "Moroccan home decor value highlights | Loom & Hearth Studio",
-      metaDescription:
-        "Direct sourcing, launch-market shipping to the United States, Canada, and Australia, and a confirm-before-capture model shape the homepage value highlights.",
-    },
-    items: [
-      { id: "badge-1", label: "Exact-piece verification", visible: true },
-      {
-        id: "badge-2",
-        label: "Direct from Morocco",
-        visible: true,
-      },
-      { id: "badge-3", label: "Free shipping to the US, Canada, and Australia", visible: true },
-      { id: "badge-4", label: "14-day returns", visible: true },
-    ],
   },
   categories: {
     visible: true,
@@ -373,141 +269,6 @@ const defaultHomePageContent: HomePageContent = {
     linkLabel: "READ THE FULL STORY",
     href: "/about",
   },
-  designDirection: {
-    visible: true,
-    seo: {
-      seoTitle: "Design direction | Loom & Hearth Studio",
-      metaDescription:
-        "See the design direction behind the collection: stacked textiles, wool, wood, quiet contrast, and handcrafted accents with lasting weight.",
-    },
-    eyebrow: "DESIGN DIRECTION",
-    title: "Pieces chosen for what they are made of. Not for how they photograph.",
-    paragraph:
-      "The collection stays focused: hand-knotted Moroccan rugs, rug-based poufs, pillows, and a small selection of supporting decor. Every piece is evaluated on construction  pile density, knot structure, material weight, and colour consistency across the field. A rug that photographs well but sheds heavily or compresses under foot traffic within two years is not a piece we will sell.",
-    linkLabel: "VIEW THE LOOKBOOK",
-    href: "/lookbook",
-  },
-  featured: {
-    visible: true,
-    seo: {
-      seoTitle: "Featured Moroccan collections | Loom & Hearth Studio",
-      metaDescription:
-        "Start with the signature homepage categories: Moroccan rugs, rug-made poufs, cactus silk pillows, handcrafted decor, and vintage finds.",
-    },
-    eyebrow: "",
-    title: "Choose the category first, then the exact piece.",
-    paragraph:
-      "Every listing is a ONE OF A KIND inventory decision. Start with the type of piece you need, then confirm the exact item.",
-    cards: [
-      {
-        id: "featured-rugs",
-        title: "ONE OF A KIND Moroccan Rugs",
-        description:
-          "Hand-knotted Moroccan rugs selected for pile density, weight, and long-term durability.",
-        priceLabel: "SHOP RUGS",
-        href: "/shop/rugs",
-        visible: true,
-        image: {
-          src: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-          alt: "Handmade Moroccan rug in a warm neutral living room with soft natural light",
-          publicId: "",
-          width: null,
-          height: null,
-        },
-      },
-      {
-        id: "featured-poufs",
-        title: "Rug-Made and Leather Poufs",
-        description:
-          "Poufs selected for construction quality, filling density, and everyday use.",
-        priceLabel: "SHOP POUFS",
-        href: "/shop/poufs",
-        visible: true,
-        image: {
-          src: "https://images.pexels.com/photos/36167991/pexels-photo-36167991.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
-          alt: "A Moroccan leather pouf shown in full view with clean natural styling",
-          publicId: "",
-          width: null,
-          height: null,
-        },
-      },
-      {
-        id: "featured-pillows",
-        title: "Cactus Silk Pillows",
-        description:
-          "Flat-woven cactus silk. Low-shed, with strong colour saturation and a quieter surface than wool pile.",
-        priceLabel: "SHOP PILLOWS",
-        href: "/shop/pillows",
-        visible: true,
-        image: {
-          src: "https://images.pexels.com/photos/11537258/pexels-photo-11537258.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=1200",
-          alt: "Square crop of colorful Moroccan throw pillows and woven textiles in natural light",
-          publicId: "",
-          width: null,
-          height: null,
-        },
-      },
-      {
-        id: "featured-decor",
-        title: "Handcrafted Decor",
-        description: "Handcrafted Moroccan objects selected for shelves, consoles, and flat surfaces.",
-        priceLabel: "SHOP DECOR",
-        href: "/shop/decor",
-        visible: true,
-        image: {
-          src: "",
-          alt: "Decor and antiques photo placeholder",
-          publicId: "",
-          width: null,
-          height: null,
-        },
-      },
-      {
-        id: "featured-vintage",
-        title: "Vintage Moroccan Rugs",
-        description:
-          "ONE OF A KIND vintage Moroccan rugs selected for construction integrity, visible age, and pile condition.",
-        priceLabel: "SHOP VINTAGE",
-        href: "/shop/vintage",
-        visible: true,
-        image: {
-          src: "https://images.pexels.com/photos/28582589/pexels-photo-28582589.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1600",
-          alt: "Vintage Moroccan rugs displayed in a warm showroom with visible patina and texture",
-          publicId: "",
-          width: null,
-          height: null,
-        },
-      },
-    ],
-  },
-  proof: {
-    visible: true,
-    seo: {
-      seoTitle: "Why buy Moroccan rugs here | Loom & Hearth Studio",
-      metaDescription:
-        "Learn how Loom & Hearth Studio sources exact Moroccan pieces, verifies color before payment capture, and sells ONE OF A KIND handmade inventory.",
-    },
-  },
-  howItWorks: {
-    visible: true,
-    seo: {
-      seoTitle: "How ordering works | Loom & Hearth Studio",
-      metaDescription:
-        "See how Loom & Hearth Studio confirms color, destination details, and delivery conditions before capturing payment for handmade Moroccan pieces.",
-    },
-  },
-  guide: {
-    visible: true,
-    seo: {
-      seoTitle: "What makes Moroccan rugs unique? | Loom & Hearth Studio",
-      metaDescription:
-        "Learn what makes Moroccan rugs distinctive, from handwoven texture and plush wool to vintage patina, movement, and visible age.",
-    },
-    eyebrow: "KNOW WHAT YOU ARE BUYING",
-    title: "What separates a hand-knotted Moroccan rug from everything else on the market.",
-    paragraph:
-      "A hand-knotted Moroccan rug is built knot by knot onto a warp structure. The weight of the finished piece reflects how densely it was knotted  and density is the primary indicator of how the rug will perform over time. Machine-made and tufted rugs use a backing adhesive to hold the pile. That adhesive degrades. The knot structure in a hand-knotted rug does not. A well-knotted piece bought today should still be in the room  and worth something  in thirty years.",
-  },
   newsletter: {
     visible: true,
     seo: {
@@ -522,62 +283,6 @@ const defaultHomePageContent: HomePageContent = {
     inputLabel: "Email address",
     inputPlaceholder: "Your email address",
     ctaLabel: "JOIN",
-  },
-  faq: {
-    visible: true,
-    seo: {
-      seoTitle: "Moroccan rug buying questions | Loom & Hearth Studio",
-      metaDescription:
-        "Answers to common questions about exact-piece Moroccan rugs, room fit, shipping, duties, returns, and what is included in the price.",
-    },
-    eyebrow: "BEFORE YOU BUY",
-    title: "Questions buyers ask before choosing a ONE OF A KIND rug.",
-    paragraph:
-      "A rug is a considered purchase. These are the details we confirm before you commit.",
-    items: [
-      {
-        id: "faq-exact-rug",
-        question: "Is my rug really the exact one I will receive?",
-        answer:
-          "Yes. ONE OF A KIND rugs are listed as exact pieces, not representative samples. Before payment is captured, we confirm the actual rug with you through the inquiry and verification flow.",
-        visible: true,
-      },
-      {
-        id: "faq-space-fit",
-        question: "What if it does not work in my space?",
-        answer:
-          "Ask before committing. We can review room photos, dimensions, light, and nearby finishes to help judge scale and color. If it still is not right after delivery, eligible pieces have a 14-day return window.",
-        visible: true,
-      },
-      {
-        id: "faq-shipping",
-        question: "How long does shipping take?",
-        answer:
-          "Pieces ship from Morocco in 5 to 7 business days after final confirmation. Delivery is tracked through DHL for supported launch markets.",
-        visible: true,
-      },
-      {
-        id: "faq-price-included",
-        question: "What is included in the price?",
-        answer:
-          "The listed price includes the piece, pre-shipment verification, DHL tracked delivery, and duties to the United States, Canada, and Australia. Prices are shown in USD.",
-        visible: true,
-      },
-      {
-        id: "faq-color",
-        question: "How do I know the color is accurate?",
-        answer:
-          "We review color before payment is captured and can show the piece in natural, warm, and cool light so you are not relying on a single styled photograph.",
-        visible: true,
-      },
-      {
-        id: "faq-handmade-variation",
-        question: "Will a handmade rug have irregularities?",
-        answer:
-          "Yes, and that is part of the value when the structure is sound. Handmade and vintage pieces can show variation in edge line, pile height, tone, and age. Condition notes are reviewed against the exact piece.",
-        visible: true,
-      },
-    ],
   },
   footer: {
     visible: true,
@@ -620,16 +325,8 @@ export function sanitizeHomePageContent(input: unknown): HomePageContent {
   const defaults = createDefaultHomePageContent();
   const legacyHero = asRecord(source.hero);
   const legacyCategories = asRecord(source.categoriesSection);
-  const legacyFeatured = asRecord(source.featuredDirections);
-  const legacyGuide = asRecord(source.moroccanRugsGuide);
 
   return {
-    brand: {
-      logoText: readString(source.brand, "logoText", defaults.brand.logoText),
-      logoImageUrl: readString(source.brand, "logoImageUrl", defaults.brand.logoImageUrl),
-      logoImageAlt: readString(source.brand, "logoImageAlt", defaults.brand.logoImageAlt),
-      tagline: readString(source.brand, "tagline", defaults.brand.tagline),
-    },
     pageSeo: {
       title: readString(source.pageSeo, "title", defaults.pageSeo.title),
       description: readString(source.pageSeo, "description", defaults.pageSeo.description),
@@ -660,15 +357,6 @@ export function sanitizeHomePageContent(input: unknown): HomePageContent {
         readString(source.hero, "imageAlt", defaults.hero.image.alt),
       ),
     },
-    badges: {
-      ...readSectionSettings(source.badges, defaults.badges),
-      items: readBadgeArray(
-        source.badges,
-        "items",
-        defaults.badges.items,
-        source.trustItems,
-      ),
-    },
     categories: {
       ...readSectionSettings(legacyCategories.cards ? legacyCategories : source.categories, defaults.categories),
       eyebrow: readString(source.categories ?? source.categoriesSection, "eyebrow", defaults.categories.eyebrow),
@@ -681,26 +369,6 @@ export function sanitizeHomePageContent(input: unknown): HomePageContent {
       ),
     },
     brandStory: readNarrativeSection(source.brandStory, defaults.brandStory),
-    designDirection: readNarrativeSection(source.designDirection, defaults.designDirection),
-    featured: {
-      ...readSectionSettings(legacyFeatured.cards ? legacyFeatured : source.featured, defaults.featured),
-      eyebrow: readString(source.featured ?? source.featuredDirections, "eyebrow", defaults.featured.eyebrow),
-      title: readString(source.featured ?? source.featuredDirections, "title", defaults.featured.title),
-      paragraph: readString(source.featured ?? source.featuredDirections, "paragraph", readString(source.featuredDirections, "intro", defaults.featured.paragraph)),
-      cards: readImageCardArray(
-        source.featured ?? source.featuredDirections,
-        "cards",
-        defaults.featured.cards,
-      ),
-    },
-    proof: readSectionSettings(source.proof, defaults.proof),
-    howItWorks: readSectionSettings(source.howItWorks, defaults.howItWorks),
-    guide: {
-      ...readSectionSettings(legacyGuide.title ? legacyGuide : source.guide, defaults.guide),
-      eyebrow: readString(source.guide ?? source.moroccanRugsGuide, "eyebrow", defaults.guide.eyebrow),
-      title: readString(source.guide ?? source.moroccanRugsGuide, "title", defaults.guide.title),
-      paragraph: readString(source.guide ?? source.moroccanRugsGuide, "paragraph", defaults.guide.paragraph),
-    },
     newsletter: {
       ...readSectionSettings(source.newsletter, defaults.newsletter),
       eyebrow: readString(source.newsletter, "eyebrow", defaults.newsletter.eyebrow),
@@ -709,13 +377,6 @@ export function sanitizeHomePageContent(input: unknown): HomePageContent {
       inputLabel: readString(source.newsletter, "inputLabel", defaults.newsletter.inputLabel),
       inputPlaceholder: readString(source.newsletter, "inputPlaceholder", defaults.newsletter.inputPlaceholder),
       ctaLabel: readString(source.newsletter, "ctaLabel", defaults.newsletter.ctaLabel),
-    },
-    faq: {
-      ...readSectionSettings(source.faq, defaults.faq),
-      eyebrow: readString(source.faq, "eyebrow", defaults.faq.eyebrow),
-      title: readString(source.faq, "title", defaults.faq.title),
-      paragraph: readString(source.faq, "paragraph", defaults.faq.paragraph),
-      items: readFaqArray(source.faq, "items", defaults.faq.items),
     },
     footer: {
       ...readSectionSettings(source.footer, defaults.footer),
@@ -734,10 +395,8 @@ export function sanitizeHomePageContent(input: unknown): HomePageContent {
 
 export function validateHomePageContent(content: HomePageContent) {
   const imageAssets = [
-    { label: "Brand logo", image: { src: content.brand.logoImageUrl, alt: content.brand.logoImageAlt } },
     { label: "Hero image", image: content.hero.image },
     ...content.categories.cards.map((card) => ({ label: `${card.title} image`, image: card.image })),
-    ...content.featured.cards.map((card) => ({ label: `${card.title} image`, image: card.image })),
   ].filter((item) => item.image.src.trim());
 
   const invalidImage = imageAssets.find((item) => !isAllowedImageUrl(item.image.src));
@@ -762,9 +421,7 @@ export function validateHomePageContent(content: HomePageContent) {
     content.hero.primaryCta.href,
     content.hero.secondaryCta.href,
     content.brandStory.href,
-    content.designDirection.href,
     ...content.categories.cards.map((card) => card.href),
-    ...content.featured.cards.map((card) => card.href),
     ...content.footer.exploreLinks.map((link) => link.href),
     ...content.footer.supportLinks.map((link) => link.href),
     ...content.footer.collectionLinks.map((link) => link.href),
@@ -851,28 +508,6 @@ function readImage(
   };
 }
 
-function readBadgeArray(
-  value: unknown,
-  key: string,
-  fallback: HomePageBadgeItem[],
-  legacyValue?: unknown,
-): HomePageBadgeItem[] {
-  const source = asRecord(value)[key];
-  const items = Array.isArray(source) ? source : [];
-  const legacyItems = Array.isArray(legacyValue) ? legacyValue : [];
-
-  return fallback.map((defaultItem, index) => {
-    const current = asRecord(items[index]);
-    const legacyLabel = typeof legacyItems[index] === "string" ? String(legacyItems[index]) : "";
-
-    return {
-      id: readString(current, "id", defaultItem.id),
-      label: readString(current, "label", legacyLabel || defaultItem.label),
-      visible: readBoolean(current, "visible", defaultItem.visible),
-    };
-  });
-}
-
 function readImageCardArray(
   value: unknown,
   key: string,
@@ -912,26 +547,6 @@ function readLinkArray(value: unknown, key: string, fallback: HomePageLink[]) {
     return {
       label: readString(link, "label", defaultLink.label),
       href: readString(link, "href", defaultLink.href),
-    };
-  });
-}
-
-function readFaqArray(
-  value: unknown,
-  key: string,
-  fallback: HomePageFaqItem[],
-): HomePageFaqItem[] {
-  const source = asRecord(value)[key];
-  const items = Array.isArray(source) ? source : [];
-
-  return fallback.map((defaultItem, index) => {
-    const item = asRecord(items[index]);
-
-    return {
-      id: readString(item, "id", defaultItem.id),
-      question: readString(item, "question", defaultItem.question),
-      answer: readString(item, "answer", defaultItem.answer),
-      visible: readBoolean(item, "visible", defaultItem.visible),
     };
   });
 }

@@ -30,14 +30,6 @@ export function HomepagePreview({ content, selectedSection, onSelect }: Homepage
         </div>
       </PreviewSection>
 
-      <PreviewSection active={selectedSection === "badges"} hidden={!content.badges.visible} title={homepageSectionDefinitions.badges.label} onSelect={() => onSelect("badges")}>
-        <div className={styles.homepagePreviewBadgeRow}>
-          {content.badges.items.map((item, index) =>
-            item.visible ? <PreviewBadge key={item.id} label={item.label} onClick={() => onSelect("badges", `badges.items.${index}.label`)} /> : null,
-          )}
-        </div>
-      </PreviewSection>
-
       <PreviewSection active={selectedSection === "categories"} hidden={!content.categories.visible} title={homepageSectionDefinitions.categories.label} onSelect={() => onSelect("categories")}>
         <PreviewChip label={content.categories.eyebrow} onClick={() => onSelect("categories", "categories.eyebrow")} />
         <PreviewHeadline compact label={content.categories.title} onClick={() => onSelect("categories", "categories.title")} />
@@ -56,40 +48,14 @@ export function HomepagePreview({ content, selectedSection, onSelect }: Homepage
         </div>
       </PreviewSection>
 
-      <PreviewSection active={selectedSection === "brandStory" || selectedSection === "designDirection"} hidden={!content.brandStory.visible && !content.designDirection.visible} title="Editorial pair" onSelect={() => onSelect(content.brandStory.visible ? "brandStory" : "designDirection")}>
+      <PreviewSection active={selectedSection === "brandStory"} hidden={!content.brandStory.visible} title={homepageSectionDefinitions.brandStory.label} onSelect={() => onSelect("brandStory")}>
         <div className={styles.homepagePreviewNarrativeGrid}>
-          {content.brandStory.visible ? <PreviewNarrative section={content.brandStory} onClick={() => onSelect("brandStory", "brandStory.title")} /> : null}
-          {content.designDirection.visible ? <PreviewNarrative section={content.designDirection} onClick={() => onSelect("designDirection", "designDirection.title")} /> : null}
+          <PreviewNarrative section={content.brandStory} onClick={() => onSelect("brandStory", "brandStory.title")} />
         </div>
       </PreviewSection>
 
-      <PreviewSection active={selectedSection === "featured"} hidden={!content.featured.visible} title={homepageSectionDefinitions.featured.label} onSelect={() => onSelect("featured")}>
-        <PreviewChip label={content.featured.eyebrow} onClick={() => onSelect("featured", "featured.eyebrow")} />
-        <PreviewHeadline compact label={content.featured.title} onClick={() => onSelect("featured", "featured.title")} />
-        <PreviewBody label={content.featured.paragraph} onClick={() => onSelect("featured", "featured.paragraph")} />
-        <div className={styles.homepagePreviewCardGridThree}>
-          {content.featured.cards.map((card, index) =>
-            card.visible ? (
-              <PreviewCard
-                key={card.id}
-                card={card}
-                onImageClick={() => onSelect("featured", `featured.cards.${index}.image.alt`)}
-                onTextClick={() => onSelect("featured", `featured.cards.${index}.title`)}
-              />
-            ) : null,
-          )}
-        </div>
-      </PreviewSection>
-
-      <PreviewSection active={selectedSection === "guide" || selectedSection === "newsletter"} hidden={!content.guide.visible && !content.newsletter.visible} title="Guide and newsletter" onSelect={() => onSelect(content.guide.visible ? "guide" : "newsletter")}>
+      <PreviewSection active={selectedSection === "newsletter"} hidden={!content.newsletter.visible} title={homepageSectionDefinitions.newsletter.label} onSelect={() => onSelect("newsletter")}>
         <div className={styles.homepagePreviewEditorialGrid}>
-          {content.guide.visible ? (
-            <div className={styles.homepagePreviewEditorialCard}>
-              <PreviewChip label={content.guide.eyebrow} onClick={() => onSelect("guide", "guide.eyebrow")} />
-              <PreviewHeadline compact label={content.guide.title} onClick={() => onSelect("guide", "guide.title")} />
-              <PreviewBody label={content.guide.paragraph} onClick={() => onSelect("guide", "guide.paragraph")} />
-            </div>
-          ) : null}
           {content.newsletter.visible ? (
             <div className={styles.homepagePreviewEditorialCard}>
               <PreviewChip label={content.newsletter.eyebrow} onClick={() => onSelect("newsletter", "newsletter.eyebrow")} />
@@ -148,10 +114,6 @@ function PreviewBody(props: { label: string; onClick: () => void; subtle?: boole
 
 function PreviewAction(props: { label: string; onClick: () => void; primary?: boolean }) {
   return <button className={`${styles.homepagePreviewAction} ${props.primary ? styles.homepagePreviewActionPrimary : ""}`} onClick={props.onClick} type="button">{props.label}</button>;
-}
-
-function PreviewBadge(props: { label: string; onClick: () => void }) {
-  return <button className={styles.homepagePreviewBadge} onClick={props.onClick} type="button">{props.label}</button>;
 }
 
 function PreviewImage(props: { image: HomePageImage; onClick: () => void }) {

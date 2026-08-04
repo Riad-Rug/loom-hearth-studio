@@ -4,9 +4,9 @@ import Image from "next/image";
 
 import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
-import { aboutBridge } from "@/features/content-pages/content-pages-data";
 import type { HomePageContent } from "@/features/home/home-page-data";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
+import { allowedImageHostnames } from "@/lib/media/allowed-image-hosts";
 import type { ProductCategory } from "@/types/domain";
 
 import { LiveProductCardImage } from "./live-product-card-image";
@@ -17,9 +17,6 @@ type HomePageViewProps = {
   featuredProducts?: CatalogProductCardViewModel[];
   liveCategories?: ProductCategory[];
 };
-
-const heroParagraphMobile =
-  "One of each, shipped from Casablanca by the person who found it. You approve photos of your exact piece before payment.";
 
 const founderNoteDesktop =
   "I photograph every piece myself in Casablanca. You approve the exact photos — daylight, wear included — before you pay.";
@@ -47,40 +44,6 @@ const howItWorksSteps = [
     body: "From Casablanca in 5–10 days. US · CA · AU.",
   },
 ] as const;
-
-const storyBodyDesktop =
-  "My grandfather traded rugs from a bazaar in Marrakech. The bazaar was sold after he passed; the trade wasn't. I source across Morocco myself — every piece checked in person for construction, fibre, and condition before it enters the stockroom.";
-const storyBodyMobile =
-  "My grandfather traded rugs; his bazaar is gone, the trade isn't. I check every piece in person before it enters the stockroom.";
-
-const newsletterTitleMobile = "See new pieces before they sell through.";
-
-const categoryCardCopy: Record<string, { desktop: string; mobile: string }> = {
-  "category-rugs": {
-    desktop:
-      "Hand-knotted and flatwoven rugs, selected for pile density, construction, and weight underfoot.",
-    mobile: "Hand-knotted and flatwoven, chosen for construction and weight.",
-  },
-  "category-poufs": {
-    desktop:
-      "Rug-made and leather poufs. Real seating with a quieter footprint than upholstered furniture.",
-    mobile: "Rug-made and leather. Real seating, small footprint.",
-  },
-  "category-pillows": {
-    desktop: "Cactus-silk (sabra) and rug-based pillows. Flat-woven, low-shed, strong colour.",
-    mobile: "Sabra and rug-based. Low-shed, strong colour.",
-  },
-  "category-decor": {
-    desktop:
-      "Handmade Moroccan objects for shelves, consoles, and flat surfaces — brass, wood, clay.",
-    mobile: "Objects for shelves and consoles — brass, wood, clay.",
-  },
-  "category-vintage": {
-    desktop:
-      "Vintage pieces chosen for construction integrity, visible age, and honest condition — one of each, never restocked.",
-    mobile: "Chosen for construction, age, and honest condition.",
-  },
-};
 
 const categoryCardCategoryKey: Record<string, ProductCategory> = {
   "category-rugs": "rugs",
@@ -113,7 +76,7 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
     return categoryKey ? liveCategorySet.has(categoryKey) : true;
   });
   const normalizedFeaturedProducts = featuredProducts.slice(0, 8);
-  const heroImage = getCloudinaryImage(content.hero.image.src);
+  const heroImage = getRenderableImage(content.hero.image.src);
   const hasHeroActions = content.hero.primaryCta.visible || content.hero.secondaryCta.visible;
 
   return (
@@ -122,8 +85,7 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>{content.hero.eyebrow}</p>
           <h1>{content.hero.title}</h1>
-          <p className={`${styles.heroBody} ${styles.desktopCopy}`}>{content.hero.paragraph}</p>
-          <p className={`${styles.heroBody} ${styles.mobileCopy}`}>{heroParagraphMobile}</p>
+          <p className={styles.heroBody}>{content.hero.paragraph}</p>
           {hasHeroActions ? (
             <div className={styles.heroActions}>
               {content.hero.primaryCta.visible ? (
@@ -255,7 +217,7 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
 
         <div className={styles.categoryGrid}>
           {categoryCards.map((card) => {
-            const imageSrc = getCloudinaryImage(card.image.src);
+            const imageSrc = getRenderableImage(card.image.src);
 
             return (
               <Link key={card.id} className={styles.categoryCard} href={card.href as Route}>
@@ -279,12 +241,7 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
                 </div>
                 <div className={styles.categoryBody}>
                   <h3>{card.title}</h3>
-                  <p className={styles.desktopCopy}>
-                    {categoryCardCopy[card.id]?.desktop ?? card.description}
-                  </p>
-                  <p className={styles.mobileCopy}>
-                    {categoryCardCopy[card.id]?.mobile ?? card.description}
-                  </p>
+                  <p>{card.description}</p>
                 </div>
               </Link>
             );
@@ -294,14 +251,13 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
 
       <section className={styles.storySection}>
         <div className={styles.storyCopy}>
-          <p className={styles.eyebrow}>{aboutBridge.eyebrow}</p>
-          <h2>This shop carries on my grandfather&apos;s bazaar.</h2>
-          <p className={styles.desktopCopy}>{storyBodyDesktop}</p>
-          <p className={styles.mobileCopy}>{storyBodyMobile}</p>
+          <p className={styles.eyebrow}>{content.brandStory.eyebrow}</p>
+          <h2>{content.brandStory.title}</h2>
+          <p>{content.brandStory.paragraph}</p>
         </div>
         <div className={styles.storyActions}>
-          <Link className={styles.primaryAction} href="/about">
-            Read the story
+          <Link className={styles.primaryAction} href={content.brandStory.href as Route}>
+            {content.brandStory.linkLabel}
           </Link>
           <Link className={styles.secondaryAction} href="/sourcing">
             See how I source
@@ -313,8 +269,7 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
         <div className={styles.sectionHeader}>
           <div>
             <p className={styles.eyebrow}>{content.newsletter.eyebrow}</p>
-            <h2 className={styles.desktopCopy}>{content.newsletter.title}</h2>
-            <h2 className={styles.mobileCopy}>{newsletterTitleMobile}</h2>
+            <h2>{content.newsletter.title}</h2>
           </div>
           <p>{content.newsletter.paragraph}</p>
         </div>
@@ -328,6 +283,17 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
   );
 }
 
-function getCloudinaryImage(src: string) {
-  return src.startsWith("https://res.cloudinary.com/") ? src : "";
+function getRenderableImage(src: string) {
+  if (src.startsWith("/") && !src.startsWith("//")) {
+    return src;
+  }
+
+  try {
+    const parsed = new URL(src);
+    return parsed.protocol === "https:" && allowedImageHostnames.includes(parsed.hostname as (typeof allowedImageHostnames)[number])
+      ? src
+      : "";
+  } catch {
+    return "";
+  }
 }

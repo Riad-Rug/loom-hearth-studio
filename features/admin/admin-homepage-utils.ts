@@ -76,16 +76,9 @@ export function readImageAtPath(content: HomePageContent, path: string) {
 export function createSectionScoreMap(content: HomePageContent): Record<HomePageSectionKey, SeoAudit> {
   return {
     hero: createSeoAudit(content.hero.title, content.hero.seo.seoTitle, content.hero.seo.metaDescription, content.hero.image.alt),
-    badges: createSeoAudit(content.badges.items.filter((item) => item.visible).map((item) => item.label).join(" "), content.badges.seo.seoTitle, content.badges.seo.metaDescription),
     categories: createSeoAudit(content.categories.title, content.categories.seo.seoTitle, content.categories.seo.metaDescription, content.categories.cards.find((card) => card.visible)?.image.alt),
     brandStory: createSeoAudit(content.brandStory.title, content.brandStory.seo.seoTitle, content.brandStory.seo.metaDescription),
-    designDirection: createSeoAudit(content.designDirection.title, content.designDirection.seo.seoTitle, content.designDirection.seo.metaDescription),
-    featured: createSeoAudit(content.featured.title, content.featured.seo.seoTitle, content.featured.seo.metaDescription, content.featured.cards.find((card) => card.visible)?.image.alt),
-    proof: createSeoAudit("Built for buyers who want the actual piece, not a catalogue approximation.", content.proof.seo.seoTitle, content.proof.seo.metaDescription),
-    howItWorks: createSeoAudit("How it works", content.howItWorks.seo.seoTitle, content.howItWorks.seo.metaDescription),
-    guide: createSeoAudit(content.guide.title, content.guide.seo.seoTitle, content.guide.seo.metaDescription),
     newsletter: createSeoAudit(content.newsletter.title, content.newsletter.seo.seoTitle, content.newsletter.seo.metaDescription),
-    faq: createSeoAudit(content.faq.title, content.faq.seo.seoTitle, content.faq.seo.metaDescription),
     footer: createSeoAudit(content.footer.introTitle, content.footer.seo.seoTitle, content.footer.seo.metaDescription),
   };
 }
