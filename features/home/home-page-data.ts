@@ -740,11 +740,12 @@ export function validateHomePageContent(content: HomePageContent) {
     ...content.featured.cards.map((card) => ({ label: `${card.title} image`, image: card.image })),
   ].filter((item) => item.image.src.trim());
 
-  if (imageAssets.some((item) => !isAllowedImageUrl(item.image.src))) {
+  const invalidImage = imageAssets.find((item) => !isAllowedImageUrl(item.image.src));
+
+  if (invalidImage) {
     return {
       status: "invalid" as const,
-      message:
-        "Homepage image URLs must use HTTPS and one of the currently supported hosts: Cloudinary, Pexels, or Unsplash.",
+      message: `${invalidImage.label} must use HTTPS and one of the currently supported hosts (Cloudinary, Pexels, or Unsplash), or a local path starting with "/".`,
     };
   }
 
@@ -986,10 +987,14 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 function isSafeLink(value: string) {
-  return value.startsWith("/") || value.startsWith("https://");
+  return (value.startsWith("/") && !value.startsWith("//")) || value.startsWith("https://");
 }
 
 function isAllowedImageUrl(value: string) {
+  if (value.startsWith("/")) {
+    return !value.startsWith("//");
+  }
+
   try {
     const parsed = new URL(value);
 
