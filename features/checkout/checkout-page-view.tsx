@@ -217,8 +217,14 @@ function renderStep(step: CheckoutStepKey, clientSecret: string | null) {
 
   // Payment, review, and confirmation share one Elements instance so the
   // in-progress payment survives moving from "enter card" to "review" to
-  // "confirm" — remounting Elements between those steps would lose it. Only
-  // the inner content re-keys per step, for the slide-in transition.
+  // "confirm" — remounting Elements between those steps would lose it.
+  //
+  // Stripe requires the mounted <PaymentElement> itself to stay mounted all
+  // the way through stripe.confirmPayment() — swapping PaymentStep out of
+  // the tree once you reach Review unmounts it and confirmPayment() throws
+  // ("elements should have a mounted Payment Element"). So all three step
+  // bodies stay mounted simultaneously here; only the active one is shown
+  // (display:none still lets the entrance animation replay on reveal).
   if (!clientSecret) {
     return (
       <div key="payment-loading" className={styles.stepPanel}>
@@ -235,8 +241,14 @@ function renderStep(step: CheckoutStepKey, clientSecret: string | null) {
 
   return (
     <Elements stripe={getStripeBrowserClient()} options={{ clientSecret }}>
-      <div key={step} className={styles.stepPanel}>
-        {step === "payment" ? <PaymentStep /> : step === "review" ? <ReviewStep /> : <ConfirmationStep />}
+      <div className={step === "payment" ? styles.stepPanel : styles.hiddenStep}>
+        <PaymentStep />
+      </div>
+      <div className={step === "review" ? styles.stepPanel : styles.hiddenStep}>
+        <ReviewStep />
+      </div>
+      <div className={step === "confirmation" ? styles.stepPanel : styles.hiddenStep}>
+        <ConfirmationStep />
       </div>
     </Elements>
   );

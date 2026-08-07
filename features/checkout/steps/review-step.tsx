@@ -47,14 +47,30 @@ export function ReviewStep() {
     setLocalError(null);
     setPlaceOrderState({ status: "confirming", message: null });
 
-    const { error, paymentIntent: confirmedIntent } = await stripe.confirmPayment({
-      elements,
-      clientSecret: paymentIntent.clientSecret,
-      confirmParams: {
-        return_url: `${window.location.origin}/checkout/review`,
-      },
-      redirect: "if_required",
-    });
+    // stripe.confirmPayment() normally resolves with { error } rather than
+    // throwing, but it can reject outright (network failure, unexpected
+    // Elements state) — without this catch-all, a rejection here leaves the
+    // button frozen on "Authorizing card…" forever with no way to recover.
+    let error;
+    let confirmedIntent;
+    try {
+      ({ error, paymentIntent: confirmedIntent } = await stripe.confirmPayment({
+        elements,
+        clientSecret: paymentIntent.clientSecret,
+        confirmParams: {
+          return_url: `${window.location.origin}/checkout/review`,
+        },
+        redirect: "if_required",
+      }));
+    } catch (thrown) {
+      setPlaceOrderState({ status: "error", message: null });
+      setLocalError(
+        thrown instanceof Error
+          ? `Payment could not be authorized: ${thrown.message}`
+          : "Payment could not be authorized. Check your card details and try again.",
+      );
+      return;
+    }
 
     if (error) {
       setPlaceOrderState({ status: "error", message: null });

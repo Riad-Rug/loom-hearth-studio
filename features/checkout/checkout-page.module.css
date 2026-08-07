@@ -97,6 +97,10 @@
   animation: checkoutStepIn 220ms ease-out;
 }
 
+.hiddenStep {
+  display: none;
+}
+
 @keyframes checkoutStepIn {
   from {
     opacity: 0;
