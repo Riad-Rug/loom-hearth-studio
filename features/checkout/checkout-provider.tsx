@@ -1,438 +1,378 @@
 "use client";
 
-import type { Route } from "next";
-import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 
-import { defaultSupportedCheckoutCountry } from "@/config/supported-markets";
-import { trackBeginCheckout } from "@/lib/analytics/gtag";
 import type { CartStoreItem } from "@/features/cart/cart-provider";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
-import type { OrderSubmissionAttemptState, OrderSubmissionFailure, OrderSubmissionPreview } from "@/lib/order";
-import {
-  createStripeCheckoutPaymentDraft,
-  createStripeOrderPaymentInput,
-  getStripeCheckoutRedirectTarget,
-  initialStripeCheckoutExecutionAttemptState,
-  requestStripeCheckoutSessionCreation,
-  type StripeCheckoutExecutionAttemptState,
-  type StripeCheckoutPaymentDraft,
-  type StripeOrderPaymentInput,
-  type StripePaymentMethod,
-} from "@/lib/stripe";
+import { trackBeginCheckout } from "@/lib/analytics/gtag";
+import { emptyAddressFormValues, toOrderAddress, type AddressFormValues } from "@/lib/checkout/address-schema";
 import type { OrderAddress } from "@/types/domain";
 
-const CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout";
+const CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout.v2";
+const CHECKOUT_STORAGE_VERSION = 2;
 
-type CheckoutInformation = Pick<
-  OrderAddress,
-  "email" | "fullName" | "address1" | "address2" | "city" | "state" | "postalCode"
-> & {
-  country: typeof defaultSupportedCheckoutCountry;
+export type ShippingAddressMode = "same-as-billing" | "different";
+
+type StoredCheckoutState = {
+  version: typeof CHECKOUT_STORAGE_VERSION;
+  billing: AddressFormValues | null;
+  shippingAddressMode: ShippingAddressMode;
+  shippingAddress: AddressFormValues | null;
 };
 
-type CheckoutShippingMethod = {
-  id: "standard";
-  label: "Standard shipping";
-  market: typeof defaultSupportedCheckoutCountry;
-  priceUsd: number;
+type PaymentIntentState = {
+  status: "idle" | "creating" | "ready" | "error";
+  clientSecret: string | null;
+  paymentIntentId: string | null;
+  totalUsd: number | null;
+  message: string | null;
 };
 
-export type OrderDraft = {
-  checkoutMode: "guest";
+export type PlacedOrderItem = {
+  id: string;
+  name: string;
+  quantity: number;
+  sku: string | null;
+};
+
+export type PlacedOrder = {
+  orderNumber: string;
+  items: PlacedOrderItem[];
+  totalUsd: number;
+  currency: "USD";
+  paymentIntentId: string;
+};
+
+export type PlaceOrderState = {
+  status: "idle" | "confirming" | "creating-order" | "error";
+  message: string | null;
+};
+
+const stepPathMap: Record<CheckoutStepKey, string> = {
+  billing: "/checkout",
+  shipping: "/checkout/shipping",
+  payment: "/checkout/payment",
+  review: "/checkout/review",
+  confirmation: "/checkout/confirmation",
+};
+
+const initialPaymentIntentState: PaymentIntentState = {
+  status: "idle",
+  clientSecret: null,
+  paymentIntentId: null,
+  totalUsd: null,
+  message: null,
+};
+
+const initialPlaceOrderState: PlaceOrderState = {
+  status: "idle",
+  message: null,
+};
+
+type CheckoutContextValue = {
+  step: CheckoutStepKey;
+  goToStep: (step: CheckoutStepKey) => void;
   items: CartStoreItem[];
-  shippingAddress: OrderAddress | null;
-  shippingMethod: CheckoutShippingMethod | null;
   promoCode: string | null;
   discountUsd: number;
   subtotalUsd: number;
   shippingUsd: number;
-  taxUsd: 0;
   totalUsd: number;
-  currency: "USD";
-  paymentMethod: StripePaymentMethod;
-};
-
-type StoredCheckoutState = {
-  information: CheckoutInformation;
-  shippingMethod: CheckoutShippingMethod | null;
-};
-
-type CheckoutContextValue = {
-  information: CheckoutInformation;
-  shippingMethod: CheckoutShippingMethod | null;
-  currentStep: CheckoutStepKey;
+  billing: AddressFormValues;
+  submitBilling: (values: AddressFormValues) => void;
+  shippingAddressMode: ShippingAddressMode;
+  setShippingAddressMode: (mode: ShippingAddressMode) => void;
+  shippingAddressDraft: AddressFormValues;
+  submitShipping: (values: AddressFormValues | null) => void;
+  resolvedBillingAddress: OrderAddress | null;
+  resolvedShippingAddress: OrderAddress | null;
   canAccessShipping: boolean;
   canAccessPayment: boolean;
   canAccessReview: boolean;
   canAccessConfirmation: boolean;
-  orderDraft: OrderDraft;
-  stripeOrderPaymentInput: StripeOrderPaymentInput;
-  stripePaymentDraft: StripeCheckoutPaymentDraft;
-  checkoutExecutionAttempt: StripeCheckoutExecutionAttemptState;
-  submissionAttempt: OrderSubmissionAttemptState;
-  submissionPreview: OrderSubmissionPreview | null;
-  updateInformation: (
-    field: keyof CheckoutInformation,
-    value: CheckoutInformation[keyof CheckoutInformation],
-  ) => void;
-  continueFromInformation: () => void;
-  continueFromShipping: () => void;
-  executeCheckoutSession: () => Promise<void>;
-  continueFromPayment: () => void;
-  continueFromReview: (input: {
-    submissionPreview: OrderSubmissionPreview | null;
-    submissionFailure: OrderSubmissionFailure | null;
-  }) => void;
-};
-
-const defaultShippingMethod: CheckoutShippingMethod = {
-  id: "standard",
-  label: "Standard shipping",
-  market: defaultSupportedCheckoutCountry,
-  priceUsd: 0,
-};
-
-const initialInformation: CheckoutInformation = {
-  email: "",
-  fullName: "",
-  address1: "",
-  address2: "",
-  city: "",
-  state: "",
-  postalCode: "",
-  country: defaultSupportedCheckoutCountry,
-};
-
-const initialSubmissionAttempt: OrderSubmissionAttemptState = {
-  status: "idle",
-  preview: null,
-  failure: null,
-};
-
-const stepPathMap: Record<Exclude<CheckoutStepKey, "start">, string> = {
-  information: "/checkout/information",
-  shipping: "/checkout/shipping",
-  payment: "/checkout/payment",
-  review: "/checkout/review",
-  confirmation: "/checkout/success",
+  paymentIntent: PaymentIntentState;
+  placeOrderState: PlaceOrderState;
+  setPlaceOrderState: (state: PlaceOrderState) => void;
+  placedOrder: PlacedOrder | null;
+  completeOrder: (order: PlacedOrder) => void;
 };
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
   const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd } = useCart();
-  const [information, setInformation] = useState<CheckoutInformation>(initialInformation);
-  const [shippingMethod, setShippingMethod] = useState<CheckoutShippingMethod | null>(null);
-  const [hasVisitedConfirmation, setHasVisitedConfirmation] = useState(false);
-  const [checkoutExecutionAttempt, setCheckoutExecutionAttempt] =
-    useState<StripeCheckoutExecutionAttemptState>(
-      initialStripeCheckoutExecutionAttemptState,
-    );
-  const [executedRedirectTarget, setExecutedRedirectTarget] = useState<string | null>(null);
-  const [submissionPreview, setSubmissionPreview] = useState<OrderSubmissionPreview | null>(null);
-  const [submissionAttempt, setSubmissionAttempt] =
-    useState<OrderSubmissionAttemptState>(initialSubmissionAttempt);
+  const [step, setStep] = useState<CheckoutStepKey>("billing");
+  const [billing, setBilling] = useState<AddressFormValues>(emptyAddressFormValues);
+  const [shippingAddressMode, setShippingAddressMode] = useState<ShippingAddressMode>("same-as-billing");
+  const [shippingAddressDraft, setShippingAddressDraft] = useState<AddressFormValues>(emptyAddressFormValues);
+  const [billingSubmitted, setBillingSubmitted] = useState(false);
+  const [shippingSubmitted, setShippingSubmitted] = useState(false);
+  const [paymentIntent, setPaymentIntent] = useState<PaymentIntentState>(initialPaymentIntentState);
+  const [placeOrderState, setPlaceOrderState] = useState<PlaceOrderState>(initialPlaceOrderState);
+  const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
+  const [hasHydrated, setHasHydrated] = useState(false);
+  const paymentIntentIdRef = useRef<string | null>(null);
+  const hasTrackedBeginCheckout = useRef(false);
 
   useEffect(() => {
     try {
       const storedValue = window.localStorage.getItem(CHECKOUT_STORAGE_KEY);
+      const parsedValue = storedValue ? (JSON.parse(storedValue) as Partial<StoredCheckoutState>) : null;
 
-      if (!storedValue) {
-        return;
-      }
+      if (parsedValue?.version === CHECKOUT_STORAGE_VERSION) {
+        if (parsedValue.billing) {
+          setBilling(parsedValue.billing);
+          setBillingSubmitted(true);
+        }
 
-      const parsedValue = JSON.parse(storedValue) as Partial<StoredCheckoutState>;
+        if (parsedValue.shippingAddressMode) {
+          setShippingAddressMode(parsedValue.shippingAddressMode);
+        }
 
-      if (parsedValue.information) {
-        setInformation({
-          ...initialInformation,
-          ...parsedValue.information,
-          country: defaultSupportedCheckoutCountry,
-        });
-      }
-
-      if (parsedValue.shippingMethod?.id === "standard") {
-        setShippingMethod(defaultShippingMethod);
+        if (parsedValue.shippingAddress) {
+          setShippingAddressDraft(parsedValue.shippingAddress);
+          setShippingSubmitted(true);
+        }
       }
     } catch {
       // Ignore malformed local checkout data and continue with a clean guest checkout state.
     }
+
+    setStep(getStepFromPathname(window.location.pathname));
+    setHasHydrated(true);
   }, []);
 
   useEffect(() => {
+    if (!hasHydrated) {
+      return;
+    }
+
     const storedState: StoredCheckoutState = {
-      information,
-      shippingMethod,
+      version: CHECKOUT_STORAGE_VERSION,
+      billing: billingSubmitted ? billing : null,
+      shippingAddressMode,
+      shippingAddress: shippingSubmitted ? shippingAddressDraft : null,
     };
 
     window.localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(storedState));
-  }, [information, shippingMethod]);
+  }, [billing, billingSubmitted, hasHydrated, shippingAddressDraft, shippingAddressMode, shippingSubmitted]);
 
-  const currentStep = getStepFromPathname(pathname);
-  const isInformationComplete = requiredInformationFields.every(
-    (field) => information[field].trim().length > 0,
-  );
+  useEffect(() => {
+    function handlePopState() {
+      setStep(getStepFromPathname(window.location.pathname));
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   const hasCartItems = items.length > 0;
-  const canAccessShipping = hasCartItems && isInformationComplete;
-  const canAccessPayment = canAccessShipping && shippingMethod?.id === "standard";
-
-  const orderDraft = useMemo<OrderDraft>(
-    () => ({
-      checkoutMode: "guest",
-      items,
-      shippingAddress: isInformationComplete
-        ? {
-            ...information,
-            country: defaultSupportedCheckoutCountry,
-          }
-        : null,
-      shippingMethod,
-      promoCode,
-      discountUsd,
-      subtotalUsd,
-      shippingUsd,
-      taxUsd: 0,
-      totalUsd,
-      currency: "USD",
-      paymentMethod: "stripe-placeholder",
-    }),
-    [discountUsd, information, isInformationComplete, items, promoCode, shippingMethod, shippingUsd, subtotalUsd, totalUsd],
+  const resolvedBillingAddress = useMemo<OrderAddress | null>(
+    () => (billingSubmitted ? toOrderAddress(billing) : null),
+    [billing, billingSubmitted],
   );
-  const stripeOrderPaymentInput = useMemo<StripeOrderPaymentInput>(
+  const resolvedShippingAddress = useMemo<OrderAddress | null>(() => {
+    if (shippingAddressMode === "same-as-billing") {
+      return resolvedBillingAddress;
+    }
+
+    return shippingSubmitted ? toOrderAddress(shippingAddressDraft) : null;
+  }, [resolvedBillingAddress, shippingAddressDraft, shippingAddressMode, shippingSubmitted]);
+
+  const canAccessShipping = hasCartItems && Boolean(resolvedBillingAddress);
+  const canAccessPayment = canAccessShipping && Boolean(resolvedShippingAddress);
+  const canAccessReview = canAccessPayment && paymentIntent.status === "ready";
+  const canAccessConfirmation = Boolean(placedOrder);
+
+  // Backward guard: if the browser lands on a step's URL (back button, hard
+  // refresh, stale bookmark) before its prerequisites are met, fall back to
+  // the furthest step that is actually ready.
+  useEffect(() => {
+    if (!hasHydrated) {
+      return;
+    }
+
+    if (step === "confirmation" && !canAccessConfirmation) {
+      setStep(canAccessReview ? "review" : "billing");
+      return;
+    }
+
+    if (step === "review" && !canAccessReview) {
+      setStep(canAccessPayment ? "payment" : "billing");
+      return;
+    }
+
+    if (step === "payment" && !canAccessPayment) {
+      setStep(canAccessShipping ? "shipping" : "billing");
+      return;
+    }
+
+    if (step === "shipping" && !canAccessShipping) {
+      setStep("billing");
+    }
+  }, [canAccessConfirmation, canAccessPayment, canAccessReview, canAccessShipping, hasHydrated, step]);
+
+  const draftSignature = useMemo(
     () =>
-      createStripeOrderPaymentInput({
-        checkoutMode: orderDraft.checkoutMode,
-        email: orderDraft.shippingAddress?.email,
-        promoCode: orderDraft.promoCode ?? undefined,
-        discountUsd: orderDraft.discountUsd,
-        subtotalUsd: orderDraft.subtotalUsd,
-        shippingUsd: orderDraft.shippingUsd,
-        taxUsd: orderDraft.taxUsd,
-        totalUsd: orderDraft.totalUsd,
-        currency: orderDraft.currency,
-        shippingAddress: orderDraft.shippingAddress,
-        items: orderDraft.items.map((item) => ({
+      JSON.stringify({
+        billing: resolvedBillingAddress,
+        shipping: resolvedShippingAddress,
+        items: items.map((item) => ({
           id: item.id,
           productId: item.productId,
           productType: item.productType,
-          name: item.name,
-          slug: getCheckoutItemSlug(item.href),
           quantity: item.quantity,
-          priceUsd: item.priceUsd,
-          variant: item.variantName
-            ? {
-                id: item.id,
-                name: item.variantName,
-                sku: item.id,
-                inventory: 0,
-              }
-            : undefined,
+          variantName: item.variantName,
         })),
+        promoCode,
       }),
-    [orderDraft],
+    [items, promoCode, resolvedBillingAddress, resolvedShippingAddress],
   );
-  const stripePaymentDraft = useMemo<StripeCheckoutPaymentDraft>(
-    () => {
-      const draft = createStripeCheckoutPaymentDraft(stripeOrderPaymentInput);
-      const createdSession = checkoutExecutionAttempt.result?.session;
-
-      if (!createdSession) {
-        return draft;
-      }
-
-      return {
-        ...draft,
-        checkoutExecution: {
-          ...draft.checkoutExecution,
-          redirectTarget: checkoutExecutionAttempt.result?.redirectTarget ?? null,
-        },
-        checkoutSessionResponse: createdSession,
-      };
-    },
-    [checkoutExecutionAttempt.result, stripeOrderPaymentInput],
-  );
-  const canAccessReview =
-    canAccessPayment && canContinueToCheckoutReview(checkoutExecutionAttempt);
-  const canAccessConfirmation = canAccessReview && hasVisitedConfirmation;
 
   useEffect(() => {
-    setCheckoutExecutionAttempt(initialStripeCheckoutExecutionAttemptState);
-    setExecutedRedirectTarget(null);
-  }, [stripeOrderPaymentInput]);
-
-  useEffect(() => {
-    const redirectTarget = getStripeCheckoutRedirectTarget(checkoutExecutionAttempt.result);
-
-    if (!redirectTarget || executedRedirectTarget === redirectTarget) {
+    if (!canAccessPayment || !resolvedBillingAddress || !resolvedShippingAddress || !items.length) {
       return;
     }
 
-    setExecutedRedirectTarget(redirectTarget);
-    window.location.assign(redirectTarget);
-  }, [checkoutExecutionAttempt.result, executedRedirectTarget]);
+    let cancelled = false;
+    setPaymentIntent((current) => ({ ...current, status: "creating", message: null }));
 
-  useEffect(() => {
-    if (currentStep === "start" || currentStep === "information" || currentStep === "confirmation") {
-      return;
-    }
+    requestPaymentIntent({
+      billingAddress: resolvedBillingAddress,
+      shippingAddress: resolvedShippingAddress,
+      items: items.map((item) => ({
+        id: item.id,
+        productId: item.productId,
+        productType: item.productType,
+        quantity: item.quantity,
+        variantName: item.variantName,
+      })),
+      promoCode: promoCode ?? undefined,
+      paymentIntentId: paymentIntentIdRef.current ?? undefined,
+    })
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
 
-    if (currentStep === "shipping" && !canAccessShipping) {
-      router.replace((hasCartItems ? stepPathMap.information : "/checkout") as Route);
-      return;
-    }
+        if (result.status === "created" || result.status === "updated") {
+          paymentIntentIdRef.current = result.paymentIntentId;
+          setPaymentIntent({
+            status: "ready",
+            clientSecret: result.clientSecret,
+            paymentIntentId: result.paymentIntentId,
+            totalUsd: result.totalUsd,
+            message: null,
+          });
+        } else {
+          setPaymentIntent({
+            status: "error",
+            clientSecret: null,
+            paymentIntentId: null,
+            totalUsd: null,
+            message: result.message,
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPaymentIntent({
+            status: "error",
+            clientSecret: null,
+            paymentIntentId: null,
+            totalUsd: null,
+            message: "Could not prepare payment for this order. Check your connection and try again.",
+          });
+        }
+      });
 
-    if (currentStep === "payment" && !canAccessPayment) {
-      router.replace(
-        (canAccessShipping ? stepPathMap.shipping : stepPathMap.information) as Route,
-      );
-      return;
-    }
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canAccessPayment, draftSignature]);
 
-    if (currentStep === "review" && !canAccessReview) {
-      router.replace(
-        (canAccessPayment ? stepPathMap.payment : stepPathMap.information) as Route,
-      );
-    }
-  }, [canAccessPayment, canAccessReview, canAccessShipping, currentStep, hasCartItems, router]);
-
-  useEffect(() => {
-    if (currentStep === "confirmation" && !canAccessConfirmation) {
-      router.replace((canAccessReview ? stepPathMap.review : "/checkout") as Route);
-    }
-  }, [canAccessConfirmation, canAccessReview, currentStep, router]);
+  function goToStep(next: CheckoutStepKey) {
+    setStep(next);
+    window.history.pushState(null, "", stepPathMap[next]);
+  }
 
   const value: CheckoutContextValue = {
-    information,
-    shippingMethod,
-    currentStep,
+    step,
+    goToStep,
+    items,
+    promoCode,
+    discountUsd,
+    subtotalUsd,
+    shippingUsd,
+    totalUsd,
+    billing,
+    submitBilling(values) {
+      setBilling(values);
+      setBillingSubmitted(true);
+
+      if (!hasTrackedBeginCheckout.current) {
+        hasTrackedBeginCheckout.current = true;
+        trackBeginCheckout({
+          currency: "USD",
+          value: totalUsd,
+          items: items.map((item) => ({
+            item_id: item.productId,
+            item_name: item.name,
+            item_category: item.productCategory,
+            item_variant: item.variantName,
+            price: item.priceUsd,
+            quantity: item.quantity,
+          })),
+        });
+      }
+
+      goToStep("shipping");
+    },
+    shippingAddressMode,
+    setShippingAddressMode(mode) {
+      setShippingAddressMode(mode);
+
+      if (mode === "same-as-billing") {
+        setShippingSubmitted(false);
+      }
+    },
+    shippingAddressDraft,
+    submitShipping(values) {
+      if (shippingAddressMode === "different") {
+        if (!values) {
+          return;
+        }
+
+        setShippingAddressDraft(values);
+        setShippingSubmitted(true);
+      }
+
+      goToStep("payment");
+    },
+    resolvedBillingAddress,
+    resolvedShippingAddress,
     canAccessShipping,
     canAccessPayment,
     canAccessReview,
     canAccessConfirmation,
-    orderDraft,
-    stripeOrderPaymentInput,
-    stripePaymentDraft,
-    checkoutExecutionAttempt,
-    submissionAttempt,
-    submissionPreview,
-    updateInformation(field, value) {
-      setInformation((current) => ({
-        ...current,
-        [field]: value,
-      }));
-    },
-    continueFromInformation() {
-      if (!canAccessShipping) {
-        return;
-      }
-
-      trackBeginCheckout({
-        currency: orderDraft.currency,
-        value: orderDraft.totalUsd,
-        items: orderDraft.items.map((item) => ({
-          item_id: item.productId,
-          item_name: item.name,
-          item_category: item.productCategory,
-          item_variant: item.variantName,
-          price: item.priceUsd,
-          quantity: item.quantity,
-        })),
-      });
-
-      router.push(stepPathMap.shipping as Route);
-    },
-    continueFromShipping() {
-      setShippingMethod(defaultShippingMethod);
-      router.push(stepPathMap.payment as Route);
-    },
-    async executeCheckoutSession() {
-      if (!stripePaymentDraft.checkoutSessionRequest) {
-        setCheckoutExecutionAttempt({
-          status: "failure",
-          result: null,
-          message:
-            "Checkout session request is incomplete. Review the guest checkout details before trying again.",
-        });
-        return;
-      }
-
-      setCheckoutExecutionAttempt({
-        status: "submitting",
-        result: null,
-        message: null,
-      });
-
-      try {
-        const result = await requestStripeCheckoutSessionCreation({
-          endpointPath: stripePaymentDraft.checkoutExecution.endpointPath,
-          request: stripePaymentDraft.checkoutSessionRequest,
-        });
-
-        setCheckoutExecutionAttempt({
-          status: result.status === "created" ? "success" : "failure",
-          result,
-          message: result.message,
-        });
-      } catch {
-        setCheckoutExecutionAttempt({
-          status: "failure",
-          result: null,
-          message:
-            "Stripe Checkout session creation failed before a response was returned.",
-        });
-      }
-    },
-    continueFromPayment() {
-      if (!canAccessReview) {
-        return;
-      }
-
-      router.push(stepPathMap.review as Route);
-    },
-    continueFromReview({ submissionFailure, submissionPreview: nextSubmissionPreview }) {
-      if (!canAccessReview) {
-        return;
-      }
-
-      setSubmissionAttempt({
-        status: "submitting",
-        preview: null,
-        failure: null,
-      });
-
-      window.setTimeout(() => {
-        if (submissionFailure) {
-          setSubmissionPreview(null);
-          setSubmissionAttempt({
-            status: "failure",
-            preview: null,
-            failure: submissionFailure,
-          });
-          setHasVisitedConfirmation(true);
-          router.push(stepPathMap.confirmation as Route);
-          return;
-        }
-
-        setSubmissionPreview(nextSubmissionPreview);
-        setSubmissionAttempt({
-          status: "success",
-          preview: nextSubmissionPreview,
-          failure: null,
-        });
-        setHasVisitedConfirmation(true);
-        router.push(stepPathMap.confirmation as Route);
-      }, 350);
+    paymentIntent,
+    placeOrderState,
+    setPlaceOrderState,
+    placedOrder,
+    completeOrder(order) {
+      setPlacedOrder(order);
+      window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+      goToStep("confirmation");
     },
   };
 
@@ -450,14 +390,6 @@ export function useCheckout() {
 }
 
 function getStepFromPathname(pathname: string): CheckoutStepKey {
-  if (pathname === "/checkout") {
-    return "start";
-  }
-
-  if (pathname === stepPathMap.information) {
-    return "information";
-  }
-
   if (pathname === stepPathMap.shipping) {
     return "shipping";
   }
@@ -470,34 +402,43 @@ function getStepFromPathname(pathname: string): CheckoutStepKey {
     return "review";
   }
 
-  return "confirmation";
+  if (pathname === stepPathMap.confirmation) {
+    return "confirmation";
+  }
+
+  return "billing";
 }
 
-const requiredInformationFields: ReadonlyArray<
-  Exclude<keyof CheckoutInformation, "address2" | "country">
-> = ["email", "fullName", "address1", "city", "state", "postalCode"] as const;
+type RequestPaymentIntentInput = {
+  billingAddress: OrderAddress;
+  shippingAddress: OrderAddress;
+  items: Array<{
+    id: string;
+    productId: string;
+    productType: "rug" | "multiUnit";
+    quantity: number;
+    variantName?: string;
+  }>;
+  promoCode?: string;
+  paymentIntentId?: string;
+};
 
-function getCheckoutItemSlug(href: string) {
-  const segments = href.split("/").filter(Boolean);
+type RequestPaymentIntentResult = {
+  status: "created" | "updated" | "validation-error" | "api-error";
+  clientSecret: string | null;
+  paymentIntentId: string | null;
+  totalUsd: number | null;
+  message: string;
+};
 
-  return segments[segments.length - 1] ?? href;
+async function requestPaymentIntent(
+  input: RequestPaymentIntentInput,
+): Promise<RequestPaymentIntentResult> {
+  const response = await fetch("/api/checkout/payment-intents", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  return (await response.json()) as RequestPaymentIntentResult;
 }
-
-export const checkoutFoundationTodos = {
-  payment:
-    "TODO: Replace the payment placeholder with real Stripe payment confirmation when the Stripe slice is implemented.",
-  submission:
-    "TODO: Submit the order draft to a real backend only after Stripe, tax, and order creation flows are defined.",
-  tax: "TODO: Tax remains fixed at $0.00 until the tax model is validated.",
-} as const;
-
-function canContinueToCheckoutReview(
-  checkoutExecutionAttempt: Pick<StripeCheckoutExecutionAttemptState, "status" | "result">,
-) {
-  return Boolean(
-    checkoutExecutionAttempt.status === "success" &&
-      checkoutExecutionAttempt.result?.session &&
-      checkoutExecutionAttempt.result.redirectTarget,
-  );
-}
-

@@ -43,6 +43,7 @@ export type AdminOrderManagementItem = {
   orderNumber: string;
   customerName: string;
   customerEmail: string;
+  customerNotes: string | null;
   itemCountLabel: string;
   status: Order["status"];
   statusLabel: string;
@@ -191,6 +192,7 @@ function createAdminOrderManagementItem(order: Order): AdminOrderManagementItem 
     orderNumber: order.orderNumber,
     customerName: order.shippingAddress.fullName,
     customerEmail: order.shippingAddress.email,
+    customerNotes: order.customerNotes?.trim() || null,
     itemCountLabel: `${formatInteger(itemCount)} item${itemCount === 1 ? "" : "s"}`,
     status: order.status,
     statusLabel: formatOrderStatus(order.status),

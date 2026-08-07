@@ -12,7 +12,7 @@ import type { ProductVariant as DomainProductVariant } from "@/types/domain/prod
 export interface OrderRepository {
   create(input: OrderPersistenceRequest): Promise<Order>;
   getById(orderId: string): Promise<Order | null>;
-  getByCheckoutSessionId(checkoutSessionId: string): Promise<Order | null>;
+  getByCheckoutSessionId(checkoutSessionId: string | null): Promise<Order | null>;
   getByPaymentIntentId(paymentIntentId: string): Promise<Order | null>;
   getByCustomerEmail(customerEmail: string): Promise<Order[]>;
   listAll(): Promise<Order[]>;
@@ -21,6 +21,7 @@ export interface OrderRepository {
     orderId: string,
     transition: { status: Order["status"]; paymentStatus: Order["paymentStatus"] },
   ): Promise<Order>;
+  updateCustomerNotesByPaymentIntentId(paymentIntentId: string, notes: string): Promise<Order | null>;
 }
 
 type OrderRecordWithLineItems = Prisma.OrderRecordGetPayload<{
@@ -56,7 +57,11 @@ export class PrismaOrderRepository implements OrderRepository {
     return order ? mapOrderRecordToDomainOrder(order) : null;
   }
 
-  async getByCheckoutSessionId(checkoutSessionId: string) {
+  async getByCheckoutSessionId(checkoutSessionId: string | null) {
+    if (!checkoutSessionId) {
+      return null;
+    }
+
     const order = await this.context.client.orderRecord.findUnique({
       where: {
         checkoutSessionId,
@@ -146,6 +151,31 @@ export class PrismaOrderRepository implements OrderRepository {
 
     return mapOrderRecordToDomainOrder(updatedOrder);
   }
+
+  async updateCustomerNotesByPaymentIntentId(paymentIntentId: string, notes: string) {
+    try {
+      const updatedOrder = await this.context.client.orderRecord.update({
+        where: {
+          paymentIntentId,
+        },
+        data: {
+          customerNotes: notes,
+          customerNotesSubmittedAt: new Date(),
+        },
+        include: {
+          lineItems: true,
+        },
+      });
+
+      return mapOrderRecordToDomainOrder(updatedOrder);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        return null;
+      }
+
+      throw error;
+    }
+  }
 }
 
 export function createOrderRepository(context = createRepositoryContext()) {
@@ -166,6 +196,7 @@ function mapOrderPersistenceRequestToCreateInput(
     status: mapOrderStatusToPrisma(input.status),
     paymentStatus: mapPaymentStatusToPrisma(input.paymentStatus),
     customerEmail: input.shippingAddress.email,
+    billingAddress: input.billingAddress ? (input.billingAddress as Prisma.InputJsonValue) : Prisma.JsonNull,
     shippingAddress: input.shippingAddress as Prisma.InputJsonValue,
     promoCode: input.promoCode ?? null,
     discountUsd: createPrismaDecimal(input.discountUsd),
@@ -208,7 +239,12 @@ function mapOrderRecordToDomainOrder(order: OrderRecordWithLineItems): Order {
     })),
     status: mapPrismaOrderStatus(order.status),
     paymentStatus: mapPrismaPaymentStatus(order.paymentStatus),
+    billingAddress: order.billingAddress
+      ? (order.billingAddress as unknown as Order["billingAddress"])
+      : undefined,
     shippingAddress: order.shippingAddress as Order["shippingAddress"],
+    customerNotes: order.customerNotes ?? undefined,
+    customerNotesSubmittedAt: order.customerNotesSubmittedAt?.toISOString() ?? undefined,
     promoCode: order.promoCode ?? undefined,
     discountUsd: Number(order.discountUsd),
     subtotalUsd: Number(order.subtotalUsd),

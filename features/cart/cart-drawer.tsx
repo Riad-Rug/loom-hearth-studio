@@ -233,7 +233,7 @@ export function CartDrawer() {
                   <div className={styles.actionGroup}>
                     <Link
                       className={styles.checkoutButton}
-                      href="/checkout/information"
+                      href="/checkout"
                       onClick={() => setIsOpen(false)}
                     >
                       Checkout

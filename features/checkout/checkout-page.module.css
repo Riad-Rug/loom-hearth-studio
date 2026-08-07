@@ -65,55 +65,99 @@
   color: var(--color-text-body);
 }
 
-.steps {
+.progressWrap {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: var(--space-2);
 }
 
-.stepItem {
-  display: flex;
+.progressLabel {
+  margin: 0;
+  color: var(--color-olive-thread);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.progressTrack {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: rgba(34, 33, 38, 0.08);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--button-primary-bg);
+  transition: width 220ms ease-out;
+}
+
+.stepPanel {
+  animation: checkoutStepIn 220ms ease-out;
+}
+
+@keyframes checkoutStepIn {
+  from {
+    opacity: 0;
+    transform: translateX(1.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepPanel {
+    animation: none;
+  }
+}
+
+.toggleGroup {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
+}
+
+.toggleOption {
+  display: grid;
+  gap: 0.3rem;
   padding: var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-card);
+  text-align: left;
+  cursor: pointer;
 }
 
-.stepActive {
+.toggleOption span {
+  color: var(--color-olive-thread);
+  font-size: 0.84rem;
+}
+
+.toggleOptionActive {
   border-color: rgba(198, 106, 61, 0.28);
   background: rgba(198, 106, 61, 0.1);
 }
 
-.stepComplete {
-  border-color: rgba(49, 104, 76, 0.16);
+.fieldError {
+  margin: 0;
+  color: var(--color-clay-terracotta);
+  font-size: 0.82rem;
+  font-style: normal;
 }
 
-.stepNumber {
-  display: inline-flex;
-  width: 2rem;
-  height: 2rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: rgba(34, 33, 38, 0.08);
-}
-
-.stepCopy {
-  display: grid;
-  gap: 0.2rem;
-}
-
-.stepCopy strong {
-  font-size: 0.95rem;
-}
-
-.stepCopy span {
-  color: var(--color-olive-thread);
-  font-size: 0.84rem;
+.notesTextarea {
+  min-height: 6rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-charcoal-ink);
+  font: inherit;
+  resize: vertical;
 }
 
 .contentGrid {
@@ -351,7 +395,7 @@
 }
 
 @media (max-width: 1100px) {
-  .steps,
+  .toggleGroup,
   .contentGrid,
   .actionGrid {
     grid-template-columns: 1fr;

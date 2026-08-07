@@ -235,6 +235,11 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                         <div className={styles.customerCell}>
                           <strong>{item.customerName}</strong>
                           <span>{item.customerEmail}</span>
+                          {item.customerNotes ? (
+                            <span className={styles.customerNotes}>
+                              Photo/video request: {item.customerNotes}
+                            </span>
+                          ) : null}
                         </div>
                       </td>
                       <td>

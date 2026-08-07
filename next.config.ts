@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
     })),
   },
   typedRoutes: true,
+  async redirects() {
+    return [
+      { source: "/checkout/information", destination: "/checkout", permanent: false },
+      { source: "/checkout/success", destination: "/checkout/confirmation", permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -1,26 +1,6 @@
 import type { Order } from "@/types/domain";
 import type { EmailMessage } from "@/lib/email/types";
 import type { EmailMissingConfig } from "@/lib/email/config";
-import type {
-  OrderSubmissionPayload,
-  OrderSubmissionPreview,
-} from "@/lib/order";
-
-export type OrderConfirmationEmailPayload = {
-  to: string;
-  orderReference: OrderSubmissionPreview["orderReference"];
-  customerName: string;
-  shippingLabel: string;
-  totalUsd: number;
-  currency: "USD";
-  itemCount: number;
-};
-
-export type OrderConfirmationEmailPreview = {
-  status: "placeholder";
-  subject: string;
-  message: EmailMessage;
-};
 
 export type OrderConfirmationEmailRequest = {
   source: "created-order";

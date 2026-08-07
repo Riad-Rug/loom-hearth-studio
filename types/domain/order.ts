@@ -37,6 +37,8 @@ export type Order = {
   paymentStatus: PaymentStatus;
   shippingAddress: OrderAddress;
   billingAddress?: OrderAddress;
+  customerNotes?: string;
+  customerNotesSubmittedAt?: string;
   promoCode?: string;
   discountUsd: number;
   subtotalUsd: number;

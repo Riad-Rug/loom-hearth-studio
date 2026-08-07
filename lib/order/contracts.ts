@@ -1,70 +1,18 @@
 import type { Order, OrderStatus, PaymentStatus } from "@/types/domain/order";
 
-import type { OrderDraft } from "@/features/checkout/checkout-provider";
 import type { OrderConfirmationEmailSendResult } from "@/lib/email/contracts";
 import type { FulfillmentOrchestrationResult } from "@/lib/fulfillment/contracts";
 import type {
   StripeCheckoutOrderSnapshot,
   StripeCheckoutPaymentConfirmation,
-  StripeCheckoutPaymentDraft,
 } from "@/lib/stripe";
 
-export type OrderSubmissionPayload = {
-  checkoutMode: OrderDraft["checkoutMode"];
-  email: string;
-  items: Array<{
-    id: string;
-    productId: string;
-    productType: OrderDraft["items"][number]["productType"];
-    name: string;
-    quantity: number;
-    unitAmountUsd: number;
-    variantName?: string;
-  }>;
-  shippingAddress: NonNullable<OrderDraft["shippingAddress"]>;
-  shippingMethod: NonNullable<OrderDraft["shippingMethod"]>;
-  paymentMethod: OrderDraft["paymentMethod"];
-  paymentStatus: StripeCheckoutPaymentDraft["paymentStatus"];
-  promoCode?: string;
-  discountUsd: number;
-  subtotalUsd: number;
-  shippingUsd: number;
-  taxUsd: number;
-  totalUsd: number;
-  currency: "USD";
-};
-
-export type OrderSubmissionPreview = {
-  status: "placeholder";
-  orderReference: string;
-  paymentStatus: Extract<PaymentStatus, "pending">;
-  confirmationLabel: string;
-};
-
-export type OrderSubmissionAttemptStatus =
-  | "idle"
-  | "submitting"
-  | "success"
-  | "failure";
-
-export type OrderSubmissionFailure = {
-  status: "placeholder";
-  code: "missing-payload" | "missing-payment-config";
-  message: string;
-};
-
-export type OrderSubmissionAttemptState = {
-  status: OrderSubmissionAttemptStatus;
-  preview: OrderSubmissionPreview | null;
-  failure: OrderSubmissionFailure | null;
-};
-
 export type OrderCreationRequest = {
-  source: "stripe-checkout-webhook";
-  checkoutMode: OrderDraft["checkoutMode"];
-  checkoutSessionId: string;
+  source: "stripe-checkout-webhook" | "stripe-payment-intent";
+  checkoutMode: "guest";
+  checkoutSessionId: string | null;
   paymentIntentId: string | null;
-  paymentMethod: "stripe-checkout";
+  paymentMethod: "stripe-checkout" | "stripe-payment-intent";
   paymentStatus: Extract<PaymentStatus, "paid" | "authorized">;
   customerEmail: string | null;
   orderReference: string | null;
@@ -76,7 +24,7 @@ export type OrderCreationRequest = {
   }>;
   metadata: {
     stripeEventId: string;
-    stripeEventType: StripeCheckoutPaymentConfirmation["eventType"];
+    stripeEventType: string;
     checkoutMode: StripeCheckoutPaymentConfirmation["checkoutMode"];
   };
   orderSnapshot: StripeCheckoutOrderSnapshot | null;
@@ -104,6 +52,7 @@ export type OrderPersistenceRequest = {
   paymentIntentId: OrderCreationRequest["paymentIntentId"];
   orderReference: string | null;
   customerEmail: string | null;
+  billingAddress?: Order["billingAddress"];
   shippingAddress: Order["shippingAddress"];
   status: Extract<OrderStatus, "paid" | "pending">;
   paymentStatus: OrderCreationRequest["paymentStatus"];
@@ -142,9 +91,6 @@ export type PersistConfirmedOrderResult = {
   fulfillmentResult: FulfillmentOrchestrationResult | null;
   message: string;
 };
-
-export const orderSubmissionTodo =
-  "TODO: Replace the placeholder submission contract with a real backend request once Stripe execution and order persistence are implemented.";
 
 export const orderCreationTodo = {
   boundary:

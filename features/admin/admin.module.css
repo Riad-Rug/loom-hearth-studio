@@ -864,6 +864,16 @@
   min-width: 14rem;
 }
 
+.customerNotes {
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-md);
+  background: rgba(198, 106, 61, 0.1);
+  color: var(--color-charcoal-ink);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .orderActionCell .navLink {
   justify-content: center;
 }

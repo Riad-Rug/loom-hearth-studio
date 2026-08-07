@@ -37,7 +37,7 @@ export function CartPageView() {
             </Link>
             <Link
               className={styles.primaryAction}
-              href={isEmpty ? "/shop" : "/checkout/information"}
+              href={isEmpty ? "/shop" : "/checkout"}
             >
               {isEmpty ? "Shop products" : "Checkout"}
             </Link>
@@ -145,7 +145,7 @@ export function CartPageView() {
                 <strong>{formatUsd(totalUsd)}</strong>
               </div>
               <div className={styles.summaryActions}>
-                <Link className={styles.primaryAction} href="/checkout/information">
+                <Link className={styles.primaryAction} href="/checkout">
                   Proceed to checkout
                 </Link>
                 <Link className={styles.secondaryAction} href="/shop">

@@ -3,36 +3,22 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Elements } from "@stripe/react-stripe-js";
 
-import {
-  checkoutSteps,
-  checkoutSummary,
-  usStates,
-  type CheckoutStepKey,
-} from "@/features/checkout/checkout-data";
+import { checkoutSteps, checkoutSummary } from "@/features/checkout/checkout-data";
 import { formatUsd, getCartItemLabel, useCart } from "@/features/cart/cart-provider";
+import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
 import { useCheckout } from "@/features/checkout/checkout-provider";
-import {
-  createOrderConfirmationEmailPayload,
-  createOrderConfirmationEmailPreview,
-} from "@/lib/email";
-import { trackPurchase } from "@/lib/analytics/gtag";
-import {
-  createCheckoutNonConfirmationRouteViewModel,
-  createCheckoutConfirmationViewModel,
-  createCheckoutReviewViewModel,
-  createOrderSubmissionFailure,
-  createOrderSubmissionPayload,
-  createOrderSubmissionPreview,
-} from "@/lib/order";
+import { BillingStep } from "@/features/checkout/steps/billing-step";
+import { ShippingStep } from "@/features/checkout/steps/shipping-step";
+import { PaymentStep } from "@/features/checkout/steps/payment-step";
+import { ReviewStep } from "@/features/checkout/steps/review-step";
+import { ConfirmationStep } from "@/features/checkout/steps/confirmation-step";
+import { getStripeBrowserClient } from "@/lib/stripe/browser-client";
 
 import styles from "./checkout-page.module.css";
 
-type CheckoutPageViewProps = {
-  step: CheckoutStepKey;
-};
-
-export function CheckoutPageView({ step }: CheckoutPageViewProps) {
+export function CheckoutPageView() {
   const {
     items,
     promoCode,
@@ -46,35 +32,19 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
   } = useCart();
   const [promoDraft, setPromoDraft] = useState(promoCode ?? "");
   const [promoFeedback, setPromoFeedback] = useState<string | null>(null);
-  const {
-    canAccessPayment,
-    canAccessReview,
-    canAccessShipping,
-    continueFromInformation,
-    executeCheckoutSession,
-    continueFromPayment,
-    continueFromReview,
-    continueFromShipping,
-    checkoutExecutionAttempt,
-    information,
-    orderDraft,
-    stripeOrderPaymentInput,
-    stripePaymentDraft,
-    submissionAttempt,
-    submissionPreview,
-    shippingMethod,
-    updateInformation,
-  } = useCheckout();
-  const lineItems =
-    items.length > 0
-      ? items.map((item) => ({
-          id: item.id,
-          name: item.name,
-          quantityLabel: `Qty ${item.quantity}`,
-          typeLabel: getCartItemLabel(item),
-          priceUsdLabel: formatUsd(item.priceUsd),
-        }))
-      : [];
+  const { step, paymentIntent } = useCheckout();
+
+  useEffect(() => {
+    setPromoDraft(promoCode ?? "");
+  }, [promoCode]);
+
+  const lineItems = items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    quantityLabel: `Qty ${item.quantity}`,
+    typeLabel: getCartItemLabel(item),
+    priceUsdLabel: formatUsd(item.priceUsd),
+  }));
   const summary = {
     subtotalUsdLabel: items.length > 0 ? formatUsd(subtotalUsd) : checkoutSummary.subtotalUsdLabel,
     shippingUsdLabel: items.length > 0 ? formatUsd(shippingUsd) : checkoutSummary.shippingUsdLabel,
@@ -84,81 +54,8 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
     marketLabel: checkoutSummary.marketLabel,
     currencyLabel: checkoutSummary.currencyLabel,
   };
-  const orderSubmissionPayload = createOrderSubmissionPayload({
-    orderDraft,
-    stripePaymentDraft,
-    stripeOrderPaymentInput,
-  });
-  const derivedSubmissionPreview = createOrderSubmissionPreview(orderSubmissionPayload);
-  const resolvedSubmissionPreview = submissionPreview ?? derivedSubmissionPreview;
-  const orderConfirmationEmailPayload = createOrderConfirmationEmailPayload({
-    submissionPayload: orderSubmissionPayload,
-    submissionPreview:
-      submissionAttempt.status === "success" ? resolvedSubmissionPreview : null,
-  });
-  const orderConfirmationEmailPreview = createOrderConfirmationEmailPreview(
-    orderConfirmationEmailPayload,
-  );
-
-  useEffect(() => {
-    setPromoDraft(promoCode ?? "");
-  }, [promoCode]);
-
-  useEffect(() => {
-    if (step !== "confirmation" || !resolvedSubmissionPreview || !orderSubmissionPayload) {
-      return;
-    }
-
-    const sessionKey = `loom-hearth.purchase.${resolvedSubmissionPreview.orderReference}`;
-
-    if (typeof window !== "undefined" && window.sessionStorage.getItem(sessionKey)) {
-      return;
-    }
-
-    trackPurchase({
-      transactionId: resolvedSubmissionPreview.orderReference,
-      currency: "USD",
-      value: orderDraft.totalUsd,
-      items: orderSubmissionPayload.items.map((item) => ({
-        item_id: item.id,
-        item_name: item.name,
-        quantity: item.quantity,
-      })),
-    });
-
-    if (typeof window !== "undefined") {
-      window.sessionStorage.setItem(sessionKey, "sent");
-    }
-  }, [orderDraft.totalUsd, orderSubmissionPayload, resolvedSubmissionPreview, step]);
-  const confirmationViewModel = createCheckoutConfirmationViewModel({
-    submissionAttempt,
-    submissionPreview: resolvedSubmissionPreview,
-    orderConfirmationEmailPayload,
-    orderConfirmationEmailPreview,
-    customerName: orderDraft.shippingAddress?.fullName ?? null,
-    shippingLabel: shippingMethod?.label ?? null,
-  });
-  const submissionFailure = createOrderSubmissionFailure({
-    hasPayload: Boolean(orderSubmissionPayload),
-    hasPaymentConfig: stripePaymentDraft.publishableKeyReady,
-  });
-  const reviewViewModel = createCheckoutReviewViewModel({
-    orderDraft,
-    orderSubmissionPayload,
-    submissionFailure,
-    submissionPreview: resolvedSubmissionPreview,
-    submissionState: submissionAttempt.status,
-    stripePaymentDraft,
-  });
-  const nonConfirmationRouteViewModel = createCheckoutNonConfirmationRouteViewModel({
-    step,
-    checkoutSteps,
-    hasCartItems: items.length > 0,
-    canAccessShipping,
-    canAccessReview,
-    checkoutExecutionAttempt,
-    stripePaymentDraft,
-  });
+  const stepIndex = checkoutSteps.findIndex((item) => item.key === step);
+  const isConfirmation = step === "confirmation";
 
   async function handlePromoSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -176,9 +73,12 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
       <section className={styles.shell}>
         <div className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>{nonConfirmationRouteViewModel.shell.eyebrow}</p>
-            <h1>{nonConfirmationRouteViewModel.shell.title}</h1>
-            <p className={styles.lede}>{nonConfirmationRouteViewModel.shell.body}</p>
+            <p className={styles.eyebrow}>Checkout</p>
+            <h1>Secure Checkout</h1>
+            <p className={styles.lede}>
+              Review your order details, confirm your shipping information, and continue to secure
+              payment. Final delivery details are confirmed before payment is captured.
+            </p>
           </div>
           <div className={styles.badges}>
             <span>{summary.guestLabel}</span>
@@ -187,53 +87,22 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
           </div>
         </div>
 
-        <ol className={styles.steps} aria-label="Checkout steps">
-          {nonConfirmationRouteViewModel.stepIndicators.map((item, index) => {
-            return (
-              <li
-                key={item.key}
-                className={`${styles.stepItem} ${item.isActive ? styles.stepActive : ""} ${
-                  item.isComplete ? styles.stepComplete : ""
-                }`}
-              >
-                <span className={styles.stepNumber}>{index + 1}</span>
-                <div className={styles.stepCopy}>
-                  <strong>{item.label}</strong>
-                  <span>{item.stateLabel}</span>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        {!isConfirmation ? (
+          <div className={styles.progressWrap}>
+            <p className={styles.progressLabel}>
+              Step {stepIndex + 1} of {checkoutSteps.length} — {checkoutSteps[stepIndex]?.label}
+            </p>
+            <div className={styles.progressTrack}>
+              <div
+                className={styles.progressFill}
+                style={{ width: `${((stepIndex + 1) / checkoutSteps.length) * 100}%` }}
+              />
+            </div>
+          </div>
+        ) : null}
 
         <div className={styles.contentGrid}>
-          <div className={styles.mainCard}>
-            {renderStep(step, {
-              canAccessPayment,
-              canAccessReview,
-              canAccessShipping,
-              continueFromInformation,
-              executeCheckoutSession,
-              continueFromPayment,
-              continueFromReview,
-              continueFromShipping,
-              checkoutExecutionAttempt,
-              information,
-              orderDraft,
-              orderConfirmationEmailPayload,
-              orderConfirmationEmailPreview,
-              orderSubmissionPayload,
-              nonConfirmationRouteViewModel,
-              confirmationViewModel,
-              reviewViewModel,
-              submissionAttempt,
-              submissionFailure,
-              submissionPreview: resolvedSubmissionPreview,
-              shippingMethod,
-              stripePaymentDraft,
-              updateInformation,
-            })}
-          </div>
+          <div className={styles.mainCard}>{renderStep(step, paymentIntent.clientSecret)}</div>
           <aside className={styles.summaryCard}>
             <div className={styles.summaryHeader}>
               <p className={styles.eyebrow}>Order summary</p>
@@ -300,7 +169,9 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
                   ) : null}
                 </div>
                 {promoCode ? <p className={styles.promoApplied}>Applied: {promoCode}</p> : null}
-                {promoFeedback || promoMessage ? <p className={styles.promoFeedback}>{promoFeedback ?? promoMessage}</p> : null}
+                {promoFeedback || promoMessage ? (
+                  <p className={styles.promoFeedback}>{promoFeedback ?? promoMessage}</p>
+                ) : null}
               </form>
               {discountUsd > 0 ? (
                 <div className={styles.summaryRow}>
@@ -312,7 +183,9 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
                 <span>Estimated tax</span>
                 <strong>{summary.taxUsdLabel}</strong>
               </div>
-              <p className={styles.summaryNote}>Taxes and duties, if applicable, are confirmed before payment is captured.</p>
+              <p className={styles.summaryNote}>
+                Taxes and duties, if applicable, are confirmed before payment is captured.
+              </p>
               <div className={styles.summaryTotal}>
                 <span>Total</span>
                 <strong>{summary.totalUsdLabel}</strong>
@@ -325,595 +198,46 @@ export function CheckoutPageView({ step }: CheckoutPageViewProps) {
   );
 }
 
-type CheckoutStepRenderProps = {
-  canAccessPayment: boolean;
-  canAccessReview: boolean;
-  canAccessShipping: boolean;
-  continueFromInformation: () => void;
-  executeCheckoutSession: () => Promise<void>;
-  continueFromPayment: () => void;
-  continueFromReview: (input: {
-    submissionPreview: {
-      status: "placeholder";
-      orderReference: string;
-      paymentStatus: "pending";
-      confirmationLabel: string;
-    } | null;
-    submissionFailure: {
-      status: "placeholder";
-      code: "missing-payload" | "missing-payment-config";
-      message: string;
-    } | null;
-  }) => void;
-  continueFromShipping: () => void;
-  checkoutExecutionAttempt: {
-    status: "idle" | "submitting" | "success" | "failure";
-    result: {
-      status: "created" | "configuration-error" | "api-error" | "validation-error";
-      session: {
-        id: string;
-        mode: "checkout";
-        url?: string;
-        expiresAt?: string;
-        status: "placeholder" | "created";
-      } | null;
-      redirectTarget: string | null;
-      validationIssues: Array<{
-        code: string;
-        message: string;
-      }>;
-      message: string;
-    } | null;
-    message: string | null;
-  };
-  information: {
-    email: string;
-    fullName: string;
-    address1: string;
-    address2?: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    country: "US";
-  };
-  orderDraft: {
-    shippingAddress: {
-      fullName: string;
-      email: string;
-      address1: string;
-      address2?: string;
-      city: string;
-      state: string;
-      postalCode: string;
-      country: "US";
-    } | null;
-    shippingMethod: {
-      label: string;
-      priceUsd: number;
-    } | null;
-    promoCode?: string | null;
-    discountUsd: number;
-    paymentMethod: "stripe-placeholder";
-  };
-  orderConfirmationEmailPayload: {
-    to: string;
-    orderReference: string;
-    customerName: string;
-    shippingLabel: string;
-    totalUsd: number;
-    currency: "USD";
-    itemCount: number;
-  } | null;
-  orderConfirmationEmailPreview: {
-    status: "placeholder";
-    subject: string;
-    message: {
-      to: string;
-      subject: string;
-    };
-  } | null;
-  orderSubmissionPayload: {
-    email: string;
-    items: Array<{
-      id: string;
-      name: string;
-      quantity: number;
-    }>;
-    paymentMethod: "stripe-placeholder";
-    paymentStatus: "pending";
-  } | null;
-  nonConfirmationRouteViewModel: {
-    start: {
-      title: string;
-      body: string;
-      actionLabel: string;
-      actionHref: string;
-    };
-    information: {
-      note: string;
-      actionLabel: string;
-    };
-    shipping: {
-      optionTitle: string;
-      optionBody: string;
-      optionPriceLabel: string;
-      body: string;
-      actionLabel: string;
-    };
-    payment: {
-      body: string;
-      launchModeLabel: string;
-      handoffLabel: string;
-      boundary: {
-        modeLabel: string;
-        statusLabel: string;
-        publishableKeyLabel: string;
-        missingConfigLabel: string | null;
-        sessionResponseLabel: string;
-        sessionResponseStatusLabel: string;
-        paymentStatusLabel: string;
-        readinessLabel: string;
-      };
-      checkoutService: {
-        statusLabel: string;
-        endpointLabel: string;
-        successUrlLabel: string;
-        cancelUrlLabel: string;
-        missingClientConfigLabel: string | null;
-        missingServerConfigLabel: string | null;
-      };
-      checkoutExecution: {
-        statusLabel: string;
-        endpointLabel: string;
-        redirectTargetLabel: string | null;
-        missingServerConfigLabel: string | null;
-      };
-      executionAttempt: {
-        stateLabel: string;
-        messageLabel: string | null;
-        redirectTargetLabel: string | null;
-        actionLabel: string;
-      };
-      checkoutSessionRequest: {
-        customerEmailLabel: string | null;
-        lineItemsLabel: string | null;
-        totalLabel: string | null;
-        emptyLabel: string | null;
-      };
-      actionLabel: string;
-    };
-  };
-  confirmationViewModel: {
-    headline: string;
-    customerLabel: string;
-    submissionStateLabel: string;
-    orderReference: string | null;
-    body: string;
-    failureMessage: string | null;
-    paymentStatusLabel: string | null;
-    shippingLabel: string | null;
-    emailBoundary: {
-      headline: string;
-      stateLabel: string;
-      toLabel: string | null;
-      subjectLabel: string | null;
-      itemCountLabel: string | null;
-      totalLabel: string | null;
-      previewTextLabel: string | null;
-    };
-  };
-  reviewViewModel: {
-    shippingAddressLines: string[] | null;
-    shippingMethodLabel: string;
-    paymentLabel: string;
-    submissionBoundary: {
-      emailLabel: string | null;
-      itemCountLabel: string | null;
-      paymentMethodLabel: string | null;
-      paymentStatusLabel: string | null;
-      emptyLabel: string | null;
-    };
-    submissionAttempt: {
-      stateLabel: string;
-      failureMessage: string | null;
-      previewReference: string | null;
-    };
-    placeOrderLabel: string;
-    stripeBoundary: {
-      modeLabel: string;
-      statusLabel: string;
-    };
-  };
-  submissionAttempt: {
-    status: "idle" | "submitting" | "success" | "failure";
-    preview: {
-      status: "placeholder";
-      orderReference: string;
-      paymentStatus: "pending";
-      confirmationLabel: string;
-    } | null;
-    failure: {
-      status: "placeholder";
-      code: "missing-payload" | "missing-payment-config";
-      message: string;
-    } | null;
-  };
-  submissionFailure: {
-    status: "placeholder";
-    code: "missing-payload" | "missing-payment-config";
-    message: string;
-  } | null;
-  submissionPreview: {
-    status: "placeholder";
-    orderReference: string;
-    paymentStatus: "pending";
-    confirmationLabel: string;
-  } | null;
-  shippingMethod: {
-    label: string;
-    priceUsd: number;
-  } | null;
-  stripePaymentDraft: {
-    provider: "stripe";
-    method: "stripe-placeholder";
-    mode: "checkout";
-    publishableKeyReady: boolean;
-    launchMode: "checkout";
-    missingConfig: Array<"NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY">;
-    isReadyForPlaceholderFlow: boolean;
-    paymentStepStatus: "launch-mode-missing-config" | "ready-placeholder";
-    checkoutService: {
-      mode: "checkout";
-      status: "missing-client-config" | "missing-server-config" | "ready-placeholder";
-      sessionEndpointPath: string;
-      successUrl: string;
-      cancelUrl: string;
-      missingClientConfig: Array<"NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY">;
-      missingServerConfig: Array<"STRIPE_SECRET_KEY" | "STRIPE_WEBHOOK_SECRET">;
-    };
-    checkoutExecution: {
-      endpointPath: string;
-      status: "missing-server-config" | "ready";
-      redirectTarget: string | null;
-      missingServerConfig: Array<"STRIPE_SECRET_KEY" | "STRIPE_WEBHOOK_SECRET">;
-    };
-    checkoutSessionRequest: {
-      mode: "checkout";
-      customerEmail?: string;
-      successUrl: string;
-      cancelUrl: string;
-      currency: "USD";
-      subtotalUsd: number;
-      shippingUsd: number;
-      taxUsd: number;
-      totalUsd: number;
-      lineItems: Array<{
-        id: string;
-        name: string;
-        quantity: number;
-        unitAmountUsd: number;
-      }>;
-      metadata: {
-        checkoutMode: "guest";
-      };
-    } | null;
-    checkoutSessionResponse: {
-      id: string;
-      mode: "checkout";
-      url?: string;
-      expiresAt?: string;
-      status: "placeholder" | "created";
-    } | null;
-    paymentStatus: "pending";
-  };
-  updateInformation: (
-    field:
-      | "email"
-      | "fullName"
-      | "address1"
-      | "address2"
-      | "city"
-      | "state"
-      | "postalCode"
-      | "country",
-    value: string,
-  ) => void;
-};
-
-function renderStep(step: CheckoutStepKey, props: CheckoutStepRenderProps) {
-  switch (step) {
-    case "start":
-      return (
-        <div className={styles.panelStack}>
-          <div className={styles.panelHeader}>
-            <p className={styles.eyebrow}>Start</p>
-            <h2>{props.nonConfirmationRouteViewModel.start.title}</h2>
-          </div>
-          <p className={styles.panelBody}>{props.nonConfirmationRouteViewModel.start.body}</p>
-          <Link
-            className={styles.primaryAction}
-            href={props.nonConfirmationRouteViewModel.start.actionHref as Route}
-          >
-            {props.nonConfirmationRouteViewModel.start.actionLabel}
-          </Link>
-        </div>
-      );
-    case "information":
-      return (
-        <div className={styles.panelStack}>
-          <div className={styles.panelHeader}>
-            <p className={styles.eyebrow}>Step 1</p>
-            <h2>Information</h2>
-          </div>
-          <div className={styles.formGrid}>
-            <label className={styles.field}>
-              <span>Email address</span>
-              <input
-                placeholder="name@example.com"
-                type="email"
-                value={props.information.email}
-                onChange={(event) => props.updateInformation("email", event.target.value)}
-              />
-            </label>
-            <label className={styles.field}>
-              <span>Full name</span>
-              <input
-                placeholder="Jordan Smith"
-                type="text"
-                value={props.information.fullName}
-                onChange={(event) => props.updateInformation("fullName", event.target.value)}
-              />
-            </label>
-            <label className={styles.field}>
-              <span>Address line 1</span>
-              <input
-                placeholder="123 Main Street"
-                type="text"
-                value={props.information.address1}
-                onChange={(event) => props.updateInformation("address1", event.target.value)}
-              />
-            </label>
-            <label className={styles.field}>
-              <span>Address line 2</span>
-              <input
-                placeholder="Apartment, suite, etc."
-                type="text"
-                value={props.information.address2}
-                onChange={(event) => props.updateInformation("address2", event.target.value)}
-              />
-            </label>
-            <label className={styles.field}>
-              <span>City</span>
-              <input
-                placeholder="Los Angeles"
-                type="text"
-                value={props.information.city}
-                onChange={(event) => props.updateInformation("city", event.target.value)}
-              />
-            </label>
-            <label className={styles.field}>
-              <span>State</span>
-              <select
-                value={props.information.state}
-                onChange={(event) => props.updateInformation("state", event.target.value)}
-              >
-                <option disabled value="">
-                  Select a state
-                </option>
-                {usStates.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className={styles.field}>
-              <span>ZIP code</span>
-              <input
-                placeholder="90001"
-                type="text"
-                value={props.information.postalCode}
-                onChange={(event) => props.updateInformation("postalCode", event.target.value)}
-              />
-            </label>
-            <label className={styles.field}>
-              <span>Country</span>
-              <input readOnly value="United States" />
-            </label>
-          </div>
-          <p className={styles.summaryNote}>{props.nonConfirmationRouteViewModel.information.note}</p>
-          <div className={styles.reviewCard}>
-            <h3>Need Help Before You Continue?</h3>
-            <p>If you are checking out a ONE OF A KIND rug and want guidance before payment, use the inquiry flow and we will review the piece with you directly.</p>
-            <Link className={styles.secondaryAction} href="/contact">
-              Contact the Studio
-            </Link>
-          </div>
-          <button
-            className={styles.primaryAction}
-            disabled={!props.canAccessShipping}
-            type="button"
-            onClick={props.continueFromInformation}
-          >
-            {props.nonConfirmationRouteViewModel.information.actionLabel}
-          </button>
-        </div>
-      );
-    case "shipping":
-      return (
-        <div className={styles.panelStack}>
-          <div className={styles.panelHeader}>
-            <p className={styles.eyebrow}>Step 2</p>
-            <h2>Shipping</h2>
-          </div>
-          <div className={styles.optionCard}>
-            <div>
-              <strong>{props.nonConfirmationRouteViewModel.shipping.optionTitle}</strong>
-              <p>{props.nonConfirmationRouteViewModel.shipping.optionBody}</p>
-            </div>
-            <strong>{props.nonConfirmationRouteViewModel.shipping.optionPriceLabel}</strong>
-          </div>
-          <p className={styles.panelBody}>{props.nonConfirmationRouteViewModel.shipping.body}</p>
-          <div className={styles.reviewCard}>
-            <h3>Shipping Review</h3>
-            <p>We review the destination and shipping conditions before payment is captured. If anything needs clarification, we contact you before moving forward.</p>
-          </div>
-          <button
-            className={styles.primaryAction}
-            type="button"
-            onClick={props.continueFromShipping}
-          >
-            {props.nonConfirmationRouteViewModel.shipping.actionLabel}
-          </button>
-        </div>
-      );
-    case "payment":
-      return (
-        <div className={styles.panelStack}>
-          <div className={styles.panelHeader}>
-            <p className={styles.eyebrow}>Step 3</p>
-            <h2>Payment</h2>
-          </div>
-          <div className={styles.reviewCard}>
-            <h3>Secure Payment</h3>
-            <p>{props.nonConfirmationRouteViewModel.payment.body}</p>
-          </div>
-          <div className={styles.reviewCard}>
-            <h3>What Happens Next</h3>
-            <p>
-              You will be redirected to Stripe Checkout to review your payment details. After
-              checkout, we confirm your order details, destination, and next steps by email before
-              payment is captured.
-            </p>
-          </div>
-          <div className={styles.reviewCard}>
-            <h3>Prefer a Reviewed Buying Path?</h3>
-            <p>For ONE OF A KIND rugs or project purchases, you can contact the studio instead of continuing through checkout.</p>
-            <Link className={styles.secondaryAction} href="/contact?inquiryType=product-inquiry">
-              Start an Inquiry Instead
-            </Link>
-          </div>
-          {props.checkoutExecutionAttempt.message ? (
-            <div className={styles.reviewCard}>
-              <h3>Checkout Update</h3>
-              <p>{props.checkoutExecutionAttempt.message}</p>
-            </div>
-          ) : null}
-          <button
-            className={styles.secondaryAction}
-            disabled={
-              !props.canAccessPayment ||
-              props.checkoutExecutionAttempt.status === "submitting"
-            }
-            type="button"
-            onClick={() => {
-              void props.executeCheckoutSession();
-            }}
-          >
-            {props.nonConfirmationRouteViewModel.payment.executionAttempt.actionLabel}
-          </button>
-          <button
-            className={styles.primaryAction}
-            disabled={!props.canAccessReview}
-            type="button"
-            onClick={props.continueFromPayment}
-          >
-            {props.nonConfirmationRouteViewModel.payment.actionLabel}
-          </button>
-        </div>
-      );
-    case "review":
-      return (
-        <div className={styles.panelStack}>
-          <div className={styles.panelHeader}>
-            <p className={styles.eyebrow}>Step 4</p>
-            <h2>Review</h2>
-          </div>
-          <div className={styles.reviewCard}>
-            <h3>Shipping Address</h3>
-            {props.reviewViewModel.shippingAddressLines ? (
-              <>
-                {props.reviewViewModel.shippingAddressLines.map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-              </>
-            ) : (
-              <p>Complete your shipping details before reviewing your order.</p>
-            )}
-          </div>
-          <div className={styles.reviewCard}>
-            <h3>Shipping Method</h3>
-            <p>{props.reviewViewModel.shippingMethodLabel}</p>
-          </div>
-          <div className={styles.reviewCard}>
-            <h3>Payment</h3>
-            <p>{props.reviewViewModel.paymentLabel}</p>
-          </div>
-          <p className={styles.panelBody}>
-            Review your details before continuing. After checkout, we confirm the piece,
-            destination, and next steps by email before payment is captured.
-          </p>
-          <div className={styles.reviewCard}>
-            <h3>Final Review</h3>
-            <p>This step confirms your checkout details in our system. If you need to switch to a more guided inquiry flow, contact the studio before proceeding.</p>
-          </div>
-          {props.reviewViewModel.submissionAttempt.failureMessage ? (
-            <div className={styles.reviewCard}>
-              <h3>Checkout Update</h3>
-              <p>{props.reviewViewModel.submissionAttempt.failureMessage}</p>
-            </div>
-          ) : null}
-          <button
-            className={styles.primaryAction}
-            type="button"
-            onClick={() =>
-              props.continueFromReview({
-                submissionPreview: props.submissionPreview,
-                submissionFailure: props.submissionFailure,
-              })
-            }
-          >
-            {props.reviewViewModel.placeOrderLabel}
-          </button>
-        </div>
-      );
-    case "confirmation":
-      return (
-        <div className={styles.panelStack}>
-          <div className={styles.panelHeader}>
-            <p className={styles.eyebrow}>Step 5</p>
-            <h2>Confirmation</h2>
-          </div>
-          <div className={styles.confirmationCard}>
-            <strong>{props.confirmationViewModel.headline}</strong>
-            <p>{props.confirmationViewModel.customerLabel}</p>
-            <p>{props.confirmationViewModel.body}</p>
-            {props.confirmationViewModel.failureMessage ? (
-              <p>{props.confirmationViewModel.failureMessage}</p>
-            ) : null}
-            {props.confirmationViewModel.orderReference ? (
-              <p>Reference: {props.confirmationViewModel.orderReference}</p>
-            ) : null}
-            {props.confirmationViewModel.shippingLabel ? (
-              <p>{props.confirmationViewModel.shippingLabel}</p>
-            ) : null}
-          </div>
-          <div className={styles.reviewCard}>
-            <h3>Next Step Support</h3>
-            <p>If you need to clarify delivery timing, product questions, or project details after checkout, reply to the confirmation email or contact the studio directly.</p>
-          </div>
-          <div className={styles.formGrid}>
-            <Link className={styles.secondaryAction} href="/shop">
-              Return to Shop
-            </Link>
-            <Link className={styles.secondaryAction} href="/contact?inquiryType=order-question">
-              Contact the Studio
-            </Link>
-          </div>
-        </div>
-      );
-    default:
-      return null;
+function renderStep(step: CheckoutStepKey, clientSecret: string | null) {
+  if (step === "billing") {
+    return (
+      <div key="billing" className={styles.stepPanel}>
+        <BillingStep />
+      </div>
+    );
   }
-}
 
+  if (step === "shipping") {
+    return (
+      <div key="shipping" className={styles.stepPanel}>
+        <ShippingStep />
+      </div>
+    );
+  }
+
+  // Payment, review, and confirmation share one Elements instance so the
+  // in-progress payment survives moving from "enter card" to "review" to
+  // "confirm" — remounting Elements between those steps would lose it. Only
+  // the inner content re-keys per step, for the slide-in transition.
+  if (!clientSecret) {
+    return (
+      <div key="payment-loading" className={styles.stepPanel}>
+        <div className={styles.panelHeader}>
+          <p className={styles.eyebrow}>Step 3</p>
+          <h2>Payment</h2>
+        </div>
+        <div className={styles.reviewCard}>
+          <p>Preparing secure payment…</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Elements stripe={getStripeBrowserClient()} options={{ clientSecret }}>
+      <div key={step} className={styles.stepPanel}>
+        {step === "payment" ? <PaymentStep /> : step === "review" ? <ReviewStep /> : <ConfirmationStep />}
+      </div>
+    </Elements>
+  );
+}

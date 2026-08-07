@@ -1,76 +1,11 @@
 import type {
   OrderConfirmationEmailBoundary,
   OrderConfirmationEmailDeliveryResult,
-  OrderConfirmationEmailPayload,
-  OrderConfirmationEmailPreview,
   OrderConfirmationEmailRequest,
   PostmarkEmailPayload,
 } from "@/lib/email/contracts";
-import type {
-  OrderCreationRequest,
-  OrderSubmissionPayload,
-  OrderSubmissionPreview,
-} from "@/lib/order";
+import type { OrderCreationRequest } from "@/lib/order";
 import type { Order } from "@/types/domain";
-
-export function createOrderConfirmationEmailPayload(input: {
-  submissionPayload: OrderSubmissionPayload | null;
-  submissionPreview: OrderSubmissionPreview | null;
-}): OrderConfirmationEmailPayload | null {
-  const { submissionPayload, submissionPreview } = input;
-
-  if (!submissionPayload || !submissionPreview) {
-    return null;
-  }
-
-  return {
-    to: submissionPayload.email,
-    orderReference: submissionPreview.orderReference,
-    customerName: submissionPayload.shippingAddress.fullName,
-    shippingLabel: submissionPayload.shippingMethod.label,
-    totalUsd: submissionPayload.totalUsd,
-    currency: submissionPayload.currency,
-    itemCount: submissionPayload.items.reduce(
-      (runningTotal, item) => runningTotal + item.quantity,
-      0,
-    ),
-  };
-}
-
-export function createOrderConfirmationEmailPreview(
-  payload: OrderConfirmationEmailPayload | null,
-): OrderConfirmationEmailPreview | null {
-  if (!payload) {
-    return null;
-  }
-
-  const subject = `Order received - pre-shipment verification next (${payload.orderReference})`;
-  const text = [
-    `Hi ${payload.customerName},`,
-    "",
-    "Thank you for your order. We have received it and your payment method has been authorised at checkout, but payment has not been captured yet.",
-    `Within the pre-shipment verification window, up to 7 days from your order date, we will email you a video of the actual piece for review.`,
-    "If you confirm the piece, we will capture payment and ship your order.",
-    "If you decline after the verification, the authorisation will be released in full and no charge will be collected.",
-  ].join("\n");
-
-  return {
-    status: "placeholder",
-    subject,
-    message: {
-      to: payload.to,
-      subject,
-      html: [
-        `<p>Hi ${escapeHtml(payload.customerName)},</p>`,
-        "<p>Thank you for your order. We have received it and your payment method has been authorised at checkout, but payment has not been captured yet.</p>",
-        "<p>Within the pre-shipment verification window, up to 7 days from your order date, we will email you a video of the actual piece for review.</p>",
-        "<p>If you confirm the piece, we will capture payment and ship your order.</p>",
-        "<p>If you decline after the verification, the authorisation will be released in full and no charge will be collected.</p>",
-      ].join(""),
-      text,
-    },
-  };
-}
 
 export function createOrderConfirmationEmailBoundary(): OrderConfirmationEmailBoundary {
   return {
@@ -193,7 +128,7 @@ function createLaunchOrderConfirmationMessage(input: {
     html: [
       `<p>Hi ${escapeHtml(input.customerName)},</p>`,
       "<p>Thank you for your order with Loom & Hearth Studio. We have received your order, and your payment method has been authorised at checkout, but payment has not been captured yet.</p>",
-      `<p>Within the pre-shipment verification window, up to 7 days from ${escapeHtml(input.placedAtLabel.replace("Order received ", ""))}, you will receive an email with a video of the actual piece for review.</p>`,
+      `<p>Within 24 to 48 hours of ${escapeHtml(input.placedAtLabel.replace("Order received ", ""))}, you will receive an email with photos and videos of the actual piece for review.</p>`,
       "<p>If you confirm the piece, we will capture payment and ship your order.</p>",
       "<p>If you decline after the verification, the authorisation will be released in full and no charge will be collected.</p>",
       `<p><strong>Order number:</strong> ${escapeHtml(input.orderNumber)}<br />`,
@@ -210,7 +145,7 @@ function createLaunchOrderConfirmationMessage(input: {
       `Hi ${input.customerName},`,
       "",
       "Thank you for your order with Loom & Hearth Studio. We have received your order, and your payment method has been authorised at checkout, but payment has not been captured yet.",
-      `Within the pre-shipment verification window, up to 7 days from ${input.placedAtLabel.replace("Order received ", "")}, you will receive an email with a video of the actual piece for review.`,
+      `Within 24 to 48 hours of ${input.placedAtLabel.replace("Order received ", "")}, you will receive an email with photos and videos of the actual piece for review.`,
       "If you confirm the piece, we will capture payment and ship your order.",
       "If you decline after the verification, the authorisation will be released in full and no charge will be collected.",
       "",

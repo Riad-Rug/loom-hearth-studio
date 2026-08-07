@@ -131,13 +131,16 @@ model OrderRecord {
   id                String              @id @default(cuid())
   orderNumber       String              @unique
   checkoutMode      CheckoutMode
-  checkoutSessionId String              @unique
+  checkoutSessionId String?             @unique
   paymentIntentId   String?             @unique
   status            OrderStatus
   paymentStatus     PaymentStatus
   customerEmail     String?
+  billingAddress    Json?
   shippingAddress   Json
   promoCode         String?
+  customerNotes            String?      @db.Text
+  customerNotesSubmittedAt DateTime?
   discountUsd       Decimal             @default(0) @db.Decimal(10, 2)
   subtotalUsd       Decimal             @db.Decimal(10, 2)
   shippingUsd       Decimal             @db.Decimal(10, 2)

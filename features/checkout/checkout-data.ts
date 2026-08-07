@@ -1,26 +1,13 @@
-export type CheckoutStepKey =
-  | "start"
-  | "information"
-  | "shipping"
-  | "payment"
-  | "review"
-  | "confirmation";
+export type CheckoutStepKey = "billing" | "shipping" | "payment" | "review" | "confirmation";
 
+// Confirmation is intentionally excluded — it's the destination, not a step
+// the customer has to complete, so it doesn't appear in the progress bar.
 export const checkoutSteps = [
-  { key: "information", label: "Information", href: "/checkout/information" },
-  { key: "shipping", label: "Shipping", href: "/checkout/shipping" },
-  { key: "payment", label: "Payment", href: "/checkout/payment" },
-  { key: "review", label: "Review", href: "/checkout/review" },
-  { key: "confirmation", label: "Confirmation", href: "/checkout/success" },
-] as const;
-
-export const usStates = [
-  "California",
-  "Florida",
-  "New York",
-  "Texas",
-  "Washington",
-] as const;
+  { key: "billing", label: "Billing" },
+  { key: "shipping", label: "Shipping" },
+  { key: "payment", label: "Payment" },
+  { key: "review", label: "Review" },
+] as const satisfies ReadonlyArray<{ key: Exclude<CheckoutStepKey, "confirmation">; label: string }>;
 
 export const checkoutSummary = {
   subtotalUsdLabel: "$0.00",
@@ -31,20 +18,3 @@ export const checkoutSummary = {
   marketLabel: "Shipping to the United States, Canada, and Australia",
   currencyLabel: "Prices shown in USD",
 } as const;
-
-export const checkoutLineItems = [
-  {
-    id: "checkout-item-rug",
-    name: "Atlas Morning Rug",
-    quantityLabel: "Qty 1",
-    typeLabel: "Moroccan rugs",
-    priceUsdLabel: "$0.00",
-  },
-  {
-    id: "checkout-item-pouf",
-    name: "Clay Knot Pouf",
-    quantityLabel: "Qty 2",
-    typeLabel: "Poufs",
-    priceUsdLabel: "$0.00",
-  },
-] as const;

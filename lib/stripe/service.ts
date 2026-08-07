@@ -206,7 +206,7 @@ function createStripeCheckoutSessionFormBody(input: StripeCheckoutSessionRequest
   return formBody;
 }
 
-function createStripeMetadataChunks(value: string) {
+export function createStripeMetadataChunks(value: string) {
   const chunkSize = 400;
   const chunks: string[] = [];
 
