@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useElements, useStripe } from "@stripe/react-stripe-js";
 
+import Link from "next/link";
+
 import { formatUsd } from "@/features/cart/cart-provider";
 import { useCheckout } from "@/features/checkout/checkout-provider";
 
@@ -35,6 +37,7 @@ export function ReviewStep() {
     placeOrderState,
     setPlaceOrderState,
     completeOrder,
+    goToStep,
   } = useCheckout();
 
   const [localError, setLocalError] = useState<string | null>(null);
@@ -117,12 +120,16 @@ export function ReviewStep() {
   return (
     <div className={styles.panelStack}>
       <div className={styles.panelHeader}>
-        <p className={styles.eyebrow}>Step 4</p>
         <h2>Review</h2>
       </div>
 
       <div className={styles.reviewCard}>
-        <h3>Billing Address</h3>
+        <div className={styles.reviewCardHeader}>
+          <h3>Billing Address</h3>
+          <button className={styles.editLink} type="button" onClick={() => goToStep("billing")}>
+            Edit
+          </button>
+        </div>
         {resolvedBillingAddress ? (
           <>
             <p>{resolvedBillingAddress.fullName}</p>
@@ -136,7 +143,12 @@ export function ReviewStep() {
       </div>
 
       <div className={styles.reviewCard}>
-        <h3>Shipping Address</h3>
+        <div className={styles.reviewCardHeader}>
+          <h3>Shipping Address</h3>
+          <button className={styles.editLink} type="button" onClick={() => goToStep("shipping")}>
+            Edit
+          </button>
+        </div>
         {resolvedShippingAddress ? (
           <>
             <p>{resolvedShippingAddress.fullName}</p>
@@ -149,7 +161,12 @@ export function ReviewStep() {
       </div>
 
       <div className={styles.reviewCard}>
-        <h3>Items</h3>
+        <div className={styles.reviewCardHeader}>
+          <h3>Items</h3>
+          <button className={styles.editLink} type="button" onClick={() => goToStep("payment")}>
+            Edit payment
+          </button>
+        </div>
         {items.map((item) => (
           <p key={item.id}>
             {item.name} × {item.quantity} — {formatUsd(item.priceUsd * item.quantity)}
@@ -163,32 +180,44 @@ export function ReviewStep() {
         </p>
       </div>
 
-      <div className={styles.reviewCard}>
-        <h3>Payment</h3>
-        <p>Card authorized now, charged only after you approve pre-shipment photos and videos.</p>
-      </div>
-
       {localError ? (
-        <div className={styles.reviewCard}>
-          <h3>Checkout Update</h3>
+        <div className={styles.reviewCardError}>
+          <h3>We couldn&apos;t finish placing your order</h3>
           <p role="alert">{localError}</p>
+          {paymentIntent.paymentIntentId ? (
+            <p className={styles.summaryNote}>
+              Reference: {paymentIntent.paymentIntentId} — your card was authorized, not charged.
+            </p>
+          ) : null}
+          <Link className={styles.secondaryAction} href="/contact?inquiryType=order-question">
+            Contact the Studio
+          </Link>
         </div>
       ) : null}
 
-      <button
-        className={styles.primaryAction}
-        disabled={!stripe || !elements || paymentIntent.status !== "ready" || isPlacing}
-        type="button"
-        onClick={() => {
-          void handlePlaceOrder();
-        }}
-      >
-        {placeOrderState.status === "confirming"
-          ? "Authorizing card…"
-          : placeOrderState.status === "creating-order"
-            ? "Placing order…"
-            : "Place order"}
-      </button>
+      <p className={styles.promiseLine}>
+        Card authorized now, charged only after you approve pre-shipment photos and videos.
+      </p>
+
+      <div className={styles.stepActions}>
+        <button className={styles.secondaryAction} type="button" onClick={() => goToStep("payment")}>
+          Back
+        </button>
+        <button
+          className={styles.primaryAction}
+          disabled={!stripe || !elements || paymentIntent.status !== "ready" || isPlacing}
+          type="button"
+          onClick={() => {
+            void handlePlaceOrder();
+          }}
+        >
+          {placeOrderState.status === "confirming"
+            ? "Authorizing card…"
+            : placeOrderState.status === "creating-order"
+              ? "Placing order…"
+              : "Place order"}
+        </button>
+      </div>
     </div>
   );
 }

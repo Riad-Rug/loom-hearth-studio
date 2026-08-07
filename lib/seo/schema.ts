@@ -218,11 +218,11 @@ export function productSchema(input: {
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
-        applicableCountry: ["US", "CA", "AU"],
+        applicableCountry: ["US"],
         returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
         merchantReturnDays: 14,
       },
-      shippingDetails: ["US", "CA", "AU"].map((country) => ({
+      shippingDetails: ["US"].map((country) => ({
         "@type": "OfferShippingDetails",
         shippingDestination: {
           "@type": "DefinedRegion",

@@ -64,7 +64,9 @@ export function ConfirmationStep() {
           videos of your exact piece for your approval — your card is charged only after you approve,
           and not before.
         </p>
-        <p>Order number: {placedOrder.orderNumber}</p>
+        <p className={styles.orderNumberLine}>
+          Order number: <strong>{placedOrder.orderNumber}</strong>
+        </p>
         <p>Total: {formatUsd(placedOrder.totalUsd)}</p>
       </div>
 
@@ -100,7 +102,7 @@ export function ConfirmationStep() {
           <button className={styles.secondaryAction} disabled={notesState === "submitting"} type="submit">
             {notesState === "submitting" ? "Submitting…" : "Submit"}
           </button>
-          {notesState === "saved" ? <p>Thanks — we&apos;ve got it.</p> : null}
+          {notesState === "saved" ? <p role="status">Thanks — we&apos;ve got it.</p> : null}
           {notesState === "error" ? <p role="alert">Could not save your note. Please try again.</p> : null}
         </form>
       </div>

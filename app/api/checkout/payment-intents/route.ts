@@ -43,7 +43,12 @@ export async function POST(request: Request) {
         amount,
         currency: "usd",
         capture_method: "manual",
-        automatic_payment_methods: { enabled: true },
+        // Card only, deliberately not automatic_payment_methods: not every
+        // payment method Stripe would otherwise offer (Klarna, ACH, etc.)
+        // honors manual capture the same way — the site's core promise is
+        // "authorized now, charged only after you approve," and that must
+        // hold for whatever payment method is actually offered.
+        payment_method_types: ["card"],
         receipt_email: snapshot.billingAddress.email,
         metadata,
       });

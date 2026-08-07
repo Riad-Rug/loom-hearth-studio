@@ -53,6 +53,7 @@ type CartContextValue = {
   updateQuantity: (id: string, quantity: number) => void;
   applyPromoCode: (code: string) => Promise<{ status: "success" | "error"; message: string }>;
   removePromoCode: () => void;
+  clearCart: () => void;
 };
 
 type StoredCartState = {
@@ -192,6 +193,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return { status: "error", message: result.message };
       },
       removePromoCode() {
+        setAppliedPromo(null);
+      },
+      clearCart() {
+        setItems([]);
         setAppliedPromo(null);
       },
     };

@@ -49,7 +49,7 @@ const howItWorksSteps = [
     tag: "YOU HAVE 5 DAYS",
     title: "You decide",
     bodyDesktop:
-      "Approve, and only then is your card charged — your piece ships tracked, 5–10 days to the US, CA and AU. Say no and the hold is released; you pay nothing, and the piece goes back on the site. No reply within 5 days? The order cancels itself and the hold lifts automatically.",
+      "Approve, and only then is your card charged — your piece ships tracked, 5–10 days across the US. Say no and the hold is released; you pay nothing, and the piece goes back on the site. No reply within 5 days? The order cancels itself and the hold lifts automatically.",
     bodyMobile: "Approve → charged → ships tracked. Say no — or say nothing — and the hold lifts. You pay nothing.",
   },
 ] as const;

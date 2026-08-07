@@ -346,7 +346,7 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
       : [
           "Ships from our Marrakech atelier via DHL tracked service.",
           "Typical dispatch window is 5 to 7 business days.",
-          "Duties are included for the US, Canada, and Australia.",
+          "Duties are included for US delivery.",
         ];
 
   const panels: ProductSupportPanelViewModel[] = [
@@ -374,7 +374,7 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
       eyebrow: "Shipping",
       title: "Shipping and delivery notes",
       body:
-        "Ships from our Marrakech atelier via DHL tracked service, typically in 5 to 7 business days. Duties are included for the US, Canada, and Australia - no surprise charges at delivery.",
+        "Ships from our Marrakech atelier via DHL tracked service, typically in 5 to 7 business days. Duties are included for US delivery - no surprise charges at delivery.",
       items: shippingItems,
     },
   ];

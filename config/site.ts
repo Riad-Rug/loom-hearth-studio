@@ -56,8 +56,8 @@ export const siteConfig = {
   tagline:
     "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
   announcementDesktop:
-    "SEE YOUR EXACT PIECE IN DAYLIGHT PHOTOS BEFORE YOU PAY · FREE SHIPPING OVER $150 · US · CA · AU · SHIPS FROM CASABLANCA",
-  announcementMobile: "APPROVE YOUR PIECE BEFORE YOU PAY · FREE SHIPPING OVER $150 · US · CA · AU",
+    "SEE YOUR EXACT PIECE IN DAYLIGHT PHOTOS BEFORE YOU PAY · FREE SHIPPING OVER $150 · SHIPPING TO THE US · SHIPS FROM CASABLANCA",
+  announcementMobile: "APPROVE YOUR PIECE BEFORE YOU PAY · FREE SHIPPING OVER $150 · SHIPPING TO THE US",
   primaryNav: [
     { href: "/shop/rugs", label: "Rugs" },
     { href: "/shop/poufs", label: "Poufs" },

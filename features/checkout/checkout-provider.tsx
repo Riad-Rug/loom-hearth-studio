@@ -100,6 +100,7 @@ type CheckoutContextValue = {
   canAccessReview: boolean;
   canAccessConfirmation: boolean;
   paymentIntent: PaymentIntentState;
+  retryPaymentIntent: () => void;
   placeOrderState: PlaceOrderState;
   setPlaceOrderState: (state: PlaceOrderState) => void;
   placedOrder: PlacedOrder | null;
@@ -109,7 +110,7 @@ type CheckoutContextValue = {
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
-  const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd } = useCart();
+  const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd, clearCart } = useCart();
   const [step, setStep] = useState<CheckoutStepKey>("billing");
   const [billing, setBilling] = useState<AddressFormValues>(emptyAddressFormValues);
   const [shippingAddressMode, setShippingAddressMode] = useState<ShippingAddressMode>("same-as-billing");
@@ -120,6 +121,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [placeOrderState, setPlaceOrderState] = useState<PlaceOrderState>(initialPlaceOrderState);
   const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [paymentIntentRetryCount, setPaymentIntentRetryCount] = useState(0);
   const paymentIntentIdRef = useRef<string | null>(null);
   const hasTrackedBeginCheckout = useRef(false);
 
@@ -190,7 +192,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
   const canAccessShipping = hasCartItems && Boolean(resolvedBillingAddress);
   const canAccessPayment = canAccessShipping && Boolean(resolvedShippingAddress);
-  const canAccessReview = canAccessPayment && paymentIntent.status === "ready";
+  const canAccessReview = canAccessPayment && paymentIntent.status === "ready" && !placedOrder;
   const canAccessConfirmation = Boolean(placedOrder);
 
   // Backward guard: if the browser lands on a step's URL (back button, hard
@@ -198,6 +200,15 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   // the furthest step that is actually ready.
   useEffect(() => {
     if (!hasHydrated) {
+      return;
+    }
+
+    // Once an order is placed, there's nothing left to edit — browser-back
+    // into Billing/Shipping/Payment/Review (which would otherwise still show
+    // an enabled "Place order" for an already-completed order) redirects
+    // straight back to the receipt instead.
+    if (placedOrder && step !== "confirmation") {
+      setStep("confirmation");
       return;
     }
 
@@ -219,7 +230,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     if (step === "shipping" && !canAccessShipping) {
       setStep("billing");
     }
-  }, [canAccessConfirmation, canAccessPayment, canAccessReview, canAccessShipping, hasHydrated, step]);
+  }, [canAccessConfirmation, canAccessPayment, canAccessReview, canAccessShipping, hasHydrated, placedOrder, step]);
 
   const draftSignature = useMemo(
     () =>
@@ -299,7 +310,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canAccessPayment, draftSignature]);
+  }, [canAccessPayment, draftSignature, paymentIntentRetryCount]);
 
   function goToStep(next: CheckoutStepKey) {
     setStep(next);
@@ -366,12 +377,16 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     canAccessReview,
     canAccessConfirmation,
     paymentIntent,
+    retryPaymentIntent() {
+      setPaymentIntentRetryCount((count) => count + 1);
+    },
     placeOrderState,
     setPlaceOrderState,
     placedOrder,
     completeOrder(order) {
       setPlacedOrder(order);
       window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+      clearCart();
       goToStep("confirmation");
     },
   };

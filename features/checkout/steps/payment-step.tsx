@@ -10,7 +10,7 @@ import styles from "@/features/checkout/checkout-page.module.css";
 export function PaymentStep() {
   const stripe = useStripe();
   const elements = useElements();
-  const { paymentIntent, goToStep } = useCheckout();
+  const { paymentIntent, goToStep, retryPaymentIntent } = useCheckout();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,16 +37,7 @@ export function PaymentStep() {
   return (
     <div className={styles.panelStack}>
       <div className={styles.panelHeader}>
-        <p className={styles.eyebrow}>Step 3</p>
         <h2>Payment</h2>
-      </div>
-
-      <div className={styles.reviewCard}>
-        <h3>Secure Payment</h3>
-        <p>
-          Your card is authorized now and charged only after you approve pre-shipment photos and
-          videos of your exact piece — usually within 24 to 48 hours.
-        </p>
       </div>
 
       {paymentIntent.status === "creating" || paymentIntent.status === "idle" || !stripe || !elements ? (
@@ -54,9 +45,19 @@ export function PaymentStep() {
           <p>Preparing secure payment…</p>
         </div>
       ) : paymentIntent.status === "error" ? (
-        <div className={styles.reviewCard}>
-          <h3>Payment Unavailable</h3>
-          <p>{paymentIntent.message ?? "We could not prepare payment for this order. Please try again."}</p>
+        <div className={styles.reviewCardError}>
+          <h3>Payment unavailable</h3>
+          <p role="alert">
+            {paymentIntent.message ?? "We could not prepare payment for this order."}
+          </p>
+          <div className={styles.stepActions}>
+            <button className={styles.secondaryAction} type="button" onClick={() => goToStep("shipping")}>
+              Back
+            </button>
+            <button className={styles.primaryAction} type="button" onClick={retryPaymentIntent}>
+              Try again
+            </button>
+          </div>
         </div>
       ) : (
         <div className={styles.paymentShell}>
@@ -70,16 +71,26 @@ export function PaymentStep() {
         </p>
       ) : null}
 
-      <button
-        className={styles.primaryAction}
-        disabled={!stripe || !elements || paymentIntent.status !== "ready" || isSubmitting}
-        type="button"
-        onClick={() => {
-          void handleContinue();
-        }}
-      >
-        {isSubmitting ? "Checking details…" : "Continue to review"}
-      </button>
+      <p className={styles.promiseLine}>
+        Card authorized now, charged only after you approve pre-shipment photos and videos —
+        usually within 24 to 48 hours.
+      </p>
+
+      <div className={styles.stepActions}>
+        <button className={styles.secondaryAction} type="button" onClick={() => goToStep("shipping")}>
+          Back
+        </button>
+        <button
+          className={styles.primaryAction}
+          disabled={!stripe || !elements || paymentIntent.status !== "ready" || isSubmitting}
+          type="button"
+          onClick={() => {
+            void handleContinue();
+          }}
+        >
+          {isSubmitting ? "Checking details…" : "Continue to review"}
+        </button>
+      </div>
     </div>
   );
 }

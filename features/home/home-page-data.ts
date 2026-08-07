@@ -293,7 +293,7 @@ const defaultHomePageContent: HomePageContent = {
     },
     introTitle: siteConfig.name,
     introBody: "",
-    introMeta: "Prices in USD. Free shipping to the US, Canada, and Australia.",
+    introMeta: "Prices in USD. Free shipping across the US.",
     exploreHeading: "Explore",
     exploreLinks: [
       { href: "/shop", label: "Shop" },

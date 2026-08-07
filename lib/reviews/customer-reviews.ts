@@ -1,7 +1,7 @@
 export type CustomerReview = {
   id: string;
   customerName: string;
-  country: "USA" | "Canada" | "Australia";
+  country: "USA";
   productType: "Rug" | "Pouf" | "Pillows";
   body: string;
 };

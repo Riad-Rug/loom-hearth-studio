@@ -92,7 +92,14 @@ export function CheckoutPageView() {
             <p className={styles.progressLabel}>
               Step {stepIndex + 1} of {checkoutSteps.length} — {checkoutSteps[stepIndex]?.label}
             </p>
-            <div className={styles.progressTrack}>
+            <div
+              className={styles.progressTrack}
+              role="progressbar"
+              aria-valuenow={stepIndex + 1}
+              aria-valuemin={1}
+              aria-valuemax={checkoutSteps.length}
+              aria-label={`Checkout step ${stepIndex + 1} of ${checkoutSteps.length}`}
+            >
               <div
                 className={styles.progressFill}
                 style={{ width: `${((stepIndex + 1) / checkoutSteps.length) * 100}%` }}
@@ -100,6 +107,14 @@ export function CheckoutPageView() {
             </div>
           </div>
         ) : null}
+
+        {/* Visually hidden: announces step changes to screen readers, since
+            the step panels swap via CSS display, not navigation. */}
+        <p className={styles.srOnly} aria-live="polite" role="status">
+          {isConfirmation
+            ? "Order confirmed"
+            : `Step ${stepIndex + 1} of ${checkoutSteps.length}: ${checkoutSteps[stepIndex]?.label}`}
+        </p>
 
         <div className={styles.contentGrid}>
           <div className={styles.mainCard}>{renderStep(step, paymentIntent.clientSecret)}</div>
@@ -111,16 +126,23 @@ export function CheckoutPageView() {
 
             <div className={styles.itemList}>
               {lineItems.length > 0 ? (
-                lineItems.map((item) => (
-                  <article key={item.id} className={styles.itemRow}>
-                    <div>
-                      <p className={styles.itemType}>{item.typeLabel}</p>
-                      <h3>{item.name}</h3>
-                      <p className={styles.itemQty}>{item.quantityLabel}</p>
-                    </div>
-                    <strong>{item.priceUsdLabel}</strong>
-                  </article>
-                ))
+                <>
+                  {lineItems.map((item) => (
+                    <article key={item.id} className={styles.itemRow}>
+                      <div>
+                        <p className={styles.itemType}>{item.typeLabel}</p>
+                        <h3>{item.name}</h3>
+                        <p className={styles.itemQty}>{item.quantityLabel}</p>
+                      </div>
+                      <strong>{item.priceUsdLabel}</strong>
+                    </article>
+                  ))}
+                  {!isConfirmation ? (
+                    <Link className={styles.editCartLink} href="/cart">
+                      Edit cart
+                    </Link>
+                  ) : null}
+                </>
               ) : (
                 <div className={styles.emptySummaryState}>
                   <strong>Your Cart Is Empty.</strong>
@@ -229,7 +251,6 @@ function renderStep(step: CheckoutStepKey, clientSecret: string | null) {
     return (
       <div key="payment-loading" className={styles.stepPanel}>
         <div className={styles.panelHeader}>
-          <p className={styles.eyebrow}>Step 3</p>
           <h2>Payment</h2>
         </div>
         <div className={styles.reviewCard}>

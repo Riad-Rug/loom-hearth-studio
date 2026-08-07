@@ -10,7 +10,7 @@ import { addressSchema, emptyAddressFormValues, type AddressFormValues } from "@
 import styles from "@/features/checkout/checkout-page.module.css";
 
 export function ShippingStep() {
-  const { billing, shippingAddressMode, setShippingAddressMode, shippingAddressDraft, submitShipping } =
+  const { billing, shippingAddressMode, setShippingAddressMode, shippingAddressDraft, submitShipping, goToStep } =
     useCheckout();
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressSchema),
@@ -33,7 +33,6 @@ export function ShippingStep() {
   return (
     <div className={styles.panelStack}>
       <div className={styles.panelHeader}>
-        <p className={styles.eyebrow}>Step 2</p>
         <h2>Shipping</h2>
       </div>
 
@@ -63,22 +62,37 @@ export function ShippingStep() {
       {shippingAddressMode === "different" ? (
         <form className={styles.panelStack} onSubmit={form.handleSubmit(onSubmit)}>
           <AddressFields form={form} idPrefix="shipping" includeContactFields={false} />
-          <button className={styles.primaryAction} type="submit">
-            Continue to payment
-          </button>
+          <div className={styles.stepActions}>
+            <button className={styles.secondaryAction} type="button" onClick={() => goToStep("billing")}>
+              Back
+            </button>
+            <button className={styles.primaryAction} type="submit">
+              Continue to payment
+            </button>
+          </div>
         </form>
       ) : (
         <div className={styles.panelStack}>
           <div className={styles.reviewCard}>
-            <h3>Shipping Review</h3>
+            <h3>Shipping to</h3>
+            <p>{billing.fullName}</p>
             <p>
-              We review the destination and shipping conditions before payment is captured. If
-              anything needs clarification, we contact you before moving forward.
+              {billing.address1}
+              {billing.address2 ? `, ${billing.address2}` : ""}
             </p>
+            <p>
+              {billing.city}, {billing.state} {billing.postalCode}
+            </p>
+            <p className={styles.summaryNote}>Estimated delivery: 7–14 business days after your order ships.</p>
           </div>
-          <button className={styles.primaryAction} type="button" onClick={() => submitShipping(null)}>
-            Continue to payment
-          </button>
+          <div className={styles.stepActions}>
+            <button className={styles.secondaryAction} type="button" onClick={() => goToStep("billing")}>
+              Back
+            </button>
+            <button className={styles.primaryAction} type="button" onClick={() => submitShipping(null)}>
+              Continue to payment
+            </button>
+          </div>
         </div>
       )}
     </div>
