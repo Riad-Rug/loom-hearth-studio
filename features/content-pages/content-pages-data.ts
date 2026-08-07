@@ -70,7 +70,7 @@ export const faqItems: FaqItem[] = [
     group: "Ordering",
     question: "Can I see the rug before I pay?",
     answer:
-      "Yes. Before your payment is captured, we send you a video of the actual piece \u2014 texture, colour in natural light, and size in context. If it is not right for your space, your payment is released. No charge. This applies to every rug order.",
+      "Yes. We contact you within 24 hours of your order, and before your payment is captured we send you a video of the actual piece \u2014 texture, colour in natural light, and size in context. Most verifications are completed within 24 to 48 hours. If it is not right for your space, your payment is released. No charge. This applies to every rug order.",
     sortOrder: 1,
   },
   {
@@ -360,11 +360,11 @@ Shipping to the United States, Canada, and Australia is **free on orders of $150
 
 ## 4. How dispatch works - the pre-shipment verification window
 
-Before your order ships, we contact you after purchase to offer a short video of the exact piece you ordered, shown in natural Moroccan light with a tape measure for scale. This is our pre-shipment verification process. It exists because color, texture, and scale are difficult to fully communicate through photographs alone, and we would rather you review the piece before it is packed than have uncertainty after delivery.
+Before your order ships, we contact you within 24 hours of your order to offer a short video of the exact piece you ordered, shown in natural Moroccan light with a tape measure for scale. This is our pre-shipment verification process. It exists because color, texture, and scale are difficult to fully communicate through photographs alone, and we would rather you review the piece before it is packed than have uncertainty after delivery.
 
-Once you confirm you are happy, payment is captured and your order is packed and dispatched. This means the time from order to dispatch can be up to 7 days. In practice it is usually faster, and most verifications are completed within 48 hours.
+Once you confirm you are happy, payment is captured and your order is packed and dispatched. Most verifications are completed within 24 to 48 hours of your order.
 
-If we are unable to confirm your destination, timing, or delivery conditions within the verification window, we will not capture payment until that confirmation is complete.
+If we are unable to reach you or confirm your destination, timing, or delivery conditions, we will not capture payment until that confirmation is complete. In this case, dispatch can take up to 7 days from the order date — this is the exception, not the norm.
 
 For the full details of how the verification works, see the [Terms of Service](https://www.loomandhearthstudio.com/terms-and-conditions).
 
@@ -380,7 +380,7 @@ We do not offer carrier selection as part of the current inquiry-first order pro
 
 ## 6. Estimated delivery times
 
-All delivery time estimates below are measured from the **date of dispatch**, not the date of order. Allow up to 7 days for the pre-shipment verification window before dispatch begins.
+All delivery time estimates below are measured from the **date of dispatch**, not the date of order. Allow 24 to 48 hours for the pre-shipment verification window before dispatch begins.
 
 | Destination | Estimated delivery after dispatch |
 |---|---|
@@ -954,7 +954,7 @@ We reserve the right to correct pricing errors on the site at any time. If an er
 
 **Step 1  Authorisation after confirmation.** If you decide to proceed after direct confirmation with us, your payment method is authorised for the order total. This places a hold on the funds on your card or account. You will see this as a pending charge. No money is transferred to us at this point.
 
-**Step 2  Capture after verification.** Payment is captured  meaning funds are actually collected  only after your pre-shipment verification is complete (see section 5). The capture window is up to 7 days from the order date.
+**Step 2  Capture after verification.** Payment is captured  meaning funds are actually collected  only after your pre-shipment verification is complete (see section 5). Verification is typically completed within 24 to 48 hours of your order. In the rare case we cannot reach you, the capture window extends up to 7 days from the order date (see section 5).
 
 If you confirm after seeing the verification video that you are happy with the item, we capture payment and your order ships. If we cancel the order for any reason, or if you choose not to proceed after the verification, the authorisation is released in full and no funds are collected. The time for a released authorisation to disappear from your statement depends on your card issuer  typically 3 to 7 business days.
 
@@ -968,7 +968,7 @@ Payments are processed by Stripe if you proceed after direct confirmation with u
 
 We offer a pre-shipment video verification for every order. This is a core part of how we operate  not a delay.
 
-**How it works.** Within 24 hours of your confirmed order request, we will contact you by email to offer a short video of the actual piece you selected  shown in natural light in Morocco, with a tape measure for scale, so you can see the colour, texture, and size before your payment is captured and your item ships.
+**How it works.** Within 24 hours of your confirmed order request, we will contact you by email to offer a short video of the actual piece you selected  shown in natural light in Morocco, with a tape measure for scale, so you can see the colour, texture, and size before your payment is captured and your item ships. Most verifications are completed within 24 to 48 hours of your order.
 
 **Your options.** You can confirm by reply email, request a live video call via WhatsApp or FaceTime, or receive a short recorded video clip  whichever suits you best.
 
@@ -1002,7 +1002,7 @@ These are estimates, not guarantees. Customs clearance, carrier delays, and circ
 
 ### 6.4 Dispatch timing
 
-Orders are dispatched after pre-shipment verification is complete and payment is captured. Allow up to 7 days from the order date for this process before dispatch. Actual dispatch is typically faster.
+Orders are dispatched after pre-shipment verification is complete and payment is captured. Verification is typically completed within 24 to 48 hours of the order date, so dispatch usually follows shortly after. If we are unable to reach you, this process can take up to 7 days  see section 5.
 
 ### 6.5 Risk of loss
 

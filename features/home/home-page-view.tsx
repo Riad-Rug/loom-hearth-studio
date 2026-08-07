@@ -31,7 +31,7 @@ const howItWorksSteps = [
   {
     number: "2",
     title: "I photograph it for you",
-    body: "Daylight, within 72 hours. Wear included.",
+    body: "Daylight, within 24–48 hours. Wear included.",
   },
   {
     number: "3",

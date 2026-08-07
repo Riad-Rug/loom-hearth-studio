@@ -32,7 +32,7 @@ export const catalogCategories = [
     title: "Poufs",
     href: "/shop/poufs",
     description:
-      "Moroccan poufs made from rug material and leather, sourced and constructed in Marrakech. Rug-material poufs carry the same fibre and weave structure as the rugs they come from. Construction quality is assessed before the pieces are formed \u2014 not after they are photographed.",
+      "Moroccan poufs made from rug material and leather, designed and hand-sewn by my mom. Rug-material poufs carry the same fibre and weave structure as the rugs they come from. Every piece is cut, matched, and seamed by hand before it is photographed.",
     bullets: [
       "Handmade textures in sand, clay, and terracotta",
       "Pieces for shelves, seating areas, and daily use",
