@@ -40,7 +40,16 @@ export function PaymentStep() {
         <h2>Payment</h2>
       </div>
 
-      {paymentIntent.status === "creating" || paymentIntent.status === "idle" || !stripe || !elements ? (
+      {/*
+        Gated on clientSecret rather than paymentIntent.status: a genuine
+        first load has no clientSecret yet, so the placeholder below is
+        correct. A mid-checkout reprice of an *existing* PaymentIntent keeps
+        clientSecret populated the whole time (status just cycles
+        "ready" -> "creating" -> "ready") — in that case PaymentElement must
+        stay mounted, or any card digits the customer already typed are
+        destroyed when it unmounts and gets recreated.
+      */}
+      {(!paymentIntent.clientSecret && paymentIntent.status !== "error") || !stripe || !elements ? (
         <div className={styles.reviewCard}>
           <p>Preparing secure payment…</p>
         </div>
@@ -60,7 +69,11 @@ export function PaymentStep() {
           </div>
         </div>
       ) : (
-        <div className={styles.paymentShell}>
+        <div
+          className={styles.paymentShell}
+          aria-busy={paymentIntent.status === "creating"}
+          style={paymentIntent.status === "creating" ? { opacity: 0.6 } : undefined}
+        >
           {/*
             Link must be switched off explicitly. Restricting the PaymentIntent
             to payment_method_types: ["card"] correctly limits the intent's own
@@ -75,6 +88,11 @@ export function PaymentStep() {
             honor manual capture, so they keep the promise intact.
           */}
           <PaymentElement options={{ wallets: { link: "never" } }} />
+          {paymentIntent.status === "creating" ? (
+            <p className={styles.summaryNote} aria-live="polite">
+              Updating total…
+            </p>
+          ) : null}
         </div>
       )}
 

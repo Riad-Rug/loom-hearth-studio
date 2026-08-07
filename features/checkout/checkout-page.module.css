@@ -459,6 +459,17 @@
   text-underline-offset: 0.15rem;
 }
 
+.cartRecoveryNotice {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid rgba(23, 105, 90, 0.28);
+  border-radius: var(--radius-md);
+  background: rgba(23, 105, 90, 0.08);
+  color: var(--color-text-body);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
 .srOnly {
   position: absolute;
   width: 1px;

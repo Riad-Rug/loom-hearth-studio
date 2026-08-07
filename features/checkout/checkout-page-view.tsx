@@ -32,7 +32,7 @@ export function CheckoutPageView() {
   } = useCart();
   const [promoDraft, setPromoDraft] = useState(promoCode ?? "");
   const [promoFeedback, setPromoFeedback] = useState<string | null>(null);
-  const { step, paymentIntent } = useCheckout();
+  const { step, paymentIntent, cartRecoveryMessage } = useCheckout();
 
   useEffect(() => {
     setPromoDraft(promoCode ?? "");
@@ -115,6 +115,15 @@ export function CheckoutPageView() {
             ? "Order confirmed"
             : `Step ${stepIndex + 1} of ${checkoutSteps.length}: ${checkoutSteps[stepIndex]?.label}`}
         </p>
+
+        {/* Visible + announced: surfaces a self-healed cart change (e.g. a
+            line that sold out mid-checkout) so it isn't a silent mutation
+            the customer might not notice. */}
+        {cartRecoveryMessage ? (
+          <p className={styles.cartRecoveryNotice} role="status" aria-live="polite">
+            {cartRecoveryMessage}
+          </p>
+        ) : null}
 
         <div className={styles.contentGrid}>
           <div className={styles.mainCard}>{renderStep(step, paymentIntent.clientSecret)}</div>
@@ -261,7 +270,17 @@ function renderStep(step: CheckoutStepKey, clientSecret: string | null) {
   }
 
   return (
-    <Elements stripe={getStripeBrowserClient()} options={{ clientSecret }}>
+    // key={clientSecret}: @stripe/react-stripe-js treats options.clientSecret
+    // as immutable after first mount — changing it is silently ignored (with
+    // a console warning) and the already-mounted Elements instance keeps
+    // using the old one. That only matters in the rare fallback path where
+    // the server has to mint a brand-new PaymentIntent (a different
+    // client_secret) because the old one already moved past
+    // requires_payment_method — see app/api/checkout/payment-intents/route.ts.
+    // The common in-place reprice (same PaymentIntent, just a new amount)
+    // does NOT change clientSecret at all, so this key does not remount
+    // Elements/PaymentElement in the everyday case.
+    <Elements key={clientSecret} stripe={getStripeBrowserClient()} options={{ clientSecret }}>
       <div className={step === "payment" ? styles.stepPanel : styles.hiddenStep}>
         <PaymentStep />
       </div>

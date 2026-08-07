@@ -57,6 +57,15 @@ export type PlaceOrderState = {
   message: string | null;
 };
 
+// Mirrors CheckoutOrderDraftValidationIssue from lib/order/checkout-draft-validation.ts.
+// Re-declared locally (instead of imported) so this client component never
+// pulls in that "server-only"-guarded module, even as a type-only import.
+type PaymentIntentValidationIssue = {
+  code: string;
+  message: string;
+  productId?: string;
+};
+
 const stepPathMap: Record<CheckoutStepKey, string> = {
   billing: "/checkout",
   shipping: "/checkout/shipping",
@@ -101,6 +110,7 @@ type CheckoutContextValue = {
   canAccessConfirmation: boolean;
   paymentIntent: PaymentIntentState;
   retryPaymentIntent: () => void;
+  cartRecoveryMessage: string | null;
   placeOrderState: PlaceOrderState;
   setPlaceOrderState: (state: PlaceOrderState) => void;
   placedOrder: PlacedOrder | null;
@@ -110,7 +120,7 @@ type CheckoutContextValue = {
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
-  const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd, clearCart } = useCart();
+  const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd, clearCart, removeItem } = useCart();
   const [step, setStep] = useState<CheckoutStepKey>("billing");
   const [billing, setBilling] = useState<AddressFormValues>(emptyAddressFormValues);
   const [shippingAddressMode, setShippingAddressMode] = useState<ShippingAddressMode>("same-as-billing");
@@ -118,6 +128,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [billingSubmitted, setBillingSubmitted] = useState(false);
   const [shippingSubmitted, setShippingSubmitted] = useState(false);
   const [paymentIntent, setPaymentIntent] = useState<PaymentIntentState>(initialPaymentIntentState);
+  const [cartRecoveryMessage, setCartRecoveryMessage] = useState<string | null>(null);
   const [placeOrderState, setPlaceOrderState] = useState<PlaceOrderState>(initialPlaceOrderState);
   const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
   const [hasHydrated, setHasHydrated] = useState(false);
@@ -192,7 +203,14 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
   const canAccessShipping = hasCartItems && Boolean(resolvedBillingAddress);
   const canAccessPayment = canAccessShipping && Boolean(resolvedShippingAddress);
-  const canAccessReview = canAccessPayment && paymentIntent.status === "ready" && !placedOrder;
+  // Deliberately Boolean(clientSecret) rather than status === "ready": a
+  // mid-checkout reprice (e.g. the cart changing while on Review) cycles
+  // status through "ready" -> "creating" -> "ready" but keeps clientSecret
+  // populated the whole time (see the reprice effect below, which spreads
+  // `current` when it flips to "creating"). Gating on clientSecret instead
+  // means a reprice-in-progress no longer evicts the customer from Review;
+  // only a genuine failure (which nulls clientSecret) does.
+  const canAccessReview = canAccessPayment && Boolean(paymentIntent.clientSecret) && !placedOrder;
   const canAccessConfirmation = Boolean(placedOrder);
 
   // Backward guard: if the browser lands on a step's URL (back button, hard
@@ -284,15 +302,58 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
             totalUsd: result.totalUsd,
             message: null,
           });
-        } else {
-          setPaymentIntent({
-            status: "error",
-            clientSecret: null,
-            paymentIntentId: null,
-            totalUsd: null,
-            message: result.message,
-          });
+          return;
         }
+
+        if (result.status === "validation-error") {
+          // A validation-error can mean one specific cart line went stale
+          // (sold out / inventory ran out between page load and this
+          // request) rather than the whole draft being broken. Self-heal
+          // that narrow case by dropping only the offending line(s) instead
+          // of failing the entire order — but only when every reported
+          // issue can be traced back to a productId that's actually in the
+          // cart. If any issue can't be mapped to a cart line (e.g. a bad
+          // promo code, a missing address field), treat it as a real error
+          // instead of silently dropping items around an unrelated problem.
+          const issues = result.issues ?? [];
+          const staleProductIds = new Set(
+            issues
+              .filter(
+                (issue): issue is PaymentIntentValidationIssue & { productId: string } =>
+                  Boolean(issue.productId) && items.some((item) => item.productId === issue.productId),
+              )
+              .map((issue) => issue.productId),
+          );
+          const hasUnresolvableIssue = issues.some(
+            (issue) => !issue.productId || !staleProductIds.has(issue.productId),
+          );
+
+          if (staleProductIds.size > 0 && !hasUnresolvableIssue) {
+            const staleItems = items.filter((item) => staleProductIds.has(item.productId));
+
+            staleItems.forEach((item) => removeItem(item.id));
+
+            setCartRecoveryMessage(
+              staleItems.length > 1
+                ? "A few items in your order just sold — we've removed them from your order. Your total has been updated."
+                : "That item just sold — we've removed it from your order. Your total has been updated.",
+            );
+
+            // Don't touch paymentIntent here: it's already "creating" (set
+            // above) and removing the stale line(s) changes draftSignature,
+            // which naturally re-triggers this effect with the corrected
+            // cart moments from now.
+            return;
+          }
+        }
+
+        setPaymentIntent({
+          status: "error",
+          clientSecret: null,
+          paymentIntentId: null,
+          totalUsd: null,
+          message: result.message,
+        });
       })
       .catch(() => {
         if (!cancelled) {
@@ -314,6 +375,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
   function goToStep(next: CheckoutStepKey) {
     setStep(next);
+    setCartRecoveryMessage(null);
     window.history.pushState(null, "", stepPathMap[next]);
   }
 
@@ -380,6 +442,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     retryPaymentIntent() {
       setPaymentIntentRetryCount((count) => count + 1);
     },
+    cartRecoveryMessage,
     placeOrderState,
     setPlaceOrderState,
     placedOrder,
@@ -443,6 +506,7 @@ type RequestPaymentIntentResult = {
   clientSecret: string | null;
   paymentIntentId: string | null;
   totalUsd: number | null;
+  issues?: PaymentIntentValidationIssue[];
   message: string;
 };
 
