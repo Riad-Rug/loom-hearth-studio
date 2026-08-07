@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useCheckout } from "@/features/checkout/checkout-provider";
 import { AddressFields } from "@/features/checkout/steps/address-fields";
+import { AddToOrder } from "@/features/checkout/steps/add-to-order";
 import { addressSchema, emptyAddressFormValues, type AddressFormValues } from "@/lib/checkout/address-schema";
 
 import styles from "@/features/checkout/checkout-page.module.css";
@@ -62,6 +63,7 @@ export function ShippingStep() {
       {shippingAddressMode === "different" ? (
         <form className={styles.panelStack} onSubmit={form.handleSubmit(onSubmit)}>
           <AddressFields form={form} idPrefix="shipping" includeContactFields={false} />
+          <AddToOrder />
           <div className={styles.stepActions}>
             <button className={styles.secondaryAction} type="button" onClick={() => goToStep("billing")}>
               Back
@@ -85,6 +87,7 @@ export function ShippingStep() {
             </p>
             <p className={styles.summaryNote}>Estimated delivery: 7–14 business days after your order ships.</p>
           </div>
+          <AddToOrder />
           <div className={styles.stepActions}>
             <button className={styles.secondaryAction} type="button" onClick={() => goToStep("billing")}>
               Back

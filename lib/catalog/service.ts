@@ -1,3 +1,4 @@
+import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
 import {
   formatProductPriceUsd,
   formatRugDimensions,
@@ -86,6 +87,100 @@ export async function listHomepageFeaturedProductCards(input?: {
   const products = await repository.listHomepageFeatured(limit);
 
   return products.map(createCatalogProductCardViewModel);
+}
+
+// Lean view model for checkout's "add to order" cross-sell — deliberately
+// not CatalogProductCardViewModel (which carries PDP-only fields like
+// merchandisingNote/routePattern/badge/description). cartProduct is the full
+// server-validated Product so the client can call useCart().addProduct(...)
+// directly without ever re-deriving or trusting a client-supplied price,
+// mirroring how PDP's cartProduct field already works
+// (see product.cartProduct in features/pdp/product-detail-page-view.tsx).
+export type AddToOrderCandidateViewModel = {
+  id: string;
+  href: string;
+  name: string;
+  priceUsd: number;
+  priceUsdLabel: string;
+  image?: {
+    src: string;
+    altText: string;
+  };
+  cartProduct: Product;
+};
+
+export async function listAddToOrderCandidateProducts(input: {
+  cartCategories: ProductCategory[];
+  cartFloorPriceUsd: number;
+  excludeProductIds: string[];
+  limit?: number;
+  repository?: ProductRepository;
+}): Promise<AddToOrderCandidateViewModel[]> {
+  const repository = input.repository ?? createProductRepository();
+  const limit = input.limit ?? 2;
+  const excludeProductIds = new Set(input.excludeProductIds);
+  // Candidates should be meaningfully cheaper than what's already in the
+  // cart — starting heuristic: no more than 60% of the cheapest item
+  // currently in the cart (a $28 pillow next to a $340 rug, not a second
+  // rug-sized purchase).
+  const priceCeilingUsd = input.cartFloorPriceUsd * 0.6;
+
+  if (!(priceCeilingUsd > 0) || !input.cartCategories.length) {
+    return [];
+  }
+
+  // Merge the upsell affinity order across every category already in the
+  // cart, keeping each candidate category's best (lowest) rank so a mixed
+  // cart (e.g. a rug + a pouf) still ranks sensibly.
+  const categoryRank = new Map<ProductCategory, number>();
+  input.cartCategories.forEach((category) => {
+    getUpsellCategoryOrder(category).forEach((candidateCategory, index) => {
+      const bestRank = categoryRank.get(candidateCategory);
+      if (bestRank === undefined || index < bestRank) {
+        categoryRank.set(candidateCategory, index);
+      }
+    });
+  });
+
+  const allProducts = await repository.listAll();
+
+  const candidates = allProducts
+    .filter((product) => product.status === "active")
+    .filter((product) => !excludeProductIds.has(product.id))
+    .filter((product) => categoryRank.has(product.category))
+    .filter((product) => product.type !== "multiUnit" || product.inventory > 0)
+    .filter((product) => product.priceUsd > 0 && product.priceUsd <= priceCeilingUsd)
+    .sort((left, right) => {
+      const rankDelta = (categoryRank.get(left.category) ?? 0) - (categoryRank.get(right.category) ?? 0);
+
+      if (rankDelta !== 0) {
+        return rankDelta;
+      }
+
+      return left.priceUsd - right.priceUsd;
+    })
+    .slice(0, limit);
+
+  return candidates.map(createAddToOrderCandidateViewModel);
+}
+
+function createAddToOrderCandidateViewModel(product: Product): AddToOrderCandidateViewModel {
+  const primaryImage = getPrimaryImage(product);
+
+  return {
+    id: product.id,
+    href: getProductRoutePath(product),
+    name: createProductCardDisplayName(product),
+    priceUsd: product.priceUsd,
+    priceUsdLabel: formatProductPriceUsd(product.priceUsd),
+    image: primaryImage
+      ? {
+          src: buildProductCardImageUrl(primaryImage.publicId),
+          altText: primaryImage.altText,
+        }
+      : undefined,
+    cartProduct: product,
+  };
 }
 
 export async function getRugProductDetailByParams(input: {
@@ -605,18 +700,6 @@ function getCompanionCategoryOrder(category: ProductCategory) {
     poufs: ["pillows", "decor", "rugs", "vintage"],
     pillows: ["poufs", "decor", "rugs", "vintage"],
     decor: ["pillows", "poufs", "rugs", "vintage"],
-  };
-
-  return categoryOrder[category];
-}
-
-function getUpsellCategoryOrder(category: ProductCategory) {
-  const categoryOrder: Record<ProductCategory, ProductCategory[]> = {
-    rugs: ["pillows", "poufs", "decor"],
-    vintage: ["pillows", "poufs", "decor"],
-    poufs: ["pillows", "decor", "rugs"],
-    pillows: ["poufs", "decor", "rugs"],
-    decor: ["pillows", "poufs", "rugs"],
   };
 
   return categoryOrder[category];
