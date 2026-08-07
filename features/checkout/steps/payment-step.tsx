@@ -61,7 +61,20 @@ export function PaymentStep() {
         </div>
       ) : (
         <div className={styles.paymentShell}>
-          <PaymentElement />
+          {/*
+            Link must be switched off explicitly. Restricting the PaymentIntent
+            to payment_method_types: ["card"] correctly limits the intent's own
+            methods, but Stripe's Link runs in "passthrough mode", which is NOT
+            gated by payment_method_types — it renders its own funding sources
+            (Bank / instant debits, with a "$5 back" incentive, and Klarna) as
+            extra accordion rows labelled "Powered by Link". Those break the
+            site's promise that the card is authorized now and captured only
+            after the customer approves pre-shipment photos/video.
+
+            Apple Pay and Google Pay stay on `auto`: both are card-backed and
+            honor manual capture, so they keep the promise intact.
+          */}
+          <PaymentElement options={{ wallets: { link: "never" } }} />
         </div>
       )}
 
