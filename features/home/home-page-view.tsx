@@ -22,26 +22,35 @@ const founderNoteDesktop =
   "I photograph every piece myself in Casablanca. You approve the exact photos — daylight, wear included — before you pay.";
 const founderNoteMobile = "I photograph every piece myself. You approve before you pay.";
 
+const howItWorksSideDesktop =
+  "Every piece is one of one, sold as the exact item photographed. Before any money moves, I photograph your piece again — and you say yes or no. No stock photos. No substitutions.";
+const howItWorksSideMobile =
+  "One of one, sold as the exact item shown. Before money moves, you approve fresh photos of your piece.";
+
 const howItWorksSteps = [
   {
     number: "1",
-    title: "You reserve the piece",
-    body: "Card authorized, not charged. The piece comes off the floor.",
+    tag: "TODAY",
+    title: "You reserve it",
+    bodyDesktop:
+      "Check out as normal. Your card is only pre-authorized — a temporary hold, like a hotel deposit. Nothing is charged. Your piece is pulled from stock and marked Reserved on the site, so no one else can take it.",
+    bodyMobile: "Card held, not charged — like a hotel deposit. Your piece is pulled and marked Reserved.",
   },
   {
     number: "2",
-    title: "I photograph it for you",
-    body: "Daylight, within 24–48 hours. Wear included.",
+    tag: "WITHIN 24 HOURS",
+    title: "I photograph your piece",
+    bodyDesktop:
+      "Fresh daylight photos of your exact piece — true colour, edges, wear, everything — in your inbox within a day. Want it in lamplight, or beside a colour you're matching? Ask, and I'll shoot that too.",
+    bodyMobile: "Daylight photos of your exact piece within 24h. Extra shots in your kind of light — just ask.",
   },
   {
     number: "3",
-    title: "You approve, then pay",
-    body: "Captured only after you confirm. Change your mind — no charge.",
-  },
-  {
-    number: "4",
-    title: "Tracked to your door",
-    body: "From Casablanca in 5–10 days. US · CA · AU.",
+    tag: "YOU HAVE 5 DAYS",
+    title: "You decide",
+    bodyDesktop:
+      "Approve, and only then is your card charged — your piece ships tracked, 5–10 days to the US, CA and AU. Say no and the hold is released; you pay nothing, and the piece goes back on the site. No reply within 5 days? The order cancels itself and the hold lifts automatically.",
+    bodyMobile: "Approve → charged → ships tracked. Say no — or say nothing — and the hold lifts. You pay nothing.",
   },
 ] as const;
 
@@ -189,21 +198,31 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
       <section className={styles.howItWorksSection}>
         <div className={styles.sectionHeader}>
           <div>
-            <p className={styles.eyebrow}>How it works</p>
-            <h2>See the exact piece before the charge settles.</h2>
+            <p className={styles.eyebrow}>How buying works</p>
+            <h2>See it. Approve it. Then pay.</h2>
           </div>
-          <p>No stock photos, no substitutions. Every step is tied to the physical piece on my floor in Casablanca.</p>
+          <div className={styles.sectionHeaderCopy}>
+            <p className={styles.desktopCopy}>{howItWorksSideDesktop}</p>
+            <p className={styles.mobileCopy}>{howItWorksSideMobile}</p>
+          </div>
         </div>
 
         <div className={styles.stepsGrid}>
           {howItWorksSteps.map((step) => (
             <article key={step.number} className={styles.stepCard}>
-              <span className={styles.stepNumber}>{step.number}</span>
+              <span className={styles.stepNumber}>
+                {step.number} — <span className={styles.stepTag}>{step.tag}</span>
+              </span>
               <h3>{step.title}</h3>
-              <p>{step.body}</p>
+              <p className={styles.desktopCopy}>{step.bodyDesktop}</p>
+              <p className={styles.mobileCopy}>{step.bodyMobile}</p>
             </article>
           ))}
         </div>
+
+        <p className={styles.howItWorksClosing}>
+          You are never charged for a piece you haven&apos;t approved.
+        </p>
       </section>
 
       <section className={styles.categoriesSection}>
