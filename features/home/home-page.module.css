@@ -40,7 +40,7 @@
 
 .heroCopy h1 {
   font-size: clamp(2.8rem, 5vw, 4.5rem);
-  line-height: 0.98;
+  line-height: 1.2;
 }
 
 .heroBody {
@@ -227,7 +227,7 @@
 .productPrice {
   color: var(--color-green);
   font-size: 1.5rem;
-  line-height: 1.1;
+  line-height: 1.26;
 }
 
 .howItWorksSection {
@@ -438,7 +438,7 @@
 
   .heroCopy h1 {
     font-size: 2.25rem;
-    line-height: 1.04;
+    line-height: 1.2;
   }
 
   .heroBody {

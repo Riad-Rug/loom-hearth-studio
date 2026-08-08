@@ -42,7 +42,7 @@
   font-size: clamp(1.8rem, 3vw, 2.45rem);
   font-weight: 400;
   letter-spacing: -0.03em;
-  line-height: 1.08;
+  line-height: 1.2;
 }
 
 .carouselStage {
@@ -100,7 +100,7 @@
   font-size: clamp(1.65rem, 3vw, 2.35rem);
   font-weight: 400;
   letter-spacing: -0.028em;
-  line-height: 1.16;
+  line-height: 1.2;
 }
 
 .carouselHome .reviewCard blockquote {

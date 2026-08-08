@@ -57,7 +57,7 @@
 
 .sidebarIntro h1 {
   font-size: 2.2rem;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .sidebarIntro p,
@@ -140,7 +140,7 @@
 .moduleHeader h2,
 .moduleHeaderCompact h2 {
   font-size: clamp(2.1rem, 3vw, 2.8rem);
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .moduleHeaderCompact {
@@ -221,14 +221,14 @@
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.3rem;
-  line-height: 1.05;
+  line-height: 1.2;
   letter-spacing: -0.03em;
 }
 
 .quickActionCard h4,
 .secondaryActionCard h4 {
   font-size: 1.2rem;
-  line-height: 1.05;
+  line-height: 1.2;
 }
 
 .inlineActionLink,
@@ -312,7 +312,7 @@
 .card h3,
 .emptyState h3 {
   font-size: 1.5rem;
-  line-height: 1.08;
+  line-height: 1.2;
 }
 
 .productForm,
@@ -814,7 +814,7 @@
 .metricValue {
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(1.5rem, 2vw, 2.1rem);
-  line-height: 1;
+  line-height: 1.2;
   letter-spacing: -0.04em;
   color: var(--color-charcoal-ink);
 }
@@ -1128,7 +1128,7 @@
 .scoreBadge strong {
   font-family: var(--font-display), Georgia, serif;
   font-size: 2.4rem;
-  line-height: 1;
+  line-height: 1.2;
   letter-spacing: -0.05em;
   color: var(--color-charcoal-ink);
 }
@@ -1661,7 +1661,7 @@
 .homepagePreviewHeadline {
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(2rem, 3vw, 2.8rem);
-  line-height: 1.02;
+  line-height: 1.2;
 }
 
 .homepagePreviewHeadlineCompact {

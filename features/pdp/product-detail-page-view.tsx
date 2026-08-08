@@ -219,7 +219,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
             </div>
 
             <h1 className="text-[clamp(2.35rem,4vw,3.5rem)]">{product.name}</h1>
-            <p className="text-[var(--color-green)] text-[clamp(1.8rem,3vw,2.3rem)] leading-[1.05]">
+            <p className="text-[var(--color-green)] text-[clamp(1.8rem,3vw,2.3rem)] leading-[1.26]">
               {product.priceUsdLabel}
             </p>
 

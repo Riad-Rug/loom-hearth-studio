@@ -48,7 +48,7 @@
 .heroCopy h1,
 .articleHeader h1 {
   font-size: clamp(2.8rem, 4.4vw, 3rem);
-  line-height: 1.12;
+  line-height: 1.2;
 }
 
 .lede {
@@ -104,7 +104,7 @@
 
 .featuredBody h2 {
   font-size: clamp(2.15rem, 3vw, 3rem);
-  line-height: 1.08;
+  line-height: 1.2;
 }
 
 .featuredBody p {
@@ -225,7 +225,7 @@
 
 .relatedHeader h2 {
   font-size: clamp(2rem, 3vw, 2.8rem);
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .relatedCard {
@@ -244,7 +244,7 @@
 .relatedCard strong {
   color: var(--color-charcoal-ink);
   font-size: 1.45rem;
-  line-height: 1.08;
+  line-height: 1.2;
 }
 
 .closingSection {
@@ -275,7 +275,7 @@
 
 .closingCopy h2 {
   font-size: clamp(2.1rem, 3vw, 2.9rem);
-  line-height: 1.08;
+  line-height: 1.2;
   color: rgba(255, 248, 239, 0.98);
 }
 
@@ -408,7 +408,7 @@
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.65rem;
-  line-height: 1.05;
+  line-height: 1.2;
   letter-spacing: -0.03em;
 }
 

@@ -40,7 +40,7 @@
 
 .header h1 {
   font-size: clamp(2.5rem, 4vw, 3.5rem);
-  line-height: 0.97;
+  line-height: 1.2;
 }
 
 .lede {
@@ -205,7 +205,7 @@
 .panelHeader h2,
 .summaryHeader h2 {
   font-size: clamp(2rem, 3vw, 2.5rem);
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .panelBody,

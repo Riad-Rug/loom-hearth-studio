@@ -92,7 +92,7 @@
 
 .hero h1 {
   font-size: clamp(2.6rem, 4vw, 4rem);
-  line-height: 0.97;
+  line-height: 1.2;
   max-width: 58rem;
 }
 
@@ -103,17 +103,17 @@
 .heroVisualCopy h2,
 .finalCta h2 {
   font-size: clamp(2rem, 3vw, 2.8rem);
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .card h2 {
   font-size: 2rem;
-  line-height: 1.05;
+  line-height: 1.2;
 }
 
 .card h3 {
   font-size: 1.9rem;
-  line-height: 1.08;
+  line-height: 1.2;
 }
 
 .lede,
@@ -211,7 +211,7 @@
   color: var(--color-charcoal-ink);
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.25rem;
-  line-height: 1.08;
+  line-height: 1.2;
   letter-spacing: -0.03em;
 }
 
@@ -226,7 +226,7 @@
 
 .heroProofCard h2 {
   font-size: 2rem;
-  line-height: 1.02;
+  line-height: 1.2;
 }
 
 .heroProofBody {
@@ -430,7 +430,7 @@
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(1.7rem, 3vw, 2.4rem);
   letter-spacing: -0.03em;
-  line-height: 1.08;
+  line-height: 1.2;
 }
 
 .testimonialGrid {
@@ -464,7 +464,7 @@
 
 .testimonialItemFeatured blockquote {
   font-size: clamp(1.8rem, 2.4vw, 2.35rem);
-  line-height: 1.18;
+  line-height: 1.2;
 }
 
 .testimonialItem figcaption {

@@ -54,11 +54,11 @@
 .policyShell h1,
 .sectionHeader h1 {
   font-size: clamp(2.6rem, 4vw, 4rem);
-  line-height: 1.12;
+  line-height: 1.2;
 }
 
 .sectionHeader h2 {
-  line-height: 1.12;
+  line-height: 1.2;
 }
 
 .aboutHero h1 {
@@ -161,7 +161,7 @@
 
 .sourcingHero h1 {
   font-size: clamp(2.5rem, 4vw, 3rem);
-  line-height: 1.14;
+  line-height: 1.2;
 }
 
 .sourcingHero .heroBody {
@@ -694,12 +694,12 @@
 
 .faqItem h2 {
   font-size: 1.5rem;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .card h3 {
   font-size: 1.9rem;
-  line-height: 1.08;
+  line-height: 1.2;
 }
 
 .lookbookGrid {
@@ -715,7 +715,7 @@
 
 .lookbookIntro h1 {
   font-size: clamp(2.75rem, 4vw, 3rem);
-  line-height: 0.98;
+  line-height: 1.2;
 }
 
 .lookbookTile {
@@ -897,7 +897,7 @@
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(2rem, 3vw, 2.8rem);
   letter-spacing: -0.04em;
-  line-height: 1;
+  line-height: 1.2;
   color: rgba(255, 248, 239, 0.96);
 }
 
@@ -993,7 +993,7 @@
 .lookbookBody h2 {
   font-size: 1.7rem;
   letter-spacing: -0.03em;
-  line-height: 1.05;
+  line-height: 1.2;
   text-decoration: underline;
   text-decoration-color: transparent;
   text-underline-offset: 0.18em;
@@ -1042,7 +1042,7 @@
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(2rem, 3vw, 2.8rem);
   letter-spacing: -0.04em;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .lookbookExit .eyebrow {
@@ -1092,7 +1092,7 @@
 
 .sectionHeader h2 {
   font-size: clamp(2rem, 3vw, 2.8rem);
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .inlineLink {

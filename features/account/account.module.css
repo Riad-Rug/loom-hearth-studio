@@ -53,7 +53,7 @@
 .authIntro h1,
 .dashboardHero h1 {
   font-size: clamp(2.8rem, 4vw, 3rem);
-  line-height: 1.15;
+  line-height: 1.2;
   letter-spacing: -0.032em;
 }
 
@@ -61,7 +61,7 @@
 .dashboardCard h2,
 .sessionCard h2 {
   font-size: clamp(1.6rem, 2.4vw, 2.1rem);
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 .lede,
@@ -148,7 +148,7 @@
 .authSupportNote h3,
 .requestFeedback strong {
   font-size: 1.8rem;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 .sessionCard p,
