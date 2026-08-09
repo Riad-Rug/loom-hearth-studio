@@ -1,3 +1,5 @@
+import { unstable_noStore as noStore } from "next/cache";
+
 import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
 import {
   formatProductPriceUsd,
@@ -33,6 +35,10 @@ import {
   removeConstructionFromColor,
 } from "@/lib/catalog/product-card-name";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
+import {
+  getInventoryShuffleSeed,
+  shuffleWithSeed,
+} from "@/lib/catalog/random-selection";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
 import type { MediaAsset, Product, ProductCategory, RugProduct } from "@/types/domain";
@@ -87,6 +93,41 @@ export async function listHomepageFeaturedProductCards(input?: {
   const products = await repository.listHomepageFeatured(limit);
 
   return products.map(createCatalogProductCardViewModel);
+}
+
+/**
+ * Randomised live-inventory sample for the homepage "In the warehouse now"
+ * grid. Deliberately NOT listHomepageFeaturedProductCards: the admin
+ * homepageFeatured/homepageRank fields still drive the Contact and
+ * Trade recommendation blocks, but no longer the homepage grid.
+ *
+ * noStore() keeps `/` out of the full route cache so the shuffle is
+ * recomputed per request rather than frozen at build time.
+ */
+export async function listRandomInventoryProductCards(input?: {
+  limit?: number;
+  pageSize?: number;
+  seed?: number;
+  repository?: ProductRepository;
+}): Promise<CatalogProductCardViewModel[]> {
+  noStore();
+
+  const repository = input?.repository ?? createProductRepository();
+  const limit = input?.limit ?? 24;
+  const pageSize = input?.pageSize ?? 8;
+  const seed = input?.seed ?? getInventoryShuffleSeed();
+
+  const products = await repository.listInventoryEligible();
+  const shuffled = shuffleWithSeed(products, seed).slice(0, limit);
+
+  // Trim to a whole multiple of pageSize so every page is a full grid.
+  // Below one full page we return whatever exists (sparse-catalog case).
+  const usableCount =
+    shuffled.length < pageSize
+      ? shuffled.length
+      : Math.floor(shuffled.length / pageSize) * pageSize;
+
+  return shuffled.slice(0, usableCount).map(createCatalogProductCardViewModel);
 }
 
 // Lean view model for checkout's "add to order" cross-sell — deliberately

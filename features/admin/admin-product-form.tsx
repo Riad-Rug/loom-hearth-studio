@@ -643,15 +643,19 @@ export function AdminProductForm(props: AdminProductFormProps) {
         </section>
 
         <section className={styles.card}>
-          <p className={styles.cardEyebrow}>Homepage feature</p>
+          <p className={styles.cardEyebrow}>Recommended product</p>
           <label className={styles.checkboxRow}>
             <input
               checked={homepageFeatured}
               type="checkbox"
               onChange={(event) => setHomepageFeatured(event.target.checked)}
             />
-            <span>Feature this product on the homepage product rail</span>
+            <span>Show this product in recommendation blocks</span>
           </label>
+          <em>
+            Appears on the Contact and Trade Application pages. The homepage &quot;In the warehouse
+            now&quot; grid is randomised from live inventory and is not affected by this setting.
+          </em>
           <label className={styles.formField}>
             <span>Homepage rank</span>
             <input
@@ -661,7 +665,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
               value={homepageRank}
               onChange={(event) => setHomepageRank(event.target.value)}
             />
-            <em>Lower numbers appear first. Leave blank to sort after ranked products.</em>
+            <em>Lower numbers appear first in recommendation blocks.</em>
             <em>{state.fieldErrors.homepageRank}</em>
           </label>
         </section>

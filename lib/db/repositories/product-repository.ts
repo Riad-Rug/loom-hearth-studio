@@ -10,6 +10,7 @@ export interface ProductRepository {
   listAll(): Promise<Product[]>;
   listByCategory(category: Product["category"]): Promise<Product[]>;
   listHomepageFeatured(limit: number): Promise<Product[]>;
+  listInventoryEligible(): Promise<Product[]>;
   getBySlug(slug: string): Promise<Product | null>;
   listForAdmin(): Promise<Product[]>;
   getById(id: string): Promise<Product | null>;
@@ -77,6 +78,21 @@ export class PrismaProductRepository implements ProductRepository {
         },
       ],
       take: limit,
+    });
+
+    return products.map(mapCatalogProductRecordToDomainProduct);
+  }
+
+  // Same eligibility predicate as listHomepageFeatured, minus the admin
+  // homepageFeatured flag: everything currently buyable. Ordered
+  // deterministically so the caller's seed is the only source of randomness.
+  async listInventoryEligible() {
+    const products = await this.context.client.catalogProduct.findMany({
+      where: {
+        status: "active",
+        OR: [{ type: "rug" }, { inventory: { gt: 0 } }],
+      },
+      orderBy: { id: "asc" },
     });
 
     return products.map(mapCatalogProductRecordToDomainProduct);

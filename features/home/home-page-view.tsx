@@ -9,12 +9,12 @@ import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { allowedImageHostnames } from "@/lib/media/allowed-image-hosts";
 import type { ProductCategory } from "@/types/domain";
 
-import { LiveProductCardImage } from "./live-product-card-image";
+import { InventoryProductPager } from "./inventory-product-pager";
 import styles from "./home-page.module.css";
 
 type HomePageViewProps = {
   content: HomePageContent;
-  featuredProducts?: CatalogProductCardViewModel[];
+  inventoryProducts?: CatalogProductCardViewModel[];
   liveCategories?: ProductCategory[];
 };
 
@@ -70,7 +70,7 @@ const inventoryChips = [
   { label: "Decor & Antiques", href: "/shop/decor" },
 ] as const;
 
-export function HomePageView({ content, featuredProducts = [], liveCategories }: HomePageViewProps) {
+export function HomePageView({ content, inventoryProducts = [], liveCategories }: HomePageViewProps) {
   const liveCategorySet = liveCategories ? new Set(liveCategories) : null;
   const categoryCards = content.categories.cards.filter((card) => {
     if (!card.visible) {
@@ -84,7 +84,6 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
     const categoryKey = categoryCardCategoryKey[card.id];
     return categoryKey ? liveCategorySet.has(categoryKey) : true;
   });
-  const normalizedFeaturedProducts = featuredProducts.slice(0, 8);
   const heroImage = getRenderableImage(content.hero.image.src);
   const hasHeroActions = content.hero.primaryCta.visible || content.hero.secondaryCta.visible;
 
@@ -163,36 +162,14 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
           ))}
         </div>
 
-        {normalizedFeaturedProducts.length === 0 ? (
+        {inventoryProducts.length === 0 ? (
           <p className={styles.inventoryEmptyState}>
             Nothing here right now — new pieces land most weeks. Join the list below to see them
             first.
           </p>
         ) : null}
 
-        <div className={styles.productGrid}>
-          {normalizedFeaturedProducts.map((product) => (
-            <Link key={product.id} className={styles.productCard} href={product.href as Route}>
-              <div className={styles.productImageWrap}>
-                <LiveProductCardImage
-                  primaryImage={product.primaryImage}
-                  productName={product.name}
-                  secondaryImage={product.secondaryImage}
-                />
-              </div>
-              <div className={styles.productMeta}>
-                <div className={styles.productTitleRow}>
-                  <h3>{product.displayName}</h3>
-                  {product.status === "sold" ? (
-                    <span className={styles.productBadge}>SOLD</span>
-                  ) : null}
-                </div>
-                <p className={styles.productSubtitle}>{product.subtitle}</p>
-                <p className={styles.productPrice}>{product.priceUsdLabel}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <InventoryProductPager products={inventoryProducts} />
       </section>
 
       <section className={styles.howItWorksSection}>

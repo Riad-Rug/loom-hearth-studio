@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { HomePageView } from "@/features/home/home-page-view";
-import { listCatalogProductCards, listHomepageFeaturedProductCards } from "@/lib/catalog/service";
+import { listCatalogProductCards, listRandomInventoryProductCards } from "@/lib/catalog/service";
 import { getHomepageContent } from "@/lib/homepage/content";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import type { ProductCategory } from "@/types/domain";
@@ -20,9 +20,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [content, featuredProducts, allProducts] = await Promise.all([
+  const [content, inventoryProducts, allProducts] = await Promise.all([
     getHomepageContent(),
-    listHomepageFeaturedProductCards({ limit: 8 }),
+    listRandomInventoryProductCards({ limit: 24 }),
     listCatalogProductCards(),
   ]);
   const liveCategories = [
@@ -36,7 +36,7 @@ export default async function HomePage() {
   return (
     <HomePageView
       content={content}
-      featuredProducts={featuredProducts}
+      inventoryProducts={inventoryProducts}
       liveCategories={liveCategories}
     />
   );

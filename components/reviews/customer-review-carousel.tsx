@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { ArrowIcon } from "@/components/icons/arrow-icon";
 import type { CustomerReview } from "@/lib/reviews/customer-reviews";
 
 import styles from "./customer-review-carousel.module.css";
@@ -138,18 +139,6 @@ export function CustomerReviewCarousel({
         </div>
       </div>
     </section>
-  );
-}
-
-function ArrowIcon({ direction }: { direction: "left" | "right" }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      {direction === "left" ? (
-        <path d="M14.5 5.5 8 12l6.5 6.5" />
-      ) : (
-        <path d="M9.5 5.5 16 12l-6.5 6.5" />
-      )}
-    </svg>
   );
 }
 
