@@ -285,11 +285,9 @@ export function HomePageView({ content, featuredProducts = [], liveCategories }:
       </section>
 
       <section className={styles.newsletterSection}>
-        <div className={styles.sectionHeader}>
-          <div>
-            <p className={styles.eyebrow}>{content.newsletter.eyebrow}</p>
-            <h2>{content.newsletter.title}</h2>
-          </div>
+        <div className={styles.newsletterCopy}>
+          <p className={styles.eyebrow}>{content.newsletter.eyebrow}</p>
+          <h2>{content.newsletter.title}</h2>
           <p>{content.newsletter.paragraph}</p>
         </div>
         <NewsletterSignupIntentForm

@@ -55,19 +55,21 @@ export function NewsletterSignupIntentForm(props: NewsletterSignupIntentFormProp
         <SubmitButton ctaLabel={props.ctaLabel} />
       </div>
       {actionState.message ? (
-        <p className={styles.sectionBody} role="status">
+        <p
+          className={styles.newsletterStatus}
+          data-status={actionState.status}
+          role={actionState.status === "error" ? "alert" : "status"}
+        >
           {actionState.message}
         </p>
       ) : null}
-      <div className={styles.newsletterDisclosure}>
-        <p>
-          By joining you agree to our{" "}
-          <Link className={styles.newsletterPolicyLink} href="/privacy-policy">
-            Privacy Policy
-          </Link>
-          . Unsubscribe any time via the link in our emails.
-        </p>
-      </div>
+      <p className={styles.newsletterDisclosure}>
+        By joining you agree to our{" "}
+        <Link className={styles.newsletterPolicyLink} href="/privacy-policy">
+          Privacy Policy
+        </Link>
+        . Unsubscribe any time via the link in our emails.
+      </p>
     </form>
   );
 }
