@@ -1,0 +1,16 @@
+.imageBlock {
+  margin: 0;
+}
+
+.imageFrame {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-panel);
+}
+
+.image {
+  object-fit: cover;
+}

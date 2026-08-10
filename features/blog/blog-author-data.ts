@@ -1,10 +1,9 @@
 import type { BlogAuthor } from "@/types/domain";
 
 export const DEFAULT_BLOG_AUTHOR: BlogAuthor = {
-  name: "Loom & Hearth Studio Editorial",
-  bio: "Notes on Moroccan rugs, sourcing, and the quieter material choices that shape a room.",
-  photoUrl:
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=320&q=80",
+  name: "Riad Labrini",
+  bio: "Riad Labrini is the founder of Loom & Hearth Studio. He sources and checks every rug in person in Morocco and photographs each piece in Casablanca.",
+  photoUrl: null,
 };
 
 export function sanitizeBlogAuthor(value: unknown): BlogAuthor {

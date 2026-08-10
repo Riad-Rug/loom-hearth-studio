@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 
+import { renderMarkdownBody } from "@/components/content/markdown-body";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { BlogAuthorBlock } from "@/features/blog/blog-author-block";
 import { blogPosts } from "@/features/blog/blog-post-data";
@@ -14,6 +15,7 @@ type PlaceholderBlogPost = BlogPost & {
   readTime: string;
   imageAlt: string;
   imageSrc: string;
+  bodyFormat?: "plain" | "markdown";
 };
 
 type BlogPostPageViewProps = {
@@ -22,7 +24,6 @@ type BlogPostPageViewProps = {
 };
 
 export function BlogPostPageView({ post, author }: BlogPostPageViewProps) {
-  const bodyParagraphs = post.body.split("\n\n");
   const adjacentPosts = blogPosts.filter((candidate) => candidate.id !== post.id).slice(0, 2);
 
   return (
@@ -60,9 +61,9 @@ export function BlogPostPageView({ post, author }: BlogPostPageViewProps) {
         </div>
 
         <div className={styles.articleBody}>
-          {bodyParagraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
+          {post.bodyFormat === "markdown"
+            ? renderMarkdownBody(post.body)
+            : post.body.split("\n\n").map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
         </div>
 
         <BlogAuthorBlock author={author} />
