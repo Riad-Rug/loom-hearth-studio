@@ -34,7 +34,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/about",
     fallbackTitle: "About",
     fallbackDescription:
-      "About Loom & Hearth, its family bazaar roots, and its approach to handmade Moroccan rugs, poufs, pillows and antiques.",
+      "About Loom & Hearth, its Marrakech sourcing roots, and its approach to handmade Moroccan rugs, poufs, pillows and antiques.",
   },
   {
     id: "static-contact",

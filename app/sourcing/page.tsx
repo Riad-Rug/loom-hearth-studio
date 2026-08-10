@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const sourcingChecks = [
   {
     eyebrow: "Sourcing approach",
-    title: "Selected in Morocco through direct bazaar relationships.",
+    title: "Selected in Morocco through direct sourcing.",
     body:
       "The collection is built through in-person sourcing in Marrakech and across Morocco. Pieces are not pulled from export catalogues or bought as generic stock. Each rug, pouf, pillow, or supporting object enters the site because it has been handled, assessed, and chosen directly.",
   },
@@ -34,12 +34,12 @@ const sourcingChecks = [
 const sourcingProofs = [
   {
     eyebrow: "Process",
-    title: "Handled directly in the bazaar.",
+    title: "Handled directly, piece by piece.",
     body:
       "Rugs are opened, examined, and compared in person. That makes it possible to reject pieces that photograph well but do not have the weight or balance to justify their place in the collection.",
     imageSrc: "",
     imageAlt:
-      "Hands examining a handcrafted Moroccan rug in the family bazaar, checking pile and edge detail.",
+      "Hands examining a handcrafted Moroccan rug, checking pile and edge detail.",
   },
   {
     eyebrow: "Authenticity",
@@ -98,7 +98,7 @@ export default function SourcingPage() {
             sizes="(max-width: 1100px) 100vw, 50vw"
           />
           <div className={styles.sourcingHeroCaption}>
-            <p className={styles.eyebrow}>Marrakech bazaar context</p>
+            <p className={styles.eyebrow}>Sourcing in Morocco</p>
             <p>Selection starts with what is physically handled and verified in person.</p>
           </div>
         </div>

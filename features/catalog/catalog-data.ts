@@ -19,7 +19,7 @@ export const catalogCategories = [
     title: "Moroccan Rugs",
     href: "/shop/rugs",
     description:
-      "Hand-knotted Moroccan rugs sourced directly through our family bazaar in Marrakech. Every rug in this collection is ONE OF A KIND \u2014 made by a single weaver, not mass-produced. When a piece sells, it does not return.",
+      "Hand-knotted Moroccan rugs sourced in person across Morocco. Every rug in this collection is ONE OF A KIND \u2014 made by a single weaver, not mass-produced. When a piece sells, it does not return.",
     bullets: [
       "Hand-knotted pile rugs, flatweave kilims, and ONE OF A KIND vintage pieces",
       "Construction details \u2014 pile depth, fibre type, knot structure \u2014 documented in every listing",

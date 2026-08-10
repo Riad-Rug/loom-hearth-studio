@@ -262,10 +262,10 @@ const defaultHomePageContent: HomePageContent = {
       metaDescription:
         "Read how Loom & Hearth Studio builds the collection through direct sourcing in Morocco and a sharp point of view on craft and material quality.",
     },
-    eyebrow: "WHO WE ARE",
-    title: "Sourced across Morocco. Selected in person. Shipped directly to you.",
+    eyebrow: "How we source",
+    title: "This shop carries on my grandfather's bazaar.",
     paragraph:
-      "Loom & Hearth Studio is a family operation. My mother manages our bazaar in the Semmarine souk in Marrakech  a business with close to 80 years of history in the trade. We travel together across Morocco  to villages in the Atlas Mountains, to smaller workshops, to early morning markets where weavers and collectors trade before dawn  to find pieces that cannot be sourced from a catalogue. We work directly with the people who make them. We cut out the intermediaries who have historically taken the margin that should go to the artisans. That is the sourcing model. It is not scalable in the way a catalogue business is. That is the point.",
+      "My grandfather traded rugs from a bazaar in Marrakech. The trade stayed in the family, and it runs on the same thing it always did: knowing what you're holding. I source across Morocco myself and check every piece in person for construction, fibre, and condition before it enters the stockroom. The poufs and pillows are my mom's work — she designs and hand-sews every one, cutting, matching, and seaming each piece herself.",
     linkLabel: "READ THE FULL STORY",
     href: "/about",
   },
