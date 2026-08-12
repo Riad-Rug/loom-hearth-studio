@@ -135,14 +135,40 @@ function mapBlogPostEntryToDomain(record: BlogPostEntry): BlogPostRecord {
     publishedAt: record.publishedAt,
     readTime: record.readTime,
     status: mapStatus(record.status),
-    imageAlt: record.imageAlt,
-    imageSrc: record.imageSrc,
+    images: parseBlogPostImages(record.images),
     seoTitle: record.seoTitle,
     seoDescription: record.seoDescription,
     targetKeyword: record.targetKeyword,
     updatedAt: record.updatedAt.toISOString(),
     ctaLabel: record.ctaLabel,
   };
+}
+
+function parseBlogPostImages(value: unknown): BlogPostRecord["images"] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+
+    const candidate = item as Record<string, unknown>;
+    const src = typeof candidate.src === "string" ? candidate.src : "";
+
+    if (!src) {
+      return [];
+    }
+
+    return [
+      {
+        id: typeof candidate.id === "string" && candidate.id ? candidate.id : src,
+        src,
+        alt: typeof candidate.alt === "string" ? candidate.alt : "",
+      },
+    ];
+  });
 }
 
 function mapMutationInputToCreateInput(
@@ -159,8 +185,7 @@ function mapMutationInputToCreateInput(
     publishedAt: input.publishedAt,
     readTime: input.readTime,
     status: input.status,
-    imageAlt: input.imageAlt,
-    imageSrc: input.imageSrc,
+    images: input.images as Prisma.InputJsonValue,
     seoTitle: input.seoTitle,
     seoDescription: input.seoDescription,
     targetKeyword: input.targetKeyword,
@@ -184,8 +209,7 @@ function mapMutationInputToUpdateInput(
     publishedAt: input.publishedAt,
     readTime: input.readTime,
     status: input.status,
-    imageAlt: input.imageAlt,
-    imageSrc: input.imageSrc,
+    images: input.images as Prisma.InputJsonValue,
     seoTitle: input.seoTitle,
     seoDescription: input.seoDescription,
     targetKeyword: input.targetKeyword,

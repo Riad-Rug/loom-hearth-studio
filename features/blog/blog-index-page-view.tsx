@@ -48,18 +48,18 @@ export function BlogIndexPageView({ posts }: BlogIndexPageViewProps) {
           href={`/blog/${featuredPost.categorySlug}/${featuredPost.slug}` as Route}
         >
           <div className={styles.featuredMedia}>
-            {isCloudinaryImage(featuredPost.imageSrc) ? (
+            {isCloudinaryImage(featuredPost.images[0]?.src ?? "") ? (
               <Image
-                alt={featuredPost.imageAlt}
+                alt={featuredPost.images[0]?.alt ?? ""}
                 className={styles.postImage}
                 fill
                 priority
                 sizes="(max-width: 1100px) 100vw, 52vw"
-                src={featuredPost.imageSrc}
+                src={featuredPost.images[0]?.src ?? ""}
               />
             ) : (
               <PlaceholderMedia
-                alt={featuredPost.imageAlt}
+                alt={featuredPost.images[0]?.alt ?? ""}
                 aspectRatio="4 / 3"
                 label="Journal photo pending"
                 priority
@@ -88,17 +88,17 @@ export function BlogIndexPageView({ posts }: BlogIndexPageViewProps) {
             href={`/blog/${post.categorySlug}/${post.slug}` as Route}
           >
             <div className={styles.postMedia}>
-              {isCloudinaryImage(post.imageSrc) ? (
+              {isCloudinaryImage(post.images[0]?.src ?? "") ? (
                 <Image
-                  alt={post.imageAlt}
+                  alt={post.images[0]?.alt ?? ""}
                   className={styles.postImage}
                   fill
                   sizes="(max-width: 1100px) 100vw, 33vw"
-                  src={post.imageSrc}
+                  src={post.images[0]?.src ?? ""}
                 />
               ) : (
                 <PlaceholderMedia
-                  alt={post.imageAlt}
+                  alt={post.images[0]?.alt ?? ""}
                   aspectRatio="4 / 3"
                   label="Journal photo pending"
                   sizes="(max-width: 1100px) 100vw, 33vw"

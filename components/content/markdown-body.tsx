@@ -9,7 +9,18 @@ const tableSeparatorPattern = /^\|?(?:\s*:?-{3,}:?\s*\|)+(?:\s*:?-{3,}:?\s*\|?)$
 const imageLinePattern = /^!\[([^\]]*)\]\(([^)]*)\)$/;
 
 export function renderPlainBody(body: string) {
-  return body.split("\n\n").map((paragraph) => <p key={paragraph}>{paragraph}</p>);
+  return body
+    .trim()
+    .split(/\n\s*\n/)
+    .map((paragraph, index) => {
+      const imageMatch = paragraph.trim().match(imageLinePattern);
+
+      if (imageMatch) {
+        return renderImageBlock(imageMatch[1], imageMatch[2], index);
+      }
+
+      return <p key={`${index}-${paragraph}`}>{paragraph}</p>;
+    });
 }
 
 function stripTrailingPunctuation(token: string) {

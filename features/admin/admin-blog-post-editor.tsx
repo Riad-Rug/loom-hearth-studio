@@ -6,12 +6,18 @@ import { useActionState, useDeferredValue, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { AdminBlogPreviewFrame } from "@/features/admin/admin-blog-preview-frame";
+import { CloudinaryUploadButton } from "@/features/admin/cloudinary-upload-button";
 import {
   initialAdminBlogPostActionState,
   type AdminBlogPostActionState,
 } from "@/lib/admin/blog-post-actions-shared";
 import type { AdminBlogPostFormValues } from "@/lib/admin/blog-posts";
-import { blogPostStatusOptions } from "@/lib/blog/blog-post-validation";
+import {
+  blogPostMaxImages,
+  blogPostMinImages,
+  blogPostStatusOptions,
+  type BlogPostImage,
+} from "@/lib/blog/blog-post-validation";
 import { createBlogPostSeoAudit } from "@/lib/seo/blog-post-audit";
 
 import styles from "./admin.module.css";
@@ -43,6 +49,61 @@ export function AdminBlogPostEditor(props: AdminBlogPostEditorProps) {
 
   function syncSlugFromTitle() {
     updateField("slug", slugify(draft.title));
+  }
+
+  function updateImage(index: number, patch: Partial<BlogPostImage>) {
+    setDraft((current) => ({
+      ...current,
+      images: current.images.map((image, imageIndex) =>
+        imageIndex === index ? { ...image, ...patch } : image,
+      ),
+    }));
+  }
+
+  function addImage() {
+    setDraft((current) =>
+      current.images.length >= blogPostMaxImages
+        ? current
+        : { ...current, images: [...current.images, createEmptyBlogImage()] },
+    );
+  }
+
+  function removeImage(index: number) {
+    setDraft((current) =>
+      current.images.length <= blogPostMinImages
+        ? current
+        : { ...current, images: current.images.filter((_, imageIndex) => imageIndex !== index) },
+    );
+  }
+
+  function moveImage(index: number, direction: -1 | 1) {
+    setDraft((current) => {
+      const targetIndex = index + direction;
+
+      if (targetIndex < 0 || targetIndex >= current.images.length) {
+        return current;
+      }
+
+      const nextImages = current.images.slice();
+      const [moved] = nextImages.splice(index, 1);
+      nextImages.splice(targetIndex, 0, moved);
+
+      return { ...current, images: nextImages };
+    });
+  }
+
+  function insertImageIntoBody(image: BlogPostImage) {
+    if (!image.src.trim()) {
+      return;
+    }
+
+    const markdownImageLine = `\n\n![${image.alt.trim()}](${image.src.trim()})\n\n`;
+
+    updateField("body", `${draft.body}${markdownImageLine}`);
+  }
+
+  function isImagePlacedInBody(image: BlogPostImage) {
+    return Boolean(image.src.trim()) && draft.body.includes(image.src.trim());
   }
 
   return (
@@ -207,22 +268,107 @@ export function AdminBlogPostEditor(props: AdminBlogPostEditorProps) {
             <em>{seoAudit.metaDescriptionLength} characters</em>
             <em>{state.fieldErrors.seoDescription}</em>
           </label>
-          <label className={styles.formField}>
-            <span>Hero image URL</span>
-            <input
-              onChange={(event) => updateField("imageSrc", event.target.value)}
-              type="text"
-              value={draft.imageSrc}
-            />
-          </label>
-          <label className={styles.formField}>
-            <span>Hero image alt text</span>
-            <input
-              onChange={(event) => updateField("imageAlt", event.target.value)}
-              type="text"
-              value={draft.imageAlt}
-            />
-          </label>
+        </section>
+
+        <section className={styles.card}>
+          <p className={styles.cardEyebrow}>Images (up to {blogPostMaxImages})</p>
+          <p>
+            Image 1 is the hero/cover image shown on the article and index cards. Images 2–
+            {blogPostMaxImages} can be inserted anywhere in the body below.
+          </p>
+          <div className={styles.stack}>
+            {draft.images.map((image, index) => (
+              <div key={image.id} className={styles.groupPanel}>
+                <strong>{index === 0 ? "Hero / cover image" : `Image ${index + 1}`}</strong>
+                <div className={styles.inlineGroup}>
+                  <div className={styles.thumbnailFrame}>
+                    {image.src.trim() ? (
+                      <img alt={image.alt} className={styles.thumbnailImage} src={image.src} />
+                    ) : (
+                      <span className={styles.thumbnailFallback}>No image</span>
+                    )}
+                  </div>
+                  <div className={styles.stack}>
+                    <CloudinaryUploadButton
+                      onUploaded={(result) =>
+                        updateImage(index, {
+                          src: result.url,
+                          alt: image.alt.trim() || draft.title,
+                        })
+                      }
+                      slotId={image.id}
+                      target="blog"
+                    >
+                      Upload image
+                    </CloudinaryUploadButton>
+                  </div>
+                </div>
+                <label className={styles.formField}>
+                  <span>Image URL</span>
+                  <input
+                    onChange={(event) => updateImage(index, { src: event.target.value })}
+                    type="text"
+                    value={image.src}
+                  />
+                </label>
+                <label className={styles.formField}>
+                  <span>Alt text</span>
+                  <input
+                    onChange={(event) => updateImage(index, { alt: event.target.value })}
+                    type="text"
+                    value={image.alt}
+                  />
+                </label>
+                {index > 0 ? (
+                  <div className={styles.inlineActionRow}>
+                    <button
+                      className={styles.inlineActionLink}
+                      disabled={!image.src.trim()}
+                      onClick={() => insertImageIntoBody(image)}
+                      type="button"
+                    >
+                      Insert into body
+                    </button>
+                    <span className={styles.statusPill}>
+                      {isImagePlacedInBody(image) ? "Placed in body" : "Not placed yet"}
+                    </span>
+                  </div>
+                ) : null}
+                <div className={styles.inlineActionRow}>
+                  <button
+                    className={styles.textButton}
+                    disabled={index === 0}
+                    onClick={() => moveImage(index, -1)}
+                    type="button"
+                  >
+                    Move up
+                  </button>
+                  <button
+                    className={styles.textButton}
+                    disabled={index === draft.images.length - 1}
+                    onClick={() => moveImage(index, 1)}
+                    type="button"
+                  >
+                    Move down
+                  </button>
+                  <button
+                    className={styles.textButton}
+                    disabled={draft.images.length <= blogPostMinImages}
+                    onClick={() => removeImage(index)}
+                    type="button"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+            {draft.images.length < blogPostMaxImages ? (
+              <button className={styles.navLink} onClick={addImage} type="button">
+                Add image
+              </button>
+            ) : null}
+            <em>{state.fieldErrors.images}</em>
+          </div>
         </section>
 
         <section className={styles.card}>
@@ -324,6 +470,14 @@ function SubmitButton(props: { mode: "create" | "edit" }) {
           : "Save post"}
     </button>
   );
+}
+
+function createEmptyBlogImage(): BlogPostImage {
+  return {
+    id: `image-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+    src: "",
+    alt: "",
+  };
 }
 
 function slugify(value: string) {

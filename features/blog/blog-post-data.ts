@@ -1,10 +1,15 @@
 import type { BlogPost } from "@/types/domain";
 
+export type BlogPostImage = {
+  id: string;
+  src: string;
+  alt: string;
+};
+
 type PlaceholderBlogPost = BlogPost & {
   categoryLabel: string;
   readTime: string;
-  imageAlt: string;
-  imageSrc: string;
+  images: BlogPostImage[];
   targetKeyword: string;
   updatedAt: string;
   ctaLabel: string;
@@ -12,6 +17,9 @@ type PlaceholderBlogPost = BlogPost & {
 };
 
 export type BlogPostRecord = PlaceholderBlogPost;
+
+export const blogPostMaxImages = 5;
+export const blogPostMinImages = 1;
 
 export const blogPosts: BlogPostRecord[] = [
   {
@@ -51,9 +59,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "August 10, 2026",
     readTime: "5 min read",
     status: "active",
-    imageAlt:
-      "Inside my grandfather's Marrakech rug bazaar, with stacked wool rugs, antique doors and copper lanterns",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "Inside my grandfather's Marrakech rug bazaar, with stacked wool rugs, antique doors and copper lanterns",
+      },
+    ],
     seoTitle: "My Grandfather's Marrakech Rug Bazaar | Loom & Hearth Studio",
     seoDescription:
       "My grandfather ran a rug bazaar in Marrakech from 1967. How the export trade worked, how I returned to it, and what I first got wrong about dye.",
@@ -77,10 +89,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "April 12, 2026",
     readTime: "6 min read",
     status: "active",
-    imageAlt:
-      "Overhead Beni Ourain rug photography showing plush wool pile, charcoal linework, and proportion across the full field.",
-    imageSrc:
-      "https://res.cloudinary.com/dnyhdvqra/image/upload/loom-hearth/products/rugs/znccufadjhla24dsv8ca",
+    images: [
+      {
+        id: "image-1",
+        src: "https://res.cloudinary.com/dnyhdvqra/image/upload/loom-hearth/products/rugs/znccufadjhla24dsv8ca",
+        alt: "Overhead Beni Ourain rug photography showing plush wool pile, charcoal linework, and proportion across the full field.",
+      },
+    ],
     seoTitle: "How to read a Beni Ourain rug | Loom & Hearth Studio",
     seoDescription:
       "A Loom & Hearth Studio guide to judging a Beni Ourain rug through pile depth, knot read, and pattern spacing before it reaches the room.",
@@ -104,10 +119,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "April 9, 2026",
     readTime: "5 min read",
     status: "active",
-    imageAlt:
-      "Traditional Moroccan cushions in warm sunlight with woven texture and faded sabra-style patterning.",
-    imageSrc:
-      "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    images: [
+      {
+        id: "image-1",
+        src: "https://images.pexels.com/photos/31371152/pexels-photo-31371152/free-photo-of-warm-moroccan-sunlight-on-traditional-cushions.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+        alt: "Traditional Moroccan cushions in warm sunlight with woven texture and faded sabra-style patterning.",
+      },
+    ],
     seoTitle: "Layering poufs and sabra pillows | Loom & Hearth Studio",
     seoDescription:
       "Styling notes on using Moroccan poufs and cactus silk pillows with rugs, benches, and daybeds.",
@@ -131,10 +149,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "April 5, 2026",
     readTime: "4 min read",
     status: "active",
-    imageAlt:
-      "A warm Moroccan interior with woven lamps, rattan furniture, and built-in seating that reflects Loom & Hearth Studio's sourcing direction.",
-    imageSrc:
-      "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+    images: [
+      {
+        id: "image-1",
+        src: "https://images.pexels.com/photos/31371121/pexels-photo-31371121.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1200",
+        alt: "A warm Moroccan interior with woven lamps, rattan furniture, and built-in seating that reflects Loom & Hearth Studio's sourcing direction.",
+      },
+    ],
     seoTitle: "Why direct sourcing changes the collection | Loom & Hearth Studio",
     seoDescription:
       "A sourcing story on how in-person selection in Morocco shapes the Loom & Hearth Studio collection.",
@@ -158,10 +179,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "April 2, 2026",
     readTime: "5 min read",
     status: "active",
-    imageAlt:
-      "Overhead Moroccan rug image with tighter geometric repeat and terracotta-led palette associated with Taznakht weaving.",
-    imageSrc:
-      "https://res.cloudinary.com/dnyhdvqra/image/upload/loom-hearth/products/rugs/terracotta-field-rug-hero",
+    images: [
+      {
+        id: "image-1",
+        src: "https://res.cloudinary.com/dnyhdvqra/image/upload/loom-hearth/products/rugs/terracotta-field-rug-hero",
+        alt: "Overhead Moroccan rug image with tighter geometric repeat and terracotta-led palette associated with Taznakht weaving.",
+      },
+    ],
     seoTitle: "What makes a Taznakht rug different | Loom & Hearth Studio",
     seoDescription:
       "A guide to the construction, geometry, and palette differences that set Taznakht rugs apart from other Moroccan weaving families.",
@@ -185,9 +209,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "March 30, 2026",
     readTime: "5 min read",
     status: "active",
-    imageAlt:
-      "Moroccan rug imagery comparing a flatter woven surface with a denser piled wool texture.",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "Moroccan rug imagery comparing a flatter woven surface with a denser piled wool texture.",
+      },
+    ],
     seoTitle: "Flatweave vs pile rug | Loom & Hearth Studio",
     seoDescription:
       "A practical guide to the difference between flatweave Moroccan rugs and pile rugs, and when each belongs in a room.",
@@ -211,10 +239,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "March 27, 2026",
     readTime: "6 min read",
     status: "active",
-    imageAlt:
-      "Vintage Moroccan rug with visible age, softened palette, and worn-in surface presented in overhead light.",
-    imageSrc:
-      "https://res.cloudinary.com/dnyhdvqra/image/upload/loom-hearth/products/vintage-desert-find-1",
+    images: [
+      {
+        id: "image-1",
+        src: "https://res.cloudinary.com/dnyhdvqra/image/upload/loom-hearth/products/vintage-desert-find-1",
+        alt: "Vintage Moroccan rug with visible age, softened palette, and worn-in surface presented in overhead light.",
+      },
+    ],
     seoTitle: "Why vintage Moroccan rugs cost more | Loom & Hearth Studio",
     seoDescription:
       "A practical explanation of what drives the price of vintage Moroccan rugs and how to judge whether a piece is worth it.",
@@ -238,9 +269,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "March 24, 2026",
     readTime: "5 min read",
     status: "active",
-    imageAlt:
-      "Moroccan rug shown in a lived-in room with visible furniture legs and clear rug edge placement.",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "Moroccan rug shown in a lived-in room with visible furniture legs and clear rug edge placement.",
+      },
+    ],
     seoTitle: "How rug size decisions work in a real room | Loom & Hearth Studio",
     seoDescription:
       "A practical guide to choosing Moroccan rug size through furniture placement, edge position, and room structure.",
@@ -264,9 +299,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "March 21, 2026",
     readTime: "5 min read",
     status: "active",
-    imageAlt:
-      "Geometric Moroccan rug with red and ochre pattern language associated with Zemmour weaving traditions.",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "Geometric Moroccan rug with red and ochre pattern language associated with Zemmour weaving traditions.",
+      },
+    ],
     seoTitle: "Zemmour rugs explained | Loom & Hearth Studio",
     seoDescription:
       "An introduction to Zemmour rugs, their geometric pattern language, and how they differ from other Moroccan rug families.",
@@ -290,9 +329,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "March 19, 2026",
     readTime: "4 min read",
     status: "active",
-    imageAlt:
-      "Moroccan interior scene where the rug leads the palette across textiles, walls, and supporting objects.",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "Moroccan interior scene where the rug leads the palette across textiles, walls, and supporting objects.",
+      },
+    ],
     seoTitle: "Use one rug as the starting point for a room palette | Loom & Hearth Studio",
     seoDescription:
       "A styling note on building a room palette from the colours already present in one Moroccan rug.",
@@ -316,9 +359,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "March 14, 2026",
     readTime: "4 min read",
     status: "active",
-    imageAlt:
-      "A low-furnished room structured by a single Moroccan rug with minimal supporting furniture.",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "A low-furnished room structured by a single Moroccan rug with minimal supporting furniture.",
+      },
+    ],
     seoTitle: "The case for a single statement rug | Loom & Hearth Studio",
     seoDescription:
       "A styling note on using one strong Moroccan rug to carry a restrained, low-furnished room.",
@@ -342,9 +389,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "March 10, 2026",
     readTime: "4 min read",
     status: "active",
-    imageAlt:
-      "Neutral Moroccan-influenced room using a restrained mix of rug, pouf, and textile accents.",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "Neutral Moroccan-influenced room using a restrained mix of rug, pouf, and textile accents.",
+      },
+    ],
     seoTitle: "Moroccan textiles in a neutral room | Loom & Hearth Studio",
     seoDescription:
       "A styling guide to editing Moroccan rugs, pillows, and poufs into pale, restrained interiors.",
@@ -368,9 +419,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "March 7, 2026",
     readTime: "5 min read",
     status: "active",
-    imageAlt:
-      "Open-plan room with a Moroccan rug clearly defining the living zone through edge placement.",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "Open-plan room with a Moroccan rug clearly defining the living zone through edge placement.",
+      },
+    ],
     seoTitle: "Placing a rug in an open-plan space | Loom & Hearth Studio",
     seoDescription:
       "A practical styling note on where the edge of a Moroccan rug should fall in an open-plan room.",
@@ -394,9 +449,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "March 4, 2026",
     readTime: "4 min read",
     status: "active",
-    imageAlt:
-      "Marrakech bazaar aisle with stacked rugs and low seating, reflecting the Semmarine souk trade environment.",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "Marrakech bazaar aisle with stacked rugs and low seating, reflecting the Semmarine souk trade environment.",
+      },
+    ],
     seoTitle: "How the Semmarine souk works | Loom & Hearth Studio",
     seoDescription:
       "A sourcing story on the Semmarine souk in Marrakech and why bazaar buying produces ONE OF A KIND rugs.",
@@ -420,9 +479,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "March 1, 2026",
     readTime: "4 min read",
     status: "active",
-    imageAlt:
-      "Close-up of a Moroccan rug reverse showing weave structure, fringe, and knot definition held up by hand.",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "Close-up of a Moroccan rug reverse showing weave structure, fringe, and knot definition held up by hand.",
+      },
+    ],
     seoTitle: "Check the back of the rug first | Loom & Hearth Studio",
     seoDescription:
       "A sourcing story on why Loom & Hearth Studio checks the back of a Moroccan rug before trusting the front.",
@@ -446,9 +509,13 @@ export const blogPosts: BlogPostRecord[] = [
     publishedAt: "February 26, 2026",
     readTime: "5 min read",
     status: "active",
-    imageAlt:
-      "Moroccan bazaar rug selection scene emphasizing individual textiles rather than standardized catalogue presentation.",
-    imageSrc: "",
+    images: [
+      {
+        id: "image-1",
+        src: "",
+        alt: "Moroccan bazaar rug selection scene emphasizing individual textiles rather than standardized catalogue presentation.",
+      },
+    ],
     seoTitle: "Bazaar piece vs export catalogue piece | Loom & Hearth Studio",
     seoDescription:
       "A sourcing story on what distinguishes a bazaar-selected Moroccan textile from an export catalogue piece.",
@@ -498,14 +565,42 @@ export function sanitizeBlogPost(value: unknown): BlogPostRecord {
     publishedAt: sanitizeText(candidate.publishedAt, fallback.publishedAt ?? ""),
     readTime: sanitizeText(candidate.readTime, fallback.readTime),
     status: sanitizeStatus(candidate.status, fallback.status),
-    imageAlt: sanitizeText(candidate.imageAlt, fallback.imageAlt),
-    imageSrc: typeof candidate.imageSrc === "string" ? candidate.imageSrc : fallback.imageSrc,
+    images: sanitizeBlogPostImages(candidate.images, fallback.images),
     seoTitle: sanitizeText(candidate.seoTitle, fallback.seoTitle),
     seoDescription: sanitizeText(candidate.seoDescription, fallback.seoDescription),
     targetKeyword: sanitizeText(candidate.targetKeyword, fallback.targetKeyword),
     updatedAt: sanitizeText(candidate.updatedAt, fallback.updatedAt),
     ctaLabel: sanitizeText(candidate.ctaLabel, fallback.ctaLabel),
   };
+}
+
+function sanitizeBlogPostImages(value: unknown, fallback: BlogPostImage[]): BlogPostImage[] {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const sanitized = value.flatMap((item, index) => {
+    if (!isRecord(item)) {
+      return [];
+    }
+
+    const src = typeof item.src === "string" ? item.src : "";
+    const alt = typeof item.alt === "string" ? item.alt : "";
+
+    if (!src) {
+      return [];
+    }
+
+    return [
+      {
+        id: typeof item.id === "string" && item.id ? item.id : `image-${index + 1}`,
+        src,
+        alt,
+      },
+    ];
+  });
+
+  return sanitized.slice(0, blogPostMaxImages);
 }
 
 function sanitizeStatus(value: unknown, fallback: BlogPostRecord["status"]): BlogPostRecord["status"] {

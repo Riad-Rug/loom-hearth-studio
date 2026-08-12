@@ -1,9 +1,9 @@
 "use client";
 
-import type { ChangeEvent } from "react";
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { CloudinaryUploadButton } from "@/features/admin/cloudinary-upload-button";
 import type { AdminProductActionState } from "@/lib/admin/product-actions-shared";
 import { initialAdminProductActionState } from "@/lib/admin/product-actions-shared";
 import {
@@ -24,10 +24,6 @@ import {
   normalizeSlug,
   productRugStyleOptions,
 } from "@/lib/catalog/product-validation";
-import type {
-  CloudinaryBrowserUploadResult,
-  CloudinarySignedUploadPayload,
-} from "@/lib/cloudinary/types";
 
 import styles from "./admin.module.css";
 
@@ -99,15 +95,6 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [homepageFeatured, setHomepageFeatured] = useState(props.product.homepageFeatured);
   const [homepageRank, setHomepageRank] = useState(props.product.homepageRank);
   const [confirmUrlChange, setConfirmUrlChange] = useState(false);
-  const [uploadState, setUploadState] = useState<{
-    status: "idle" | "uploading" | "success" | "error";
-    message: string | null;
-    imageId: string | null;
-  }>({
-    status: "idle",
-    message: null,
-    imageId: null,
-  });
   const cardNameInput = useMemo(
     () => ({
       name,
@@ -206,113 +193,28 @@ export function AdminProductForm(props: AdminProductFormProps) {
     );
   }
 
-  async function handleImageFileSelection(
-    event: ChangeEvent<HTMLInputElement>,
+  function applyImageUploadResult(
     imageId: string,
+    result: { publicId: string; fileName: string; width?: number; height?: number },
   ) {
-    const file = event.target.files?.[0];
+    setImages((current) =>
+      current.map((image) => {
+        if (image.id !== imageId) {
+          return image;
+        }
 
-    if (!file) {
-      return;
-    }
-
-    setUploadState({
-      status: "uploading",
-      message: `Uploading ${file.name}...`,
-      imageId,
-    });
-
-    try {
-      const signatureResponse = await fetch("/api/admin/cloudinary/upload-signature", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productType: type,
-        }),
-      });
-
-      const signatureResult = (await signatureResponse.json()) as
-        | {
-            status: "ready";
-            payload: CloudinarySignedUploadPayload;
-          }
-        | {
-            status: "forbidden" | "invalid-input" | "configuration-error";
-            message: string;
-          };
-
-      if (!signatureResponse.ok || signatureResult.status !== "ready") {
-        throw new Error(
-          "message" in signatureResult
-            ? signatureResult.message
-            : "Upload signing failed before a Cloudinary payload was returned.",
-        );
-      }
-
-      const uploadFormData = new FormData();
-      uploadFormData.append("file", file);
-      uploadFormData.append("api_key", signatureResult.payload.apiKey);
-      uploadFormData.append("timestamp", String(signatureResult.payload.timestamp));
-      uploadFormData.append("folder", signatureResult.payload.folder);
-      uploadFormData.append("signature", signatureResult.payload.signature);
-
-      const uploadResponse = await fetch(signatureResult.payload.uploadUrl, {
-        method: "POST",
-        body: uploadFormData,
-      });
-
-      if (!uploadResponse.ok) {
-        const uploadErrorText = await readUploadErrorMessage(uploadResponse);
-
-        throw new Error(
-          uploadErrorText || "Cloudinary upload failed before media metadata was returned.",
-        );
-      }
-
-      const uploadResult = (await uploadResponse.json()) as CloudinaryBrowserUploadResult;
-
-      setImages((current) =>
-        current.map((image) => {
-          if (image.id !== imageId) {
-            return image;
-          }
-
-          return {
-            ...image,
-            publicId: uploadResult.public_id,
-            altText:
-              image.altText.trim() || createDefaultImageAltText(file.name, name, image.sortOrder),
-            mediaType: "image" as const,
-            width: uploadResult.width,
-            height: uploadResult.height,
-          };
-        }),
-      );
-
-      setUploadState({
-        status: "success",
-        message: `${file.name} uploaded for this image slot.`,
-        imageId,
-      });
-    } catch (error) {
-      setUploadState({
-        status: "error",
-        message: error instanceof Error ? error.message : "Image upload failed.",
-        imageId,
-      });
-    } finally {
-      event.target.value = "";
-    }
-  }
-
-  function getImageUploadMessage(imageId: string) {
-    return uploadState.imageId === imageId ? uploadState.message : null;
-  }
-
-  function isImageUploading(imageId: string) {
-    return uploadState.status === "uploading" && uploadState.imageId === imageId;
+        return {
+          ...image,
+          publicId: result.publicId,
+          altText:
+            image.altText.trim() ||
+            createDefaultImageAltText(result.fileName, name, image.sortOrder),
+          mediaType: "image" as const,
+          width: result.width,
+          height: result.height,
+        };
+      }),
+    );
   }
 
   return (
@@ -761,21 +663,13 @@ export function AdminProductForm(props: AdminProductFormProps) {
                     onChange={(event) => updateImage(index, { publicId: event.target.value })}
                   />
                 </label>
-                <label className={styles.navLink}>
-                  <span>
-                    {isImageUploading(image.id) ? "Uploading image..." : "Upload image to this slot"}
-                  </span>
-                  <input
-                    accept="image/*"
-                    disabled={uploadState.status === "uploading"}
-                    hidden
-                    type="file"
-                    onChange={(event) => {
-                      void handleImageFileSelection(event, image.id);
-                    }}
-                  />
-                </label>
-                {getImageUploadMessage(image.id) ? <span>{getImageUploadMessage(image.id)}</span> : null}
+                <CloudinaryUploadButton
+                  onUploaded={(result) => applyImageUploadResult(image.id, result)}
+                  slotId={image.id}
+                  target={type}
+                >
+                  Upload image to this slot
+                </CloudinaryUploadButton>
                 <label className={styles.formField}>
                   <span>Alt text</span>
                   <input
@@ -1075,28 +969,6 @@ function createEmptyImageRow(input: {
 
 function createImageRowId() {
   return `image-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-async function readUploadErrorMessage(response: Response) {
-  const responseText = await response.text();
-
-  if (!responseText) {
-    return "";
-  }
-
-  try {
-    const parsed = JSON.parse(responseText) as
-      | {
-          error?: {
-            message?: string;
-          };
-        }
-      | undefined;
-
-    return parsed?.error?.message ?? responseText;
-  } catch {
-    return responseText;
-  }
 }
 
 function SubmitButton(props: { mode: "create" | "edit" }) {

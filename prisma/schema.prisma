@@ -342,8 +342,7 @@ model BlogPostEntry {
   publishedAt    String
   readTime       String
   status         String
-  imageAlt       String
-  imageSrc       String
+  images         Json
   seoTitle       String
   seoDescription String   @db.Text
   targetKeyword  String

@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 
-import { renderMarkdownBody } from "@/components/content/markdown-body";
+import { renderMarkdownBody, renderPlainBody } from "@/components/content/markdown-body";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { BlogAuthorBlock } from "@/features/blog/blog-author-block";
 import { blogPosts } from "@/features/blog/blog-post-data";
@@ -13,8 +13,7 @@ import styles from "./blog.module.css";
 type PlaceholderBlogPost = BlogPost & {
   categoryLabel: string;
   readTime: string;
-  imageAlt: string;
-  imageSrc: string;
+  images: { id: string; src: string; alt: string }[];
   bodyFormat?: "plain" | "markdown";
 };
 
@@ -39,31 +38,31 @@ export function BlogPostPageView({ post, author }: BlogPostPageViewProps) {
           <p className={styles.lede}>{post.excerpt}</p>
         </header>
 
-        <div className={styles.articleMedia}>
-          {isCloudinaryImage(post.imageSrc) ? (
-            <Image
-              alt={post.imageAlt}
-              className={styles.articleImage}
-              fill
-              priority
-              sizes="(max-width: 1100px) 100vw, 80vw"
-              src={post.imageSrc}
-            />
-          ) : (
-            <PlaceholderMedia
-              alt={post.imageAlt}
-              aspectRatio="16 / 10"
-              label="Journal photo pending"
-              priority
-              sizes="(max-width: 1100px) 100vw, 80vw"
-            />
-          )}
-        </div>
+        {post.images[0] ? (
+          <div className={styles.articleMedia}>
+            {isCloudinaryImage(post.images[0].src) ? (
+              <Image
+                alt={post.images[0].alt}
+                className={styles.articleImage}
+                fill
+                priority
+                sizes="(max-width: 1100px) 100vw, 80vw"
+                src={post.images[0].src}
+              />
+            ) : (
+              <PlaceholderMedia
+                alt={post.images[0].alt}
+                aspectRatio="16 / 10"
+                label="Journal photo pending"
+                priority
+                sizes="(max-width: 1100px) 100vw, 80vw"
+              />
+            )}
+          </div>
+        ) : null}
 
         <div className={styles.articleBody}>
-          {post.bodyFormat === "markdown"
-            ? renderMarkdownBody(post.body)
-            : post.body.split("\n\n").map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          {post.bodyFormat === "markdown" ? renderMarkdownBody(post.body) : renderPlainBody(post.body)}
         </div>
 
         <BlogAuthorBlock author={author} />

@@ -1,7 +1,7 @@
 import type { BlogPostRecord } from "@/features/blog/blog-post-data";
 import { createBlogPostRepository } from "@/lib/db/repositories/blog-post-repository";
 import { createBlogPostSeoAudit } from "@/lib/seo/blog-post-audit";
-import type { BlogPostStatus } from "@/lib/blog/blog-post-validation";
+import type { BlogPostImage, BlogPostStatus } from "@/lib/blog/blog-post-validation";
 
 export type AdminBlogPostFormValues = {
   id?: string;
@@ -15,8 +15,7 @@ export type AdminBlogPostFormValues = {
   publishedAt: string;
   readTime: string;
   status: BlogPostStatus;
-  imageAlt: string;
-  imageSrc: string;
+  images: BlogPostImage[];
   seoTitle: string;
   seoDescription: string;
   targetKeyword: string;
@@ -111,8 +110,7 @@ export function createEmptyAdminBlogPostFormValues(): AdminBlogPostFormValues {
     publishedAt: "",
     readTime: "",
     status: "draft",
-    imageAlt: "",
-    imageSrc: "",
+    images: [{ id: "image-1", src: "", alt: "" }],
     seoTitle: "",
     seoDescription: "",
     targetKeyword: "",
@@ -135,8 +133,7 @@ function createAdminBlogPostFormValues(post: BlogPostRecord): AdminBlogPostFormV
     publishedAt: post.publishedAt ?? "",
     readTime: post.readTime,
     status: post.status === "active" || post.status === "archived" ? post.status : "draft",
-    imageAlt: post.imageAlt,
-    imageSrc: post.imageSrc,
+    images: post.images.length ? post.images : [{ id: "image-1", src: "", alt: "" }],
     seoTitle: post.seoTitle,
     seoDescription: post.seoDescription,
     targetKeyword: post.targetKeyword,

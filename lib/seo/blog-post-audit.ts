@@ -5,7 +5,7 @@ export type BlogPostSeoEditableField =
   | "targetKeyword"
   | "seoTitle"
   | "seoDescription"
-  | "imageAlt"
+  | "images"
   | "excerpt"
   | "body";
 
@@ -15,7 +15,7 @@ export type BlogPostSeoAuditableFields = {
   targetKeyword: string;
   seoTitle: string;
   seoDescription: string;
-  imageAlt: string;
+  images: { id: string; src: string; alt: string }[];
   body: string;
 };
 
@@ -56,7 +56,8 @@ export function createBlogPostSeoAudit(post: BlogPostSeoAuditableFields): BlogPo
     (normalizedSeoTitle.includes(normalizedTitle) || normalizedTitle.includes(normalizedKeyword));
   const contentLengthReady = wordCount >= 350;
   const internalLinkReady = internalLinksFound > 0;
-  const imageAltReady = post.imageAlt.trim().length >= 24;
+  const heroImageAlt = post.images[0]?.alt ?? "";
+  const imageAltReady = heroImageAlt.trim().length >= 24;
 
   const checklist: BlogPostSeoChecklistItem[] = [
     {
@@ -137,7 +138,7 @@ export function createBlogPostSeoAudit(post: BlogPostSeoAuditableFields): BlogPo
         : "Hero image alt text is missing or too thin to be useful.",
       points: 10,
       passed: imageAltReady,
-      field: "imageAlt",
+      field: "images",
     },
   ];
 
