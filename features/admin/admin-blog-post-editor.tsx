@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useActionState, useDeferredValue, useMemo, useState } from "react";
+import { useActionState, useDeferredValue, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { AdminBlogPreviewFrame } from "@/features/admin/admin-blog-preview-frame";
@@ -36,6 +36,8 @@ type AdminBlogPostEditorProps = {
 export function AdminBlogPostEditor(props: AdminBlogPostEditorProps) {
   const [state, formAction] = useActionState(props.action, initialAdminBlogPostActionState);
   const [draft, setDraft] = useState(props.post);
+  const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const bodyCursorTouchedRef = useRef(false);
   const deferredDraft = useDeferredValue(draft);
   const seoAudit = useMemo(() => createBlogPostSeoAudit(draft), [draft]);
   const previewPath = `/blog/${draft.categorySlug || "journal"}/${draft.slug || "preview"}`;
@@ -69,11 +71,19 @@ export function AdminBlogPostEditor(props: AdminBlogPostEditorProps) {
   }
 
   function removeImage(index: number) {
-    setDraft((current) =>
-      current.images.length <= blogPostMinImages
-        ? current
-        : { ...current, images: current.images.filter((_, imageIndex) => imageIndex !== index) },
-    );
+    setDraft((current) => {
+      if (current.images.length <= blogPostMinImages) {
+        return current;
+      }
+
+      const removedImage = current.images[index];
+
+      return {
+        ...current,
+        images: current.images.filter((_, imageIndex) => imageIndex !== index),
+        body: stripImageLineFromBody(current.body, removedImage.src),
+      };
+    });
   }
 
   function moveImage(index: number, direction: -1 | 1) {
@@ -93,13 +103,48 @@ export function AdminBlogPostEditor(props: AdminBlogPostEditorProps) {
   }
 
   function insertImageIntoBody(image: BlogPostImage) {
-    if (!image.src.trim()) {
+    const src = image.src.trim();
+
+    if (!src) {
       return;
     }
 
-    const markdownImageLine = `\n\n![${image.alt.trim()}](${image.src.trim()})\n\n`;
+    const markdownImageLine = `![${image.alt.trim()}](${src})`;
+    const textarea = bodyTextareaRef.current;
 
-    updateField("body", `${draft.body}${markdownImageLine}`);
+    // Insert at the cursor/selection in the body textarea when the user has
+    // placed one; otherwise fall back to appending at the end.
+    let start = draft.body.length;
+    let end = draft.body.length;
+
+    if (textarea && bodyCursorTouchedRef.current) {
+      start = Math.min(textarea.selectionStart, draft.body.length);
+      end = Math.min(Math.max(textarea.selectionEnd, start), draft.body.length);
+    }
+
+    // Move semantics: strip any existing placement of this image so clicking
+    // "Insert" again relocates it instead of duplicating it.
+    const before = stripImageLineFromBody(draft.body.slice(0, start), src).replace(/\s+$/, "");
+    const after = stripImageLineFromBody(draft.body.slice(end), src).replace(/^\s+/, "");
+
+    const nextBody =
+      (before ? `${before}\n\n` : "") + markdownImageLine + (after ? `\n\n${after}` : "\n");
+
+    updateField("body", nextBody);
+
+    // Put the caret right after the inserted line so the user can keep editing.
+    const caretPosition = (before ? before.length + 2 : 0) + markdownImageLine.length;
+
+    requestAnimationFrame(() => {
+      const element = bodyTextareaRef.current;
+
+      if (!element) {
+        return;
+      }
+
+      element.focus();
+      element.setSelectionRange(caretPosition, caretPosition);
+    });
   }
 
   function isImagePlacedInBody(image: BlogPostImage) {
@@ -274,7 +319,10 @@ export function AdminBlogPostEditor(props: AdminBlogPostEditorProps) {
           <p className={styles.cardEyebrow}>Images (up to {blogPostMaxImages})</p>
           <p>
             Image 1 is the hero/cover image shown on the article and index cards. Images 2–
-            {blogPostMaxImages} can be inserted anywhere in the body below.
+            {blogPostMaxImages} can be placed in the body: click into the body text where the
+            image should go, then press Insert (it lands at your cursor, or at the end if you
+            haven&apos;t clicked into the body). Inserting again moves the image, and removing an
+            image also removes it from the body.
           </p>
           <div className={styles.stack}>
             {draft.images.map((image, index) => (
@@ -327,7 +375,7 @@ export function AdminBlogPostEditor(props: AdminBlogPostEditorProps) {
                       onClick={() => insertImageIntoBody(image)}
                       type="button"
                     >
-                      Insert into body
+                      {isImagePlacedInBody(image) ? "Move to cursor" : "Insert into body"}
                     </button>
                     <span className={styles.statusPill}>
                       {isImagePlacedInBody(image) ? "Placed in body" : "Not placed yet"}
@@ -432,6 +480,10 @@ export function AdminBlogPostEditor(props: AdminBlogPostEditorProps) {
           <textarea
             className={styles.blogEditorBodyTextarea}
             onChange={(event) => updateField("body", event.target.value)}
+            onSelect={() => {
+              bodyCursorTouchedRef.current = true;
+            }}
+            ref={bodyTextareaRef}
             value={draft.body}
           />
           <em>{state.fieldErrors.body}</em>
@@ -470,6 +522,31 @@ function SubmitButton(props: { mode: "create" | "edit" }) {
           : "Save post"}
     </button>
   );
+}
+
+/**
+ * Removes any standalone `![alt](src)` markdown image line whose URL matches
+ * the given src, then collapses the leftover blank-line gap so the body does
+ * not keep an orphaned image reference or a double gap.
+ */
+function stripImageLineFromBody(body: string, src: string) {
+  const trimmedSrc = src.trim();
+
+  if (!trimmedSrc) {
+    return body;
+  }
+
+  const keptLines = body.split("\n").filter((line) => {
+    const match = line.trim().match(/^!\[[^\]]*\]\(([^)]*)\)$/);
+
+    return !(match && match[1].trim() === trimmedSrc);
+  });
+
+  return keptLines
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/^\n+/, "")
+    .replace(/\n+$/, "\n");
 }
 
 function createEmptyBlogImage(): BlogPostImage {
