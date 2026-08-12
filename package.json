@@ -12,6 +12,7 @@
     "admin:promote-user": "node scripts/promote-admin-user.mjs",
     "catalog:import-launch-local": "node scripts/import-launch-products.mjs",
     "homepage:seed-featured": "node scripts/seed-homepage-featured-products.mjs",
+    "blog:seed-posts": "node scripts/seed-blog-posts.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "bash ./scripts/prisma-migrate-deploy.sh",

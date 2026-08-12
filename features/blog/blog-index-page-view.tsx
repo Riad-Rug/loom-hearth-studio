@@ -3,12 +3,21 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
-import { blogCategories, blogPosts } from "@/features/blog/blog-post-data";
+import { getBlogCategories, type BlogPostRecord } from "@/features/blog/blog-post-data";
 
 import styles from "./blog.module.css";
 
-export function BlogIndexPageView() {
-  const [featuredPost, ...remainingPosts] = blogPosts;
+type BlogIndexPageViewProps = {
+  posts: BlogPostRecord[];
+};
+
+export function BlogIndexPageView({ posts }: BlogIndexPageViewProps) {
+  const blogCategories = getBlogCategories(posts);
+  const [featuredPost, ...remainingPosts] = posts;
+
+  if (!featuredPost) {
+    return null;
+  }
 
   return (
     <div className={styles.page}>

@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { BlogPostPageView } from "@/features/blog/blog-post-page-view";
-import { getBlogPostByParams } from "@/features/blog/blog-post-data";
 import { getDefaultBlogAuthor } from "@/lib/blog/author";
+import { getBlogPostByParams } from "@/lib/blog/posts";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { articleSchema, breadcrumbSchema } from "@/lib/seo/schema";
 
@@ -17,7 +17,7 @@ type BlogPostPageProps = {
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const resolvedParams = await params;
-  const post = getBlogPostByParams(resolvedParams.category, resolvedParams.slug);
+  const post = await getBlogPostByParams(resolvedParams.category, resolvedParams.slug);
 
   if (!post) {
     notFound();
@@ -51,7 +51,7 @@ export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const post = getBlogPostByParams(resolvedParams.category, resolvedParams.slug);
+  const post = await getBlogPostByParams(resolvedParams.category, resolvedParams.slug);
 
   if (!post) {
     return buildMetadata({

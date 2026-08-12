@@ -1,19 +1,10 @@
 import { AdminBlogPageView } from "@/features/admin/admin-blog-page-view";
-import { AdminBlogAuthorForm } from "@/features/admin/admin-blog-author-form";
-import { getDefaultBlogAuthorState } from "@/lib/blog/author";
+import { getAdminBlogPostsPageData } from "@/lib/admin/blog-posts";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminBlogPage() {
-  const authorState = await getDefaultBlogAuthorState();
+  const pageData = await getAdminBlogPostsPageData();
 
-  return (
-    <>
-      <AdminBlogAuthorForm
-        initialAuthor={authorState.author}
-        source={authorState.source}
-      />
-      <AdminBlogPageView />
-    </>
-  );
+  return <AdminBlogPageView {...pageData} />;
 }

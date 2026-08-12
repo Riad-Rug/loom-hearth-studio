@@ -1852,6 +1852,123 @@
   }
 }
 
+.blogEditorShell {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+}
+
+.blogEditorTopBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.blogEditorTopBarMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.blogEditorTopBarMeta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 28rem;
+}
+
+.blogEditorFieldsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.blogEditorBodyTextarea {
+  width: 100%;
+  min-height: 60vh;
+  resize: vertical;
+}
+
+.blogEditorPreviewSection {
+  display: grid;
+  gap: var(--space-3);
+  margin-left: calc(var(--space-5) * -1);
+  margin-right: calc(var(--space-5) * -1);
+}
+
+.blogPreviewFrameShell {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0 var(--space-5);
+}
+
+.blogPreviewToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.blogPreviewWidthToggle {
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.blogPreviewWidthButton,
+.blogPreviewWidthButtonActive {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid rgba(34, 33, 38, 0.14);
+  border-radius: 999px;
+  background: rgba(245, 239, 228, 0.64);
+  color: rgba(34, 33, 38, 0.82);
+}
+
+.blogPreviewWidthButtonActive {
+  border-color: rgba(184, 94, 59, 0.34);
+  background: linear-gradient(135deg, rgba(184, 94, 59, 0.18), rgba(245, 239, 228, 0.92));
+  color: var(--color-charcoal-ink);
+}
+
+.blogPreviewViewport {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: rgba(34, 33, 38, 0.03);
+  padding: var(--space-3);
+  overflow-x: auto;
+}
+
+.blogPreviewIframe {
+  height: 100vh;
+  max-height: 1400px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: #fff;
+}
+
+@media (max-width: 1100px) {
+  .blogEditorFieldsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .blogEditorPreviewSection {
+    margin-left: calc(var(--space-4) * -1);
+    margin-right: calc(var(--space-4) * -1);
+  }
+}
+
 
 
 

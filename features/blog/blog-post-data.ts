@@ -458,23 +458,67 @@ export const blogPosts: BlogPostRecord[] = [
   },
 ] as const;
 
-export const blogCategories = Array.from(
-  new Map(
-    blogPosts.map((post) => [
-      post.categorySlug,
-      {
-        slug: post.categorySlug,
-        label: post.categoryLabel,
-        href: `/blog/${post.categorySlug}/${post.slug}`,
-        count: blogPosts.filter((candidate) => candidate.categorySlug === post.categorySlug).length,
-      },
-    ]),
-  ).values(),
-);
+export function getBlogCategories(posts: BlogPostRecord[] = blogPosts) {
+  return Array.from(
+    new Map(
+      posts.map((post) => [
+        post.categorySlug,
+        {
+          slug: post.categorySlug,
+          label: post.categoryLabel,
+          href: `/blog/${post.categorySlug}/${post.slug}`,
+          count: posts.filter((candidate) => candidate.categorySlug === post.categorySlug).length,
+        },
+      ]),
+    ).values(),
+  );
+}
+
+export const blogCategories = getBlogCategories(blogPosts);
 
 export function getBlogPostByParams(category: string, slug: string) {
   return blogPosts.find(
     (post) => post.categorySlug === category && post.slug === slug,
   );
+}
+
+export function sanitizeBlogPost(value: unknown): BlogPostRecord {
+  const candidate = isRecord(value) ? value : {};
+  const fallback = blogPosts[0];
+
+  return {
+    id: sanitizeText(candidate.id, fallback.id),
+    slug: sanitizeText(candidate.slug, fallback.slug),
+    categorySlug: sanitizeText(candidate.categorySlug, fallback.categorySlug),
+    categoryLabel: sanitizeText(candidate.categoryLabel, fallback.categoryLabel),
+    title: sanitizeText(candidate.title, fallback.title),
+    excerpt: sanitizeText(candidate.excerpt, fallback.excerpt),
+    body: sanitizeText(candidate.body, fallback.body),
+    bodyFormat: candidate.bodyFormat === "markdown" ? "markdown" : "plain",
+    publishedAt: sanitizeText(candidate.publishedAt, fallback.publishedAt ?? ""),
+    readTime: sanitizeText(candidate.readTime, fallback.readTime),
+    status: sanitizeStatus(candidate.status, fallback.status),
+    imageAlt: sanitizeText(candidate.imageAlt, fallback.imageAlt),
+    imageSrc: typeof candidate.imageSrc === "string" ? candidate.imageSrc : fallback.imageSrc,
+    seoTitle: sanitizeText(candidate.seoTitle, fallback.seoTitle),
+    seoDescription: sanitizeText(candidate.seoDescription, fallback.seoDescription),
+    targetKeyword: sanitizeText(candidate.targetKeyword, fallback.targetKeyword),
+    updatedAt: sanitizeText(candidate.updatedAt, fallback.updatedAt),
+    ctaLabel: sanitizeText(candidate.ctaLabel, fallback.ctaLabel),
+  };
+}
+
+function sanitizeStatus(value: unknown, fallback: BlogPostRecord["status"]): BlogPostRecord["status"] {
+  return value === "draft" || value === "active" || value === "archived" || value === "sold"
+    ? value
+    : fallback;
+}
+
+function sanitizeText(value: unknown, fallback: string) {
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 

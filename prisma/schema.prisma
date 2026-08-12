@@ -329,3 +329,29 @@ model BlogAuthorRecord {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model BlogPostEntry {
+  id             String   @id @default(cuid())
+  slug           String
+  categorySlug   String
+  categoryLabel  String
+  title          String
+  excerpt        String   @db.Text
+  body           String   @db.Text
+  bodyFormat     String?
+  publishedAt    String
+  readTime       String
+  status         String
+  imageAlt       String
+  imageSrc       String
+  seoTitle       String
+  seoDescription String   @db.Text
+  targetKeyword  String
+  ctaLabel       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([slug, categorySlug])
+  @@index([status])
+  @@index([status, updatedAt])
+}

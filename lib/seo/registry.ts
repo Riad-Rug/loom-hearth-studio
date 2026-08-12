@@ -1,4 +1,4 @@
-import { blogPosts } from "@/features/blog/blog-post-data";
+import { getBlogPostsState } from "@/lib/blog/posts";
 import { rugStyleCollections } from "@/features/catalog/rug-style-collections";
 import { getProductRoutePath } from "@/lib/catalog/helpers";
 import { createProductRepository } from "@/lib/db/repositories/product-repository";
@@ -226,6 +226,7 @@ export async function listSeoRouteRegistry(): Promise<SeoRegistryItem[]> {
     fallbackDescription: product.seoDescription || product.description,
   }));
 
+  const { posts: blogPosts } = await getBlogPostsState();
   const blogItems: SeoRegistryItem[] = blogPosts.map((post) => ({
     id: `blog-post-${post.id}`,
     label: `${post.title} (${post.categoryLabel})`,

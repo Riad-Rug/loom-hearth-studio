@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { BlogIndexPageView } from "@/features/blog/blog-index-page-view";
+import { getBlogPostsState } from "@/lib/blog/posts";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -14,6 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function BlogPage() {
-  return <BlogIndexPageView />;
+export default async function BlogPage() {
+  const { posts } = await getBlogPostsState();
+
+  return <BlogIndexPageView posts={posts} />;
 }

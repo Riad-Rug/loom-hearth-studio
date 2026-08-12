@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 
-import { blogPosts } from "@/features/blog/blog-post-data";
 import { policyPages } from "@/features/content-pages/content-pages-data";
 import { listCatalogProductCards } from "@/lib/catalog/service";
+import { getBlogPostsState } from "@/lib/blog/posts";
 import { absoluteUrl } from "@/lib/seo/metadata";
 
 const staticRoutes = [
@@ -31,6 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: path === "/" ? 1 : path === "/shop" ? 0.9 : 0.7,
   }));
 
+  const { posts: blogPosts } = await getBlogPostsState();
   const blogEntries = blogPosts.map((post) => ({
     url: absoluteUrl(`/blog/${post.categorySlug}/${post.slug}`),
     lastModified: readValidLastModified(post.updatedAt),
