@@ -87,6 +87,28 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     },
     [category, categoryCounts, collection?.href, hasExactCategoryLink, showCategoryCounts],
   );
+  const isRugOnlyView =
+    products.length > 0 && products.every((product) => product.type === "rug");
+  const sizeFilterOptions = isRugOnlyView ? rugSizeFilterOptions : genericSizeFilterOptions;
+  const sizeBucketCounts = useMemo(() => {
+    const counts: Record<Exclude<CatalogSizeFilter, "all">, number> = {
+      small: 0,
+      medium: 0,
+      large: 0,
+    };
+
+    for (const product of products) {
+      if (product.sizeBucket) {
+        counts[product.sizeBucket] += 1;
+      }
+    }
+
+    return counts;
+  }, [products]);
+  const visibleSizeFilterOptions = sizeFilterOptions.filter(
+    (option) => option.value === "all" || sizeBucketCounts[option.value] > 0,
+  );
+  const showSizeFilter = visibleSizeFilterOptions.length > 1;
   const sortedProducts = useMemo(() => sortCatalogProducts(products, sortOption), [products, sortOption]);
   const filteredProducts = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -274,26 +296,28 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                   ))}
                 </div>
               </div>
-              <div aria-labelledby="catalog-size-label" className={styles.filterGroup} role="group">
-                <span className={styles.filterGroupLabel} id="catalog-size-label">
-                  Size
-                </span>
-                <div className={styles.segmentedControl}>
-                  {sizeFilterOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      aria-pressed={sizeFilter === option.value}
-                      className={`${styles.segmentButton} ${
-                        sizeFilter === option.value ? styles.segmentButtonActive : ""
-                      }`}
-                      type="button"
-                      onClick={() => setSizeFilter(option.value)}
-                    >
-                      {option.segmentLabel}
-                    </button>
-                  ))}
+              {showSizeFilter ? (
+                <div aria-labelledby="catalog-size-label" className={styles.filterGroup} role="group">
+                  <span className={styles.filterGroupLabel} id="catalog-size-label">
+                    Size
+                  </span>
+                  <div className={styles.segmentedControl}>
+                    {visibleSizeFilterOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        aria-pressed={sizeFilter === option.value}
+                        className={`${styles.segmentButton} ${
+                          sizeFilter === option.value ? styles.segmentButtonActive : ""
+                        }`}
+                        type="button"
+                        onClick={() => setSizeFilter(option.value)}
+                      >
+                        {option.segmentLabel}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : null}
               <div
                 aria-labelledby="catalog-sort-mobile-label"
                 className={`${styles.filterGroup} ${styles.sortGroupMobile}`}
@@ -495,7 +519,19 @@ const priceFilterOptions: Array<{
   { label: "$600+", segmentLabel: "$600+", value: "600-plus" },
 ];
 
-const sizeFilterOptions: Array<{ label: string; segmentLabel: string; value: CatalogSizeFilter }> = [
+type SizeFilterOption = { label: string; segmentLabel: string; value: CatalogSizeFilter };
+
+// Size buckets are category-relative: the server classifies each product against
+// its own category's scale (see getProductSizeBucket in lib/catalog/service.ts).
+// On rug-only views the segments speak the rug vocabulary shoppers actually use.
+const rugSizeFilterOptions: SizeFilterOption[] = [
+  { label: "All sizes", segmentLabel: "All", value: "all" },
+  { label: "Accent · under 6 ft", segmentLabel: "Under 6 ft", value: "small" },
+  { label: "Mid-size · 6–8 ft", segmentLabel: "6–8 ft", value: "medium" },
+  { label: "Large · 8 ft +", segmentLabel: "8 ft +", value: "large" },
+];
+
+const genericSizeFilterOptions: SizeFilterOption[] = [
   { label: "All sizes", segmentLabel: "All", value: "all" },
   { label: "Small", segmentLabel: "Small", value: "small" },
   { label: "Medium", segmentLabel: "Medium", value: "medium" },
@@ -669,76 +705,10 @@ function matchesSizeFilter(product: CatalogProductCardViewModel, sizeFilter: Cat
     return true;
   }
 
-  const sizeBucket = getProductSizeBucket(product);
-
-  if (!sizeBucket) {
+  if (!product.sizeBucket) {
     return false;
   }
 
-  return sizeBucket === sizeFilter;
-}
-
-function getProductSizeBucket(product: CatalogProductCardViewModel): Exclude<CatalogSizeFilter, "all"> | null {
-  const sizeInCm = inferLargestDimensionCm(product);
-
-  if (!sizeInCm) {
-    return null;
-  }
-
-  if (sizeInCm <= 60) {
-    return "small";
-  }
-
-  if (sizeInCm <= 180) {
-    return "medium";
-  }
-
-  return "large";
-}
-
-function inferLargestDimensionCm(product: CatalogProductCardViewModel) {
-  const label = product.dimensionsLabel;
-
-  if (!label) {
-    return null;
-  }
-
-  const pairedCentimeters = label.match(/(\d+(?:\.\d+)?)\s*[×x]\s*(\d+(?:\.\d+)?)\s*cm/i);
-
-  if (pairedCentimeters) {
-    return Math.max(
-      Number.parseFloat(pairedCentimeters[1] ?? ""),
-      Number.parseFloat(pairedCentimeters[2] ?? ""),
-    );
-  }
-
-  const centimeterMatches = Array.from(label.matchAll(/(\d+(?:\.\d+)?)\s*cm/gi), (match) =>
-    Number.parseFloat(match[1] ?? ""),
-  ).filter((value) => Number.isFinite(value));
-
-  if (centimeterMatches.length) {
-    return Math.max(...centimeterMatches);
-  }
-
-  const pairedInches = label.match(/(\d+(?:\.\d+)?)"\s*[×x]\s*(\d+(?:\.\d+)?)"/i);
-
-  if (pairedInches) {
-    return (
-      Math.max(
-        Number.parseFloat(pairedInches[1] ?? ""),
-        Number.parseFloat(pairedInches[2] ?? ""),
-      ) * 2.54
-    );
-  }
-
-  const inchMatches = Array.from(label.matchAll(/(\d+(?:\.\d+)?)"/g), (match) =>
-    Number.parseFloat(match[1] ?? ""),
-  ).filter((value) => Number.isFinite(value));
-
-  if (!inchMatches.length) {
-    return null;
-  }
-
-  return Math.max(...inchMatches) * 2.54;
+  return product.sizeBucket === sizeFilter;
 }
 

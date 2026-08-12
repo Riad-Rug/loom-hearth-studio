@@ -7,12 +7,15 @@ import type {
   RugProduct,
 } from "@/types/domain";
 
+export type CatalogProductSizeBucket = "small" | "medium" | "large";
+
 export type CatalogProductCardViewModel = {
   id: string;
   href: string;
   name: string;
   displayName: string;
   dimensionsLabel?: string;
+  sizeBucket?: CatalogProductSizeBucket;
   subtitle: string;
   category: ProductCategory;
   status: Product["status"];

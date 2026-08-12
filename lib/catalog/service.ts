@@ -15,6 +15,7 @@ import {
 } from "@/lib/catalog/helpers";
 import type {
   CatalogProductCardViewModel,
+  CatalogProductSizeBucket,
   MultiUnitProductDetailPageViewModel,
   ProductDetailPageViewModel,
   ProductDetailSectionViewModel,
@@ -275,6 +276,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     name: createDisplayProductTitle(product),
     displayName: createProductCardDisplayName(product),
     dimensionsLabel: createProductCardDimensionsLabel(product),
+    sizeBucket: getProductSizeBucket(product),
     subtitle: createProductSubtitle(product),
     category: product.category,
     status: product.status,
@@ -875,14 +877,55 @@ function createCareDescription(product: Product) {
   return "Dust or vacuum gently. Spot clean with cold water and mild soap. Avoid harsh chemical cleaners and prolonged direct sunlight.";
 }
 
+// Rug size tiers, calibrated to the same thresholds the product-page placement
+// notes already use: accent (under ~6 ft), mid-size (6-8 ft), large (8 ft +).
+const rugAccentMaxCm = 180;
+const rugMidSizeMaxCm = 240;
+
+// Non-rug pieces (poufs, pillows, decor) live on a much smaller natural scale.
+const multiUnitSmallMaxCm = 60;
+const multiUnitMediumMaxCm = 120;
+
+function getProductSizeBucket(product: Product): CatalogProductSizeBucket | undefined {
+  const dimensionsCm = product.dimensionsCm;
+
+  if (!dimensionsCm) {
+    return undefined;
+  }
+
+  const longestSideCm = Math.max(dimensionsCm.length, dimensionsCm.width);
+
+  if (product.type === "rug") {
+    if (longestSideCm <= rugAccentMaxCm) {
+      return "small";
+    }
+
+    if (longestSideCm <= rugMidSizeMaxCm) {
+      return "medium";
+    }
+
+    return "large";
+  }
+
+  if (longestSideCm <= multiUnitSmallMaxCm) {
+    return "small";
+  }
+
+  if (longestSideCm <= multiUnitMediumMaxCm) {
+    return "medium";
+  }
+
+  return "large";
+}
+
 function createRugPlacementNote(product: Extract<Product, { type: "rug" }>) {
   const longestSideCm = Math.max(product.dimensionsCm.length, product.dimensionsCm.width);
 
-  if (longestSideCm <= 180) {
+  if (longestSideCm <= rugAccentMaxCm) {
     return "Size reads as an accent rug - works entryway, bedside, under a console, or layered over a larger flatweave.";
   }
 
-  if (longestSideCm <= 240) {
+  if (longestSideCm <= rugMidSizeMaxCm) {
     return "Size works well in a compact sitting area, beside a bed, in an entry, or layered where a full-room rug would feel heavy.";
   }
 
