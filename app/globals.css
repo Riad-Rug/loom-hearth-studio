@@ -338,8 +338,176 @@ h6 {
   color: var(--color-green);
 }
 
-.site-header__search-trigger {
+.site-header__search-shell {
+  position: relative;
   display: inline-flex;
+  align-items: center;
+}
+
+.site-header__search-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.site-header__search-input {
+  width: 15rem;
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-white);
+  color: var(--color-ink);
+  font-size: 0.9rem;
+  animation: site-header-search-in 180ms ease-out;
+}
+
+.site-header__search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+@keyframes site-header-search-in {
+  from {
+    width: 8rem;
+    opacity: 0.3;
+  }
+
+  to {
+    width: 15rem;
+    opacity: 1;
+  }
+}
+
+.site-header__search-suggestions {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  z-index: 70;
+  width: min(23rem, calc(100vw - 2rem));
+  padding: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  box-shadow: 0 1.1rem 2.4rem rgba(20, 20, 20, 0.14);
+  animation: site-header-suggestions-in 160ms ease-out;
+}
+
+@keyframes site-header-suggestions-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.3rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header__search-input,
+  .site-header__search-suggestions {
+    animation: none;
+  }
+}
+
+.site-header__suggestion-list {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-header__suggestion {
+  display: grid;
+  grid-template-columns: 2.9rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  text-align: left;
+}
+
+.site-header__suggestion:hover,
+.site-header__suggestion--active {
+  background: rgba(23, 105, 90, 0.08);
+}
+
+.site-header__suggestion-media {
+  display: block;
+  width: 2.9rem;
+  height: 2.9rem;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--color-panel);
+}
+
+.site-header__suggestion-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.site-header__suggestion-body {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.site-header__suggestion-name {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.site-header__suggestion-meta {
+  color: var(--color-text-subtle);
+  font-size: 0.78rem;
+}
+
+.site-header__suggestion-price {
+  color: var(--color-green);
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.site-header__suggestion-empty {
+  margin: 0;
+  padding: 0.7rem 0.6rem;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.site-header__suggestion-view-all {
+  display: flex;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.6rem 0.55rem;
+  border: 0;
+  border-top: 1px solid var(--color-border-soft);
+  border-radius: 0 0 4px 4px;
+  background: transparent;
+  color: var(--color-green);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.site-header__suggestion-view-all:hover {
+  background: rgba(23, 105, 90, 0.06);
 }
 
 .site-header__cart-button {
@@ -618,7 +786,7 @@ h6 {
   }
 
   .site-header__nav,
-  .site-header__actions > .site-header__search-trigger,
+  .site-header__actions > .site-header__search-shell,
   .site-header__actions > .site-header__link {
     display: none;
   }
@@ -677,6 +845,9 @@ h6 {
   .site-header__mobile-menu--open {
     max-height: 40rem;
     padding: 0 0 var(--space-4);
+    /* Visible so the search suggestions dropdown is not clipped by the
+       collapse mask; the fade still covers the open transition. */
+    overflow: visible;
     opacity: 1;
     pointer-events: auto;
     border-top-color: var(--color-border);
@@ -689,14 +860,26 @@ h6 {
     padding-top: var(--space-3);
   }
 
+  .site-header__mobile-search-shell {
+    position: relative;
+    min-width: 0;
+  }
+
   .site-header__mobile-search-input {
     display: block;
+    width: 100%;
     min-height: 2.75rem;
     padding: 0 0.85rem;
     border: 1px solid var(--color-border);
     border-radius: 4px;
     background: var(--color-bg);
     color: var(--color-ink);
+  }
+
+  .site-header__mobile-search-shell .site-header__search-suggestions {
+    right: auto;
+    left: 0;
+    width: min(26rem, calc(100vw - 2rem));
   }
 
   .site-header__mobile-search-button {
