@@ -17,8 +17,8 @@
 
 .hero {
   display: grid;
-  gap: var(--space-5);
-  padding: var(--space-7);
+  gap: calc(var(--space-5) * 0.75);
+  padding: calc(var(--space-7) * 0.75);
 }
 
 .eyebrow {
@@ -42,7 +42,11 @@
   letter-spacing: -0.04em;
 }
 
-.heroCopy h1,
+.heroCopy h1 {
+  font-size: clamp(2.1rem, 3.3vw, 2.25rem);
+  line-height: 1.2;
+}
+
 .articleHeader h1 {
   font-size: clamp(2.8rem, 4.4vw, 3rem);
   line-height: 1.2;
@@ -396,7 +400,10 @@
     width: min(100% - 1rem, var(--container-width-wide));
   }
 
-  .hero,
+  .hero {
+    padding: calc(var(--space-5) * 0.75);
+  }
+
   .articleShell,
   .closingSection,
   .featuredBody {

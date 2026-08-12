@@ -24,9 +24,9 @@ export function BlogIndexPageView({ posts }: BlogIndexPageViewProps) {
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>JOURNAL</p>
-          <h1>The journal for Moroccan rugs, materials, and lived-in rooms.</h1>
+          <h1>The stories and lessons I’ve gathered around Moroccan rugs.</h1>
           <p className={styles.lede}>
-            Notes from Loom &amp; Hearth Studio on Beni Ourain rugs, cactus silk pillows, poufs, and the sourcing process behind this collection.
+            Notes on craftsmanship, sourcing, materials, family history, and the people and places I’ve learned from along the way.
           </p>
         </div>
         <div className={styles.categoryRail} aria-label="Blog categories">
