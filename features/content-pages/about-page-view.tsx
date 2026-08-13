@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
+import Image from "next/image";
 import Link from "next/link";
 
-import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { aboutBridge, aboutHero, aboutSections } from "@/features/content-pages/content-pages-data";
 
 import styles from "./content-pages.module.css";
@@ -85,11 +85,13 @@ export function AboutPageView() {
         </div>
 
         <div className={styles.aboutFounderMedia}>
-          <PlaceholderMedia
-            alt="Founder photo placeholder"
-            aspectRatio="4 / 5"
-            label="Founder photo pending"
+          <Image
+            alt="Riad, Loom & Hearth Studio founder"
+            className={styles.aboutHeroImage}
+            fill
+            priority
             sizes="(max-width: 1100px) 100vw, 40vw"
+            src="/about/founder-portrait.png"
           />
         </div>
       </section>
