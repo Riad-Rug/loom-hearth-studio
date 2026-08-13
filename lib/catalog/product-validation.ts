@@ -1,3 +1,12 @@
+import {
+  categoryUsesField,
+  cutFromOneRugUniquenessTier,
+  getPublishErrorMessage,
+  getPublishRequirements,
+  productFaceFabricSourceOptions,
+  productUniquenessTierOptions,
+  trueOneOffUniquenessTier,
+} from "@/lib/admin/category-form-copy";
 import type { EntityStatus, MediaAsset, Product, ProductVariant } from "@/types/domain";
 
 export const productTypeOptions = ["rug", "multiUnit"] as const;
@@ -98,6 +107,10 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     };
   }
 
+  const categoryValue = readString(formData, "category");
+  const usesFaceFabricSource = categoryUsesField(categoryValue, "faceFabricSource");
+  const usesUniquenessTier = categoryUsesField(categoryValue, "uniquenessTier");
+
   const sharedFields = {
     id: readOptionalString(formData, "id"),
     catalogNumber: readOptionalString(formData, "catalogNumber"),
@@ -105,7 +118,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     slug: normalizeSlug(readString(formData, "slug")),
     name: readString(formData, "name"),
     cardName: readOptionalString(formData, "cardName"),
-    category: readString(formData, "category"),
+    category: categoryValue,
     description: readString(formData, "description"),
     priceUsd: readNumber(formData, "priceUsd"),
     acquisitionCostMad: readOptionalNonNegativeNumber(formData, "acquisitionCostMad"),
@@ -120,6 +133,15 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     conditionNote: readOptionalString(formData, "conditionNote"),
     ageClass: readOptionalString(formData, "ageClass"),
     ageBasis: readOptionalString(formData, "ageBasis"),
+    faceFabricSource: usesFaceFabricSource
+      ? readOptionalString(formData, "faceFabricSource")
+      : undefined,
+    uniquenessTier: usesUniquenessTier
+      ? readOptionalString(formData, "uniquenessTier")
+      : undefined,
+    sourceCoverCount: usesUniquenessTier
+      ? readOptionalNonNegativeInteger(formData, "sourceCoverCount")
+      : undefined,
     verificationNotes: parseLineList(readString(formData, "verificationNotes")),
     shippingNotes: parseLineList(readString(formData, "shippingNotes")),
     careNote: readOptionalString(formData, "careNote"),
@@ -223,33 +245,121 @@ export function validateProductMutationInput(
   }
 
   if (input.status === "active" || input.status === "sold") {
-    if (!input.catalogNumber) {
-      fieldErrors.catalogNumber = "Catalog number is required before publishing.";
+    const required = getPublishRequirements(input.category);
+    const publishError = (field: string, fallback: string) =>
+      getPublishErrorMessage(input.category, field, fallback);
+
+    if (required.has("catalogNumber") && !input.catalogNumber) {
+      fieldErrors.catalogNumber = publishError(
+        "catalogNumber",
+        "Catalog number is required before publishing.",
+      );
     }
 
-    if (!input.conditionNote?.trim()) {
-      fieldErrors.conditionNote = "Add a piece-specific condition note before publishing.";
+    if (required.has("conditionNote") && !input.conditionNote?.trim()) {
+      fieldErrors.conditionNote = publishError(
+        "conditionNote",
+        "Add a piece-specific condition note before publishing.",
+      );
     }
 
-    if (!input.ageClass?.trim()) {
-      fieldErrors.ageClass = "Choose an age class before publishing.";
+    if (required.has("ageClass") && !input.ageClass?.trim()) {
+      fieldErrors.ageClass = publishError("ageClass", "Choose an age class before publishing.");
     }
 
     if (input.ageClass && input.ageClass !== "Contemporary" && !input.ageBasis?.trim()) {
-      fieldErrors.ageBasis = "Explain the basis for a vintage or antique age estimate.";
+      fieldErrors.ageBasis = publishError(
+        "ageBasis",
+        "Explain the basis for a vintage or antique age estimate.",
+      );
     }
 
-    if (!input.attributionConfidence?.trim()) {
-      fieldErrors.attributionConfidence = "Choose a provenance label before publishing.";
+    if (required.has("attributionConfidence") && !input.attributionConfidence?.trim()) {
+      fieldErrors.attributionConfidence = publishError(
+        "attributionConfidence",
+        "Choose a provenance label before publishing.",
+      );
     }
 
-    if (!input.provenanceNote?.trim()) {
-      fieldErrors.provenanceNote = "Explain the basis for the provenance label before publishing.";
+    if (required.has("provenanceNote") && !input.provenanceNote?.trim()) {
+      fieldErrors.provenanceNote = publishError(
+        "provenanceNote",
+        "Explain the basis for the provenance label before publishing.",
+      );
     }
 
-    if (!input.sourcingNote?.trim()) {
-      fieldErrors.sourcingNote = "Add a first-person sourcing note before publishing.";
+    if (required.has("sourcingNote") && !input.sourcingNote?.trim()) {
+      fieldErrors.sourcingNote = publishError(
+        "sourcingNote",
+        "Add a first-person sourcing note before publishing.",
+      );
     }
+
+    if (required.has("dimensionsCm")) {
+      const length = input.dimensionsCm?.length;
+      const width = input.dimensionsCm?.width;
+
+      if (!Number.isFinite(length) || (length ?? 0) <= 0) {
+        fieldErrors.dimensionsCmLength = publishError(
+          "dimensionsCmLength",
+          "Length is required before publishing.",
+        );
+      }
+
+      if (!Number.isFinite(width) || (width ?? 0) <= 0) {
+        fieldErrors.dimensionsCmWidth = publishError(
+          "dimensionsCmWidth",
+          "Width is required before publishing.",
+        );
+      }
+    }
+
+    if (
+      required.has("weightKg") &&
+      (!Number.isFinite(input.weightKg) || (input.weightKg ?? 0) <= 0)
+    ) {
+      fieldErrors.weightKg = publishError("weightKg", "Weight is required before publishing.");
+    }
+
+    if (required.has("faceFabricSource") && !input.faceFabricSource?.trim()) {
+      fieldErrors.faceFabricSource = publishError(
+        "faceFabricSource",
+        "Choose a face fabric source before publishing.",
+      );
+    }
+
+    if (required.has("uniquenessTier") && !input.uniquenessTier?.trim()) {
+      fieldErrors.uniquenessTier = publishError(
+        "uniquenessTier",
+        "Choose a uniqueness tier before publishing.",
+      );
+    }
+
+    if (
+      required.has("uniquenessTier") &&
+      input.uniquenessTier === cutFromOneRugUniquenessTier &&
+      input.sourceCoverCount === undefined
+    ) {
+      fieldErrors.sourceCoverCount = publishError(
+        "sourceCoverCount",
+        "Record how many covers were cut from that rug before publishing.",
+      );
+    }
+  }
+
+  if (input.faceFabricSource && !(productFaceFabricSourceOptions as readonly string[]).includes(input.faceFabricSource)) {
+    fieldErrors.faceFabricSource = "Choose one of the listed face fabric sources.";
+  }
+
+  if (input.uniquenessTier && !(productUniquenessTierOptions as readonly string[]).includes(input.uniquenessTier)) {
+    fieldErrors.uniquenessTier = "Choose one of the listed uniqueness tiers.";
+  }
+
+  if (
+    input.sourceCoverCount !== undefined &&
+    (!Number.isInteger(input.sourceCoverCount) || input.sourceCoverCount < 1)
+  ) {
+    fieldErrors.sourceCoverCount = "Covers cut from that rug must be a whole number of 1 or more.";
   }
 
   if (!isProductStatus(input.status)) {
@@ -327,6 +437,32 @@ export function validateProductMutationInput(
 
     if (!Number.isInteger(input.lowStockThreshold) || input.lowStockThreshold < 0) {
       fieldErrors.lowStockThreshold = "Low-stock threshold must be zero or greater.";
+    }
+
+    // Uniqueness claims and stock counts must agree. Sold and archived rows are
+    // exempt because their inventory is legitimately depleted; drafts only get
+    // the upper bound so a work-in-progress listing stays saveable.
+    if (Number.isInteger(input.inventory) && input.inventory >= 0) {
+      const maximumInventory =
+        input.uniquenessTier === trueOneOffUniquenessTier
+          ? 1
+          : input.uniquenessTier === cutFromOneRugUniquenessTier
+            ? input.sourceCoverCount
+            : undefined;
+
+      if (maximumInventory !== undefined && Number.isInteger(maximumInventory)) {
+        if (input.inventory > maximumInventory) {
+          fieldErrors.inventory =
+            input.uniquenessTier === trueOneOffUniquenessTier
+              ? "A true one-off can only have an inventory of 1."
+              : `Inventory cannot exceed the ${maximumInventory} covers cut from that rug.`;
+        } else if (input.status === "active" && input.inventory !== maximumInventory) {
+          fieldErrors.inventory =
+            input.uniquenessTier === trueOneOffUniquenessTier
+              ? "A true one-off must be published with an inventory of 1."
+              : `Inventory must match the ${maximumInventory} covers cut from that rug.`;
+        }
+      }
     }
 
     for (const [index, variant] of input.variants.entries()) {
@@ -433,6 +569,12 @@ function readOptionalPositiveNumber(formData: FormData, key: string) {
   const value = readString(formData, key);
   const parsed = value ? Number(value) : Number.NaN;
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function readOptionalNonNegativeInteger(formData: FormData, key: string) {
+  const value = readString(formData, key);
+  if (!value) return undefined;
+  return readStrictInteger(value, Number.NaN);
 }
 
 function readOptionalNonNegativeNumber(formData: FormData, key: string) {

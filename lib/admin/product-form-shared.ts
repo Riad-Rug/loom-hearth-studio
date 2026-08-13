@@ -27,6 +27,9 @@ export type AdminProductFormValues = {
   conditionNote: string;
   ageClass: string;
   ageBasis: string;
+  faceFabricSource: string;
+  uniquenessTier: string;
+  sourceCoverCount: string;
   verificationNotes: string[];
   shippingNotes: string[];
   careNote: string;

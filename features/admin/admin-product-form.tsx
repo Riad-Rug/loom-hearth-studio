@@ -4,6 +4,12 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { CloudinaryUploadButton } from "@/features/admin/cloudinary-upload-button";
+import {
+  cutFromOneRugUniquenessTier,
+  getCategoryFormCopy,
+  productFaceFabricSourceOptions,
+  productUniquenessTierOptions,
+} from "@/lib/admin/category-form-copy";
 import type { AdminProductActionState } from "@/lib/admin/product-actions-shared";
 import { initialAdminProductActionState } from "@/lib/admin/product-actions-shared";
 import {
@@ -65,6 +71,9 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [conditionNote, setConditionNote] = useState(props.product.conditionNote);
   const [ageClass, setAgeClass] = useState(props.product.ageClass);
   const [ageBasis, setAgeBasis] = useState(props.product.ageBasis);
+  const [faceFabricSource, setFaceFabricSource] = useState(props.product.faceFabricSource);
+  const [uniquenessTier, setUniquenessTier] = useState(props.product.uniquenessTier);
+  const [sourceCoverCount, setSourceCoverCount] = useState(props.product.sourceCoverCount);
   const [verificationNotes, setVerificationNotes] = useState(props.product.verificationNotes.join("\n"));
   const [shippingNotes, setShippingNotes] = useState(props.product.shippingNotes.join("\n"));
   const [careNote, setCareNote] = useState(props.product.careNote);
@@ -119,6 +128,15 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const hasUrlChange = Boolean(
     props.product.routePath && routePreview && props.product.routePath !== routePreview,
   );
+  const categoryCopy = useMemo(() => getCategoryFormCopy(category), [category]);
+  const showsFaceFabricSource = categoryCopy.extraFields.includes("faceFabricSource");
+  const showsUniquenessTier = categoryCopy.extraFields.includes("uniquenessTier");
+  // Category defaults are applied when the category changes, and on mount for a
+  // new product. Saved products keep whatever is already stored, and a field the
+  // user has already filled is never overwritten.
+  const appliedDefaultsForCategory = useRef<string | null>(
+    props.mode === "create" ? null : props.product.category,
+  );
 
   useEffect(() => {
     if (state.status === "idle" || !feedbackRef.current) {
@@ -147,6 +165,9 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setConditionNote(props.product.conditionNote);
     setAgeClass(props.product.ageClass);
     setAgeBasis(props.product.ageBasis);
+    setFaceFabricSource(props.product.faceFabricSource);
+    setUniquenessTier(props.product.uniquenessTier);
+    setSourceCoverCount(props.product.sourceCoverCount);
     setVerificationNotes(props.product.verificationNotes.join("\n"));
     setShippingNotes(props.product.shippingNotes.join("\n"));
     setCareNote(props.product.careNote);
@@ -175,7 +196,24 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setHomepageFeatured(props.product.homepageFeatured);
     setHomepageRank(props.product.homepageRank);
     setConfirmUrlChange(false);
-  }, [props.product]);
+    appliedDefaultsForCategory.current =
+      props.mode === "create" ? null : props.product.category;
+  }, [props.mode, props.product]);
+
+  useEffect(() => {
+    if (appliedDefaultsForCategory.current === category) {
+      return;
+    }
+
+    appliedDefaultsForCategory.current = category;
+    const { fieldDefaults } = getCategoryFormCopy(category);
+    const keepFilled = (fallback?: string) => (current: string) =>
+      current.trim() || !fallback ? current : fallback;
+
+    setOrigin(keepFilled(fieldDefaults.origin));
+    setAgeClass(keepFilled(fieldDefaults.ageClass));
+    setAttributionConfidence(keepFilled(fieldDefaults.attributionConfidence));
+  }, [category]);
 
   function updateImage(index: number, patch: Partial<(typeof images)[number]>) {
     setImages((current) =>
@@ -400,13 +438,15 @@ export function AdminProductForm(props: AdminProductFormProps) {
             <em>{state.fieldErrors.acquisitionCostMad}</em>
           </label>
           <label className={styles.formField}>
-            <span>Origin</span>
+            <span>{categoryCopy.labels.origin}</span>
             <input
               name="origin"
+              placeholder={categoryCopy.placeholders.origin}
               type="text"
               value={origin}
               onChange={(event) => setOrigin(event.target.value)}
             />
+            {categoryCopy.helpText.origin ? <em>{categoryCopy.helpText.origin}</em> : null}
             <em>{state.fieldErrors.origin}</em>
           </label>
         </section>
@@ -431,16 +471,18 @@ export function AdminProductForm(props: AdminProductFormProps) {
             <em>{state.fieldErrors.weightKg}</em>
           </label>
           <label className={styles.formField}>
-            <span>Age class</span>
+            <span>{categoryCopy.labels.ageClass}</span>
             <select name="ageClass" value={ageClass} onChange={(event) => setAgeClass(event.target.value)}>
               <option value="">Choose age class</option>
               {ageClassOptions.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
+            {categoryCopy.helpText.ageClass ? <em>{categoryCopy.helpText.ageClass}</em> : null}
             <em>{state.fieldErrors.ageClass}</em>
           </label>
           <label className={styles.formField}>
-            <span>Age estimate basis</span>
-            <textarea name="ageBasis" placeholder="What construction, wear, record, or maker information supports the estimate?" rows={3} value={ageBasis} onChange={(event) => setAgeBasis(event.target.value)} />
+            <span>{categoryCopy.labels.ageBasis}</span>
+            <textarea name="ageBasis" placeholder={categoryCopy.placeholders.ageBasis} rows={3} value={ageBasis} onChange={(event) => setAgeBasis(event.target.value)} />
+            {categoryCopy.helpText.ageBasis ? <em>{categoryCopy.helpText.ageBasis}</em> : null}
             <em>{state.fieldErrors.ageBasis}</em>
           </label>
         </section>
@@ -448,33 +490,85 @@ export function AdminProductForm(props: AdminProductFormProps) {
         <section className={styles.card}>
           <p className={styles.cardEyebrow}>Condition & provenance</p>
           <label className={styles.formField}>
-            <span>Piece-specific condition</span>
-            <textarea name="conditionNote" placeholder="Record wear, repairs, marks, pile variance, seams, chips, or cracks and where they appear." rows={5} value={conditionNote} onChange={(event) => setConditionNote(event.target.value)} />
-            <em>Required to publish. Do not use generic handmade-variation copy.</em>
+            <span>{categoryCopy.labels.conditionNote}</span>
+            <textarea name="conditionNote" placeholder={categoryCopy.placeholders.conditionNote} rows={5} value={conditionNote} onChange={(event) => setConditionNote(event.target.value)} />
+            {categoryCopy.helpText.conditionNote ? <em>{categoryCopy.helpText.conditionNote}</em> : null}
             <em>{state.fieldErrors.conditionNote}</em>
           </label>
           <label className={styles.formField}>
-            <span>Attribution region</span>
-            <input name="attributionRegion" placeholder="High Atlas, Taznakht, Marrakech…" type="text" value={attributionRegion} onChange={(event) => setAttributionRegion(event.target.value)} />
+            <span>{categoryCopy.labels.attributionRegion}</span>
+            <input name="attributionRegion" placeholder={categoryCopy.placeholders.attributionRegion} type="text" value={attributionRegion} onChange={(event) => setAttributionRegion(event.target.value)} />
+            {categoryCopy.helpText.attributionRegion ? <em>{categoryCopy.helpText.attributionRegion}</em> : null}
           </label>
           <label className={styles.formField}>
-            <span>Provenance label</span>
+            <span>{categoryCopy.labels.attributionConfidence}</span>
             <select name="attributionConfidence" value={attributionConfidence} onChange={(event) => setAttributionConfidence(event.target.value)}>
               <option value="">Choose provenance label</option>
               {provenanceLabelOptions.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
+            {categoryCopy.helpText.attributionConfidence ? <em>{categoryCopy.helpText.attributionConfidence}</em> : null}
             <em>{state.fieldErrors.attributionConfidence}</em>
           </label>
           <label className={styles.formField}>
-            <span>Provenance basis</span>
-            <textarea name="provenanceNote" placeholder="Explain why the label is Verified, Attributed, or Not Stated." rows={4} value={provenanceNote} onChange={(event) => setProvenanceNote(event.target.value)} />
+            <span>{categoryCopy.labels.provenanceNote}</span>
+            <textarea name="provenanceNote" placeholder={categoryCopy.placeholders.provenanceNote} rows={4} value={provenanceNote} onChange={(event) => setProvenanceNote(event.target.value)} />
+            {categoryCopy.helpText.provenanceNote ? <em>{categoryCopy.helpText.provenanceNote}</em> : null}
             <em>{state.fieldErrors.provenanceNote}</em>
           </label>
           <label className={styles.formField}>
-            <span>Sourcing note</span>
-            <textarea name="sourcingNote" placeholder="Write 2–4 factual first-person lines and sign — Riad." rows={5} value={sourcingNote} onChange={(event) => setSourcingNote(event.target.value)} />
+            <span>{categoryCopy.labels.sourcingNote}</span>
+            <textarea name="sourcingNote" placeholder={categoryCopy.placeholders.sourcingNote} rows={5} value={sourcingNote} onChange={(event) => setSourcingNote(event.target.value)} />
+            {categoryCopy.helpText.sourcingNote ? <em>{categoryCopy.helpText.sourcingNote}</em> : null}
             <em>{state.fieldErrors.sourcingNote}</em>
           </label>
+          {showsFaceFabricSource ? (
+            <label className={styles.formField}>
+              <span>{categoryCopy.labels.faceFabricSource}</span>
+              <select
+                name="faceFabricSource"
+                value={faceFabricSource}
+                onChange={(event) => setFaceFabricSource(event.target.value)}
+              >
+                <option value="">Choose face fabric source</option>
+                {productFaceFabricSourceOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              {categoryCopy.helpText.faceFabricSource ? <em>{categoryCopy.helpText.faceFabricSource}</em> : null}
+              <em>{state.fieldErrors.faceFabricSource}</em>
+            </label>
+          ) : null}
+          {showsUniquenessTier ? (
+            <label className={styles.formField}>
+              <span>{categoryCopy.labels.uniquenessTier}</span>
+              <select
+                name="uniquenessTier"
+                value={uniquenessTier}
+                onChange={(event) => setUniquenessTier(event.target.value)}
+              >
+                <option value="">Choose uniqueness</option>
+                {productUniquenessTierOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              {categoryCopy.helpText.uniquenessTier ? <em>{categoryCopy.helpText.uniquenessTier}</em> : null}
+              <em>{state.fieldErrors.uniquenessTier}</em>
+            </label>
+          ) : null}
+          {showsUniquenessTier && uniquenessTier === cutFromOneRugUniquenessTier ? (
+            <label className={styles.formField}>
+              <span>{categoryCopy.labels.sourceCoverCount}</span>
+              <input
+                min="1"
+                name="sourceCoverCount"
+                type="number"
+                value={sourceCoverCount}
+                onChange={(event) => setSourceCoverCount(event.target.value)}
+              />
+              {categoryCopy.helpText.sourceCoverCount ? <em>{categoryCopy.helpText.sourceCoverCount}</em> : null}
+              <em>{state.fieldErrors.sourceCoverCount}</em>
+            </label>
+          ) : null}
         </section>
 
         <section className={styles.card}>

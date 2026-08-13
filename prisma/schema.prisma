@@ -220,6 +220,9 @@ model CatalogProduct {
   seoTitle         String
   seoDescription   String          @db.Text
   rugStyle         String?
+  faceFabricSource String?
+  uniquenessTier   String?
+  sourceCoverCount Int?
   dimensionsCm     Json?
   weightKg         Decimal?        @db.Decimal(10, 2)
   fixedQuantity    Int?

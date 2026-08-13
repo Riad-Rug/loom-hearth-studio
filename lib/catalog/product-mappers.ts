@@ -26,6 +26,9 @@ export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): 
     conditionNote: record.conditionNote ?? undefined,
     ageClass: record.ageClass ?? undefined,
     ageBasis: record.ageBasis ?? undefined,
+    faceFabricSource: record.faceFabricSource ?? undefined,
+    uniquenessTier: record.uniquenessTier ?? undefined,
+    sourceCoverCount: record.sourceCoverCount ?? undefined,
     verificationNotes: Array.isArray(record.verificationNotes)
       ? (record.verificationNotes as string[])
       : [],
@@ -110,6 +113,9 @@ export function mapProductMutationInputToCreateInput(
         ? (sanitizeJsonValue(input.variants) as Prisma.InputJsonValue)
         : Prisma.JsonNull,
     notifyMeEnabled: input.type === "multiUnit" ? input.notifyMeEnabled : null,
+    faceFabricSource: input.faceFabricSource || null,
+    uniquenessTier: input.uniquenessTier || null,
+    sourceCoverCount: input.sourceCoverCount ?? null,
     homepageFeatured: input.homepageFeatured,
     homepageRank: input.homepageRank,
   };
@@ -169,6 +175,9 @@ export function mapProductMutationInputToUpdateInput(
         ? (sanitizeJsonValue(input.variants) as Prisma.InputJsonValue)
         : Prisma.JsonNull,
     notifyMeEnabled: input.type === "multiUnit" ? input.notifyMeEnabled : null,
+    faceFabricSource: input.faceFabricSource || null,
+    uniquenessTier: input.uniquenessTier || null,
+    sourceCoverCount: input.sourceCoverCount ?? null,
     homepageFeatured: input.homepageFeatured,
     homepageRank: input.homepageRank,
   };

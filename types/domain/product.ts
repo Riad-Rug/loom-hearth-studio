@@ -28,6 +28,12 @@ export type ProductBase = SeoFields & {
   conditionNote?: string;
   ageClass?: string;
   ageBasis?: string;
+  /** Pouf-only, admin-internal: what the face panels were cut from. */
+  faceFabricSource?: string;
+  /** Pouf-only, admin-internal: whether the design can be repeated. */
+  uniquenessTier?: string;
+  /** Pouf-only, admin-internal: covers cut from one source rug. */
+  sourceCoverCount?: number;
   verificationNotes?: string[];
   shippingNotes?: string[];
   careNote?: string;
