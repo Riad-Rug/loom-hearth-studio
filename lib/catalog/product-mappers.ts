@@ -30,6 +30,9 @@ export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): 
     uniquenessTier: record.uniquenessTier ?? undefined,
     sourceCoverCount: record.sourceCoverCount ?? undefined,
     insertIncluded: record.insertIncluded ?? undefined,
+    decorSubtype: record.decorSubtype ?? undefined,
+    objectType: record.objectType ?? undefined,
+    makerMarksNote: record.makerMarksNote ?? undefined,
     verificationNotes: Array.isArray(record.verificationNotes)
       ? (record.verificationNotes as string[])
       : [],
@@ -38,6 +41,7 @@ export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): 
     dimensionsCm: record.dimensionsCm
       ? (record.dimensionsCm as Product["dimensionsCm"])
       : undefined,
+    heightCm: record.heightCm === null ? undefined : Number(record.heightCm),
     weightKg: record.weightKg === null ? undefined : Number(record.weightKg),
     status: mapStatus(record.status),
     seoTitle: record.seoTitle,
@@ -105,6 +109,7 @@ export function mapProductMutationInputToCreateInput(
     dimensionsCm: input.dimensionsCm
       ? (sanitizeJsonValue(input.dimensionsCm) as Prisma.InputJsonValue)
       : Prisma.JsonNull,
+    heightCm: input.heightCm ? createPrismaDecimal(input.heightCm) : null,
     weightKg: input.weightKg ? createPrismaDecimal(input.weightKg) : null,
     fixedQuantity: input.type === "rug" ? input.fixedQuantity : null,
     inventory: input.type === "multiUnit" ? input.inventory : null,
@@ -118,6 +123,9 @@ export function mapProductMutationInputToCreateInput(
     uniquenessTier: input.uniquenessTier || null,
     sourceCoverCount: input.sourceCoverCount ?? null,
     insertIncluded: input.insertIncluded ?? null,
+    decorSubtype: input.decorSubtype || null,
+    objectType: input.objectType || null,
+    makerMarksNote: input.makerMarksNote || null,
     homepageFeatured: input.homepageFeatured,
     homepageRank: input.homepageRank,
   };
@@ -168,6 +176,7 @@ export function mapProductMutationInputToUpdateInput(
     dimensionsCm: input.dimensionsCm
       ? (sanitizeJsonValue(input.dimensionsCm) as Prisma.InputJsonValue)
       : Prisma.JsonNull,
+    heightCm: input.heightCm ? createPrismaDecimal(input.heightCm) : null,
     weightKg: input.weightKg ? createPrismaDecimal(input.weightKg) : null,
     fixedQuantity: input.type === "rug" ? input.fixedQuantity : null,
     inventory: input.type === "multiUnit" ? input.inventory : null,
@@ -181,6 +190,9 @@ export function mapProductMutationInputToUpdateInput(
     uniquenessTier: input.uniquenessTier || null,
     sourceCoverCount: input.sourceCoverCount ?? null,
     insertIncluded: input.insertIncluded ?? null,
+    decorSubtype: input.decorSubtype || null,
+    objectType: input.objectType || null,
+    makerMarksNote: input.makerMarksNote || null,
     homepageFeatured: input.homepageFeatured,
     homepageRank: input.homepageRank,
   };

@@ -5,8 +5,10 @@ import { useFormStatus } from "react-dom";
 
 import { CloudinaryUploadButton } from "@/features/admin/cloudinary-upload-button";
 import {
+  antiqueDecorSubtype,
   cutFromOneRugUniquenessTier,
   getCategoryFormCopy,
+  productDecorSubtypeOptions,
   productFaceFabricSourceOptions,
   productUniquenessTierOptions,
 } from "@/lib/admin/category-form-copy";
@@ -48,7 +50,14 @@ type ProductImageRow = AdminProductFormValues["images"][number] & {
   id: string;
 };
 
-const ageClassOptions = ["Contemporary", "Vintage, estimated", "Antique, estimated"] as const;
+// "Not Stated" is available to every category on purpose: an unverifiable age is
+// an honest answer anywhere, and it still forces an age-basis explanation.
+const ageClassOptions = [
+  "Contemporary",
+  "Vintage, estimated",
+  "Antique, estimated",
+  "Not Stated",
+] as const;
 const provenanceLabelOptions = ["Verified", "Attributed", "Not Stated"] as const;
 
 export function AdminProductForm(props: AdminProductFormProps) {
@@ -75,6 +84,9 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [uniquenessTier, setUniquenessTier] = useState(props.product.uniquenessTier);
   const [sourceCoverCount, setSourceCoverCount] = useState(props.product.sourceCoverCount);
   const [insertIncluded, setInsertIncluded] = useState(props.product.insertIncluded);
+  const [decorSubtype, setDecorSubtype] = useState(props.product.decorSubtype);
+  const [objectType, setObjectType] = useState(props.product.objectType);
+  const [makerMarksNote, setMakerMarksNote] = useState(props.product.makerMarksNote);
   const [verificationNotes, setVerificationNotes] = useState(props.product.verificationNotes.join("\n"));
   const [shippingNotes, setShippingNotes] = useState(props.product.shippingNotes.join("\n"));
   const [careNote, setCareNote] = useState(props.product.careNote);
@@ -85,6 +97,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [rugStyle, setRugStyle] = useState(props.product.rugStyle);
   const [dimensionsCmLength, setDimensionsCmLength] = useState(props.product.dimensionsCmLength);
   const [dimensionsCmWidth, setDimensionsCmWidth] = useState(props.product.dimensionsCmWidth);
+  const [heightCm, setHeightCm] = useState(props.product.heightCm);
   const [weightKg, setWeightKg] = useState(props.product.weightKg);
   const [fixedQuantity, setFixedQuantity] = useState(props.product.fixedQuantity);
   const [inventory, setInventory] = useState(props.product.inventory);
@@ -133,6 +146,10 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const showsFaceFabricSource = categoryCopy.extraFields.includes("faceFabricSource");
   const showsUniquenessTier = categoryCopy.extraFields.includes("uniquenessTier");
   const showsInsertIncluded = categoryCopy.extraFields.includes("insertIncluded");
+  const showsDecorSubtype = categoryCopy.extraFields.includes("decorSubtype");
+  const showsObjectType = categoryCopy.extraFields.includes("objectType");
+  const showsMakerMarksNote = categoryCopy.extraFields.includes("makerMarksNote");
+  const showsHeightCm = categoryCopy.extraFields.includes("heightCm");
   // Category defaults are applied when the category changes, and on mount for a
   // new product. Saved products keep whatever is already stored, and a field the
   // user has already filled is never overwritten.
@@ -171,6 +188,9 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setUniquenessTier(props.product.uniquenessTier);
     setSourceCoverCount(props.product.sourceCoverCount);
     setInsertIncluded(props.product.insertIncluded);
+    setDecorSubtype(props.product.decorSubtype);
+    setObjectType(props.product.objectType);
+    setMakerMarksNote(props.product.makerMarksNote);
     setVerificationNotes(props.product.verificationNotes.join("\n"));
     setShippingNotes(props.product.shippingNotes.join("\n"));
     setCareNote(props.product.careNote);
@@ -181,6 +201,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setRugStyle(props.product.rugStyle);
     setDimensionsCmLength(props.product.dimensionsCmLength);
     setDimensionsCmWidth(props.product.dimensionsCmWidth);
+    setHeightCm(props.product.heightCm);
     setWeightKg(props.product.weightKg);
     setFixedQuantity(props.product.fixedQuantity);
     setInventory(props.product.inventory);
@@ -216,6 +237,13 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setOrigin(keepFilled(fieldDefaults.origin));
     setAgeClass(keepFilled(fieldDefaults.ageClass));
     setAttributionConfidence(keepFilled(fieldDefaults.attributionConfidence));
+    // Inventory is never blank, so an untouched "0" counts as unfilled here;
+    // that is what lets one-of-each categories default their stock to 1.
+    setInventory((current) =>
+      fieldDefaults.inventory && (!current.trim() || current.trim() === "0")
+        ? fieldDefaults.inventory
+        : current,
+    );
   }, [category]);
 
   function updateImage(index: number, patch: Partial<(typeof images)[number]>) {
@@ -330,7 +358,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
             <input
               autoCapitalize="characters"
               name="catalogNumber"
-              placeholder={getCatalogNumberPlaceholder(category)}
+              placeholder={getCatalogNumberPlaceholder(category, decorSubtype)}
               type="text"
               value={catalogNumber}
               onChange={(event) => setCatalogNumber(event.target.value.toUpperCase())}
@@ -468,6 +496,14 @@ export function AdminProductForm(props: AdminProductFormProps) {
               <input name="dimensionsCmWidth" step="0.1" type="number" value={dimensionsCmWidth} onChange={(event) => setDimensionsCmWidth(event.target.value)} />
               <em>{state.fieldErrors.dimensionsCmWidth}</em>
             </label>
+            {showsHeightCm ? (
+              <label className={styles.formField}>
+                <span>{categoryCopy.labels.heightCm}</span>
+                <input name="heightCm" step="0.1" type="number" value={heightCm} onChange={(event) => setHeightCm(event.target.value)} />
+                {categoryCopy.helpText.heightCm ? <em>{categoryCopy.helpText.heightCm}</em> : null}
+                <em>{state.fieldErrors.heightCm}</em>
+              </label>
+            ) : null}
           </div>
           <label className={styles.formField}>
             <span>Weight (kg)</span>
@@ -508,6 +544,42 @@ export function AdminProductForm(props: AdminProductFormProps) {
 
         <section className={styles.card}>
           <p className={styles.cardEyebrow}>Condition & provenance</p>
+          {showsDecorSubtype ? (
+            <label className={styles.formField}>
+              <span>{categoryCopy.labels.decorSubtype}</span>
+              <select
+                name="decorSubtype"
+                value={decorSubtype}
+                onChange={(event) => setDecorSubtype(event.target.value)}
+              >
+                <option value="">Choose decor or antique</option>
+                {productDecorSubtypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <em>
+                {decorSubtype === antiqueDecorSubtype
+                  ? "Antiques use the LH-A catalog series and need a marks note before publishing."
+                  : "Decor pieces use the LH-D catalog series."}
+              </em>
+              {categoryCopy.helpText.decorSubtype ? <em>{categoryCopy.helpText.decorSubtype}</em> : null}
+              <em>{state.fieldErrors.decorSubtype}</em>
+            </label>
+          ) : null}
+          {showsObjectType ? (
+            <label className={styles.formField}>
+              <span>{categoryCopy.labels.objectType}</span>
+              <input
+                name="objectType"
+                placeholder={categoryCopy.placeholders.objectType}
+                type="text"
+                value={objectType}
+                onChange={(event) => setObjectType(event.target.value)}
+              />
+              {categoryCopy.helpText.objectType ? <em>{categoryCopy.helpText.objectType}</em> : null}
+              <em>{state.fieldErrors.objectType}</em>
+            </label>
+          ) : null}
           <label className={styles.formField}>
             <span>{categoryCopy.labels.conditionNote}</span>
             <textarea name="conditionNote" placeholder={categoryCopy.placeholders.conditionNote} rows={5} value={conditionNote} onChange={(event) => setConditionNote(event.target.value)} />
@@ -540,6 +612,20 @@ export function AdminProductForm(props: AdminProductFormProps) {
             {categoryCopy.helpText.sourcingNote ? <em>{categoryCopy.helpText.sourcingNote}</em> : null}
             <em>{state.fieldErrors.sourcingNote}</em>
           </label>
+          {showsMakerMarksNote ? (
+            <label className={styles.formField}>
+              <span>{categoryCopy.labels.makerMarksNote}</span>
+              <textarea
+                name="makerMarksNote"
+                placeholder={categoryCopy.placeholders.makerMarksNote}
+                rows={3}
+                value={makerMarksNote}
+                onChange={(event) => setMakerMarksNote(event.target.value)}
+              />
+              {categoryCopy.helpText.makerMarksNote ? <em>{categoryCopy.helpText.makerMarksNote}</em> : null}
+              <em>{state.fieldErrors.makerMarksNote}</em>
+            </label>
+          ) : null}
           {showsFaceFabricSource ? (
             <label className={styles.formField}>
               <span>{categoryCopy.labels.faceFabricSource}</span>
@@ -1040,13 +1126,17 @@ function formatFieldErrorLabel(field: string) {
     .replace(/^./u, (character) => character.toUpperCase());
 }
 
-function getCatalogNumberPlaceholder(category: AdminProductFormValues["category"]) {
+function getCatalogNumberPlaceholder(
+  category: AdminProductFormValues["category"],
+  decorSubtype: string,
+) {
   switch (category) {
     case "rugs": return "LH-R-0001";
     case "vintage": return "LH-R-0001";
     case "poufs": return "LH-P-0001";
     case "pillows": return "LH-X-0001";
-    case "decor": return "LH-D-0001 or LH-A-0001";
+    case "decor":
+      return decorSubtype === antiqueDecorSubtype ? "LH-A-0001" : "LH-D-0001";
   }
 }
 

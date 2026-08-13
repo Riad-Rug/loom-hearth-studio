@@ -7,11 +7,11 @@ import type { ProductCategory } from "@/types/domain";
  * the language around them, the defaults we pre-fill, which extra structured
  * fields are collected, and which fields are required before publishing.
  *
- * Rugs, vintage, and decor currently use the baseline copy, which is a
- * byte-for-byte reproduction of the strings that were hardcoded in the form and
- * in product validation before this config existed. Poufs and pillows have
- * override entries; decor can be extended the same way without touching the
- * form or the validator.
+ * Rugs and vintage currently use the baseline copy, which is a byte-for-byte
+ * reproduction of the strings that were hardcoded in the form and in product
+ * validation before this config existed. Poufs, pillows, and decor have
+ * override entries; any other category can be extended the same way without
+ * touching the form or the validator.
  */
 
 export const productFaceFabricSourceOptions = [
@@ -27,8 +27,14 @@ export const productUniquenessTierOptions = [
   "Cut from one rug",
 ] as const;
 
+export const productDecorSubtypeOptions = [
+  { value: "decor", label: "Decor — sold on what it is, not on age" },
+  { value: "antique", label: "Antique — sold as an older piece" },
+] as const;
+
 export const cutFromOneRugUniquenessTier = "Cut from one rug";
 export const trueOneOffUniquenessTier = "True one-off";
+export const antiqueDecorSubtype = "antique";
 
 export type CategoryCopyFieldKey =
   | "origin"
@@ -42,13 +48,23 @@ export type CategoryCopyFieldKey =
   | "faceFabricSource"
   | "uniquenessTier"
   | "sourceCoverCount"
-  | "insertIncluded";
+  | "insertIncluded"
+  | "decorSubtype"
+  | "objectType"
+  | "makerMarksNote"
+  | "heightCm"
+  /** Defaults only — the inventory input has a fixed label in the form. */
+  | "inventory";
 
 /** Structured fields that only some categories collect. */
 export type CategoryExtraFieldKey =
   | "faceFabricSource"
   | "uniquenessTier"
-  | "insertIncluded";
+  | "insertIncluded"
+  | "decorSubtype"
+  | "objectType"
+  | "makerMarksNote"
+  | "heightCm";
 
 /**
  * Keys the publish-time gate understands. `dimensionsCm` covers length + width;
@@ -66,6 +82,34 @@ export type PublishRequirementKey =
   | "faceFabricSource"
   | "uniquenessTier";
 
+/**
+ * Free-text fields a category can require only under a condition. Kept narrow
+ * on purpose: every key here must exist on every product, hold a string, and be
+ * satisfied by any non-empty answer.
+ */
+export type ConditionalRequirementFieldKey = "ageBasis" | "objectType" | "makerMarksNote";
+
+/**
+ * Fields whose stored value can switch a conditional requirement on. Same
+ * constraint: present on every product and string-valued.
+ */
+export type ConditionalRequirementTriggerKey =
+  | "decorSubtype"
+  | "ageClass"
+  | "attributionConfidence"
+  | "uniquenessTier";
+
+/**
+ * "Require X only when Y on the same record equals Z." Used for requirements
+ * that depend on another answer rather than on the category alone — decor
+ * requires maker's marks only once the piece is being sold as an antique.
+ */
+export type CategoryConditionalRequirement = {
+  field: ConditionalRequirementFieldKey;
+  whenField: ConditionalRequirementTriggerKey;
+  equals: string;
+};
+
 export type CategoryFormCopy = {
   labels: Partial<Record<CategoryCopyFieldKey, string>>;
   placeholders: Partial<Record<CategoryCopyFieldKey, string>>;
@@ -73,6 +117,8 @@ export type CategoryFormCopy = {
   fieldDefaults: Partial<Record<CategoryCopyFieldKey, string>>;
   /** Extra required fields on top of `baselineRequiredAtPublish`. */
   requiredAtPublish: readonly PublishRequirementKey[];
+  /** Requirements that only bind when another field holds a given value. */
+  conditionalRequiredAtPublish: readonly CategoryConditionalRequirement[];
   /** Extra structured fields this category renders and stores. */
   extraFields: readonly CategoryExtraFieldKey[];
   /**
@@ -118,6 +164,7 @@ const baselineCategoryFormCopy: CategoryFormCopy = {
   },
   fieldDefaults: {},
   requiredAtPublish: [],
+  conditionalRequiredAtPublish: [],
   extraFields: [],
   publishErrors: {},
 };
@@ -161,6 +208,7 @@ const poufCategoryFormCopy: CategoryFormCopy = {
     attributionConfidence: "Verified",
   },
   requiredAtPublish: ["dimensionsCm", "weightKg", "faceFabricSource", "uniquenessTier"],
+  conditionalRequiredAtPublish: [],
   extraFields: ["faceFabricSource", "uniquenessTier"],
   publishErrors: {
     provenanceNote: "Explain how this pouf was made before publishing.",
@@ -212,6 +260,7 @@ const pillowCategoryFormCopy: CategoryFormCopy = {
     attributionConfidence: "Verified",
   },
   requiredAtPublish: ["dimensionsCm", "weightKg", "uniquenessTier"],
+  conditionalRequiredAtPublish: [],
   extraFields: ["uniquenessTier", "insertIncluded"],
   minimumPriceUsdAtPublish: 30,
   publishErrors: {
@@ -226,12 +275,75 @@ const pillowCategoryFormCopy: CategoryFormCopy = {
   },
 };
 
+/**
+ * Decor and antiques are genuinely sourced one-of-each objects, so the shared
+ * provenance fields are the right shape here; what changes is the vocabulary
+ * (objects, not rugs), an honest "Not Stated" age route, and the decor/antique
+ * split that governs the catalog prefix and the maker's-marks requirement.
+ */
+const decorCategoryFormCopy: CategoryFormCopy = {
+  labels: {
+    ...baselineCategoryFormCopy.labels,
+    attributionRegion: "Origin / attribution",
+    decorSubtype: "Decor or antique",
+    objectType: "Object type",
+    makerMarksNote: "Maker's marks and signatures",
+    heightCm: "Height (cm)",
+  },
+  placeholders: {
+    ...baselineCategoryFormCopy.placeholders,
+    ageBasis:
+      "Say what the age rests on — or why it cannot be verified: no marks, no records, sold to me without history.",
+    conditionNote:
+      "Record chips, cracks, repairs, patina, missing parts, and base marks, and say where each one appears.",
+    attributionRegion: "Fez, Safi pottery, non-Moroccan brasswork, unknown workshop…",
+    provenanceNote: "Where and how I acquired it; what marks or records support the label.",
+    objectType: "Pottery, brass tray, wood carving, textile fragment…",
+    makerMarksNote:
+      "Describe any stamp, signature, or workshop mark — or write plainly that none were found.",
+  },
+  helpText: {
+    ...baselineCategoryFormCopy.helpText,
+    origin:
+      "Honest origin per provenance label; “Origin not verified — acquired in Morocco” is an acceptable honest answer.",
+    conditionNote:
+      "Required to publish. Describe the object's own wear — chips, cracks, repairs, patina, missing parts. Do not use generic handmade-variation copy.",
+    ageClass:
+      "Choose Not Stated when the age genuinely cannot be verified, and explain why below. Never assert an estimate you cannot support.",
+    ageBasis: "Required unless the age class is Contemporary.",
+    attributionRegion:
+      "Where the piece is from or which workshop tradition it belongs to; say plainly when it is unknown or not Moroccan.",
+    objectType: "What kind of object this is. Optional, but it sharpens search and card copy.",
+    makerMarksNote:
+      "Required to publish an antique. “No maker's marks found” is a complete answer.",
+    heightCm: "Objects are three-dimensional; record height alongside length and width.",
+  },
+  fieldDefaults: {
+    // Decor and antiques are one-of-each pieces sold through the multi-unit
+    // model, so the stock count starts at the only honest number.
+    inventory: "1",
+  },
+  requiredAtPublish: [],
+  conditionalRequiredAtPublish: [
+    { field: "makerMarksNote", whenField: "decorSubtype", equals: antiqueDecorSubtype },
+  ],
+  extraFields: ["decorSubtype", "objectType", "makerMarksNote", "heightCm"],
+  publishErrors: {
+    conditionNote: "Record this object's chips, cracks, repairs, or patina before publishing.",
+    provenanceNote: "Explain where and how you acquired this piece before publishing.",
+    ageBasis:
+      "Explain the age estimate — or explain why the age cannot be verified — before publishing.",
+    makerMarksNote:
+      "Record the maker's marks, or state that none were found, before publishing an antique.",
+  },
+};
+
 const categoryFormCopy: Record<ProductCategory, CategoryFormCopy> = {
   rugs: baselineCategoryFormCopy,
   vintage: baselineCategoryFormCopy,
   poufs: poufCategoryFormCopy,
   pillows: pillowCategoryFormCopy,
-  decor: baselineCategoryFormCopy,
+  decor: decorCategoryFormCopy,
 };
 
 export function getCategoryFormCopy(category: string): CategoryFormCopy {
@@ -255,6 +367,12 @@ export function getPublishRequirements(category: string): ReadonlySet<PublishReq
     ...baselineRequiredAtPublish,
     ...getCategoryFormCopy(category).requiredAtPublish,
   ]);
+}
+
+export function getConditionalPublishRequirements(
+  category: string,
+): readonly CategoryConditionalRequirement[] {
+  return getCategoryFormCopy(category).conditionalRequiredAtPublish;
 }
 
 export function getMinimumPublishPriceUsd(category: string) {

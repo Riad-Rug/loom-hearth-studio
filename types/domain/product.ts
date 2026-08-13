@@ -36,6 +36,12 @@ export type ProductBase = SeoFields & {
   sourceCoverCount?: number;
   /** Pillow-only, admin-internal: whether a pillow insert ships with the cover. */
   insertIncluded?: boolean;
+  /** Decor-only, admin-internal: "decor" or "antique"; drives the catalog prefix. */
+  decorSubtype?: string;
+  /** Decor-only, admin-internal: what kind of object this is. */
+  objectType?: string;
+  /** Decor-only, admin-internal: signatures and stamps, or "none found". */
+  makerMarksNote?: string;
   verificationNotes?: string[];
   shippingNotes?: string[];
   careNote?: string;
@@ -43,6 +49,8 @@ export type ProductBase = SeoFields & {
     length: number;
     width: number;
   };
+  /** Third dimension for objects that are not flat; decor collects it today. */
+  heightCm?: number;
   weightKg?: number;
   homepageFeatured: boolean;
   homepageRank: number | null;

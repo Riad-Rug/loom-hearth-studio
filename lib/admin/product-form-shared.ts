@@ -31,6 +31,9 @@ export type AdminProductFormValues = {
   uniquenessTier: string;
   sourceCoverCount: string;
   insertIncluded: boolean;
+  decorSubtype: string;
+  objectType: string;
+  makerMarksNote: string;
   verificationNotes: string[];
   shippingNotes: string[];
   careNote: string;
@@ -41,6 +44,7 @@ export type AdminProductFormValues = {
   rugStyle: string;
   dimensionsCmLength: string;
   dimensionsCmWidth: string;
+  heightCm: string;
   weightKg: string;
   fixedQuantity: string;
   inventory: string;

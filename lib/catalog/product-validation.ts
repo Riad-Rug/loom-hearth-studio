@@ -1,9 +1,12 @@
 import {
+  antiqueDecorSubtype,
   categoryUsesField,
   cutFromOneRugUniquenessTier,
+  getConditionalPublishRequirements,
   getMinimumPublishPriceUsd,
   getPublishErrorMessage,
   getPublishRequirements,
+  productDecorSubtypeOptions,
   productFaceFabricSourceOptions,
   productUniquenessTierOptions,
   trueOneOffUniquenessTier,
@@ -112,6 +115,10 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
   const usesFaceFabricSource = categoryUsesField(categoryValue, "faceFabricSource");
   const usesUniquenessTier = categoryUsesField(categoryValue, "uniquenessTier");
   const usesInsertIncluded = categoryUsesField(categoryValue, "insertIncluded");
+  const usesDecorSubtype = categoryUsesField(categoryValue, "decorSubtype");
+  const usesObjectType = categoryUsesField(categoryValue, "objectType");
+  const usesMakerMarksNote = categoryUsesField(categoryValue, "makerMarksNote");
+  const usesHeightCm = categoryUsesField(categoryValue, "heightCm");
 
   const sharedFields = {
     id: readOptionalString(formData, "id"),
@@ -145,6 +152,12 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
       ? readOptionalNonNegativeInteger(formData, "sourceCoverCount")
       : undefined,
     insertIncluded: usesInsertIncluded ? readBoolean(formData, "insertIncluded") : undefined,
+    decorSubtype: usesDecorSubtype ? readOptionalString(formData, "decorSubtype") : undefined,
+    objectType: usesObjectType ? readOptionalString(formData, "objectType") : undefined,
+    makerMarksNote: usesMakerMarksNote
+      ? readOptionalString(formData, "makerMarksNote")
+      : undefined,
+    heightCm: usesHeightCm ? readOptionalPositiveNumber(formData, "heightCm") : undefined,
     verificationNotes: parseLineList(readString(formData, "verificationNotes")),
     shippingNotes: parseLineList(readString(formData, "shippingNotes")),
     careNote: readOptionalString(formData, "careNote"),
@@ -243,8 +256,16 @@ export function validateProductMutationInput(
     fieldErrors.catalogNumber = "Use the catalog format LH-R-0001, LH-P-0001, LH-X-0001, LH-D-0001, or LH-A-0001.";
   }
 
-  if (input.catalogNumber && !isCatalogNumberValidForCategory(input.catalogNumber, input.category)) {
-    fieldErrors.catalogNumber = "Catalog prefix does not match the selected category.";
+  if (
+    input.catalogNumber &&
+    !isCatalogNumberValidForCategory(input.catalogNumber, input.category, input.decorSubtype)
+  ) {
+    fieldErrors.catalogNumber =
+      input.category === "decor"
+        ? input.decorSubtype === antiqueDecorSubtype
+          ? "Antiques use the LH-A catalog prefix."
+          : "Decor pieces use the LH-D catalog prefix; switch the sub-type to antique for LH-A."
+        : "Catalog prefix does not match the selected category.";
   }
 
   if (input.status === "active" || input.status === "sold") {
@@ -364,6 +385,22 @@ export function validateProductMutationInput(
         "Record how many covers were cut from that rug before publishing.",
       );
     }
+
+    // Requirements that depend on another answer rather than on the category
+    // alone — e.g. decor only needs a maker's-marks note once the piece is
+    // being sold as an antique. An earlier, more specific error always wins.
+    for (const rule of getConditionalPublishRequirements(input.category)) {
+      if (fieldErrors[rule.field] || input[rule.whenField] !== rule.equals) {
+        continue;
+      }
+
+      if (!input[rule.field]?.trim()) {
+        fieldErrors[rule.field] = publishError(
+          rule.field,
+          "This field is required before publishing.",
+        );
+      }
+    }
   }
 
   if (input.faceFabricSource && !(productFaceFabricSourceOptions as readonly string[]).includes(input.faceFabricSource)) {
@@ -372,6 +409,13 @@ export function validateProductMutationInput(
 
   if (input.uniquenessTier && !(productUniquenessTierOptions as readonly string[]).includes(input.uniquenessTier)) {
     fieldErrors.uniquenessTier = "Choose one of the listed uniqueness tiers.";
+  }
+
+  if (
+    input.decorSubtype &&
+    !productDecorSubtypeOptions.some((option) => option.value === input.decorSubtype)
+  ) {
+    fieldErrors.decorSubtype = "Choose decor or antique.";
   }
 
   if (
@@ -620,13 +664,19 @@ function parseLineList(raw: string) {
     .filter(Boolean);
 }
 
-function isCatalogNumberValidForCategory(catalogNumber: string, category: Product["category"]) {
+function isCatalogNumberValidForCategory(
+  catalogNumber: string,
+  category: Product["category"],
+  decorSubtype: string | undefined,
+) {
   const prefix = catalogNumber.slice(0, 4);
 
   if (category === "rugs" || category === "vintage") return prefix === "LH-R";
   if (category === "poufs") return prefix === "LH-P";
   if (category === "pillows") return prefix === "LH-X";
-  return prefix === "LH-D" || prefix === "LH-A";
+  // Decor and antiques share a category but not a stockroom series: LH-A is
+  // reserved for pieces actually sold as antiques.
+  return decorSubtype === antiqueDecorSubtype ? prefix === "LH-A" : prefix === "LH-D";
 }
 
 function readBoolean(formData: FormData, key: string) {

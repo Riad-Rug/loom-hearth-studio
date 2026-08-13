@@ -224,7 +224,11 @@ model CatalogProduct {
   uniquenessTier   String?
   sourceCoverCount Int?
   insertIncluded   Boolean?
+  decorSubtype     String?
+  objectType       String?
+  makerMarksNote   String?         @db.Text
   dimensionsCm     Json?
+  heightCm         Decimal?        @db.Decimal(10, 2)
   weightKg         Decimal?        @db.Decimal(10, 2)
   fixedQuantity    Int?
   inventory        Int?
