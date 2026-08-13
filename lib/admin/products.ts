@@ -116,6 +116,7 @@ export function createEmptyAdminProductFormValues(type: Product["type"]): AdminP
     faceFabricSource: "",
     uniquenessTier: "",
     sourceCoverCount: "",
+    insertIncluded: false,
     verificationNotes: [],
     shippingNotes: [],
     careNote: "",
@@ -228,6 +229,7 @@ function createAdminProductFormValues(
     uniquenessTier: product.uniquenessTier ?? "",
     sourceCoverCount:
       product.sourceCoverCount === undefined ? "" : String(product.sourceCoverCount),
+    insertIncluded: product.insertIncluded ?? false,
     verificationNotes: product.verificationNotes ?? [],
     shippingNotes: product.shippingNotes ?? [],
     careNote: product.careNote ?? "",

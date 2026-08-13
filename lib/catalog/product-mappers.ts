@@ -29,6 +29,7 @@ export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): 
     faceFabricSource: record.faceFabricSource ?? undefined,
     uniquenessTier: record.uniquenessTier ?? undefined,
     sourceCoverCount: record.sourceCoverCount ?? undefined,
+    insertIncluded: record.insertIncluded ?? undefined,
     verificationNotes: Array.isArray(record.verificationNotes)
       ? (record.verificationNotes as string[])
       : [],
@@ -116,6 +117,7 @@ export function mapProductMutationInputToCreateInput(
     faceFabricSource: input.faceFabricSource || null,
     uniquenessTier: input.uniquenessTier || null,
     sourceCoverCount: input.sourceCoverCount ?? null,
+    insertIncluded: input.insertIncluded ?? null,
     homepageFeatured: input.homepageFeatured,
     homepageRank: input.homepageRank,
   };
@@ -178,6 +180,7 @@ export function mapProductMutationInputToUpdateInput(
     faceFabricSource: input.faceFabricSource || null,
     uniquenessTier: input.uniquenessTier || null,
     sourceCoverCount: input.sourceCoverCount ?? null,
+    insertIncluded: input.insertIncluded ?? null,
     homepageFeatured: input.homepageFeatured,
     homepageRank: input.homepageRank,
   };

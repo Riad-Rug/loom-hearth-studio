@@ -74,6 +74,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [faceFabricSource, setFaceFabricSource] = useState(props.product.faceFabricSource);
   const [uniquenessTier, setUniquenessTier] = useState(props.product.uniquenessTier);
   const [sourceCoverCount, setSourceCoverCount] = useState(props.product.sourceCoverCount);
+  const [insertIncluded, setInsertIncluded] = useState(props.product.insertIncluded);
   const [verificationNotes, setVerificationNotes] = useState(props.product.verificationNotes.join("\n"));
   const [shippingNotes, setShippingNotes] = useState(props.product.shippingNotes.join("\n"));
   const [careNote, setCareNote] = useState(props.product.careNote);
@@ -131,6 +132,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const categoryCopy = useMemo(() => getCategoryFormCopy(category), [category]);
   const showsFaceFabricSource = categoryCopy.extraFields.includes("faceFabricSource");
   const showsUniquenessTier = categoryCopy.extraFields.includes("uniquenessTier");
+  const showsInsertIncluded = categoryCopy.extraFields.includes("insertIncluded");
   // Category defaults are applied when the category changes, and on mount for a
   // new product. Saved products keep whatever is already stored, and a field the
   // user has already filled is never overwritten.
@@ -168,6 +170,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setFaceFabricSource(props.product.faceFabricSource);
     setUniquenessTier(props.product.uniquenessTier);
     setSourceCoverCount(props.product.sourceCoverCount);
+    setInsertIncluded(props.product.insertIncluded);
     setVerificationNotes(props.product.verificationNotes.join("\n"));
     setShippingNotes(props.product.shippingNotes.join("\n"));
     setCareNote(props.product.careNote);
@@ -266,6 +269,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
       <input name="confirmUrlChange" type="hidden" value={confirmUrlChange ? "true" : "false"} />
       <input name="notifyMeEnabled" type="hidden" value={notifyMeEnabled ? "true" : "false"} />
       <input name="homepageFeatured" type="hidden" value={homepageFeatured ? "true" : "false"} />
+      <input name="insertIncluded" type="hidden" value={insertIncluded ? "true" : "false"} />
 
       <header className={styles.moduleHeader}>
         <p className={styles.eyebrow}>Admin products</p>
@@ -470,6 +474,21 @@ export function AdminProductForm(props: AdminProductFormProps) {
             <input name="weightKg" step="0.01" type="number" value={weightKg} onChange={(event) => setWeightKg(event.target.value)} />
             <em>{state.fieldErrors.weightKg}</em>
           </label>
+          {showsInsertIncluded ? (
+            <>
+              <label className={styles.checkboxRow}>
+                <input
+                  checked={insertIncluded}
+                  type="checkbox"
+                  onChange={(event) => setInsertIncluded(event.target.checked)}
+                />
+                <span>{categoryCopy.labels.insertIncluded}</span>
+              </label>
+              {categoryCopy.helpText.insertIncluded ? (
+                <em>{categoryCopy.helpText.insertIncluded}</em>
+              ) : null}
+            </>
+          ) : null}
           <label className={styles.formField}>
             <span>{categoryCopy.labels.ageClass}</span>
             <select name="ageClass" value={ageClass} onChange={(event) => setAgeClass(event.target.value)}>

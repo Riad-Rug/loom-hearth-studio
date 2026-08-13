@@ -223,6 +223,7 @@ model CatalogProduct {
   faceFabricSource String?
   uniquenessTier   String?
   sourceCoverCount Int?
+  insertIncluded   Boolean?
   dimensionsCm     Json?
   weightKg         Decimal?        @db.Decimal(10, 2)
   fixedQuantity    Int?

@@ -1,6 +1,7 @@
 import {
   categoryUsesField,
   cutFromOneRugUniquenessTier,
+  getMinimumPublishPriceUsd,
   getPublishErrorMessage,
   getPublishRequirements,
   productFaceFabricSourceOptions,
@@ -110,6 +111,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
   const categoryValue = readString(formData, "category");
   const usesFaceFabricSource = categoryUsesField(categoryValue, "faceFabricSource");
   const usesUniquenessTier = categoryUsesField(categoryValue, "uniquenessTier");
+  const usesInsertIncluded = categoryUsesField(categoryValue, "insertIncluded");
 
   const sharedFields = {
     id: readOptionalString(formData, "id"),
@@ -142,6 +144,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     sourceCoverCount: usesUniquenessTier
       ? readOptionalNonNegativeInteger(formData, "sourceCoverCount")
       : undefined,
+    insertIncluded: usesInsertIncluded ? readBoolean(formData, "insertIncluded") : undefined,
     verificationNotes: parseLineList(readString(formData, "verificationNotes")),
     shippingNotes: parseLineList(readString(formData, "shippingNotes")),
     careNote: readOptionalString(formData, "careNote"),
@@ -248,6 +251,22 @@ export function validateProductMutationInput(
     const required = getPublishRequirements(input.category);
     const publishError = (field: string, fallback: string) =>
       getPublishErrorMessage(input.category, field, fallback);
+
+    // Category price floors only bind at publish time; a draft may sit below
+    // one while the listing is still being priced.
+    const minimumPriceUsd = getMinimumPublishPriceUsd(input.category);
+
+    if (
+      minimumPriceUsd !== undefined &&
+      Number.isFinite(input.priceUsd) &&
+      input.priceUsd >= 0 &&
+      input.priceUsd < minimumPriceUsd
+    ) {
+      fieldErrors.priceUsd = publishError(
+        "priceUsd",
+        `Price must be at least $${minimumPriceUsd} before publishing.`,
+      );
+    }
 
     if (required.has("catalogNumber") && !input.catalogNumber) {
       fieldErrors.catalogNumber = publishError(

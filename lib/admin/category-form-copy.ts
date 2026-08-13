@@ -7,11 +7,11 @@ import type { ProductCategory } from "@/types/domain";
  * the language around them, the defaults we pre-fill, which extra structured
  * fields are collected, and which fields are required before publishing.
  *
- * Rugs, vintage, pillows, and decor currently use the baseline copy, which is a
+ * Rugs, vintage, and decor currently use the baseline copy, which is a
  * byte-for-byte reproduction of the strings that were hardcoded in the form and
- * in product validation before this config existed. Poufs are the first
- * category with an override entry; pillows and decor can be extended the same
- * way without touching the form or the validator.
+ * in product validation before this config existed. Poufs and pillows have
+ * override entries; decor can be extended the same way without touching the
+ * form or the validator.
  */
 
 export const productFaceFabricSourceOptions = [
@@ -41,10 +41,14 @@ export type CategoryCopyFieldKey =
   | "sourcingNote"
   | "faceFabricSource"
   | "uniquenessTier"
-  | "sourceCoverCount";
+  | "sourceCoverCount"
+  | "insertIncluded";
 
 /** Structured fields that only some categories collect. */
-export type CategoryExtraFieldKey = "faceFabricSource" | "uniquenessTier";
+export type CategoryExtraFieldKey =
+  | "faceFabricSource"
+  | "uniquenessTier"
+  | "insertIncluded";
 
 /**
  * Keys the publish-time gate understands. `dimensionsCm` covers length + width;
@@ -71,6 +75,11 @@ export type CategoryFormCopy = {
   requiredAtPublish: readonly PublishRequirementKey[];
   /** Extra structured fields this category renders and stores. */
   extraFields: readonly CategoryExtraFieldKey[];
+  /**
+   * Publish-time price floor in USD. Drafts may sit below it; active and sold
+   * listings may not. Undefined means the category has no floor.
+   */
+  minimumPriceUsdAtPublish?: number;
   /** Overrides for publish-gate error messages, keyed by field error key. */
   publishErrors: Partial<Record<string, string>>;
 };
@@ -164,11 +173,64 @@ const poufCategoryFormCopy: CategoryFormCopy = {
   },
 };
 
+const pillowCategoryFormCopy: CategoryFormCopy = {
+  labels: {
+    ...baselineCategoryFormCopy.labels,
+    sourcingNote: "Making note",
+    uniquenessTier: "How unique is this cover",
+    sourceCoverCount: "Covers cut from that rug",
+    insertIncluded: "Insert included",
+  },
+  placeholders: {
+    ...baselineCategoryFormCopy.placeholders,
+    origin: "Made in Morocco — family-made",
+    ageBasis: "Newly made — my mom cut and sewed this cover recently…",
+    conditionNote:
+      "Record seam quality, zipper or closure action, pile-face wear or thinning, and any marks — and say where each one appears.",
+    attributionRegion:
+      "Where the source fabric was bought (e.g. Marrakech) — leave empty unless meaningful.",
+    provenanceNote:
+      "Designed and hand-sewn by my mom — cut, matched, and seamed by her hand. The [fabric] panel was purchased in [place]; original weaver not recorded.",
+    sourcingNote:
+      "How your mom made this cover and where the fabric came from; sign — Riad.",
+  },
+  helpText: {
+    ...baselineCategoryFormCopy.helpText,
+    conditionNote:
+      "Required to publish. Describe the seams, the zipper action, the pile face, and any marks on this cover. Do not use generic handmade-variation copy.",
+    attributionRegion:
+      "Only when meaningful (e.g. the panel was bought in Marrakech); leave empty otherwise.",
+    attributionConfidence: "Mom-made items are always Verified.",
+    uniquenessTier: "Say plainly whether this design can be made again. Required to publish.",
+    sourceCoverCount: "How many covers exist from that one rug, including this one.",
+    insertIncluded:
+      "Tick only when a pillow insert ships with the cover. Most covers ship cover-only.",
+  },
+  fieldDefaults: {
+    origin: "Made in Morocco — family-made",
+    ageClass: "Contemporary",
+    attributionConfidence: "Verified",
+  },
+  requiredAtPublish: ["dimensionsCm", "weightKg", "uniquenessTier"],
+  extraFields: ["uniquenessTier", "insertIncluded"],
+  minimumPriceUsdAtPublish: 30,
+  publishErrors: {
+    provenanceNote: "Explain how this cover was made before publishing.",
+    sourcingNote: "Add a first-person making note before publishing.",
+    dimensionsCmLength: "Add the finished cover length before publishing a pillow.",
+    dimensionsCmWidth: "Add the finished cover width before publishing a pillow.",
+    weightKg: "Add the shipping weight before publishing a pillow.",
+    uniquenessTier: "Say whether this cover can be repeated before publishing.",
+    sourceCoverCount: "Record how many covers were cut from that rug before publishing.",
+    priceUsd: "Pillow covers publish at $30 or more. Raise the price or keep this a draft.",
+  },
+};
+
 const categoryFormCopy: Record<ProductCategory, CategoryFormCopy> = {
   rugs: baselineCategoryFormCopy,
   vintage: baselineCategoryFormCopy,
   poufs: poufCategoryFormCopy,
-  pillows: baselineCategoryFormCopy,
+  pillows: pillowCategoryFormCopy,
   decor: baselineCategoryFormCopy,
 };
 
@@ -193,6 +255,10 @@ export function getPublishRequirements(category: string): ReadonlySet<PublishReq
     ...baselineRequiredAtPublish,
     ...getCategoryFormCopy(category).requiredAtPublish,
   ]);
+}
+
+export function getMinimumPublishPriceUsd(category: string) {
+  return getCategoryFormCopy(category).minimumPriceUsdAtPublish;
 }
 
 export function getPublishErrorMessage(category: string, field: string, fallback: string) {

@@ -30,6 +30,7 @@ export type AdminProductFormValues = {
   faceFabricSource: string;
   uniquenessTier: string;
   sourceCoverCount: string;
+  insertIncluded: boolean;
   verificationNotes: string[];
   shippingNotes: string[];
   careNote: string;
