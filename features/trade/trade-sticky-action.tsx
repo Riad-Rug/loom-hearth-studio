@@ -25,6 +25,7 @@ export function TradeStickyAction() {
     <div
       className={`${styles.stickyAction} ${isVisible ? styles.stickyActionVisible : ""}`}
       aria-hidden={!isVisible}
+      inert={!isVisible}
     >
       <Link className={styles.stickyActionButton} href="/trade/apply">
         Start trade inquiry

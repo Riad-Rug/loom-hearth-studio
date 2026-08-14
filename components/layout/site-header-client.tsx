@@ -349,6 +349,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
         <div
           id="site-mobile-menu"
           aria-hidden={!isMobileMenuOpen}
+          inert={!isMobileMenuOpen}
           className={`site-header__mobile-menu ${
             isMobileMenuOpen ? "site-header__mobile-menu--open" : ""
           }`}
