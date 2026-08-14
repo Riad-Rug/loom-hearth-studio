@@ -93,7 +93,7 @@
 .heroPanelLabel,
 .sidebarHeading {
   margin: 0;
-  color: var(--color-sand);
+  color: var(--color-text-subtle);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;

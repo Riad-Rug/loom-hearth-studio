@@ -318,7 +318,7 @@
 .inlineSwitch a:focus-visible,
 .inlineSecondaryLink:hover,
 .inlineSecondaryLink:focus-visible {
-  color: rgba(198, 106, 61, 0.82);
+  color: var(--button-primary-bg-hover);
   text-decoration: underline;
   outline: none;
 }
