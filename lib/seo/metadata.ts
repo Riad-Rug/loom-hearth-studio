@@ -8,6 +8,13 @@ type BuildMetadataOptions = {
   description: string;
   path: string;
   noIndex?: boolean;
+  /**
+   * Blocks indexing while still letting crawlers follow links from this page.
+   * Use for pages like internal search results that shouldn't rank themselves
+   * but that link to pages (e.g. products) which still need to be discovered.
+   * Takes precedence over `noIndex` when both are set.
+   */
+  noIndexFollow?: boolean;
   type?: "website" | "article" | "product";
   canonicalUrl?: string;
   ogTitle?: string;
@@ -32,6 +39,7 @@ export function buildMetadata({
   description,
   path,
   noIndex = false,
+  noIndexFollow = false,
   type = "website",
   canonicalUrl,
   ogTitle,
@@ -41,6 +49,8 @@ export function buildMetadata({
   ogImageWidth,
   ogImageHeight,
 }: BuildMetadataOptions): Metadata {
+  const shouldIndex = !noIndex && !noIndexFollow;
+  const shouldFollow = noIndexFollow || !noIndex;
   const canonical = normalizePublicUrl(canonicalUrl || absoluteUrl(path));
   const defaultOgImage = absoluteUrl(siteConfig.ogImagePath);
   const resolvedOgImage = normalizePublicUrl(ogImageUrl || defaultOgImage);
@@ -72,11 +82,11 @@ export function buildMetadata({
       canonical,
     },
     robots: {
-      index: !noIndex,
-      follow: !noIndex,
+      index: shouldIndex,
+      follow: shouldFollow,
       googleBot: {
-        index: !noIndex,
-        follow: !noIndex,
+        index: shouldIndex,
+        follow: shouldFollow,
       },
     },
     openGraph,
@@ -97,6 +107,7 @@ export async function buildManagedMetadata({
   description,
   path,
   noIndex = false,
+  noIndexFollow = false,
   type = "website",
   canonicalUrl,
   ogTitle,
@@ -122,6 +133,7 @@ export async function buildManagedMetadata({
     description: managedDescription || description,
     path,
     noIndex: setting?.robotsIndex === false ? true : noIndex,
+    noIndexFollow,
     type,
     canonicalUrl: managedCanonicalUrl || canonicalUrl,
     ogTitle: managedOgTitle || ogTitle || managedTitle || title,

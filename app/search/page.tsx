@@ -18,6 +18,10 @@ export async function generateMetadata(): Promise<Metadata> {
     title: "Search",
     description: "Search Loom & Hearth Studio pieces by rug style, material, category, or detail.",
     path: "/search",
+    // Search results pages shouldn't rank themselves, but they link to
+    // product pages that still need to be discovered — so index:false,
+    // follow:true rather than a full noindex+nofollow.
+    noIndexFollow: true,
   });
 }
 
