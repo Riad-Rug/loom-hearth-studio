@@ -339,7 +339,11 @@ function createProductDetailPageViewModel(
     2,
   );
   const similarRugs = createRecommendedProductCards(product, allProducts);
-  const crossSellRecommendations = createCrossSellRecommendationCards(product, allProducts);
+  const crossSellRecommendations = createCrossSellRecommendationCards(
+    product,
+    allProducts,
+    new Set(similarRugs.map((card) => card.id)),
+  );
 
   const baseViewModel = {
     id: product.id,
@@ -586,11 +590,10 @@ function createRecommendedProductCards(
     .slice(0, 4)
     .map((item) => item.product);
 
-  if (rankedProducts.length) {
-    return rankedProducts.map(createCatalogProductCardViewModel);
-  }
-
-  return createFallbackRecommendedProductCards(product, allProducts);
+  // No fallback past the ranked list: it already draws from every category,
+  // so falling short of 4 means the catalog has no other available pieces —
+  // padding with sold or out-of-stock items would be dishonest merchandising.
+  return rankedProducts.map(createCatalogProductCardViewModel);
 }
 
 function isRecommendableCandidate(
@@ -601,7 +604,7 @@ function isRecommendableCandidate(
     return false;
   }
 
-  if (candidate.status === "sold") {
+  if (candidate.status !== "active") {
     return false;
   }
 
@@ -684,56 +687,37 @@ function getCompanionCategoryBoost(
   return Math.max(3 - companionIndex, 1);
 }
 
-function createFallbackRecommendedProductCards(
-  product: Product,
-  allProducts: Product[],
-): CatalogProductCardViewModel[] {
-  const fallbackProducts = allProducts
-    .filter((candidate) => candidate.id !== product.id)
-    .filter((candidate) => candidate.category === product.category || candidate.type === product.type)
-    .slice(0, 4);
-
-  if (fallbackProducts.length) {
-    return fallbackProducts.map(createCatalogProductCardViewModel);
-  }
-
-  return allProducts
-    .filter((candidate) => candidate.id !== product.id)
-    .slice(0, 4)
-    .map(createCatalogProductCardViewModel);
-}
-
 function createCrossSellRecommendationCards(
   product: Product,
   allProducts: Product[],
+  excludeProductIds: ReadonlySet<string>,
 ): CatalogProductCardViewModel[] {
-  const baseCategory = product.category;
-  const upsellCategoryOrder = getUpsellCategoryOrder(baseCategory);
-
-  const crossSellProducts = upsellCategoryOrder.flatMap((category) =>
-    allProducts.filter((candidate) => {
-      if (candidate.id === product.id) {
-        return false;
-      }
-
-      if (candidate.category !== category) {
-        return false;
-      }
-
-      if (candidate.type === "multiUnit" && candidate.inventory <= 0) {
-        return false;
-      }
-
-      return true;
-    }),
+  const crossSellProducts = getCrossSellCategoryOrder(product.category).flatMap((category) =>
+    allProducts.filter(
+      (candidate) =>
+        candidate.category === category &&
+        !excludeProductIds.has(candidate.id) &&
+        isRecommendableCandidate(product, candidate),
+    ),
   );
 
-  const uniqueProducts = crossSellProducts.filter(
-    (candidate, index, candidates) =>
-      candidates.findIndex((item) => item.id === candidate.id) === index,
+  return crossSellProducts.slice(0, 4).map(createCatalogProductCardViewModel);
+}
+
+// The primary upsell categories come first; when the catalog is too thin
+// to fill the section from those alone, top up from the remaining companion
+// categories, with the product's own category as the last resort (the
+// similar-products section already covers it). Products excluded via
+// excludeProductIds (already shown as similar products) never reappear here,
+// and every card must be an available, in-stock piece — the section simply
+// stays short when the catalog cannot honestly fill it.
+function getCrossSellCategoryOrder(category: ProductCategory): ProductCategory[] {
+  const primaryOrder = getUpsellCategoryOrder(category);
+  const backfillOrder = getCompanionCategoryOrder(category).filter(
+    (companionCategory) => !primaryOrder.includes(companionCategory),
   );
 
-  return uniqueProducts.slice(0, 4).map(createCatalogProductCardViewModel);
+  return [...primaryOrder, ...backfillOrder, category];
 }
 
 function getCompanionCategoryOrder(category: ProductCategory) {
