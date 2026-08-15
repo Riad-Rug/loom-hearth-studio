@@ -327,6 +327,7 @@ h6 {
   color: var(--color-ink);
   font-size: 0.94rem;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .site-header__link:hover,
@@ -338,11 +339,6 @@ h6 {
 
 .site-header__link--active {
   color: var(--color-green);
-}
-
-.site-header__utility-link {
-  color: var(--color-text-muted);
-  font-size: 0.86rem;
 }
 
 .site-header__nav-group {
@@ -415,43 +411,17 @@ h6 {
   color: var(--color-green);
 }
 
-.site-header__search-shell {
+.site-header__search-form {
   position: relative;
   display: inline-flex;
   align-items: center;
-}
-
-.site-header__search-form {
-  position: absolute;
-  top: calc(100% + 0.55rem);
-  right: 0;
-  z-index: 71;
-  display: inline-flex;
-  align-items: center;
   gap: 0.3rem;
-  padding: 0.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-white);
-  box-shadow: 0 1.1rem 2.4rem rgba(20, 20, 20, 0.14);
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-0.3rem);
-  transition:
-    opacity 160ms ease,
-    transform 160ms ease;
-}
-
-.site-header__search-form--open {
-  opacity: 1;
-  pointer-events: auto;
-  transform: none;
 }
 
 .site-header__search-input {
-  width: 15rem;
+  width: clamp(8.5rem, 14vw, 13rem);
   min-height: 2.5rem;
-  padding: 0 0.75rem;
+  padding: 0 0.7rem;
   border: 1px solid var(--color-border);
   border-radius: 4px;
   background: var(--color-white);
@@ -461,6 +431,42 @@ h6 {
 
 .site-header__search-input::placeholder {
   color: var(--color-text-muted);
+}
+
+.site-header__search-submit {
+  display: inline-flex;
+  width: 2.5rem;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-ink);
+  transition:
+    color 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.site-header__search-submit:hover,
+.site-header__search-submit:focus-visible {
+  border-color: var(--color-green);
+  background: rgba(23, 105, 90, 0.08);
+  color: var(--color-green);
+}
+
+/* Small-desktop range: the nav carries five items and the search bar is always
+   visible, so tighten both so a long account name cannot crowd the bar. */
+@media (min-width: 901px) and (max-width: 1120px) {
+  .site-header__link {
+    padding: 0.55rem 0.45rem;
+    font-size: 0.9rem;
+  }
+
+  .site-header__search-input {
+    width: clamp(7rem, 12vw, 10rem);
+  }
 }
 
 .site-header__search-suggestions {
@@ -494,7 +500,6 @@ h6 {
     animation: none;
   }
 
-  .site-header__search-form,
   .site-header__nav-group-panel,
   .site-header__nav-group-trigger::after {
     transition: none;
@@ -876,8 +881,7 @@ h6 {
   }
 
   .site-header__nav,
-  .site-header__actions > .site-header__search-shell,
-  .site-header__actions > .site-header__link {
+  .site-header__actions > .site-header__search-form {
     display: none;
   }
 

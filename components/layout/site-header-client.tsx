@@ -39,10 +39,8 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const pathname = usePathname();
   const router = useRouter();
   const headerRef = useRef<HTMLElement | null>(null);
-  const desktopSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDesktopSearchOpen, setIsDesktopSearchOpen] = useState(false);
   const [areSuggestionsOpen, setAreSuggestionsOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<CatalogSearchSuggestion[]>([]);
   const [suggestionsQuery, setSuggestionsQuery] = useState("");
@@ -62,7 +60,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-    setIsDesktopSearchOpen(false);
     setAreSuggestionsOpen(false);
     setOpenGroupLabel(null);
   }, [pathname]);
@@ -71,7 +68,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     function handlePointerDown(event: PointerEvent) {
       if (!headerRef.current?.contains(event.target as Node)) {
         setIsMobileMenuOpen(false);
-        setIsDesktopSearchOpen(false);
         setAreSuggestionsOpen(false);
         setOpenGroupLabel(null);
       }
@@ -80,7 +76,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setIsMobileMenuOpen(false);
-        setIsDesktopSearchOpen(false);
         setAreSuggestionsOpen(false);
         setOpenGroupLabel(null);
       }
@@ -94,12 +89,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-
-  useEffect(() => {
-    if (isDesktopSearchOpen) {
-      desktopSearchInputRef.current?.focus();
-    }
-  }, [isDesktopSearchOpen]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
@@ -183,7 +172,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
 
     router.push(`/shop?q=${encodeURIComponent(nextQuery)}`);
     setIsMobileMenuOpen(false);
-    setIsDesktopSearchOpen(false);
     setAreSuggestionsOpen(false);
   }
 
@@ -204,10 +192,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     }
 
     setAreSuggestionsOpen(false);
-
-    if (!searchQuery.trim()) {
-      setIsDesktopSearchOpen(false);
-    }
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
@@ -241,7 +225,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
 
   function selectSuggestion(suggestion: CatalogSearchSuggestion) {
     setIsMobileMenuOpen(false);
-    setIsDesktopSearchOpen(false);
     setAreSuggestionsOpen(false);
     router.push(suggestion.href as Route);
   }
@@ -254,7 +237,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     }
 
     setIsMobileMenuOpen(false);
-    setIsDesktopSearchOpen(false);
     setAreSuggestionsOpen(false);
     router.push(`/shop?q=${encodeURIComponent(nextQuery)}`);
   }
@@ -360,7 +342,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
         </label>
         <input
           id={inputId}
-          ref={isDesktop ? desktopSearchInputRef : undefined}
           className={
             isDesktop ? "site-header__search-input" : "site-header__mobile-search-input"
           }
@@ -508,39 +489,34 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 </Link>
               );
             })}
+            <Link
+              className={`site-header__link ${
+                isPathActive(pathname, accountHref) ? "site-header__link--active" : ""
+              }`}
+              href={accountHref as Route}
+            >
+              {accountLabel}
+            </Link>
           </nav>
 
           <div className="site-header__actions">
-            <div className="site-header__search-shell">
-              <button
-                id="site-header-desktop-search-trigger"
-                className="site-header__link site-header__utility-link"
-                type="button"
-                aria-expanded={isDesktopSearchOpen}
-                aria-controls="site-header-desktop-search-form"
-                onClick={() => setIsDesktopSearchOpen((current) => !current)}
-              >
-                Search
+            <form
+              className="site-header__search-form"
+              role="search"
+              onSubmit={handleSearchSubmit}
+              onBlur={handleSearchBlur}
+            >
+              {renderSearchInput("desktop")}
+              <button className="site-header__search-submit" type="submit">
+                <svg aria-hidden="true" height="16" viewBox="0 0 24 24" width="16">
+                  <path
+                    d="M10.5 3a7.5 7.5 0 0 1 5.96 12.05l4.25 4.24-1.42 1.42-4.24-4.25A7.5 7.5 0 1 1 10.5 3m0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11"
+                    fill="currentColor"
+                  />
+                </svg>
+                <span className="site-header__sr-only">Search</span>
               </button>
-              <form
-                id="site-header-desktop-search-form"
-                className={`site-header__search-form ${
-                  isDesktopSearchOpen ? "site-header__search-form--open" : ""
-                }`}
-                role="search"
-                inert={!isDesktopSearchOpen}
-                onSubmit={handleSearchSubmit}
-                onBlur={handleSearchBlur}
-              >
-                {renderSearchInput("desktop")}
-                <button className="site-header__link" type="submit">
-                  Search
-                </button>
-              </form>
-            </div>
-            <Link className="site-header__link site-header__utility-link" href={accountHref as Route}>
-              {accountLabel}
-            </Link>
+            </form>
             <CartDrawer />
           </div>
         </div>
