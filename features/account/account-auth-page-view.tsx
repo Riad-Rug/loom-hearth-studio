@@ -10,25 +10,18 @@ import {
   type AccountAuthMode,
 } from "@/features/account/account-data";
 import {
-  accountGuardTodo,
-  createAccountAuthRouteViewModel,
   createForgotPasswordRequestPayload,
   createInitialForgotPasswordRequestState,
   createInitialResetPasswordState,
   createLoginRequestPayload,
   createRegisterRequestPayload,
   createResetPasswordPayload,
-  forgotPasswordRequestTodo,
-  getAccountAccessDecision,
-  loginRequestTodo,
-  registerRequestTodo,
   type ForgotPasswordRequestState,
   type LoginRequestState,
   type PasswordResetTokenView,
   type RegisterRequestState,
   type ResetPasswordState,
 } from "@/lib/auth";
-import { emailServiceTodo } from "@/lib/email";
 
 import styles from "./account.module.css";
 
@@ -103,10 +96,6 @@ export function AccountAuthPageView({
   const content: AuthSurfaceContent = isAdminSurface
     ? adminLoginContent
     : accountAuthContent[mode];
-  const accessDecision = getAccountAccessDecision({
-    user: null,
-    routeKind: mode,
-  });
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState(passwordResetTokenView?.email ?? "");
   const [password, setPassword] = useState("");
@@ -127,29 +116,6 @@ export function AccountAuthPageView({
     payload: null,
     message: null,
   });
-  const routeViewModel = createAccountAuthRouteViewModel({
-    mode,
-    surface,
-    redirectTargetOverride: isAdminSurface ? "/admin/login" : undefined,
-    accessDecision,
-    forgotPasswordState: requestState,
-    passwordResetTokenView:
-      passwordResetTokenView ?? {
-        token: null,
-        status: "request",
-        email: null,
-        expiresAtLabel: null,
-      },
-    resetPasswordState,
-    loginState,
-    registerState,
-    accountGuardTodo,
-    forgotPasswordRequestTodo,
-    loginRequestTodo,
-    registerRequestTodo,
-    emailServiceTodo,
-  });
-
   function handleForgotPasswordRequest() {
     const payload = createForgotPasswordRequestPayload(email);
 
@@ -356,8 +322,6 @@ export function AccountAuthPageView({
     }, 350);
   }
 
-  const isCustomerSurface = !isAdminSurface;
-  const showCuratedSurface = isCustomerSurface || isAdminSurface;
   const currentFeedbackState =
     mode === "login"
       ? loginState
@@ -403,6 +367,14 @@ export function AccountAuthPageView({
             label: "Back to sign in",
             href: "/account/login",
           };
+  const handlePrimarySubmit =
+    mode === "forgot-password"
+      ? isResetMode
+        ? handleResetPasswordRequest
+        : handleForgotPasswordRequest
+      : mode === "login"
+        ? handleLoginRequest
+        : handleRegisterRequest;
 
   return (
     <div className={styles.page}>
@@ -412,20 +384,11 @@ export function AccountAuthPageView({
           <h1>{content.title}</h1>
           <p className={styles.lede}>{content.body}</p>
 
-          {showCuratedSurface ? (
-            <div className={styles.authSupportNote}>
-              <h3>{content.supportTitle}</h3>
-              <p>{content.supportBody}</p>
-              {content.supportExtra ? <p>{content.supportExtra}</p> : null}
-            </div>
-          ) : (
-            <div className={styles.sessionNote}>
-              <strong>{routeViewModel.authBoundary.title}</strong>
-              <span>{routeViewModel.authBoundary.statusLine}</span>
-              <span>{routeViewModel.authBoundary.redirectTargetLine}</span>
-              <span>{routeViewModel.authBoundary.todoLine}</span>
-            </div>
-          )}
+          <div className={styles.authSupportNote}>
+            <p className={styles.supportHeading}>{content.supportTitle}</p>
+            <p>{content.supportBody}</p>
+            {content.supportExtra ? <p>{content.supportExtra}</p> : null}
+          </div>
 
           {isAdminSurface ? (
             <div className={styles.authLinks}>
@@ -437,20 +400,18 @@ export function AccountAuthPageView({
         </div>
 
         <div className={styles.formCard}>
-          {showCuratedSurface ? (
-            <div className={styles.formIntro}>
-              <h2>{formTitle}</h2>
-              <p>{formBody}</p>
-            </div>
-          ) : (
-            <div className={styles.sessionNote}>
-              <strong>{routeViewModel.guestRoute.title}</strong>
-              <span>{routeViewModel.guestRoute.body}</span>
-              <span>{routeViewModel.guestRoute.redirectTargetLine}</span>
-            </div>
-          )}
+          <div className={styles.formIntro}>
+            <h2>{formTitle}</h2>
+            <p>{formBody}</p>
+          </div>
 
-          <div className={styles.formStack}>
+          <form
+            className={styles.formStack}
+            onSubmit={(event) => {
+              event.preventDefault();
+              handlePrimarySubmit();
+            }}
+          >
             {mode === "register" ? (
               <label className={styles.field} htmlFor="account-full-name">
                 <span>Full name</span>
@@ -458,6 +419,7 @@ export function AccountAuthPageView({
                   id="account-full-name"
                   placeholder="Jordan Smith"
                   type="text"
+                  autoComplete="name"
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
                 />
@@ -470,6 +432,7 @@ export function AccountAuthPageView({
                 id="account-email"
                 placeholder="name@example.com"
                 type="email"
+                autoComplete="email"
                 value={email}
                 disabled={isResetMode}
                 onChange={(event) => setEmail(event.target.value)}
@@ -483,6 +446,7 @@ export function AccountAuthPageView({
                   id="account-password"
                   placeholder="********"
                   type="password"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                 />
@@ -496,6 +460,7 @@ export function AccountAuthPageView({
                   id="account-confirm-password"
                   placeholder="********"
                   type="password"
+                  autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                 />
@@ -506,7 +471,10 @@ export function AccountAuthPageView({
             passwordResetTokenView &&
             passwordResetTokenView.status !== "request" &&
             passwordResetTokenView.status !== "valid" ? (
-              <div className={`${styles.requestFeedback} ${styles.requestFeedbackFailure}`}>
+              <div
+                className={`${styles.requestFeedback} ${styles.requestFeedbackFailure}`}
+                role="alert"
+              >
                 <strong>Password reset link status</strong>
                 <span>
                   {passwordResetTokenView.status === "expired"
@@ -521,95 +489,70 @@ export function AccountAuthPageView({
 
             <button
               className={styles.primaryAction}
-              type="button"
-              onClick={
-                mode === "forgot-password"
-                  ? isResetMode
-                    ? handleResetPasswordRequest
-                    : handleForgotPasswordRequest
-                  : mode === "login"
-                    ? handleLoginRequest
-                    : handleRegisterRequest
-              }
+              type="submit"
+              disabled={currentFeedbackState.status === "submitting"}
             >
               {mode === "forgot-password" && isResetMode
                 ? "Reset password"
                 : content.primaryLabel}
             </button>
 
-            {showCuratedSurface ? (
-              <div className={styles.formMeta}>
-                <p className={styles.formReassurance}>{content.reassurance}</p>
-                {customerAuthSwitchContent ? (
-                  <div className={styles.formMetaLinks}>
-                    {mode === "login" ? (
-                      <div className={styles.loginSecondaryGrid}>
-                        <span>{customerAuthSwitchContent.prompt}</span>
-                        <Link href={customerAuthSwitchContent.href}>
-                          {customerAuthSwitchContent.label}
-                        </Link>
-                        <Link
-                          className={styles.inlineSecondaryLink}
-                          href={"/account/forgot-password" as Route}
-                        >
-                          Forgot password?
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className={styles.inlineSwitch}>
-                        <span>{customerAuthSwitchContent.prompt}</span>
-                        <Link href={customerAuthSwitchContent.href}>
-                          {customerAuthSwitchContent.label}
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className={styles.formSupportLinks}>
-                    <Link href={"/account/login" as Route}>Customer login</Link>
-                    <Link href={"/account/forgot-password" as Route}>Password help</Link>
-                  </div>
-                )}
+            <div className={styles.formMeta}>
+              <p className={styles.formReassurance}>{content.reassurance}</p>
+              {customerAuthSwitchContent ? (
+                <div className={styles.formMetaLinks}>
+                  {mode === "login" ? (
+                    <div className={styles.loginSecondaryGrid}>
+                      <span>{customerAuthSwitchContent.prompt}</span>
+                      <Link href={customerAuthSwitchContent.href}>
+                        {customerAuthSwitchContent.label}
+                      </Link>
+                      <Link
+                        className={styles.inlineSecondaryLink}
+                        href={"/account/forgot-password" as Route}
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className={styles.inlineSwitch}>
+                      <span>{customerAuthSwitchContent.prompt}</span>
+                      <Link href={customerAuthSwitchContent.href}>
+                        {customerAuthSwitchContent.label}
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className={styles.formSupportLinks}>
+                  <Link href={"/account/login" as Route}>Customer login</Link>
+                  <Link href={"/account/forgot-password" as Route}>Password help</Link>
+                </div>
+              )}
+            </div>
+
+            {currentFeedbackState.status !== "idle" ? (
+              <div
+                className={`${styles.requestFeedback} ${
+                  currentFeedbackState.status === "failure"
+                    ? styles.requestFeedbackFailure
+                    : currentFeedbackState.status === "success"
+                      ? styles.requestFeedbackSuccess
+                      : ""
+                }`}
+                role={currentFeedbackState.status === "failure" ? "alert" : "status"}
+              >
+                <strong>
+                  {currentFeedbackState.status === "failure"
+                    ? "There was a problem"
+                    : currentFeedbackState.status === "success"
+                      ? "You are all set"
+                      : "Processing"}
+                </strong>
+                {currentFeedbackMessage ? <span>{currentFeedbackMessage}</span> : null}
               </div>
             ) : null}
-
-            {showCuratedSurface ? (
-              currentFeedbackState.status !== "idle" ? (
-                <div
-                  className={`${styles.requestFeedback} ${
-                    currentFeedbackState.status === "failure"
-                      ? styles.requestFeedbackFailure
-                      : currentFeedbackState.status === "success"
-                        ? styles.requestFeedbackSuccess
-                        : ""
-                  }`}
-                >
-                  <strong>
-                    {currentFeedbackState.status === "failure"
-                      ? "There was a problem"
-                      : currentFeedbackState.status === "success"
-                        ? "You are all set"
-                        : "Processing"}
-                  </strong>
-                  {currentFeedbackMessage ? <span>{currentFeedbackMessage}</span> : null}
-                </div>
-              ) : null
-            ) : (
-              <div className={styles.sessionNote}>
-                <strong>{routeViewModel.requestPresentation.title}</strong>
-                <span>{routeViewModel.requestPresentation.stateLine}</span>
-                {routeViewModel.requestPresentation.message ? (
-                  <span>{routeViewModel.requestPresentation.message}</span>
-                ) : null}
-                {routeViewModel.requestPresentation.payloadLines.map((line) => (
-                  <span key={line}>{line}</span>
-                ))}
-                {routeViewModel.requestPresentation.todoLines.map((line) => (
-                  <span key={line}>{line}</span>
-                ))}
-              </div>
-            )}
-          </div>
+          </form>
         </div>
       </section>
     </div>
