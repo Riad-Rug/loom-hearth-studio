@@ -1,13 +1,82 @@
+/* The cart is a page-level floating affordance pinned to the middle of the
+   right edge, deliberately clear of the bottom-right corner where the cookie
+   banner and the back-to-top button already live.
+
+   The rail spans the full height and centres the trigger with flexbox rather
+   than a transform: a transform here would make the shell the containing block
+   for the `position: fixed` mobile popover and collapse it to the trigger's
+   width. It is click-through except for its own children. */
 .shell {
-  position: relative;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.shell > * {
+  pointer-events: auto;
+}
+
+.trigger {
+  display: inline-flex;
+  width: 3.15rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.85rem 0.5rem;
+  border: 1px solid var(--color-green);
+  border-right: 0;
+  border-radius: 0.5rem 0 0 0.5rem;
+  background: var(--color-green);
+  color: var(--color-bg);
+  box-shadow: -0.35rem 0 1.4rem rgba(20, 20, 20, 0.16);
+  cursor: pointer;
+}
+
+.trigger:hover,
+.trigger:focus-visible {
+  border-color: var(--button-primary-bg-hover);
+  background: var(--button-primary-bg-hover);
+}
+
+/* Inset ring: the trigger is flush with the viewport edge, so an offset
+   outline would be clipped on the right. */
+.trigger:focus-visible {
+  outline: 2px solid var(--color-bg);
+  outline-offset: -4px;
+}
+
+.triggerCount {
+  display: inline-flex;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.35rem;
+  border: 1px solid rgba(250, 250, 246, 0.35);
+  border-radius: 99px;
+  background: rgba(250, 250, 246, 0.14);
+  color: var(--color-bg);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
 }
 
 .popover {
   position: absolute;
-  top: calc(100% + 0.8rem);
-  right: 0;
-  z-index: 70;
+  top: 50%;
+  right: calc(100% + 0.55rem);
+  z-index: 60;
   width: min(26rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0.5rem;
+  overflow-y: auto;
+  transform: translateY(-50%);
+  overscroll-behavior: contain;
 }
 
 .panel {
@@ -26,7 +95,6 @@
 }
 
 .header,
-.emptyState,
 .summaryCard,
 .itemRow {
   border: 1px solid rgba(34, 33, 38, 0.08);
@@ -61,7 +129,6 @@
 }
 
 .header h2,
-.emptyTitle,
 .itemContent h3 {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
@@ -96,23 +163,6 @@
   border-radius: 999px;
   background: rgba(245, 241, 232, 0.8);
   color: var(--color-charcoal-ink);
-}
-
-.emptyState {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-5);
-}
-
-.emptyTitle {
-  font-size: 1.55rem;
-  letter-spacing: -0.03em;
-}
-
-.emptyBody {
-  margin: 0;
-  color: var(--color-text-body);
-  line-height: 1.7;
 }
 
 .itemList {
@@ -288,12 +338,27 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+}
+
 @media (max-width: 768px) {
+  .trigger {
+    width: 2.9rem;
+    padding: 0.75rem 0.45rem;
+  }
+
+  /* Too little room to sit beside the rail, so the preview becomes a centred
+     sheet that still clears the bottom-anchored banner and back-to-top. */
   .popover {
     position: fixed;
-    top: 5.75rem;
-    right: 1rem;
-    width: min(24rem, calc(100vw - 2rem));
+    top: 50%;
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+    transform: translateY(-50%);
   }
 
   .actionGroup {

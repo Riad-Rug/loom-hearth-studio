@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { Container } from "@/components/layout/container";
-import { CartDrawer } from "@/features/cart/cart-drawer";
 import type { CatalogSearchSuggestion } from "@/lib/catalog/search";
 
 type SiteHeaderNavLink = {
@@ -489,14 +488,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 </Link>
               );
             })}
-            <Link
-              className={`site-header__link ${
-                isPathActive(pathname, accountHref) ? "site-header__link--active" : ""
-              }`}
-              href={accountHref as Route}
-            >
-              {accountLabel}
-            </Link>
           </nav>
 
           <div className="site-header__actions">
@@ -517,7 +508,20 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 <span className="site-header__sr-only">Search</span>
               </button>
             </form>
-            <CartDrawer />
+            <Link
+              className={`site-header__account-link ${
+                isPathActive(pathname, accountHref) ? "site-header__account-link--active" : ""
+              }`}
+              href={accountHref as Route}
+            >
+              <svg aria-hidden="true" height="16" viewBox="0 0 24 24" width="16">
+                <path
+                  d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9m0 1.75c-3.87 0-7 2.09-7 4.67V21h14v-2.58c0-2.58-3.13-4.67-7-4.67"
+                  fill="currentColor"
+                />
+              </svg>
+              <span className="site-header__account-link-label">{accountLabel}</span>
+            </Link>
           </div>
         </div>
 
@@ -574,15 +578,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 </Link>
               ),
             )}
-            <Link
-              className={`site-header__mobile-link ${
-                isPathActive(pathname, accountHref) ? "site-header__mobile-link--active" : ""
-              }`}
-              href={accountHref as Route}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {accountLabel}
-            </Link>
           </nav>
         </div>
       </Container>

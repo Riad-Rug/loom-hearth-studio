@@ -18,7 +18,6 @@ export function CartDrawer() {
   const { itemCount, items, subtotalUsd, discountUsd, promoCode, totalUsd } = useCart();
   const visibleItems = items.slice(0, PREVIEW_ITEM_LIMIT);
   const hiddenItemCount = Math.max(0, items.length - PREVIEW_ITEM_LIMIT);
-  const isEmpty = items.length === 0;
   const itemCountLabel = `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
 
   useEffect(() => {
@@ -107,6 +106,12 @@ export function CartDrawer() {
     setIsOpen((current) => !current);
   }
 
+  // The cart is a floating affordance that only exists once something is in it,
+  // so an empty cart renders nothing at all.
+  if (itemCount === 0) {
+    return null;
+  }
+
   return (
     <div
       ref={shellRef}
@@ -123,21 +128,17 @@ export function CartDrawer() {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label={`Open cart with ${itemCountLabel}`}
-        className="site-header__cart-button"
+        className={styles.trigger}
         type="button"
         onClick={handleButtonClick}
       >
-        <svg aria-hidden="true" height="18" viewBox="0 0 24 24" width="18">
+        <svg aria-hidden="true" height="20" viewBox="0 0 24 24" width="20">
           <path
             d="M7 8.5A5 5 0 0 1 17 8.5V9h1.25A1.75 1.75 0 0 1 20 10.75v8.5A1.75 1.75 0 0 1 18.25 21h-12.5A1.75 1.75 0 0 1 4 19.25v-8.5A1.75 1.75 0 0 1 5.75 9H7zm1.5.5h7V8.5a3.5 3.5 0 0 0-7 0zm9.75 1.5H5.75a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25v-8.5a.25.25 0 0 0-.25-.25"
             fill="currentColor"
           />
         </svg>
-        <span
-          className="site-header__cart-count"
-          data-empty={itemCount === 0 ? "true" : "false"}
-          aria-hidden="true"
-        >
+        <span className={styles.triggerCount} aria-hidden="true">
           {itemCount}
         </span>
       </button>
@@ -154,9 +155,7 @@ export function CartDrawer() {
               <div>
                 <p className={styles.eyebrow}>Cart</p>
                 <h2>Mini Cart</h2>
-                <p className={styles.headerMeta}>
-                  {isEmpty ? "No pieces added yet." : `${itemCountLabel} ready to review.`}
-                </p>
+                <p className={styles.headerMeta}>{`${itemCountLabel} ready to review.`}</p>
               </div>
               <button
                 aria-label="Close cart preview"
@@ -168,90 +167,76 @@ export function CartDrawer() {
               </button>
             </div>
 
-            {isEmpty ? (
-              <div className={styles.emptyState}>
-                <p className={styles.emptyTitle}>Your cart is empty.</p>
-                <p className={styles.emptyBody}>
-                  Add a launch piece and preview it here before checkout.
-                </p>
-                <Link className={styles.secondaryButton} href="/shop" onClick={() => setIsOpen(false)}>
+            <div className={styles.itemList}>
+              {visibleItems.map((item) => (
+                <article key={item.id} className={styles.itemRow}>
+                  <div className={styles.itemMedia}>
+                    <span>{getCartItemLabel(item)}</span>
+                  </div>
+                  <div className={styles.itemContent}>
+                    <div className={styles.itemTopline}>
+                      <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
+                      <p className={styles.itemPrice}>{formatUsd(item.priceUsd)}</p>
+                    </div>
+                    <h3>
+                      <Link
+                        className={styles.itemLink}
+                        href={item.href as Route}
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {item.name}
+                      </Link>
+                    </h3>
+                    <p className={styles.itemMeta}>
+                      Qty {item.quantity}
+                      {item.variantName ? ` ? ${item.variantName}` : ""}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {hiddenItemCount > 0 ? (
+              <p className={styles.moreItems}>
+                +{hiddenItemCount} more {hiddenItemCount === 1 ? "item" : "items"} in cart
+              </p>
+            ) : null}
+
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryRow}>
+                <span>Subtotal</span>
+                <strong>{formatUsd(subtotalUsd)}</strong>
+              </div>
+              {discountUsd > 0 ? (
+                <div className={styles.summaryRow}>
+                  <span>Discount{promoCode ? ` (${promoCode})` : ""}</span>
+                  <strong>-{formatUsd(discountUsd)}</strong>
+                </div>
+              ) : null}
+              <div className={styles.summaryTotal}>
+                <span>Total</span>
+                <strong>{formatUsd(totalUsd)}</strong>
+              </div>
+              <div className={styles.actionGroup}>
+                <Link
+                  className={styles.checkoutButton}
+                  href="/checkout"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Checkout
+                </Link>
+                <Link
+                  className={styles.secondaryButton}
+                  href="/shop"
+                  onClick={() => setIsOpen(false)}
+                >
                   Keep shopping
                 </Link>
               </div>
-            ) : (
-              <>
-                <div className={styles.itemList}>
-                  {visibleItems.map((item) => (
-                    <article key={item.id} className={styles.itemRow}>
-                      <div className={styles.itemMedia}>
-                        <span>{getCartItemLabel(item)}</span>
-                      </div>
-                      <div className={styles.itemContent}>
-                        <div className={styles.itemTopline}>
-                          <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
-                          <p className={styles.itemPrice}>{formatUsd(item.priceUsd)}</p>
-                        </div>
-                        <h3>
-                          <Link
-                            className={styles.itemLink}
-                            href={item.href as Route}
-                            onClick={() => setIsOpen(false)}
-                          >
-                            {item.name}
-                          </Link>
-                        </h3>
-                        <p className={styles.itemMeta}>
-                          Qty {item.quantity}
-                          {item.variantName ? ` ? ${item.variantName}` : ""}
-                        </p>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-
-                {hiddenItemCount > 0 ? (
-                  <p className={styles.moreItems}>
-                    +{hiddenItemCount} more {hiddenItemCount === 1 ? "item" : "items"} in cart
-                  </p>
-                ) : null}
-
-                <div className={styles.summaryCard}>
-                  <div className={styles.summaryRow}>
-                    <span>Subtotal</span>
-                    <strong>{formatUsd(subtotalUsd)}</strong>
-                  </div>
-                  {discountUsd > 0 ? (
-                    <div className={styles.summaryRow}>
-                      <span>Discount{promoCode ? ` (${promoCode})` : ""}</span>
-                      <strong>-{formatUsd(discountUsd)}</strong>
-                    </div>
-                  ) : null}
-                  <div className={styles.summaryTotal}>
-                    <span>Total</span>
-                    <strong>{formatUsd(totalUsd)}</strong>
-                  </div>
-                  <div className={styles.actionGroup}>
-                    <Link
-                      className={styles.checkoutButton}
-                      href="/checkout"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Checkout
-                    </Link>
-                    <Link
-                      className={styles.secondaryButton}
-                      href="/shop"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Keep shopping
-                    </Link>
-                  </div>
-                  <Link className={styles.viewCartLink} href="/cart" onClick={() => setIsOpen(false)}>
-                    View full cart
-                  </Link>
-                </div>
-              </>
-            )}
+              <Link className={styles.viewCartLink} href="/cart" onClick={() => setIsOpen(false)}>
+                View full cart
+              </Link>
+            </div>
           </div>
         </div>
       ) : null}

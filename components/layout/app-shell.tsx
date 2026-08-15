@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { BackToTopButton } from "@/components/layout/back-to-top-button";
 import { ExitIntentCapture } from "@/components/marketing/exit-intent-capture";
+import { CartDrawer } from "@/features/cart/cart-drawer";
 
 type AppShellProps = {
   children: ReactNode;
@@ -26,6 +27,7 @@ export function AppShell({ children, header, footer, consentBanner }: AppShellPr
       {header}
       <main className="site-main">{children}</main>
       {footer}
+      <CartDrawer />
       <BackToTopButton />
       {consentBanner}
       <ExitIntentCapture />
