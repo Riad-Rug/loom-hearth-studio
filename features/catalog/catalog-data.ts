@@ -27,6 +27,19 @@ export const catalogCategories = [
     ],
   },
   {
+    key: "vintage",
+    label: "Vintage Rugs",
+    title: "Vintage Rugs",
+    href: "/shop/vintage",
+    description:
+      "Vintage Moroccan rugs selected for structural integrity, patina, and visible age. Each piece is assessed for warp and weft tension, pile density, and condition before entering the collection. Visible age is not enough \u2014 the construction has to hold.\n\nEvery piece is ONE OF A KIND.",
+    bullets: [
+      "Handmade textures in sand, clay, and terracotta",
+      "Pieces for shelves, seating areas, and daily use",
+      "Ready to browse by category or sort by what suits your space",
+    ],
+  },
+  {
     key: "poufs",
     label: "Poufs",
     title: "Poufs",
@@ -59,19 +72,6 @@ export const catalogCategories = [
     href: "/shop/decor",
     description:
       "A focused selection of handcrafted Moroccan pieces for shelves, consoles, and surfaces. The same sourcing criteria as the rugs \u2014 assessed in person for construction and material quality, not added to fill a category.",
-    bullets: [
-      "Handmade textures in sand, clay, and terracotta",
-      "Pieces for shelves, seating areas, and daily use",
-      "Ready to browse by category or sort by what suits your space",
-    ],
-  },
-  {
-    key: "vintage",
-    label: "Vintage Rugs",
-    title: "Vintage Rugs",
-    href: "/shop/vintage",
-    description:
-      "Vintage Moroccan rugs selected for structural integrity, patina, and visible age. Each piece is assessed for warp and weft tension, pile density, and condition before entering the collection. Visible age is not enough \u2014 the construction has to hold.\n\nEvery piece is ONE OF A KIND.",
     bullets: [
       "Handmade textures in sand, clay, and terracotta",
       "Pieces for shelves, seating areas, and daily use",

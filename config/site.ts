@@ -59,11 +59,20 @@ export const siteConfig = {
     "SEE YOUR EXACT PIECE IN DAYLIGHT PHOTOS BEFORE YOU PAY · FREE SHIPPING OVER $150 · SHIPPING TO THE US · SHIPS FROM CASABLANCA",
   announcementMobile: "APPROVE YOUR PIECE BEFORE YOU PAY · FREE SHIPPING OVER $150 · SHIPPING TO THE US",
   primaryNav: [
-    { href: "/shop/rugs", label: "Rugs" },
-    { href: "/shop/poufs", label: "Poufs" },
-    { href: "/shop/pillows", label: "Pillows" },
-    { href: "/shop/decor", label: "Decor & Antiques" },
-    { href: "/blog", label: "Journal" },
+    {
+      label: "Collection",
+      href: "/shop",
+      items: [
+        { href: "/shop", label: "All pieces" },
+        { href: "/shop/rugs", label: "Rugs" },
+        { href: "/shop/vintage", label: "Vintage Rugs" },
+        { href: "/shop/poufs", label: "Poufs" },
+        { href: "/shop/pillows", label: "Pillows" },
+        { href: "/shop/decor", label: "Decor & Antiques" },
+      ],
+    },
+    { href: "/trade", label: "Trade" },
+    { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
   ],
   supportNav: [

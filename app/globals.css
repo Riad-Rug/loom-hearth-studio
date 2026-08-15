@@ -304,6 +304,8 @@ h6 {
 
 .site-header__actions {
   justify-content: flex-end;
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--color-border-soft);
 }
 
 .site-header__link,
@@ -338,6 +340,81 @@ h6 {
   color: var(--color-green);
 }
 
+.site-header__utility-link {
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+}
+
+.site-header__nav-group {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.site-header__nav-group-trigger {
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.site-header__nav-group-trigger::after {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: translateY(-0.15rem) rotate(45deg);
+  transition: transform 150ms ease;
+}
+
+.site-header__nav-group-trigger[aria-expanded="true"]::after {
+  transform: translateY(0.05rem) rotate(225deg);
+}
+
+.site-header__nav-group-panel {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  z-index: 70;
+  display: grid;
+  width: max-content;
+  min-width: 12rem;
+  padding: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  box-shadow: 0 1.1rem 2.4rem rgba(20, 20, 20, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.3rem);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.site-header__nav-group-panel--open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.site-header__nav-group-link {
+  display: block;
+  padding: 0.55rem 0.6rem;
+  border-radius: 4px;
+  color: var(--color-ink);
+  font-size: 0.92rem;
+}
+
+.site-header__nav-group-link:hover,
+.site-header__nav-group-link:focus-visible {
+  background: rgba(23, 105, 90, 0.08);
+  outline: none;
+}
+
+.site-header__nav-group-link--active {
+  color: var(--color-green);
+}
+
 .site-header__search-shell {
   position: relative;
   display: inline-flex;
@@ -345,9 +422,30 @@ h6 {
 }
 
 .site-header__search-form {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  z-index: 71;
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  box-shadow: 0 1.1rem 2.4rem rgba(20, 20, 20, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.3rem);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.site-header__search-form--open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
 }
 
 .site-header__search-input {
@@ -359,23 +457,10 @@ h6 {
   background: var(--color-white);
   color: var(--color-ink);
   font-size: 0.9rem;
-  animation: site-header-search-in 180ms ease-out;
 }
 
 .site-header__search-input::placeholder {
   color: var(--color-text-muted);
-}
-
-@keyframes site-header-search-in {
-  from {
-    width: 8rem;
-    opacity: 0.3;
-  }
-
-  to {
-    width: 15rem;
-    opacity: 1;
-  }
 }
 
 .site-header__search-suggestions {
@@ -405,9 +490,14 @@ h6 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-header__search-input,
   .site-header__search-suggestions {
     animation: none;
+  }
+
+  .site-header__search-form,
+  .site-header__nav-group-panel,
+  .site-header__nav-group-trigger::after {
+    transition: none;
   }
 }
 
@@ -801,6 +891,8 @@ h6 {
 
   .site-header__actions {
     gap: 0;
+    padding-left: 0;
+    border-left: 0;
   }
 
   .site-header__menu-button {
@@ -843,7 +935,7 @@ h6 {
   }
 
   .site-header__mobile-menu--open {
-    max-height: 40rem;
+    max-height: 46rem;
     padding: 0 0 var(--space-4);
     /* Visible so the search suggestions dropdown is not clipped by the
        collapse mask; the fade still covers the open transition. */
@@ -911,6 +1003,20 @@ h6 {
 
   .site-header__mobile-link--active {
     color: var(--color-green);
+  }
+
+  .site-header__mobile-group {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .site-header__mobile-group-label {
+    margin: var(--space-2) 0 0;
+    color: var(--color-green);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .site-footer__grid {

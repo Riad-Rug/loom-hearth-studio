@@ -14,12 +14,13 @@ type SiteHeaderNavLink = {
   label: string;
 };
 
-type SiteHeaderNavItem =
-  | SiteHeaderNavLink
-  | {
-      label: string;
-      items: readonly SiteHeaderNavLink[];
-    };
+type SiteHeaderNavGroup = {
+  label: string;
+  href?: string;
+  items: readonly SiteHeaderNavLink[];
+};
+
+type SiteHeaderNavItem = SiteHeaderNavLink | SiteHeaderNavGroup;
 
 type SiteHeaderClientProps = {
   announcementDesktop: string;
@@ -27,10 +28,12 @@ type SiteHeaderClientProps = {
   brandName: string;
   primaryNav: readonly SiteHeaderNavItem[];
   isAuthenticated: boolean;
+  accountFirstName: string | null;
 };
 
 const SUGGESTION_MIN_QUERY_LENGTH = 2;
 const SUGGESTION_DEBOUNCE_MS = 200;
+const GROUP_CLOSE_DELAY_MS = 140;
 
 export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const pathname = usePathname();
@@ -44,17 +47,24 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const [suggestions, setSuggestions] = useState<CatalogSearchSuggestion[]>([]);
   const [suggestionsQuery, setSuggestionsQuery] = useState("");
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+  const [isPointerFine, setIsPointerFine] = useState(false);
+  const [openGroupLabel, setOpenGroupLabel] = useState<string | null>(null);
+  const [focusFirstGroupLinkOnOpen, setFocusFirstGroupLinkOnOpen] = useState(false);
+  const groupCloseTimeoutRef = useRef<number | null>(null);
   const showAnnouncement = pathname !== "/contact";
   const trimmedQuery = searchQuery.trim();
   const showSuggestions =
     areSuggestionsOpen &&
     trimmedQuery.length >= SUGGESTION_MIN_QUERY_LENGTH &&
     suggestionsQuery.length >= SUGGESTION_MIN_QUERY_LENGTH;
+  const accountHref = props.isAuthenticated ? "/account" : "/account/login";
+  const accountLabel = props.isAuthenticated ? props.accountFirstName ?? "Account" : "Sign in";
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsDesktopSearchOpen(false);
     setAreSuggestionsOpen(false);
+    setOpenGroupLabel(null);
   }, [pathname]);
 
   useEffect(() => {
@@ -63,6 +73,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
         setIsMobileMenuOpen(false);
         setIsDesktopSearchOpen(false);
         setAreSuggestionsOpen(false);
+        setOpenGroupLabel(null);
       }
     }
 
@@ -71,6 +82,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
         setIsMobileMenuOpen(false);
         setIsDesktopSearchOpen(false);
         setAreSuggestionsOpen(false);
+        setOpenGroupLabel(null);
       }
     }
 
@@ -88,6 +100,41 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
       desktopSearchInputRef.current?.focus();
     }
   }, [isDesktopSearchOpen]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+    function syncPointerMode() {
+      setIsPointerFine(mediaQuery.matches);
+    }
+
+    syncPointerMode();
+    mediaQuery.addEventListener("change", syncPointerMode);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncPointerMode);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (groupCloseTimeoutRef.current) {
+        window.clearTimeout(groupCloseTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!openGroupLabel || !focusFirstGroupLinkOnOpen) {
+      return;
+    }
+
+    const groupId = openGroupLabel.toLowerCase().replace(/\s+/g, "-");
+    const panel = document.getElementById(`site-header-group-panel-${groupId}`);
+    const firstLink = panel?.querySelector("a");
+    (firstLink as HTMLAnchorElement | null)?.focus();
+    setFocusFirstGroupLinkOnOpen(false);
+  }, [openGroupLabel, focusFirstGroupLinkOnOpen]);
 
   useEffect(() => {
     const query = searchQuery.trim();
@@ -212,6 +259,95 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     router.push(`/shop?q=${encodeURIComponent(nextQuery)}`);
   }
 
+  function openGroup(label: string) {
+    if (groupCloseTimeoutRef.current) {
+      window.clearTimeout(groupCloseTimeoutRef.current);
+      groupCloseTimeoutRef.current = null;
+    }
+
+    setOpenGroupLabel(label);
+  }
+
+  function scheduleCloseGroup() {
+    if (!isPointerFine) {
+      return;
+    }
+
+    if (groupCloseTimeoutRef.current) {
+      window.clearTimeout(groupCloseTimeoutRef.current);
+    }
+
+    groupCloseTimeoutRef.current = window.setTimeout(() => {
+      setOpenGroupLabel(null);
+      groupCloseTimeoutRef.current = null;
+    }, GROUP_CLOSE_DELAY_MS);
+  }
+
+  function closeGroup(focusTriggerId?: string) {
+    if (groupCloseTimeoutRef.current) {
+      window.clearTimeout(groupCloseTimeoutRef.current);
+      groupCloseTimeoutRef.current = null;
+    }
+
+    setOpenGroupLabel(null);
+
+    if (focusTriggerId) {
+      document.getElementById(focusTriggerId)?.focus();
+    }
+  }
+
+  function handleGroupBlur(event: React.FocusEvent<HTMLDivElement>, label: string) {
+    if (event.currentTarget.contains(event.relatedTarget as Node)) {
+      return;
+    }
+
+    if (openGroupLabel === label) {
+      setOpenGroupLabel(null);
+    }
+  }
+
+  function handleGroupTriggerKeyDown(
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    label: string,
+  ) {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setFocusFirstGroupLinkOnOpen(true);
+      openGroup(label);
+      return;
+    }
+
+    if (event.key === "Escape" && openGroupLabel === label) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeGroup(event.currentTarget.id);
+    }
+  }
+
+  function handleGroupPanelKeyDown(event: React.KeyboardEvent<HTMLDivElement>, panelId: string) {
+    const panel = document.getElementById(panelId);
+    const links = Array.from(panel?.querySelectorAll("a") ?? []) as HTMLAnchorElement[];
+    const currentIndex = links.indexOf(document.activeElement as HTMLAnchorElement);
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      links[(currentIndex + 1 + links.length) % links.length]?.focus();
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      links[(currentIndex - 1 + links.length) % links.length]?.focus();
+      return;
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      closeGroup(panel?.getAttribute("aria-labelledby") ?? undefined);
+    }
+  }
+
   function renderSearchInput(context: "desktop" | "mobile") {
     const inputId = `site-header-${context}-search`;
     const listboxId = `site-header-${context}-search-listbox`;
@@ -297,20 +433,70 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
           </Link>
 
           <nav aria-label="Primary" className="site-header__nav">
-            {props.primaryNav.map((item) =>
-              "items" in item ? (
-                item.items.map((subItem) => (
-                  <Link
-                    key={subItem.href}
-                    className={`site-header__link ${
-                      isPathActive(pathname, subItem.href) ? "site-header__link--active" : ""
-                    }`}
-                    href={subItem.href as Route}
+            {props.primaryNav.map((item) => {
+              if ("items" in item) {
+                const groupId = item.label.toLowerCase().replace(/\s+/g, "-");
+                const triggerId = `site-header-group-trigger-${groupId}`;
+                const panelId = `site-header-group-panel-${groupId}`;
+                const isOpen = openGroupLabel === item.label;
+                const isActive = item.href ? isPathActive(pathname, item.href) : false;
+
+                return (
+                  <div
+                    key={item.label}
+                    className="site-header__nav-group"
+                    onMouseEnter={() => {
+                      if (isPointerFine) {
+                        openGroup(item.label);
+                      }
+                    }}
+                    onMouseLeave={scheduleCloseGroup}
+                    onBlur={(event) => handleGroupBlur(event, item.label)}
                   >
-                    {subItem.label}
-                  </Link>
-                ))
-              ) : (
+                    <button
+                      id={triggerId}
+                      className={`site-header__link site-header__nav-group-trigger ${
+                        isActive ? "site-header__link--active" : ""
+                      }`}
+                      type="button"
+                      aria-haspopup="true"
+                      aria-expanded={isOpen}
+                      aria-controls={panelId}
+                      onClick={() => (isOpen ? closeGroup() : openGroup(item.label))}
+                      onKeyDown={(event) => handleGroupTriggerKeyDown(event, item.label)}
+                    >
+                      {item.label}
+                    </button>
+                    <div
+                      id={panelId}
+                      role="group"
+                      aria-labelledby={triggerId}
+                      className={`site-header__nav-group-panel ${
+                        isOpen ? "site-header__nav-group-panel--open" : ""
+                      }`}
+                      inert={!isOpen}
+                      onKeyDown={(event) => handleGroupPanelKeyDown(event, panelId)}
+                    >
+                      {item.items.map((subItem) => (
+                        <Link
+                          key={subItem.href}
+                          className={`site-header__nav-group-link ${
+                            isPathActive(pathname, subItem.href)
+                              ? "site-header__nav-group-link--active"
+                              : ""
+                          }`}
+                          href={subItem.href as Route}
+                          onClick={() => closeGroup()}
+                        >
+                          {subItem.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
                 <Link
                   key={item.href}
                   className={`site-header__link ${
@@ -320,37 +506,40 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                 >
                   {item.label}
                 </Link>
-              ),
-            )}
+              );
+            })}
           </nav>
 
           <div className="site-header__actions">
             <div className="site-header__search-shell">
-              {isDesktopSearchOpen ? (
-                <form
-                  className="site-header__search-form"
-                  role="search"
-                  onSubmit={handleSearchSubmit}
-                  onBlur={handleSearchBlur}
-                >
-                  {renderSearchInput("desktop")}
-                  <button className="site-header__link" type="submit">
-                    Search
-                  </button>
-                </form>
-              ) : (
-                <button
-                  className="site-header__link"
-                  type="button"
-                  aria-expanded={false}
-                  onClick={() => setIsDesktopSearchOpen(true)}
-                >
+              <button
+                id="site-header-desktop-search-trigger"
+                className="site-header__link site-header__utility-link"
+                type="button"
+                aria-expanded={isDesktopSearchOpen}
+                aria-controls="site-header-desktop-search-form"
+                onClick={() => setIsDesktopSearchOpen((current) => !current)}
+              >
+                Search
+              </button>
+              <form
+                id="site-header-desktop-search-form"
+                className={`site-header__search-form ${
+                  isDesktopSearchOpen ? "site-header__search-form--open" : ""
+                }`}
+                role="search"
+                inert={!isDesktopSearchOpen}
+                onSubmit={handleSearchSubmit}
+                onBlur={handleSearchBlur}
+              >
+                {renderSearchInput("desktop")}
+                <button className="site-header__link" type="submit">
                   Search
                 </button>
-              )}
+              </form>
             </div>
-            <Link className="site-header__link" href={props.isAuthenticated ? "/account" : "/account/login"}>
-              Account
+            <Link className="site-header__link site-header__utility-link" href={accountHref as Route}>
+              {accountLabel}
             </Link>
             <CartDrawer />
           </div>
@@ -377,28 +566,46 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
           </form>
 
           <nav aria-label="Mobile primary" className="site-header__mobile-nav">
-            {flattenNav(props.primaryNav).map((item) => (
-              <Link
-                key={`mobile-${item.href}`}
-                className={`site-header__mobile-link ${
-                  isPathActive(pathname, item.href) ? "site-header__mobile-link--active" : ""
-                }`}
-                href={item.href as Route}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {props.primaryNav.map((item) =>
+              "items" in item ? (
+                <div key={item.label} className="site-header__mobile-group">
+                  <p className="site-header__mobile-group-label">{item.label}</p>
+                  {item.items.map((subItem) => (
+                    <Link
+                      key={`mobile-${subItem.href}`}
+                      className={`site-header__mobile-link ${
+                        isPathActive(pathname, subItem.href)
+                          ? "site-header__mobile-link--active"
+                          : ""
+                      }`}
+                      href={subItem.href as Route}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {subItem.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <Link
+                  key={`mobile-${item.href}`}
+                  className={`site-header__mobile-link ${
+                    isPathActive(pathname, item.href) ? "site-header__mobile-link--active" : ""
+                  }`}
+                  href={item.href as Route}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ),
+            )}
             <Link
               className={`site-header__mobile-link ${
-                isPathActive(pathname, props.isAuthenticated ? "/account" : "/account/login")
-                  ? "site-header__mobile-link--active"
-                  : ""
+                isPathActive(pathname, accountHref) ? "site-header__mobile-link--active" : ""
               }`}
-              href={props.isAuthenticated ? "/account" : "/account/login"}
+              href={accountHref as Route}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Account
+              {accountLabel}
             </Link>
           </nav>
         </div>
@@ -479,10 +686,6 @@ function SearchSuggestionsPanel(props: SearchSuggestionsPanelProps) {
       </button>
     </div>
   );
-}
-
-function flattenNav(items: readonly SiteHeaderNavItem[]) {
-  return items.flatMap((item) => ("items" in item ? item.items : item));
 }
 
 function isPathActive(pathname: string, href: string) {
