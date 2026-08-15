@@ -1,8 +1,8 @@
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
 /**
- * Shared catalog search scoring. Used by the full /search results page and the
- * header live-suggestions endpoint so both rank products identically.
+ * Shared catalog search scoring. Used by the header live-suggestions endpoint
+ * to rank product matches for the search dropdown.
  */
 
 export type CatalogSearchSuggestion = {

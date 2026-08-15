@@ -129,7 +129,12 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     event.preventDefault();
 
     const nextQuery = searchQuery.trim();
-    router.push(nextQuery ? `/search?q=${encodeURIComponent(nextQuery)}` : "/search");
+
+    if (!nextQuery) {
+      return;
+    }
+
+    router.push(`/shop?q=${encodeURIComponent(nextQuery)}`);
     setIsMobileMenuOpen(false);
     setIsDesktopSearchOpen(false);
     setAreSuggestionsOpen(false);
@@ -196,10 +201,15 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
 
   function viewAllResults() {
     const nextQuery = searchQuery.trim();
+
+    if (!nextQuery) {
+      return;
+    }
+
     setIsMobileMenuOpen(false);
     setIsDesktopSearchOpen(false);
     setAreSuggestionsOpen(false);
-    router.push(nextQuery ? `/search?q=${encodeURIComponent(nextQuery)}` : "/search");
+    router.push(`/shop?q=${encodeURIComponent(nextQuery)}`);
   }
 
   function renderSearchInput(context: "desktop" | "mobile") {

@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/checkout/information", destination: "/checkout", permanent: false },
       { source: "/checkout/success", destination: "/checkout/confirmation", permanent: false },
+      { source: "/search", destination: "/shop", permanent: true },
     ];
   },
 };
