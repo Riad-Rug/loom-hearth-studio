@@ -28,11 +28,15 @@
   max-width: 46rem;
 }
 
+/* Matches the site-wide eyebrow (home, blog, account, footer): 0.72rem, 600,
+   0.08em tracking. The old 0.75rem/0.18em version was left over from the
+   pre-3b theme. Margin is 0 because every eyebrow here sits in a gapped grid. */
 .eyebrow {
-  margin: 0 0 1rem;
+  margin: 0;
   color: var(--color-green);
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -126,7 +130,7 @@
 
 .aboutHeroShipping {
   margin: 0;
-  color: rgba(47, 47, 47, 0.58);
+  color: var(--color-text-subtle);
   font-size: 0.9rem;
   line-height: 1.6;
 }
@@ -134,7 +138,7 @@
 .aboutHeroMedia,
 .aboutFounderMedia {
   position: relative;
-  min-height: 39rem;
+  min-height: 34rem;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -266,19 +270,22 @@
   margin-top: var(--space-5);
 }
 
+/* Same button spec as home, blog, shop and account: 2.8rem tall, 4px radius,
+   flat (no translate/shadow lift), colour-only transitions. */
 .primaryAction,
 .secondaryAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.95rem 1.25rem;
+  min-height: 2.8rem;
+  padding: 0.8rem 1rem;
   border-radius: 4px;
   cursor: pointer;
   font: inherit;
   font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
   transition:
-    transform 150ms ease,
-    box-shadow 150ms ease,
     border-color 150ms ease,
     background-color 150ms ease,
     color 150ms ease;
@@ -345,14 +352,6 @@
 }
 
 .primaryAction:hover,
-.primaryAction:focus-visible,
-.secondaryAction:hover,
-.secondaryAction:focus-visible {
-  transform: translateY(-1px);
-  outline: none;
-}
-
-.primaryAction:hover,
 .primaryAction:focus-visible {
   background: var(--button-primary-bg-hover);
   border-color: var(--button-primary-bg-hover);
@@ -361,7 +360,6 @@
 .primaryAction:disabled {
   cursor: progress;
   opacity: 0.72;
-  transform: none;
 }
 
 .secondaryAction:hover,
@@ -874,16 +872,18 @@
   max-width: 32rem;
 }
 
+/* Flat ink closing band, same spec as the blog closing section and the
+   homepage "how it works" band. Replaces the brown/terracotta gradient and
+   the cream (#fff8ef) text from the previous theme. */
 .aboutExit {
   display: grid;
   width: 100%;
   margin: 0;
-  padding: clamp(2.75rem, 5vw, 4.5rem) min(6vw, 5rem);
-  border-radius: var(--radius-xl);
-  background:
-    radial-gradient(circle at top right, rgba(184, 94, 59, 0.18), transparent 34%),
-    linear-gradient(135deg, #2b2623, #41352e 56%, #5b473d);
-  color: rgba(255, 248, 239, 0.96);
+  padding: var(--space-7);
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-lg);
+  background: var(--color-ink);
+  color: var(--color-bg);
 }
 
 .aboutExitBody {
@@ -894,32 +894,31 @@
 
 .aboutExit h2 {
   margin: 0;
+  color: inherit;
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(2rem, 3vw, 2.8rem);
   letter-spacing: -0.04em;
   line-height: 1.2;
-  color: rgba(255, 248, 239, 0.96);
 }
 
 .aboutExit .eyebrow {
-  margin-bottom: 0;
-  color: rgba(244, 219, 196, 0.88);
+  color: var(--color-mint);
 }
 
 .aboutExit .body {
-  color: rgba(255, 248, 239, 0.84);
+  color: rgba(250, 250, 246, 0.78);
 }
 
 .aboutExit .secondaryAction {
-  border-color: rgba(255, 245, 236, 0.34);
-  background: rgba(255, 245, 236, 0.06);
-  color: rgba(255, 248, 239, 0.96);
+  border-color: rgba(250, 250, 246, 0.35);
+  background: transparent;
+  color: var(--color-bg);
 }
 
 .aboutExit .secondaryAction:hover,
 .aboutExit .secondaryAction:focus-visible {
-  border-color: rgba(255, 245, 236, 0.52);
-  background: rgba(255, 245, 236, 0.12);
+  border-color: rgba(250, 250, 246, 0.6);
+  background: rgba(250, 250, 246, 0.08);
 }
 
 .aboutCrossLinks {
@@ -930,14 +929,14 @@
 }
 
 .aboutCrossLinks .textAction {
-  color: rgba(255, 248, 239, 0.92);
-  text-decoration-color: rgba(244, 219, 196, 0.32);
+  color: var(--color-bg);
+  text-decoration-color: rgba(250, 250, 246, 0.45);
 }
 
 .aboutCrossLinks .textAction:hover,
 .aboutCrossLinks .textAction:focus-visible {
-  color: rgba(255, 248, 239, 1);
-  text-decoration-color: rgba(244, 219, 196, 0.55);
+  color: var(--color-mint);
+  text-decoration-color: var(--color-mint);
 }
 
 .lookbookMedia {
@@ -1095,21 +1094,20 @@
   line-height: 1.2;
 }
 
+/* Same inline link treatment as blog article body: green, 1px underline,
+   darker green on hover. The old rule painted a terracotta underline and a
+   brown hover under a green link. */
 .inlineLink {
-  color: var(--color-clay-terracotta);
+  color: var(--color-green);
   text-decoration: underline;
-  text-decoration-color: rgba(184, 94, 59, 0.32);
+  text-decoration-thickness: 1px;
   text-underline-offset: 0.18em;
-  transition:
-    color 150ms ease,
-    text-decoration-color 150ms ease;
+  transition: color 150ms ease;
 }
 
 .inlineLink:hover,
 .inlineLink:focus-visible {
-  color: rgba(148, 71, 42, 1);
-  text-decoration-color: rgba(148, 71, 42, 0.5);
-  outline: none;
+  color: var(--button-primary-bg-hover);
 }
 
 @media (max-width: 1100px) {
