@@ -264,20 +264,6 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   return (
     <div className={styles.page} id="shop-top">
       <CatalogHistoryRecorder category={category} />
-      <Section className={styles.shopHeader} tone="muted" width="wide">
-        <div className={styles.shopHeaderMain}>
-          <div className={styles.shopHeaderTitleRow}>
-            <h1>{heroTitle}</h1>
-            <p aria-atomic="true" aria-live="polite">
-              {displayedProductCountLabel}
-            </p>
-          </div>
-          <p className={styles.shopHeaderTrustNote}>
-            Every rug is ONE OF A KIND. Sold pieces are not restocked.
-          </p>
-          <p className={styles.lede}>{catalogDescription}</p>
-        </div>
-      </Section>
 
       <Section className={styles.productsSection} id="shop-products" width="wide">
         <div className={styles.catalogLayout}>
@@ -303,6 +289,19 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
           </aside>
 
           <div className={styles.catalogContent}>
+            <div className={styles.shopHeaderMain}>
+              <div className={styles.shopHeaderTitleRow}>
+                <h1>{heroTitle}</h1>
+                <p aria-atomic="true" aria-live="polite">
+                  {displayedProductCountLabel}
+                </p>
+              </div>
+              <p className={styles.shopHeaderTrustNote}>
+                Every rug is ONE OF A KIND. Sold pieces are not restocked.
+              </p>
+              <p className={styles.lede}>{catalogDescription}</p>
+            </div>
+
             {lookbookContext ? (
               <div className={styles.lookbookContextBanner}>
                 <p className={styles.lookbookContextEyebrow}>From the lookbook</p>

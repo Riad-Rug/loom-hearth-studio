@@ -6,10 +6,6 @@
   gap: var(--space-7);
 }
 
-.shopHeader {
-  padding: var(--space-3) 0;
-}
-
 .shopHeaderMain {
   min-width: 0;
   max-width: 48rem;
