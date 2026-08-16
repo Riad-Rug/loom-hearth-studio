@@ -38,6 +38,13 @@
   white-space: nowrap;
 }
 
+.shopHeaderTrustNote {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-body);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
 .shopHeader .categoryRail {
   flex-wrap: nowrap;
   gap: var(--space-2);
@@ -605,337 +612,9 @@
 .catalogContent {
   display: grid;
   gap: var(--space-5);
-}
-
-.filterBar {
-  display: grid;
-  gap: var(--space-3);
-  margin-top: var(--space-1);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-md);
-  background: var(--color-white);
-}
-
-.filterControlsRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.7rem 1.15rem;
-}
-
-.filterSearchShell {
-  position: relative;
-  flex: 1 1 13rem;
-  min-width: 11rem;
-  max-width: 20rem;
-}
-
-.filterSearchIcon {
-  position: absolute;
-  top: 50%;
-  left: 0.8rem;
-  width: 1rem;
-  height: 1rem;
-  fill: none;
-  pointer-events: none;
-  stroke: var(--color-text-subtle);
-  stroke-linecap: round;
-  stroke-width: 1.8;
-  transform: translateY(-50%);
-}
-
-.filterSearchInput {
-  width: 100%;
-  min-width: 0;
-  min-height: 2.6rem;
-  padding: 0.5rem 0.85rem 0.5rem 2.35rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-white);
-  color: var(--color-ink);
-  font: inherit;
-  font-size: 0.9rem;
-}
-
-.filterSearchInput::placeholder {
-  color: var(--color-text-muted);
-}
-
-.filtersToggle {
-  display: none;
-}
-
-.filterGroups {
-  display: contents;
-}
-
-.filterGroup {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.filterGroupLabel {
-  color: var(--color-text-muted);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.segmentedControl {
-  display: inline-flex;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-white);
-}
-
-.segmentButton {
-  min-height: 2.6rem;
-  padding: 0.45rem 0.8rem;
-  border: 0;
-  border-right: 1px solid var(--color-border-soft);
-  background: transparent;
-  color: var(--color-ink);
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 500;
-  white-space: nowrap;
-  transition:
-    background-color 150ms ease,
-    color 150ms ease;
-}
-
-.segmentButton:first-child {
-  border-radius: calc(var(--radius-md) - 1px) 0 0 calc(var(--radius-md) - 1px);
-}
-
-.segmentButton:last-child {
-  border-right: 0;
-  border-radius: 0 calc(var(--radius-md) - 1px) calc(var(--radius-md) - 1px) 0;
-}
-
-.segmentButton:hover {
-  background: rgba(23, 105, 90, 0.06);
-}
-
-.segmentButtonActive,
-.segmentButtonActive:hover {
-  background: var(--color-green);
-  color: var(--button-primary-text);
-}
-
-.sortGroupMobile {
-  display: none;
-}
-
-.sortShell {
-  position: relative;
-  margin-left: auto;
-}
-
-.sortButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 2.6rem;
-  padding: 0.45rem 0.85rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-white);
-  color: var(--color-ink);
-  font: inherit;
-  font-size: 0.85rem;
-  transition:
-    border-color 150ms ease,
-    background-color 150ms ease;
-}
-
-.sortButton:hover {
-  border-color: var(--button-secondary-border-hover);
-  background: rgba(20, 20, 20, 0.03);
-}
-
-.sortButtonValue {
-  font-weight: 600;
-}
-
-.sortChevron,
-.filtersToggleChevron {
-  width: 0.65rem;
-  height: 0.5rem;
-  flex: 0 0 auto;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-  transition: transform 150ms ease;
-}
-
-.sortButton[aria-expanded="true"] .sortChevron,
-.filtersToggle[aria-expanded="true"] .filtersToggleChevron {
-  transform: rotate(180deg);
-}
-
-.sortMenu {
-  position: absolute;
-  top: calc(100% + 0.45rem);
-  right: 0;
-  z-index: 30;
-  display: grid;
-  gap: 0.1rem;
-  width: 13.5rem;
-  margin: 0;
-  padding: 0.3rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-white);
-  box-shadow: 0 0.9rem 2rem rgba(20, 20, 20, 0.13);
-  list-style: none;
-  animation: sort-menu-in 150ms ease-out;
-}
-
-@keyframes sort-menu-in {
-  from {
-    opacity: 0;
-    transform: translateY(-0.25rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sortMenu {
-    animation: none;
-  }
-
-  .sortChevron,
-  .filtersToggleChevron,
-  .segmentButton {
-    transition: none;
-  }
-}
-
-.sortOption {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.55rem 0.6rem;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--color-ink);
-  font: inherit;
-  font-size: 0.86rem;
-  text-align: left;
-}
-
-.sortOption:hover {
-  background: rgba(23, 105, 90, 0.07);
-}
-
-.sortOptionSelected {
-  color: var(--color-green);
-  font-weight: 600;
-}
-
-.sortCheck {
-  width: 0.8rem;
-  height: 0.7rem;
-  flex: 0 0 auto;
-  fill: none;
-  opacity: 0;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2;
-}
-
-.sortOptionSelected .sortCheck {
-  opacity: 1;
-}
-
-.filterResultsRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-  padding-top: var(--space-2);
-  border-top: 1px solid var(--color-border-soft);
-}
-
-.toolbarSummary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.55rem;
-  margin: 0;
-}
-
-.toolbarCount {
-  color: var(--color-charcoal-ink);
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.toolbarTrustNote {
-  color: var(--color-text-body);
-  font-size: 0.88rem;
-  line-height: 1.4;
-}
-
-.clearFiltersButton {
-  padding: 0.25rem 0.1rem;
-  border: 0;
-  background: transparent;
-  color: var(--color-green);
-  font: inherit;
-  font-size: 0.84rem;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 0.22em;
-}
-
-.clearFiltersButton:hover {
-  color: var(--button-primary-bg-hover);
-}
-
-.activeFilterChips {
-  display: none;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
-.activeFilterChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  min-height: 2.1rem;
-  padding: 0.3rem 0.7rem;
-  border: 1px solid rgba(23, 105, 90, 0.35);
-  border-radius: 999px;
-  background: rgba(23, 105, 90, 0.08);
-  color: var(--color-green);
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.activeFilterChipIcon {
-  width: 0.55rem;
-  height: 0.55rem;
-  flex: 0 0 auto;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-width: 1.8;
+  /* Keeps the layout from jumping/scrolling when a search narrows the result set
+     from many cards down to a few. */
+  min-height: 60vh;
 }
 
 .productGrid {
@@ -1135,14 +814,6 @@
   .productGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
-  .filterSearchShell {
-    max-width: none;
-  }
-
-  .sortShell {
-    margin-left: 0;
-  }
 }
 
 @media (max-width: 768px) {
@@ -1223,137 +894,6 @@
     padding-top: 0;
   }
 
-  .filterBar {
-    padding: var(--space-3);
-  }
-
-  .filterControlsRow {
-    gap: 0.6rem;
-  }
-
-  .filterSearchShell {
-    flex: 1 1 0;
-    min-width: 0;
-    max-width: none;
-  }
-
-  .filterSearchInput {
-    min-height: 2.75rem;
-    font-size: 0.92rem;
-  }
-
-  .filtersToggle {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    gap: 0.45rem;
-    min-height: 2.75rem;
-    padding: 0.45rem 0.85rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-white);
-    color: var(--color-ink);
-    font: inherit;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition:
-      border-color 150ms ease,
-      color 150ms ease;
-  }
-
-  .filtersToggle[aria-expanded="true"] {
-    border-color: rgba(23, 105, 90, 0.45);
-    color: var(--color-green);
-  }
-
-  .filterCountBadge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.2rem;
-    height: 1.2rem;
-    padding: 0 0.28rem;
-    border-radius: 999px;
-    background: var(--color-green);
-    color: var(--button-primary-text);
-    font-size: 0.7rem;
-    font-weight: 700;
-  }
-
-  .filterGroups {
-    display: grid;
-    flex-basis: 100%;
-    gap: var(--space-3);
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    pointer-events: none;
-    transition:
-      max-height 220ms ease,
-      opacity 180ms ease;
-  }
-
-  .filterGroups[data-open="true"] {
-    max-height: 34rem;
-    padding-top: 0.15rem;
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .filterGroup {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.4rem;
-  }
-
-  .sortGroupMobile {
-    display: flex;
-  }
-
-  .sortShell {
-    display: none;
-  }
-
-  .segmentedControl {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    border: 0;
-    background: transparent;
-  }
-
-  .segmentButton {
-    min-height: 2.5rem;
-    padding: 0.4rem 0.8rem;
-    border: 1px solid var(--color-border);
-    font-size: 0.8rem;
-  }
-
-  .segmentButton:first-child,
-  .segmentButton:last-child {
-    border-right: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-  }
-
-  .segmentButton {
-    border-radius: var(--radius-md);
-  }
-
-  .segmentButtonActive,
-  .segmentButtonActive:hover {
-    border-color: var(--color-green);
-  }
-
-  .activeFilterChips {
-    display: flex;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .filterGroups {
-      transition: none;
-    }
-  }
-
   .catalogSidebar {
     display: none;
   }
@@ -1413,15 +953,6 @@
   .sidebarCategoryRail .categoryRail {
     grid-template-columns: 1fr;
   }
-
-  .toolbarSummary {
-    gap: 0.4rem;
-  }
-
-  .toolbarTrustNote {
-    font-size: 0.8rem;
-    line-height: 1.35;
-  }
 }
 
 /* Accessibility: authoritative keyboard focus ring for every interactive element
@@ -1433,22 +964,9 @@
 .tertiaryAction:focus-visible,
 .categoryChip:focus-visible,
 .searchSuggestion:focus-visible,
-.searchSubmit:focus-visible,
-.filterSearchInput:focus-visible,
-.segmentButton:focus-visible,
-.filtersToggle:focus-visible,
-.sortButton:focus-visible,
-.sortOption:focus-visible,
-.clearFiltersButton:focus-visible,
-.activeFilterChip:focus-visible {
+.searchSubmit:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 3px var(--color-white),
     0 0 0 6px rgba(159, 84, 47, 0.85);
-}
-
-/* Keep the focus ring of a joined segment above its siblings. */
-.segmentButton:focus-visible {
-  position: relative;
-  z-index: 1;
 }

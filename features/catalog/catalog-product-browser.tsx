@@ -12,16 +12,21 @@ const showMoreProductCount = 10;
 
 type CatalogProductBrowserProps = {
   products: CatalogProductCardViewModel[];
+  searchQuery: string;
 };
 
-export function CatalogProductBrowser({ products }: CatalogProductBrowserProps) {
+export function CatalogProductBrowser({ products, searchQuery }: CatalogProductBrowserProps) {
   const [visibleCount, setVisibleCount] = useState(() =>
     Math.min(products.length, initialVisibleProductCount),
   );
 
+  // Key off the search query rather than the `products` array's identity: the array gets
+  // a new identity on every parent re-render (e.g. from an unrelated RSC refetch), which
+  // would otherwise silently reset "Show More" progress even though the query is unchanged.
   useEffect(() => {
     setVisibleCount(Math.min(products.length, initialVisibleProductCount));
-  }, [products]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   const visibleProducts = products.slice(0, visibleCount);
   const hasMoreProducts = visibleCount < products.length;

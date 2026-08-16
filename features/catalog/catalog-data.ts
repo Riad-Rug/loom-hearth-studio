@@ -87,17 +87,4 @@ export const catalogCategories = [
   bullets: readonly string[];
 }>;
 
-export const catalogSortOptions = [
-  "Featured",
-  "Newest",
-  "Price: Low to High",
-  "Price: High to Low",
-] as const;
-
-export const catalogFilterLabels = [
-  "Handwoven",
-  "ONE OF A KIND",
-  "Decor",
-  "Fresh Arrivals",
-] as const;
 

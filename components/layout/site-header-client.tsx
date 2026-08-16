@@ -34,6 +34,11 @@ const SUGGESTION_MIN_QUERY_LENGTH = 2;
 const SUGGESTION_DEBOUNCE_MS = 200;
 const GROUP_CLOSE_DELAY_MS = 140;
 
+// Fired after patching the address bar in place (history.pushState) while already on
+// /shop, so the shop page can pick up the new search query without a full navigation.
+// Keep this event name in sync with features/catalog/catalog-page-view.tsx.
+const SHOP_QUERY_SYNC_EVENT = "lh:shop-query-sync";
+
 export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -169,9 +174,24 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
       return;
     }
 
-    router.push(`/shop?q=${encodeURIComponent(nextQuery)}`);
+    navigateToShopSearch(nextQuery);
     setIsMobileMenuOpen(false);
     setAreSuggestionsOpen(false);
+  }
+
+  // When already on /shop, patch the query in place instead of pushing a full navigation
+  // (which would remount the page and refetch the catalog). Other shop routes (e.g.
+  // /shop/rugs) still need a real navigation to reach the full catalog with the query.
+  function navigateToShopSearch(query: string) {
+    const href = `/shop?q=${encodeURIComponent(query)}`;
+
+    if (pathname === "/shop") {
+      window.history.pushState(null, "", href);
+      window.dispatchEvent(new Event(SHOP_QUERY_SYNC_EVENT));
+      return;
+    }
+
+    router.push(href as Route);
   }
 
   function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -237,7 +257,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
 
     setIsMobileMenuOpen(false);
     setAreSuggestionsOpen(false);
-    router.push(`/shop?q=${encodeURIComponent(nextQuery)}`);
+    navigateToShopSearch(nextQuery);
   }
 
   function openGroup(label: string) {
