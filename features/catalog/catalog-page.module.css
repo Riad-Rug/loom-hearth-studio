@@ -10,15 +10,9 @@
   padding: var(--space-3) 0;
 }
 
-.shopHeaderGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.62fr);
-  align-items: end;
-  gap: var(--space-6);
-}
-
 .shopHeaderMain {
   min-width: 0;
+  max-width: 48rem;
 }
 
 .shopHeaderTitleRow {
@@ -56,9 +50,34 @@
   line-height: 1.4;
 }
 
-/* Right-hand filter/sort panel: intentionally borderless as a group — each control
-   carries its own thin border (site control vocabulary), the group itself is not
-   boxed or card-styled. */
+/* Two-column products layout: filters live beside the grid, not above it. The
+   sidebar tracks a fixed measure so the chip rows wrap predictably; the grid
+   track is minmax(0, 1fr) so wide cards can never push the column past the
+   container. align-items: start lets the sidebar stick. */
+.catalogLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 15.5rem) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-6);
+}
+
+.filterSidebar {
+  position: sticky;
+  top: var(--site-header-scroll-offset);
+  min-width: 0;
+  /* Safety valve only: the panel is shorter than this at every real filter
+     count, so no nested scrollbar appears on ordinary viewports. The offset
+     margin/padding pair keeps the 2px focus outlines from being clipped by the
+     scroll container without shifting the panel off the grid line. */
+  max-height: calc(100dvh - var(--site-header-scroll-offset) - var(--space-4));
+  margin: -2px;
+  padding: 2px;
+  overflow-y: auto;
+}
+
+/* Filter/sort panel: intentionally borderless as a group — each control carries
+   its own thin border (site control vocabulary), the group itself is not boxed
+   or card-styled. */
 .filterPanel {
   display: grid;
 }
@@ -92,16 +111,21 @@
 .filterChip {
   display: inline-flex;
   width: fit-content;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: center;
+  gap: 0.1rem;
   min-height: 2.5rem;
-  padding: 0.55rem 0.85rem;
+  padding: 0.45rem 0.75rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-ink);
   font-size: 0.85rem;
   font-weight: 500;
+  line-height: 1.2;
+  text-align: left;
+  text-decoration: none;
   transition:
     border-color 150ms ease,
     background-color 150ms ease,
@@ -121,8 +145,70 @@
   color: var(--color-green);
 }
 
+/* Second line on rug-only size chips: the concrete footprint range, so "Medium"
+   is not the only thing a shopper has to go on. Muted, never the chip's voice. */
+.filterChipHint {
+  color: var(--color-text-subtle);
+  font-size: 0.72rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.filterChip[data-active="true"] .filterChipHint {
+  color: var(--color-green);
+}
+
+/* Category is the one multi-select group, so it uses checkboxes rather than the
+   single-select chip. Native control, site accent, same 1px/4px vocabulary. */
+.filterCheckList {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.filterCheck {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-size: 0.85rem;
+  line-height: 1.3;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.filterCheck:hover {
+  background: rgba(20, 20, 20, 0.03);
+}
+
+.filterCheck[data-active="true"] {
+  color: var(--color-green);
+  font-weight: 500;
+}
+
+.filterCheckInput {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--color-green);
+  cursor: pointer;
+}
+
+.filterCheck:has(.filterCheckInput:focus-visible) {
+  outline: 2px solid var(--color-green);
+  outline-offset: 1px;
+}
+
 .filterSortSelect {
-  width: fit-content;
+  /* Full column width: "Price: low to high" overruns a fit-content control in a
+     sidebar this narrow. */
+  width: 100%;
+  max-width: 100%;
   min-height: 2.5rem;
   padding: 0.5rem 1.9rem 0.5rem 0.7rem;
   border: 1px solid var(--color-border);
@@ -170,9 +256,23 @@
 }
 
 @media (max-width: 900px) {
-  .shopHeaderGrid {
+  /* Below the site header's own collapse breakpoint the sidebar would squeeze the
+     grid, so it becomes a disclosure stacked above the products instead. */
+  .catalogLayout {
     grid-template-columns: minmax(0, 1fr);
-    align-items: start;
+    gap: var(--space-4);
+  }
+
+  .filterSidebar {
+    position: static;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .filterSortSelect {
+    max-width: 20rem;
   }
 
   .mobileFiltersToggle {
@@ -240,7 +340,7 @@
   }
 
   .filterGroups[data-open="true"] {
-    max-height: 40rem;
+    max-height: 64rem;
     margin-top: var(--space-3);
     opacity: 1;
     pointer-events: auto;
@@ -463,7 +563,9 @@
 
 .catalogContent {
   display: grid;
+  align-content: start;
   gap: var(--space-5);
+  min-width: 0;
   /* Keeps the layout from jumping/scrolling when a search narrows the result set
      from many cards down to a few. */
   min-height: 60vh;
@@ -649,7 +751,9 @@
   line-height: 1.7;
 }
 
-@media (max-width: 1100px) {
+/* The sidebar takes ~15.5rem out of the row, so four cards only stay legible on
+   genuinely wide viewports; below that the grid drops to three. */
+@media (max-width: 1400px) {
   .productGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -689,4 +793,15 @@
   box-shadow:
     0 0 0 3px var(--color-white),
     0 0 0 6px rgba(159, 84, 47, 0.85);
+}
+
+/* Filter panel controls keep the site-wide green focus ring (app/globals.css).
+   Declared last so it wins over the `outline: none` in the hover/focus rules
+   above, which exist only to suppress the default ring on hover-styled chips. */
+.filterChip:focus-visible,
+.filterSortSelect:focus-visible,
+.filterClearButton:focus-visible,
+.mobileFiltersToggle:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: 2px;
 }

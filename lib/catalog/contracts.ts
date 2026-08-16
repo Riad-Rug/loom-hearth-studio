@@ -7,7 +7,15 @@ import type {
   RugProduct,
 } from "@/types/domain";
 
-export type CatalogProductSizeBucket = "small" | "medium" | "large";
+// Five size tiers, classified from the product's footprint area (length x width)
+// rather than a single side — see getProductSizeBucket in lib/catalog/service.ts
+// for the per-category cutoffs and the data they were calibrated against.
+export type CatalogProductSizeBucket =
+  | "accent"
+  | "small"
+  | "medium"
+  | "large"
+  | "oversized";
 
 export type CatalogProductCardViewModel = {
   id: string;

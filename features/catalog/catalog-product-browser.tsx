@@ -12,9 +12,9 @@ const showMoreProductCount = 10;
 
 type CatalogProductBrowserProps = {
   products: CatalogProductCardViewModel[];
-  // Composite of every active filter (search query, price, size, sort, hide-sold) so any
-  // filter change resets pagination. Built by the parent (see `filterKey` in
-  // catalog-page-view.tsx).
+  // Composite of every active filter (search query, category, price, size, sort,
+  // hide-sold) so any filter change resets pagination. Built by the parent (see
+  // `filterKey` in catalog-page-view.tsx).
   filterKey: string;
 };
 

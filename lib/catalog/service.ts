@@ -861,45 +861,53 @@ function createCareDescription(product: Product) {
   return "Dust or vacuum gently. Spot clean with cold water and mild soap. Avoid harsh chemical cleaners and prolonged direct sunlight.";
 }
 
-// Rug size tiers, calibrated to the same thresholds the product-page placement
-// notes already use: accent (under ~6 ft), mid-size (6-8 ft), large (8 ft +).
+// Longest-side thresholds used only by the product-page placement note copy
+// (accent under ~6 ft, mid-size 6-8 ft, large 8 ft +). The shop's size filter
+// deliberately does NOT use these — see getProductSizeBucket below.
 const rugAccentMaxCm = 180;
 const rugMidSizeMaxCm = 240;
 
-// Non-rug pieces (poufs, pillows, decor) live on a much smaller natural scale.
-const multiUnitSmallMaxCm = 60;
-const multiUnitMediumMaxCm = 120;
+/**
+ * Size tiers are classified from footprint area (length x width), not from a
+ * single side. Moroccan rugs cluster tightly by length (the live catalog runs
+ * 137-175 cm for 23 of 36 pieces) while width swings from 67 cm to 169 cm, so
+ * longest-side banding collapses almost the whole catalog into one tier.
+ * Area uses both dimensions and tracks the question a shopper is actually
+ * asking — how much floor does this cover.
+ *
+ * Rug cutoffs below map to ~13 / 17 / 21 / 32 sq ft and split the live rug +
+ * vintage inventory 7 / 9 / 11 / 5 / 4 across the five tiers.
+ */
+const rugSizeAreaCutoffsCm2 = [12_000, 16_000, 20_000, 30_000] as const;
+
+/**
+ * Non-rug pieces (poufs, pillows, decor) live on a much smaller natural scale,
+ * so they run the same five-tier ladder against their own cutoffs. Calibrated
+ * against live stock: cactus-silk pillows (~1_760-2_120 cm2) land in "small",
+ * rug-material poufs (61 x 61 = 3_721 cm2) land in "medium".
+ */
+const multiUnitSizeAreaCutoffsCm2 = [1_500, 2_500, 5_000, 10_000] as const;
+
+const sizeBucketLadder = [
+  "accent",
+  "small",
+  "medium",
+  "large",
+  "oversized",
+] as const satisfies readonly CatalogProductSizeBucket[];
 
 function getProductSizeBucket(product: Product): CatalogProductSizeBucket | undefined {
   const dimensionsCm = product.dimensionsCm;
 
-  if (!dimensionsCm) {
+  if (!dimensionsCm || !(dimensionsCm.length > 0) || !(dimensionsCm.width > 0)) {
     return undefined;
   }
 
-  const longestSideCm = Math.max(dimensionsCm.length, dimensionsCm.width);
+  const areaCm2 = dimensionsCm.length * dimensionsCm.width;
+  const cutoffs = product.type === "rug" ? rugSizeAreaCutoffsCm2 : multiUnitSizeAreaCutoffsCm2;
+  const tierIndex = cutoffs.findIndex((cutoffCm2) => areaCm2 <= cutoffCm2);
 
-  if (product.type === "rug") {
-    if (longestSideCm <= rugAccentMaxCm) {
-      return "small";
-    }
-
-    if (longestSideCm <= rugMidSizeMaxCm) {
-      return "medium";
-    }
-
-    return "large";
-  }
-
-  if (longestSideCm <= multiUnitSmallMaxCm) {
-    return "small";
-  }
-
-  if (longestSideCm <= multiUnitMediumMaxCm) {
-    return "medium";
-  }
-
-  return "large";
+  return tierIndex === -1 ? "oversized" : sizeBucketLadder[tierIndex];
 }
 
 function createRugPlacementNote(product: Extract<Product, { type: "rug" }>) {

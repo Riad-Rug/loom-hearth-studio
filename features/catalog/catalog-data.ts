@@ -108,24 +108,67 @@ export const catalogPriceFilterOptions = [
 
 export type CatalogPriceFilter = (typeof catalogPriceFilterOptions)[number]["value"];
 
-export type CatalogSizeFilter = "all" | "small" | "medium" | "large";
+// Category filter options for the shop sidebar. Ordered the way the shop reads
+// left to right in the header's Collection menu rather than by catalogCategories
+// order; `vintage` is a real ProductCategory of its own (not a rug sub-style),
+// so every option maps 1:1 onto a category key and its route.
+export const catalogCategoryFilterOptions = [
+  { value: "rugs", label: "Rugs", href: "/shop/rugs" },
+  { value: "poufs", label: "Poufs", href: "/shop/poufs" },
+  { value: "pillows", label: "Pillows", href: "/shop/pillows" },
+  { value: "vintage", label: "Vintage Rugs", href: "/shop/vintage" },
+  { value: "decor", label: "Decor & Antiques", href: "/shop/decor" },
+] as const satisfies ReadonlyArray<{
+  value: ProductCategory;
+  label: string;
+  href: string;
+}>;
 
-type CatalogSizeFilterOption = { value: CatalogSizeFilter; label: string };
+export type CatalogCategoryFilterOption = (typeof catalogCategoryFilterOptions)[number];
+
+export type CatalogSizeFilter =
+  | "all"
+  | "accent"
+  | "small"
+  | "medium"
+  | "large"
+  | "oversized";
+
+export type CatalogSizeFilterOption = {
+  value: CatalogSizeFilter;
+  label: string;
+  /** Concrete footprint range, shown as a second line on rug-only views. */
+  hint?: string;
+  /** Spoken form of label + hint, so screen readers don't read "ft²" raw. */
+  spokenLabel?: string;
+};
 
 // Size buckets are category-relative: the server classifies each product against
-// its own category's scale (see getProductSizeBucket in lib/catalog/service.ts).
-// On rug-only views the segments speak the rug vocabulary shoppers actually use.
+// its own category's footprint scale (see getProductSizeBucket in
+// lib/catalog/service.ts). On rug-only views the tiers carry the concrete area
+// range, because "Medium" alone tells a shopper nothing about their room.
 export const rugSizeFilterOptions: readonly CatalogSizeFilterOption[] = [
   { value: "all", label: "All" },
-  { value: "small", label: "Under 6 ft" },
-  { value: "medium", label: "6–8 ft" },
-  { value: "large", label: "8 ft +" },
+  { value: "accent", label: "Accent", hint: "to 13 ft²", spokenLabel: "Accent, up to 13 square feet" },
+  { value: "small", label: "Small", hint: "13–17 ft²", spokenLabel: "Small, 13 to 17 square feet" },
+  { value: "medium", label: "Medium", hint: "17–21 ft²", spokenLabel: "Medium, 17 to 21 square feet" },
+  { value: "large", label: "Large", hint: "21–32 ft²", spokenLabel: "Large, 21 to 32 square feet" },
+  {
+    value: "oversized",
+    label: "Oversized",
+    hint: "32 ft² +",
+    spokenLabel: "Oversized, 32 square feet and up",
+  },
 ];
 
+// Mixed views span rugs and much smaller pieces, so a single area range would be
+// wrong for half the grid: names only, each piece measured against its own scale.
 export const genericSizeFilterOptions: readonly CatalogSizeFilterOption[] = [
   { value: "all", label: "All" },
+  { value: "accent", label: "Accent" },
   { value: "small", label: "Small" },
   { value: "medium", label: "Medium" },
   { value: "large", label: "Large" },
+  { value: "oversized", label: "Oversized" },
 ];
 
