@@ -1,7 +1,7 @@
 .page {
   display: grid;
-  /* minmax(0, 1fr) keeps wide intrinsic content (the scrolling category rail)
-     from inflating the single column track past the viewport on mobile. */
+  /* minmax(0, 1fr) keeps wide intrinsic content from inflating the single
+     column track past the viewport on mobile. */
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-7);
 }
@@ -45,30 +45,6 @@
   line-height: 1.4;
 }
 
-.shopHeader .categoryRail {
-  flex-wrap: nowrap;
-  gap: var(--space-2);
-  margin-inline: -1rem;
-  padding: 0 1rem var(--space-2);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.shopHeader .categoryRail::-webkit-scrollbar {
-  display: none;
-}
-
-.shopHeader .allCategoriesChip {
-  display: none;
-}
-
-.shopHeader .categoryChip {
-  flex: 0 0 auto;
-  padding: 0.62rem 0.86rem;
-  font-size: 0.78rem;
-  white-space: nowrap;
-}
-
 .productsSection {
   order: 2;
 }
@@ -97,8 +73,7 @@
   line-height: 1.7;
 }
 
-.heroPanelLabel,
-.sidebarHeading {
+.heroPanelLabel {
   margin: 0;
   color: var(--color-text-subtle);
   font-size: 0.78rem;
@@ -281,28 +256,7 @@
   letter-spacing: -0.04em;
 }
 
-.categoryRail {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.catalogShell {
-  display: grid;
-  grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
-  gap: var(--space-5);
-  align-items: start;
-}
-
-.catalogSidebar {
-  position: sticky;
-  top: calc(var(--space-6) + 5.5rem);
-  display: grid;
-  gap: var(--space-4);
-}
-
-.sidebarCard,
-.sidebarPanel {
+.sidebarCard {
   display: grid;
   gap: var(--space-3);
   padding: 0;
@@ -321,8 +275,7 @@
 }
 
 .sidebarCount,
-.sidebarCopy,
-.sidebarPanelCopy {
+.sidebarCopy {
   margin: 0;
 }
 
@@ -341,8 +294,7 @@
   text-transform: uppercase;
 }
 
-.sidebarCopy,
-.sidebarPanelCopy {
+.sidebarCopy {
   color: var(--color-text-body);
   font-size: 0.92rem;
   line-height: 1.55;
@@ -428,19 +380,6 @@
   display: grid;
   gap: 0.6rem;
   max-width: 42rem;
-}
-
-.sidebarCategoryRail .categoryRail {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.sidebarCategoryRail .categoryChip {
-  width: 100%;
-  justify-content: flex-start;
-  min-height: 3rem;
-  padding: 0.8rem 1rem;
-  border-radius: var(--radius-md);
 }
 
 .tradePanel {
@@ -562,38 +501,6 @@
   background:
     linear-gradient(90deg, var(--button-tertiary-underline-hover), var(--button-tertiary-underline-hover)) 0 100% / 100% 0.46rem no-repeat,
     transparent;
-  color: var(--color-charcoal-ink);
-}
-
-.categoryChip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.85rem 1.15rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-wool-cream);
-  color: var(--color-charcoal-ink);
-  transition:
-    border-color 150ms ease,
-    background-color 150ms ease,
-    box-shadow 150ms ease,
-    color 150ms ease;
-}
-
-.categoryChipActive,
-.categoryChip:hover,
-.categoryChip:focus-visible {
-  border-color: rgba(34, 33, 38, 0.16);
-  background: rgba(198, 106, 61, 0.12);
-  color: var(--color-charcoal-ink);
-  outline: none;
-}
-
-.categoryChipActive {
-  border-color: rgba(198, 106, 61, 0.32);
-  background: rgba(198, 106, 61, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(198, 106, 61, 0.08);
   color: var(--color-charcoal-ink);
 }
 
@@ -798,19 +705,6 @@
 }
 
 @media (max-width: 1100px) {
-  .catalogShell {
-    grid-template-columns: 1fr;
-  }
-
-  .catalogSidebar {
-    position: static;
-    top: auto;
-  }
-
-  .sidebarCategoryRail .categoryRail {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .productGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -894,10 +788,6 @@
     padding-top: 0;
   }
 
-  .catalogSidebar {
-    display: none;
-  }
-
   .productGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -949,10 +839,6 @@
   .emptySearch {
     padding: var(--space-4);
   }
-
-  .sidebarCategoryRail .categoryRail {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Accessibility: authoritative keyboard focus ring for every interactive element
@@ -962,7 +848,6 @@
 .primaryAction:focus-visible,
 .secondaryAction:focus-visible,
 .tertiaryAction:focus-visible,
-.categoryChip:focus-visible,
 .searchSuggestion:focus-visible,
 .searchSubmit:focus-visible {
   outline: none;

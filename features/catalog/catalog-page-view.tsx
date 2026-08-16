@@ -41,32 +41,9 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const heroTitle = collection?.title ?? (categoryMeta ? categoryMeta.title : catalogLanding.title);
   const heroCopy =
     collection?.description ?? (categoryMeta ? categoryMeta.description : catalogLanding.description);
-  const categoryCounts = useMemo(() => {
-    return catalogCategories.reduce<Record<ProductCategory, number>>((accumulator, item) => {
-      accumulator[item.key] = products.filter((product) => product.category === item.key).length;
-      return accumulator;
-    }, {} as Record<ProductCategory, number>);
-  }, [products]);
   const hasExactCategoryLink = collection?.href
     ? catalogCategories.some((item) => item.href === collection.href)
     : false;
-  const showCategoryCounts = !category && !hasExactCategoryLink;
-  const visibleCategories = useMemo(
-    () => {
-      if (!showCategoryCounts) {
-        return catalogCategories;
-      }
-
-      return catalogCategories.filter((item) => {
-        const count = categoryCounts[item.key] ?? 0;
-        const isCurrentCategory =
-          item.key === category || (hasExactCategoryLink ? item.href === collection?.href : false);
-
-        return count > 0 || isCurrentCategory;
-      });
-    },
-    [category, categoryCounts, collection?.href, hasExactCategoryLink, showCategoryCounts],
-  );
   const filteredProducts = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -94,7 +71,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const displayedProductCountLabel = `${displayedProductCount} ${
     displayedProductCount === 1 ? "piece" : "pieces"
   }`;
-  const sidebarCopy =
+  const catalogDescription =
     category || hasExactCategoryLink
       ? heroCopy
       : "Handcrafted rugs, poufs, and decor from Marrakech. ONE OF A KIND pieces do not return once sold.";
@@ -150,35 +127,6 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     setSearchQuery("");
   };
 
-  const renderCategoryRail = () => (
-    <div className={styles.categoryRail}>
-      <Link
-        className={`${styles.categoryChip} ${styles.allCategoriesChip} ${
-          !category ? styles.categoryChipActive : ""
-        }`}
-        href="/shop"
-      >
-        All categories
-      </Link>
-      {visibleCategories.map((item) => {
-        const isActive =
-          collection?.href && hasExactCategoryLink
-            ? item.href === collection.href
-            : item.key === category;
-
-        return (
-          <Link
-            key={item.href}
-            className={`${styles.categoryChip} ${isActive ? styles.categoryChipActive : ""}`}
-            href={item.href}
-          >
-            {showCategoryCounts ? `${item.label} (${categoryCounts[item.key] ?? 0})` : item.label}
-          </Link>
-        );
-      })}
-    </div>
-  );
-
   return (
     <div className={styles.page} id="shop-top">
       <CatalogHistoryRecorder category={category} />
@@ -192,48 +140,38 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         <p className={styles.shopHeaderTrustNote}>
           Every rug is ONE OF A KIND. Sold pieces are not restocked.
         </p>
-        {renderCategoryRail()}
+        <p className={styles.lede}>{catalogDescription}</p>
       </Section>
 
       <Section className={styles.productsSection} id="shop-products" width="wide">
-        <div className={styles.catalogShell}>
-          <aside className={styles.catalogSidebar}>
-            <div className={styles.sidebarPanel}>
-              <p className={styles.sidebarHeading}>Categories</p>
-              <p className={styles.sidebarPanelCopy}>{sidebarCopy}</p>
-              <div className={styles.sidebarCategoryRail}>{renderCategoryRail()}</div>
+        <div className={styles.catalogContent}>
+          {lookbookContext ? (
+            <div className={styles.lookbookContextBanner}>
+              <p className={styles.lookbookContextEyebrow}>From the lookbook</p>
+              <div className={styles.lookbookContextBannerBody}>
+                <h2>{lookbookContext.title}</h2>
+                <p>
+                  This collection is where that {lookbookContext.roomLabel.toLowerCase()} scene
+                  starts. Browse the related pieces without losing the room direction.
+                </p>
+              </div>
             </div>
-          </aside>
+          ) : null}
 
-          <div className={styles.catalogContent}>
-            {lookbookContext ? (
-              <div className={styles.lookbookContextBanner}>
-                <p className={styles.lookbookContextEyebrow}>From the lookbook</p>
-                <div className={styles.lookbookContextBannerBody}>
-                  <h2>{lookbookContext.title}</h2>
-                  <p>
-                    This collection is where that {lookbookContext.roomLabel.toLowerCase()} scene
-                    starts. Browse the related pieces without losing the room direction.
-                  </p>
-                </div>
+          {filteredProducts.length ? (
+            <CatalogProductBrowser products={filteredProducts} searchQuery={searchQuery} />
+          ) : (
+            <div className={styles.emptyCatalogState}>
+              <p className={styles.eyebrow}>No matches</p>
+              <h2>Nothing matches this search yet.</h2>
+              <p>Clear the current search to return to the full studio edit.</p>
+              <div className={styles.sidebarActions}>
+                <button className={styles.primaryAction} type="button" onClick={clearSearch}>
+                  Show all pieces
+                </button>
               </div>
-            ) : null}
-
-            {filteredProducts.length ? (
-              <CatalogProductBrowser products={filteredProducts} searchQuery={searchQuery} />
-            ) : (
-              <div className={styles.emptyCatalogState}>
-                <p className={styles.eyebrow}>No matches</p>
-                <h2>Nothing matches this search yet.</h2>
-                <p>Clear the current search to return to the full studio edit.</p>
-                <div className={styles.sidebarActions}>
-                  <button className={styles.primaryAction} type="button" onClick={clearSearch}>
-                    Show all pieces
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </Section>
 
