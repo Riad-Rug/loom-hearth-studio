@@ -12,21 +12,24 @@ const showMoreProductCount = 10;
 
 type CatalogProductBrowserProps = {
   products: CatalogProductCardViewModel[];
-  searchQuery: string;
+  // Composite of every active filter (search query, price, size, sort, hide-sold) so any
+  // filter change resets pagination. Built by the parent (see `filterKey` in
+  // catalog-page-view.tsx).
+  filterKey: string;
 };
 
-export function CatalogProductBrowser({ products, searchQuery }: CatalogProductBrowserProps) {
+export function CatalogProductBrowser({ products, filterKey }: CatalogProductBrowserProps) {
   const [visibleCount, setVisibleCount] = useState(() =>
     Math.min(products.length, initialVisibleProductCount),
   );
 
-  // Key off the search query rather than the `products` array's identity: the array gets
-  // a new identity on every parent re-render (e.g. from an unrelated RSC refetch), which
-  // would otherwise silently reset "Show More" progress even though the query is unchanged.
+  // Key off filterKey rather than the `products` array's identity: the array gets a new
+  // identity on every parent re-render (e.g. from an unrelated RSC refetch), which would
+  // otherwise silently reset "Show More" progress even though the filters are unchanged.
   useEffect(() => {
     setVisibleCount(Math.min(products.length, initialVisibleProductCount));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
+  }, [filterKey]);
 
   const visibleProducts = products.slice(0, visibleCount);
   const hasMoreProducts = visibleCount < products.length;

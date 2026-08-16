@@ -5,7 +5,25 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { Section } from "@/components/layout/section";
-import { catalogCategories, catalogLanding } from "@/features/catalog/catalog-data";
+import { CatalogFilterControls } from "@/features/catalog/catalog-filter-controls";
+import {
+  catalogCategories,
+  catalogLanding,
+  genericSizeFilterOptions,
+  rugSizeFilterOptions,
+  type CatalogPriceFilter,
+  type CatalogSizeFilter,
+  type CatalogSortOption,
+} from "@/features/catalog/catalog-data";
+import {
+  matchesAvailability,
+  matchesPriceFilter,
+  matchesSizeFilter,
+  parsePriceFilter,
+  parseSizeFilter,
+  parseSortOption,
+  sortCatalogProducts,
+} from "@/features/catalog/catalog-filters";
 import { CatalogHistoryRecorder } from "@/features/catalog/catalog-history-recorder";
 import { CatalogProductBrowser } from "@/features/catalog/catalog-product-browser";
 import { lookbookSceneContext } from "@/features/lookbook/lookbook-scene-context";
@@ -36,6 +54,16 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
+  const [priceFilter, setPriceFilter] = useState<CatalogPriceFilter>(() =>
+    parsePriceFilter(searchParams.get("price")),
+  );
+  const [sizeFilter, setSizeFilter] = useState<CatalogSizeFilter>(() =>
+    parseSizeFilter(searchParams.get("size")),
+  );
+  const [sortOption, setSortOption] = useState<CatalogSortOption>(() =>
+    parseSortOption(searchParams.get("sort")),
+  );
+  const [hideSold, setHideSold] = useState(() => searchParams.get("availability") === "available");
   const categoryMeta =
     category ? catalogCategories.find((item) => item.key === category) ?? null : null;
   const heroTitle = collection?.title ?? (categoryMeta ? categoryMeta.title : catalogLanding.title);
@@ -44,37 +72,86 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const hasExactCategoryLink = collection?.href
     ? catalogCategories.some((item) => item.href === collection.href)
     : false;
+  const isRugOnlyView = products.length > 0 && products.every((product) => product.type === "rug");
+  const sizeFilterOptions = isRugOnlyView ? rugSizeFilterOptions : genericSizeFilterOptions;
+  const sizeBucketCounts = useMemo(() => {
+    const counts: Record<Exclude<CatalogSizeFilter, "all">, number> = {
+      small: 0,
+      medium: 0,
+      large: 0,
+    };
+
+    for (const product of products) {
+      if (product.sizeBucket) {
+        counts[product.sizeBucket] += 1;
+      }
+    }
+
+    return counts;
+  }, [products]);
+  const visibleSizeFilterOptions = useMemo(
+    () =>
+      sizeFilterOptions.filter(
+        (option) => option.value === "all" || sizeBucketCounts[option.value] > 0,
+      ),
+    [sizeBucketCounts, sizeFilterOptions],
+  );
+  const showSizeFilter = visibleSizeFilterOptions.length > 1;
+  const sortedProducts = useMemo(
+    () => sortCatalogProducts(products, sortOption),
+    [products, sortOption],
+  );
   const filteredProducts = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    if (!normalizedQuery) {
-      return products;
-    }
+    return sortedProducts.filter((product) => {
+      if (normalizedQuery) {
+        const haystack = [
+          product.displayName,
+          product.dimensionsLabel,
+          product.subtitle,
+          product.description,
+          product.merchandisingNote,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
 
-    return products.filter((product) => {
-      const haystack = [
-        product.displayName,
-        product.dimensionsLabel,
-        product.subtitle,
-        product.description,
-        product.merchandisingNote,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+        if (!haystack.includes(normalizedQuery)) {
+          return false;
+        }
+      }
 
-      return haystack.includes(normalizedQuery);
+      if (!matchesPriceFilter(product, priceFilter)) {
+        return false;
+      }
+
+      if (!matchesSizeFilter(product, sizeFilter)) {
+        return false;
+      }
+
+      if (!matchesAvailability(product, hideSold)) {
+        return false;
+      }
+
+      return true;
     });
-  }, [products, searchQuery]);
-  const isSearchActive = Boolean(searchQuery.trim());
-  const displayedProductCount = isSearchActive ? filteredProducts.length : products.length;
-  const displayedProductCountLabel = `${displayedProductCount} ${
-    displayedProductCount === 1 ? "piece" : "pieces"
+  }, [hideSold, priceFilter, searchQuery, sizeFilter, sortedProducts]);
+  const displayedProductCountLabel = `${filteredProducts.length} ${
+    filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
   const catalogDescription =
     category || hasExactCategoryLink
       ? heroCopy
       : "Handcrafted rugs, poufs, and decor from Marrakech. ONE OF A KIND pieces do not return once sold.";
+  const activeFilterCount = [
+    Boolean(searchQuery.trim()),
+    priceFilter !== "all",
+    sizeFilter !== "all",
+    sortOption !== "newest",
+    hideSold,
+  ].filter(Boolean).length;
+  const filterKey = `${searchQuery.trim()}|${priceFilter}|${sizeFilter}|${sortOption}|${hideSold}`;
   const lookbookSceneId = searchParams.get("scene");
   const fromLookbook = searchParams.get("from") === "lookbook";
   const lookbookContext = useMemo(() => {
@@ -85,13 +162,17 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     return lookbookSceneContext.find((item) => item.id === lookbookSceneId) ?? null;
   }, [fromLookbook, lookbookSceneId]);
 
-  // Reflect the search query into the address bar without a Next.js navigation: a real
+  // Reflect the filters into the address bar without a Next.js navigation: a real
   // navigation here (router.replace/push) re-runs the server component and refetches the
   // whole catalog on every change. Debounced so rapid changes don't spam history writes.
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const nextParams = new URLSearchParams(window.location.search);
       updateQueryParam(nextParams, "q", searchQuery.trim());
+      updateQueryParam(nextParams, "price", priceFilter === "all" ? "" : priceFilter);
+      updateQueryParam(nextParams, "size", sizeFilter === "all" ? "" : sizeFilter);
+      updateQueryParam(nextParams, "sort", sortOption === "newest" ? "" : sortOption);
+      updateQueryParam(nextParams, "availability", hideSold ? "available" : "");
 
       const nextQuery = nextParams.toString();
       const nextHref = nextQuery ? `${pathname}?${nextQuery}` : pathname;
@@ -103,15 +184,25 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     }, 280);
 
     return () => window.clearTimeout(timer);
-  }, [pathname, searchQuery]);
+  }, [hideSold, pathname, priceFilter, searchQuery, sizeFilter, sortOption]);
 
-  // Adopt a search query that changed outside this component: the header's persistent
-  // search bar (same-tab; it dispatches SHOP_QUERY_SYNC_EVENT after patching the address
-  // bar) and browser back/forward navigation (native popstate).
+  // Adopt filters that changed outside this component: the header's persistent search
+  // bar (same-tab; it dispatches SHOP_QUERY_SYNC_EVENT after patching the address bar)
+  // and browser back/forward navigation (native popstate).
   useEffect(() => {
     function syncFromLocation() {
-      const nextQuery = new URLSearchParams(window.location.search).get("q") ?? "";
+      const params = new URLSearchParams(window.location.search);
+      const nextQuery = params.get("q") ?? "";
+      const nextPrice = parsePriceFilter(params.get("price"));
+      const nextSize = parseSizeFilter(params.get("size"));
+      const nextSort = parseSortOption(params.get("sort"));
+      const nextHideSold = params.get("availability") === "available";
+
       setSearchQuery((current) => (current === nextQuery ? current : nextQuery));
+      setPriceFilter((current) => (current === nextPrice ? current : nextPrice));
+      setSizeFilter((current) => (current === nextSize ? current : nextSize));
+      setSortOption((current) => (current === nextSort ? current : nextSort));
+      setHideSold((current) => (current === nextHideSold ? current : nextHideSold));
     }
 
     window.addEventListener("popstate", syncFromLocation);
@@ -123,24 +214,47 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     };
   }, []);
 
-  const clearSearch = () => {
+  const clearAllFilters = () => {
     setSearchQuery("");
+    setPriceFilter("all");
+    setSizeFilter("all");
+    setSortOption("newest");
+    setHideSold(false);
   };
 
   return (
     <div className={styles.page} id="shop-top">
       <CatalogHistoryRecorder category={category} />
       <Section className={styles.shopHeader} tone="muted" width="wide">
-        <div className={styles.shopHeaderTitleRow}>
-          <h1>{heroTitle}</h1>
-          <p aria-atomic="true" aria-live="polite">
-            {displayedProductCountLabel}
-          </p>
+        <div className={styles.shopHeaderGrid}>
+          <div className={styles.shopHeaderMain}>
+            <div className={styles.shopHeaderTitleRow}>
+              <h1>{heroTitle}</h1>
+              <p aria-atomic="true" aria-live="polite">
+                {displayedProductCountLabel}
+              </p>
+            </div>
+            <p className={styles.shopHeaderTrustNote}>
+              Every rug is ONE OF A KIND. Sold pieces are not restocked.
+            </p>
+            <p className={styles.lede}>{catalogDescription}</p>
+          </div>
+
+          <CatalogFilterControls
+            activeFilterCount={activeFilterCount}
+            hideSold={hideSold}
+            onClearAll={clearAllFilters}
+            onHideSoldChange={setHideSold}
+            onPriceFilterChange={setPriceFilter}
+            onSizeFilterChange={setSizeFilter}
+            onSortOptionChange={setSortOption}
+            priceFilter={priceFilter}
+            showSizeFilter={showSizeFilter}
+            sizeFilter={sizeFilter}
+            sizeOptions={visibleSizeFilterOptions}
+            sortOption={sortOption}
+          />
         </div>
-        <p className={styles.shopHeaderTrustNote}>
-          Every rug is ONE OF A KIND. Sold pieces are not restocked.
-        </p>
-        <p className={styles.lede}>{catalogDescription}</p>
       </Section>
 
       <Section className={styles.productsSection} id="shop-products" width="wide">
@@ -159,14 +273,14 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
           ) : null}
 
           {filteredProducts.length ? (
-            <CatalogProductBrowser products={filteredProducts} searchQuery={searchQuery} />
+            <CatalogProductBrowser products={filteredProducts} filterKey={filterKey} />
           ) : (
             <div className={styles.emptyCatalogState}>
               <p className={styles.eyebrow}>No matches</p>
-              <h2>Nothing matches this search yet.</h2>
-              <p>Clear the current search to return to the full studio edit.</p>
+              <h2>Nothing matches these filters yet.</h2>
+              <p>Clear the filters to return to the full studio edit.</p>
               <div className={styles.sidebarActions}>
-                <button className={styles.primaryAction} type="button" onClick={clearSearch}>
+                <button className={styles.primaryAction} type="button" onClick={clearAllFilters}>
                   Show all pieces
                 </button>
               </div>

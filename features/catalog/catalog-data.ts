@@ -87,4 +87,45 @@ export const catalogCategories = [
   bullets: readonly string[];
 }>;
 
+// "newest" is the default and requires no client-side reordering: the catalog
+// repository already lists products by `updatedAt desc` (see
+// PrismaProductRepository.listAll/listByCategory), so "newest" just means
+// "leave the server's order alone."
+export const catalogSortOptions = [
+  { value: "newest", label: "Newest" },
+  { value: "price-asc", label: "Price: low to high" },
+  { value: "price-desc", label: "Price: high to low" },
+] as const;
+
+export type CatalogSortOption = (typeof catalogSortOptions)[number]["value"];
+
+export const catalogPriceFilterOptions = [
+  { value: "all", label: "Any" },
+  { value: "under-300", label: "Under $300" },
+  { value: "300-600", label: "$300–600" },
+  { value: "600-plus", label: "$600+" },
+] as const;
+
+export type CatalogPriceFilter = (typeof catalogPriceFilterOptions)[number]["value"];
+
+export type CatalogSizeFilter = "all" | "small" | "medium" | "large";
+
+type CatalogSizeFilterOption = { value: CatalogSizeFilter; label: string };
+
+// Size buckets are category-relative: the server classifies each product against
+// its own category's scale (see getProductSizeBucket in lib/catalog/service.ts).
+// On rug-only views the segments speak the rug vocabulary shoppers actually use.
+export const rugSizeFilterOptions: readonly CatalogSizeFilterOption[] = [
+  { value: "all", label: "All" },
+  { value: "small", label: "Under 6 ft" },
+  { value: "medium", label: "6–8 ft" },
+  { value: "large", label: "8 ft +" },
+];
+
+export const genericSizeFilterOptions: readonly CatalogSizeFilterOption[] = [
+  { value: "all", label: "All" },
+  { value: "small", label: "Small" },
+  { value: "medium", label: "Medium" },
+  { value: "large", label: "Large" },
+];
 
