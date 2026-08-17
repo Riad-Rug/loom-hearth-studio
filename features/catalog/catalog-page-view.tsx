@@ -307,7 +307,6 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         <div className={styles.catalogLayout}>
           <aside aria-label="Filter and sort" className={styles.filterSidebar}>
             <CatalogFilterControls
-              activeCategory={category}
               activeFilterCount={activeFilterCount}
               categoryAvailability={categoryAvailability}
               categoryMode={isCategoryFilterEnabled ? "select" : "navigate"}

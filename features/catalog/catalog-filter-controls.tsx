@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 
 import {
@@ -31,14 +30,14 @@ const MOBILE_LAYOUT_QUERY = "(max-width: 900px)";
  * "select": the general /shop route holds every category, so the group is a
  * reload-free client-side multi-select.
  * "navigate": category routes were server-filtered to one category, so a
- * checkbox there could never reveal anything. The same options render as real
- * links to each category's route instead of a control that does nothing.
+ * checkbox there could never reveal anything — the whole Category group is
+ * skipped. Browsing to another category is handled by the site header's
+ * Collection dropdown instead.
  */
 export type CatalogCategoryFilterMode = "select" | "navigate";
 
 type CatalogFilterControlsProps = {
   categoryMode: CatalogCategoryFilterMode;
-  activeCategory?: ProductCategory;
   selectedCategories: readonly ProductCategory[];
   onCategoryToggle: (value: ProductCategory) => void;
   categoryAvailability: CatalogCategoryAvailability;
@@ -58,7 +57,6 @@ type CatalogFilterControlsProps = {
 
 export function CatalogFilterControls({
   categoryMode,
-  activeCategory,
   selectedCategories,
   onCategoryToggle,
   categoryAvailability,
@@ -159,34 +157,7 @@ export function CatalogFilterControls({
               })}
             </div>
           </div>
-        ) : (
-          <nav aria-label="Category" className={styles.filterGroup}>
-            <span className={styles.filterGroupLabel}>Category</span>
-            <div className={styles.filterChipRow}>
-              <Link className={styles.filterChip} href="/shop">
-                All pieces
-              </Link>
-              {catalogCategoryFilterOptions.map((option) => {
-                const isCurrent = option.value === activeCategory;
-
-                // aria-current is "true", not "page": on /shop/rugs/[style] the
-                // Rugs link is the current category but a broader page than the
-                // one being viewed.
-                return (
-                  <Link
-                    key={option.value}
-                    aria-current={isCurrent ? "true" : undefined}
-                    className={styles.filterChip}
-                    data-active={isCurrent ? "true" : undefined}
-                    href={option.href}
-                  >
-                    {option.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
-        )}
+        ) : null}
 
         <div aria-labelledby={priceLabelId} className={styles.filterGroup} role="group">
           <span className={styles.filterGroupLabel} id={priceLabelId}>
