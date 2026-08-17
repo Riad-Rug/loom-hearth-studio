@@ -99,8 +99,9 @@ export const catalogSortOptions = [
 
 export type CatalogSortOption = (typeof catalogSortOptions)[number]["value"];
 
+// Multi-select, like category: no selection means "every price", so there's no
+// "Any" option to check.
 export const catalogPriceFilterOptions = [
-  { value: "all", label: "Any" },
   { value: "under-300", label: "Under $300" },
   { value: "300-600", label: "$300–600" },
   { value: "600-plus", label: "$600+" },

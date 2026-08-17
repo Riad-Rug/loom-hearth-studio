@@ -19,14 +19,17 @@ import {
   matchesAvailability,
   matchesCategoryFilter,
   matchesPriceFilter,
+  matchesSearchQuery,
   matchesSizeFilter,
   parseCategoryFilter,
   parsePriceFilter,
   parseSizeFilter,
   parseSortOption,
   serializeCategoryFilter,
+  serializePriceFilter,
   sortCatalogProducts,
   toggleCategoryFilter,
+  togglePriceFilter,
 } from "@/features/catalog/catalog-filters";
 import { CatalogHistoryRecorder } from "@/features/catalog/catalog-history-recorder";
 import { CatalogProductBrowser } from "@/features/catalog/catalog-product-browser";
@@ -64,7 +67,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>(() =>
     parseCategoryFilter(searchParams.get("category")),
   );
-  const [priceFilter, setPriceFilter] = useState<CatalogPriceFilter>(() =>
+  const [selectedPrices, setSelectedPrices] = useState<CatalogPriceFilter[]>(() =>
     parsePriceFilter(searchParams.get("price")),
   );
   const [sizeFilter, setSizeFilter] = useState<CatalogSizeFilter>(() =>
@@ -119,32 +122,18 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     () => sortCatalogProducts(products, sortOption),
     [products, sortOption],
   );
+  const normalizedQuery = searchQuery.trim().toLowerCase();
   const filteredProducts = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
     return sortedProducts.filter((product) => {
-      if (normalizedQuery) {
-        const haystack = [
-          product.displayName,
-          product.dimensionsLabel,
-          product.subtitle,
-          product.description,
-          product.merchandisingNote,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-
-        if (!haystack.includes(normalizedQuery)) {
-          return false;
-        }
+      if (!matchesSearchQuery(product, normalizedQuery)) {
+        return false;
       }
 
       if (!matchesCategoryFilter(product, activeCategories)) {
         return false;
       }
 
-      if (!matchesPriceFilter(product, priceFilter)) {
+      if (!matchesPriceFilter(product, selectedPrices)) {
         return false;
       }
 
@@ -158,7 +147,41 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
 
       return true;
     });
-  }, [activeCategories, hideSold, priceFilter, searchQuery, sizeFilter, sortedProducts]);
+  }, [activeCategories, hideSold, normalizedQuery, selectedPrices, sizeFilter, sortedProducts]);
+  // How many products each category would contribute under the OTHER active
+  // filters (price/size/search/availability), ignoring category selection
+  // itself — so an option a shopper hasn't picked yet can be greyed out when
+  // ticking it would add nothing, without touching options already checked
+  // (which must stay clickable so a shopper can always uncheck their way back).
+  const categoryAvailability = useMemo(() => {
+    if (!isCategoryFilterEnabled) {
+      return null;
+    }
+
+    const counts: Partial<Record<ProductCategory, number>> = {};
+
+    for (const product of products) {
+      if (!matchesSearchQuery(product, normalizedQuery)) {
+        continue;
+      }
+
+      if (!matchesPriceFilter(product, selectedPrices)) {
+        continue;
+      }
+
+      if (!matchesSizeFilter(product, sizeFilter)) {
+        continue;
+      }
+
+      if (!matchesAvailability(product, hideSold)) {
+        continue;
+      }
+
+      counts[product.category] = (counts[product.category] ?? 0) + 1;
+    }
+
+    return counts;
+  }, [hideSold, isCategoryFilterEnabled, normalizedQuery, products, selectedPrices, sizeFilter]);
   const displayedProductCountLabel = `${filteredProducts.length} ${
     filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
@@ -167,15 +190,16 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
       ? heroCopy
       : "Handcrafted rugs, poufs, and decor from Marrakech. ONE OF A KIND pieces do not return once sold.";
   const activeCategoryKey = serializeCategoryFilter(activeCategories);
+  const activePriceKey = serializePriceFilter(selectedPrices);
   const activeFilterCount = [
     Boolean(searchQuery.trim()),
     activeCategories.length > 0,
-    priceFilter !== "all",
+    selectedPrices.length > 0,
     sizeFilter !== "all",
     sortOption !== "newest",
     hideSold,
   ].filter(Boolean).length;
-  const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${priceFilter}|${sizeFilter}|${sortOption}|${hideSold}`;
+  const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${sizeFilter}|${sortOption}|${hideSold}`;
   const lookbookSceneId = searchParams.get("scene");
   const fromLookbook = searchParams.get("from") === "lookbook";
   const lookbookContext = useMemo(() => {
@@ -194,7 +218,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
       const nextParams = new URLSearchParams(window.location.search);
       updateQueryParam(nextParams, "q", searchQuery.trim());
       updateQueryParam(nextParams, "category", activeCategoryKey);
-      updateQueryParam(nextParams, "price", priceFilter === "all" ? "" : priceFilter);
+      updateQueryParam(nextParams, "price", activePriceKey);
       updateQueryParam(nextParams, "size", sizeFilter === "all" ? "" : sizeFilter);
       updateQueryParam(nextParams, "sort", sortOption === "newest" ? "" : sortOption);
       updateQueryParam(nextParams, "availability", hideSold ? "available" : "");
@@ -209,7 +233,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     }, 280);
 
     return () => window.clearTimeout(timer);
-  }, [activeCategoryKey, hideSold, pathname, priceFilter, searchQuery, sizeFilter, sortOption]);
+  }, [activeCategoryKey, activePriceKey, hideSold, pathname, searchQuery, sizeFilter, sortOption]);
 
   // Adopt filters that changed outside this component: the header's persistent search
   // bar (same-tab; it dispatches SHOP_QUERY_SYNC_EVENT after patching the address bar)
@@ -222,7 +246,8 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         ? parseCategoryFilter(params.get("category"))
         : [];
       const nextCategoryKey = serializeCategoryFilter(nextCategories);
-      const nextPrice = parsePriceFilter(params.get("price"));
+      const nextPrices = parsePriceFilter(params.get("price"));
+      const nextPriceKey = serializePriceFilter(nextPrices);
       const nextSize = parseSizeFilter(params.get("size"));
       const nextSort = parseSortOption(params.get("sort"));
       const nextHideSold = params.get("availability") === "available";
@@ -233,7 +258,9 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
       setSelectedCategories((current) =>
         serializeCategoryFilter(current) === nextCategoryKey ? current : nextCategories,
       );
-      setPriceFilter((current) => (current === nextPrice ? current : nextPrice));
+      setSelectedPrices((current) =>
+        serializePriceFilter(current) === nextPriceKey ? current : nextPrices,
+      );
       setSizeFilter((current) => (current === nextSize ? current : nextSize));
       setSortOption((current) => (current === nextSort ? current : nextSort));
       setHideSold((current) => (current === nextHideSold ? current : nextHideSold));
@@ -252,10 +279,14 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     setSelectedCategories((current) => toggleCategoryFilter(current, value));
   };
 
+  const handlePriceToggle = (value: CatalogPriceFilter) => {
+    setSelectedPrices((current) => togglePriceFilter(current, value));
+  };
+
   const clearAllFilters = () => {
     setSearchQuery("");
     setSelectedCategories([]);
-    setPriceFilter("all");
+    setSelectedPrices([]);
     setSizeFilter("all");
     setSortOption("newest");
     setHideSold(false);
@@ -271,16 +302,17 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
             <CatalogFilterControls
               activeCategory={category}
               activeFilterCount={activeFilterCount}
+              categoryAvailability={categoryAvailability}
               categoryMode={isCategoryFilterEnabled ? "select" : "navigate"}
               hideSold={hideSold}
               onCategoryToggle={handleCategoryToggle}
               onClearAll={clearAllFilters}
               onHideSoldChange={setHideSold}
-              onPriceFilterChange={setPriceFilter}
+              onPriceToggle={handlePriceToggle}
               onSizeFilterChange={setSizeFilter}
               onSortOptionChange={setSortOption}
-              priceFilter={priceFilter}
               selectedCategories={activeCategories}
+              selectedPrices={selectedPrices}
               showSizeFilter={showSizeFilter}
               sizeFilter={sizeFilter}
               sizeOptions={visibleSizeFilterOptions}

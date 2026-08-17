@@ -4,6 +4,7 @@
 // catalog-page-view.tsx.
 import {
   catalogCategoryFilterOptions,
+  catalogPriceFilterOptions,
   type CatalogPriceFilter,
   type CatalogSizeFilter,
   type CatalogSortOption,
@@ -11,21 +12,54 @@ import {
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import type { ProductCategory } from "@/types/domain";
 
-export function matchesPriceFilter(
+function matchesPriceBucket(
   product: CatalogProductCardViewModel,
-  priceFilter: CatalogPriceFilter,
+  bucket: CatalogPriceFilter,
 ): boolean {
-  switch (priceFilter) {
+  switch (bucket) {
     case "under-300":
       return product.priceUsd < 300;
     case "300-600":
       return product.priceUsd >= 300 && product.priceUsd <= 600;
     case "600-plus":
       return product.priceUsd > 600;
-    case "all":
     default:
       return true;
   }
+}
+
+// Multi-select, same shape as category: no selection means "every price".
+export function matchesPriceFilter(
+  product: CatalogProductCardViewModel,
+  selectedPrices: readonly CatalogPriceFilter[],
+): boolean {
+  if (!selectedPrices.length) {
+    return true;
+  }
+
+  return selectedPrices.some((bucket) => matchesPriceBucket(product, bucket));
+}
+
+export function matchesSearchQuery(
+  product: CatalogProductCardViewModel,
+  normalizedQuery: string,
+): boolean {
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  const haystack = [
+    product.displayName,
+    product.dimensionsLabel,
+    product.subtitle,
+    product.description,
+    product.merchandisingNote,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return haystack.includes(normalizedQuery);
 }
 
 export function matchesSizeFilter(
@@ -87,10 +121,6 @@ export function parseSortOption(value: string | null): CatalogSortOption {
   return value === "price-asc" || value === "price-desc" ? value : "newest";
 }
 
-export function parsePriceFilter(value: string | null): CatalogPriceFilter {
-  return value === "under-300" || value === "300-600" || value === "600-plus" ? value : "all";
-}
-
 const sizeFilterValues: readonly CatalogSizeFilter[] = [
   "accent",
   "small",
@@ -104,11 +134,12 @@ export function parseSizeFilter(value: string | null): CatalogSizeFilter {
 }
 
 /**
- * Reads the comma-separated `category` param into a de-duplicated list, in the
+ * Reads a comma-separated multi-select param into a de-duplicated list, in the
  * canonical option order so the value the URL round-trips to is stable no matter
- * what order the shopper ticked the boxes in. Unknown keys are dropped.
+ * what order the shopper ticked the boxes in. Unknown values are dropped. Shared
+ * by the category and price filters, which both work this way.
  */
-export function parseCategoryFilter(value: string | null): ProductCategory[] {
+function parseMultiSelect<T extends string>(value: string | null, validValues: readonly T[]): T[] {
   if (!value) {
     return [];
   }
@@ -120,27 +151,58 @@ export function parseCategoryFilter(value: string | null): ProductCategory[] {
       .filter(Boolean),
   );
 
-  return catalogCategoryFilterOptions
-    .filter((option) => requested.has(option.value))
-    .map((option) => option.value);
+  return validValues.filter((candidate) => requested.has(candidate));
+}
+
+function serializeMultiSelect<T extends string>(
+  selected: readonly T[],
+  validValues: readonly T[],
+): string {
+  return validValues.filter((candidate) => selected.includes(candidate)).join(",");
+}
+
+function toggleMultiSelect<T extends string>(
+  selected: readonly T[],
+  value: T,
+  validValues: readonly T[],
+): T[] {
+  const next = selected.includes(value)
+    ? selected.filter((candidate) => candidate !== value)
+    : [...selected, value];
+
+  return validValues.filter((candidate) => next.includes(candidate));
+}
+
+const categoryValues = catalogCategoryFilterOptions.map((option) => option.value);
+
+export function parseCategoryFilter(value: string | null): ProductCategory[] {
+  return parseMultiSelect(value, categoryValues);
 }
 
 export function serializeCategoryFilter(selectedCategories: readonly ProductCategory[]): string {
-  return catalogCategoryFilterOptions
-    .filter((option) => selectedCategories.includes(option.value))
-    .map((option) => option.value)
-    .join(",");
+  return serializeMultiSelect(selectedCategories, categoryValues);
 }
 
 export function toggleCategoryFilter(
   selectedCategories: readonly ProductCategory[],
   category: ProductCategory,
 ): ProductCategory[] {
-  const next = selectedCategories.includes(category)
-    ? selectedCategories.filter((candidate) => candidate !== category)
-    : [...selectedCategories, category];
+  return toggleMultiSelect(selectedCategories, category, categoryValues);
+}
 
-  return catalogCategoryFilterOptions
-    .filter((option) => next.includes(option.value))
-    .map((option) => option.value);
+const priceValues = catalogPriceFilterOptions.map((option) => option.value);
+
+export function parsePriceFilter(value: string | null): CatalogPriceFilter[] {
+  return parseMultiSelect(value, priceValues);
+}
+
+export function serializePriceFilter(selectedPrices: readonly CatalogPriceFilter[]): string {
+  return serializeMultiSelect(selectedPrices, priceValues);
+}
+
+export function togglePriceFilter(
+  selectedPrices: readonly CatalogPriceFilter[],
+  price: CatalogPriceFilter,
+): CatalogPriceFilter[] {
+  return toggleMultiSelect(selectedPrices, price, priceValues);
 }

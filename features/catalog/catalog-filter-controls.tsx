@@ -14,6 +14,12 @@ import {
 } from "@/features/catalog/catalog-data";
 import type { ProductCategory } from "@/types/domain";
 
+// null when the category group isn't a filter at all (category-scoped routes);
+// otherwise how many products each category would contribute under the other
+// active filters, ignoring category selection itself. A missing/zero entry
+// means ticking that option right now would add nothing to the grid.
+export type CatalogCategoryAvailability = Partial<Record<ProductCategory, number>> | null;
+
 import styles from "./catalog-page.module.css";
 
 // Keep in sync with the site header's own collapse breakpoint (app/globals.css,
@@ -35,8 +41,9 @@ type CatalogFilterControlsProps = {
   activeCategory?: ProductCategory;
   selectedCategories: readonly ProductCategory[];
   onCategoryToggle: (value: ProductCategory) => void;
-  priceFilter: CatalogPriceFilter;
-  onPriceFilterChange: (value: CatalogPriceFilter) => void;
+  categoryAvailability: CatalogCategoryAvailability;
+  selectedPrices: readonly CatalogPriceFilter[];
+  onPriceToggle: (value: CatalogPriceFilter) => void;
   sizeFilter: CatalogSizeFilter;
   onSizeFilterChange: (value: CatalogSizeFilter) => void;
   sizeOptions: readonly CatalogSizeFilterOption[];
@@ -54,8 +61,9 @@ export function CatalogFilterControls({
   activeCategory,
   selectedCategories,
   onCategoryToggle,
-  priceFilter,
-  onPriceFilterChange,
+  categoryAvailability,
+  selectedPrices,
+  onPriceToggle,
   sizeFilter,
   onSizeFilterChange,
   sizeOptions,
@@ -72,6 +80,7 @@ export function CatalogFilterControls({
   const sortSelectId = useId();
   const groupsId = useId();
   const categoryLabelId = useId();
+  const priceLabelId = useId();
   const hasActiveFilters = activeFilterCount > 0;
 
   useEffect(() => {
@@ -125,16 +134,21 @@ export function CatalogFilterControls({
             <div className={styles.filterCheckList}>
               {catalogCategoryFilterOptions.map((option) => {
                 const isChecked = selectedCategories.includes(option.value);
+                // A category already ticked stays interactive even at zero count
+                // under the current filters, so a shopper can always uncheck it.
+                const isUnavailable = !isChecked && categoryAvailability?.[option.value] === undefined;
 
                 return (
                   <label
                     key={option.value}
                     className={styles.filterCheck}
                     data-active={isChecked ? "true" : undefined}
+                    data-unavailable={isUnavailable ? "true" : undefined}
                   >
                     <input
                       checked={isChecked}
                       className={styles.filterCheckInput}
+                      disabled={isUnavailable}
                       type="checkbox"
                       onChange={() => onCategoryToggle(option.value)}
                     />
@@ -173,21 +187,30 @@ export function CatalogFilterControls({
           </nav>
         )}
 
-        <div aria-label="Price" className={styles.filterGroup} role="group">
-          <span className={styles.filterGroupLabel}>Price</span>
-          <div className={styles.filterChipRow}>
-            {catalogPriceFilterOptions.map((option) => (
-              <button
-                key={option.value}
-                aria-pressed={priceFilter === option.value}
-                className={styles.filterChip}
-                data-active={priceFilter === option.value ? "true" : undefined}
-                type="button"
-                onClick={() => onPriceFilterChange(option.value)}
-              >
-                {option.label}
-              </button>
-            ))}
+        <div aria-labelledby={priceLabelId} className={styles.filterGroup} role="group">
+          <span className={styles.filterGroupLabel} id={priceLabelId}>
+            Price
+          </span>
+          <div className={styles.filterCheckList}>
+            {catalogPriceFilterOptions.map((option) => {
+              const isChecked = selectedPrices.includes(option.value);
+
+              return (
+                <label
+                  key={option.value}
+                  className={styles.filterCheck}
+                  data-active={isChecked ? "true" : undefined}
+                >
+                  <input
+                    checked={isChecked}
+                    className={styles.filterCheckInput}
+                    type="checkbox"
+                    onChange={() => onPriceToggle(option.value)}
+                  />
+                  <span>{option.label}</span>
+                </label>
+              );
+            })}
           </div>
         </div>
 
