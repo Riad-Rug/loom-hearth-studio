@@ -39,9 +39,9 @@ const sourcingScope = [
   },
   {
     publicId: "sourcing-textile-review",
-    label: "Moroccan textiles",
-    body: "Kilims, wool blankets, cushion covers, and handwoven lengths for upholstery and layering.",
-    alt: "Hanging kilims above folded stacks of Moroccan wool textiles",
+    label: "Moroccan antiques",
+    body: "Carved doors, hand-forged lanterns, and vintage silver and brass sourced from souks and antique dealers across Morocco.",
+    alt: "A Moroccan antiques shop interior with a carved wooden door, hanging lanterns, and displays of silverware and pottery",
   },
   {
     publicId: "sourcing-fez-pottery",
@@ -108,53 +108,72 @@ export function TradePageView() {
     <div className={styles.page}>
       <TradeStickyAction />
 
-      <section className={styles.hero}>
-        <div className={styles.heroLayout}>
-          <div className={styles.heroContent}>
+      <section className={styles.hero} data-hero-sentinel>
+        <div className={styles.heroContent}>
+          <div className={styles.heroIntro}>
             <p className={styles.eyebrow}>Interior design trade program</p>
             <h1>
-              We help interior designers, architects, stylists, and project buyers source
-              authentic, handmade Moroccan pieces for residential and commercial projects.
+              We help interior designers, architects, and professionals to source authentic
+              pieces for all projects.
             </h1>
-            <div className={styles.heroBody}>
-              <p className={styles.lede}>
-                Whether you're sourcing a single statement rug or furnishing an entire project, my
-                service is built around helping you find what's right, not shifting whatever's in
-                stock.
-              </p>
-              <p className={styles.body}>
-                Through relationships built over three generations—from my grandfather's bazaar to
-                my own sourcing today—I've got access to artisan workshops across Morocco. If
-                something can be sourced or made, I'll tell you. If it can't, I'll tell you that
-                too.
-              </p>
-            </div>
-            <div className={styles.contactActions}>
-              <Link className={styles.primaryAction} href="/trade/apply">
-                Start a trade inquiry
-              </Link>
-            </div>
-            <div>
-              <Link className={styles.textAction} href="/sourcing">
-                See the sourcing review path →
-              </Link>
-            </div>
           </div>
+          <div className={styles.heroBody}>
+            <p className={styles.lede}>
+              Whether you're sourcing a single statement rug or furnishing an entire project, my
+              service is built around helping you find what's right, not shifting whatever's in
+              stock.
+            </p>
+            <p className={styles.body}>
+              Through relationships built over three generations—from my grandfather's bazaar to
+              my own sourcing today—I've got access to artisan workshops across Morocco. If
+              something can be sourced or made, I'll tell you. If it can't, I'll tell you that
+              too.
+            </p>
+          </div>
+        </div>
 
-          <aside className={styles.heroAside} aria-label="Trade program proof">
-            <div className={styles.heroFactRail}>
-              {tradeFacts.map((fact) => (
-                <div key={fact.label} className={styles.heroFactItem}>
-                  <p className={styles.heroFactLabel}>{fact.label}</p>
-                  <p className={styles.heroFactValue}>{fact.value}</p>
-                </div>
-              ))}
+        <aside className={styles.heroFactBand} aria-label="Trade program proof">
+          {tradeFacts.map((fact) => (
+            <div key={fact.label} className={styles.heroFactItem}>
+              <p className={styles.heroFactLabel}>{fact.label}</p>
+              <p className={styles.heroFactValue}>{fact.value}</p>
             </div>
-          </aside>
+          ))}
+        </aside>
+      </section>
+
+      <section className={styles.sourcingSection}>
+        <div className={styles.sectionHeader}>
+          <p className={styles.eyebrow}>What I can source</p>
+          <h2>Every Moroccan artisanal product</h2>
+          <p className={styles.body}>
+            Photographed on sourcing trips. This is where the pieces sit before they reach a
+            specification.
+          </p>
+        </div>
+
+        <div className={styles.sourcingStrip}>
+          {sourcingScope.map((item) => (
+            <figure key={item.publicId} className={styles.sourcingItem}>
+              <div className={styles.sourcingFrame}>
+                <Image
+                  alt={item.alt}
+                  className={styles.sourcingImage}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1376px) 32vw, 27rem"
+                  src={sourcingImageUrl(item.publicId)}
+                />
+              </div>
+              <figcaption className={styles.sourcingCaption}>
+                <h3>{item.label}</h3>
+                <p>{item.body}</p>
+              </figcaption>
+            </figure>
+          ))}
         </div>
       </section>
 
-      <section className={styles.sourcingSection} aria-label="Trade support details">
+      <section className={styles.detailSection} aria-label="Trade support details">
         <div className={styles.sectionHeader}>
           <p className={styles.eyebrow}>What you receive</p>
           <h2>Practical support for real design projects</h2>
@@ -172,10 +191,6 @@ export function TradePageView() {
             </div>
           ))}
         </div>
-      </section>
-
-      <section className={styles.statBreak}>
-        <p>Quoted per project. Direct studio contact. 3-business-day holds.</p>
       </section>
 
       {tradeTestimonials.length > 0 ? (
@@ -240,38 +255,7 @@ export function TradePageView() {
         </div>
       </section>
 
-      <section className={styles.sourcingSection}>
-        <div className={styles.sectionHeader}>
-          <p className={styles.eyebrow}>What I can source</p>
-          <h2>If a project needs something from Morocco, it can be found.</h2>
-          <p className={styles.body}>
-            Photographed on sourcing trips. This is where the pieces sit before they reach a
-            specification.
-          </p>
-        </div>
-
-        <div className={styles.sourcingStrip}>
-          {sourcingScope.map((item) => (
-            <figure key={item.publicId} className={styles.sourcingItem}>
-              <div className={styles.sourcingFrame}>
-                <Image
-                  alt={item.alt}
-                  className={styles.sourcingImage}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1376px) 32vw, 27rem"
-                  src={sourcingImageUrl(item.publicId)}
-                />
-              </div>
-              <figcaption className={styles.sourcingCaption}>
-                <h3>{item.label}</h3>
-                <p>{item.body}</p>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      </section>
-
-      <section className={styles.finalCta}>
+      <section className={styles.finalCta} data-final-cta>
         <div className={styles.finalCtaInner}>
           <div className={styles.finalCtaCopy}>
             <p className={styles.eyebrow}>Start here</p>
