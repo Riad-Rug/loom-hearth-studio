@@ -63,7 +63,7 @@ export const siteConfig = {
       label: "Collection",
       href: "/shop",
       items: [
-        { href: "/shop", label: "All pieces" },
+        { href: "/shop", label: "The Full Collection" },
         { href: "/shop/rugs", label: "Rugs" },
         { href: "/shop/vintage", label: "Vintage Rugs" },
         { href: "/shop/poufs", label: "Poufs" },
