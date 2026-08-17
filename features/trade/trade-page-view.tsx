@@ -1,49 +1,68 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { PlaceholderMedia } from "@/components/media/placeholder-media";
+import { getCloudinaryConfig } from "@/lib/cloudinary/config";
 import { customerReviews } from "@/lib/reviews/customer-reviews";
 
 import { TradeStickyAction } from "./trade-sticky-action";
 import styles from "./trade-page.module.css";
 
-const tradeIncludes = [
-  "Use it when the project needs a pricing answer before client approval.",
-  "Use it when a ONE OF A KIND rug needs to stay clear and reserved during review.",
-  "Use it when you need imagery for tear sheets, decks, or internal sourcing review.",
-  "Use it when destination market and delivery timing need to be reviewed before checkout.",
-  "Use it when the project requires direct studio back-and-forth instead of retail browsing.",
+// What actually moves a project quote. Kept to four so the block stays
+// scannable next to the four process steps below it.
+const pricingDrivers = [
+  {
+    label: "Quantity",
+    body: "One anchor rug reads differently from a fifteen-piece install.",
+  },
+  {
+    label: "Scope",
+    body: "Room count, sizes, timing, and how much of the spec is still open.",
+  },
+  {
+    label: "Consolidated shipping",
+    body: "Rugs, poufs, pillows, and decor leaving Morocco together, not in separate parcels.",
+  },
+  {
+    label: "Sourcing needs",
+    body: "Whether a piece is already here, has to be found, or has to be woven.",
+  },
 ] as const;
 
-const tradeWorkflow = [
+// Uploaded to the loom-hearth/trade Cloudinary folder from the founder's
+// sourcing trips; the public IDs are resolved against the cloud name in env.
+const sourcingScope = [
   {
-    title: "Start with a trade inquiry",
-    body:
-      "The trade inquiry flow captures the practical context: product interest, destination market, room or project type, timing, and what kind of support you need from the studio.",
+    publicId: "sourcing-rug-stacks",
+    label: "Moroccan rugs",
+    body: "Hand-knotted and flatwoven, vintage and new, matched to the room rather than a size chart.",
+    alt: "Stacks of hand-woven Moroccan rugs in a sourcing room in Morocco",
   },
   {
-    title: "Review the exact piece with the studio",
-    body:
-      "For rugs and other ONE OF A KIND pieces, the studio confirms the exact item with you before the order moves forward, so your client is reviewing the actual piece rather than a representative sample.",
+    publicId: "sourcing-textile-review",
+    label: "Moroccan textiles",
+    body: "Kilims, wool blankets, cushion covers, and handwoven lengths for upholstery and layering.",
+    alt: "Hanging kilims above folded stacks of Moroccan wool textiles",
   },
   {
-    title: "Confirm pricing, holds, and next steps",
-    body:
-      "Once the piece is right, the conversation moves into pricing, timing, delivery destination, and any project-hold requirements so the order can proceed cleanly.",
+    publicId: "sourcing-fez-pottery",
+    label: "Handmade Moroccan decor",
+    body: "Fez pottery, brass, and basketry for the accessory pass once the textiles are set.",
+    alt: "Shelves of hand-painted blue and white Fez pottery",
   },
 ] as const;
 
 const tradeFacts = [
   {
-    label: "Trade discount",
-    value: "10% on active inventory",
+    label: "Trade pricing",
+    value: "Quoted per project",
+  },
+  {
+    label: "Sourcing",
+    value: "Across Morocco",
   },
   {
     label: "Response time",
-    value: "Within 1 business day",
-  },
-  {
-    label: "Project holds",
-    value: "3 business days",
+    value: "In less than 24h",
   },
   {
     label: "Shipping origin",
@@ -51,62 +70,22 @@ const tradeFacts = [
   },
 ] as const;
 
-const supportedCategories = [
-  { label: "Rugs", href: "/shop/rugs" },
-  { label: "Vintage rugs", href: "/shop/vintage" },
-  { label: "Poufs", href: "/shop/poufs" },
-  { label: "Pillows", href: "/shop/pillows" },
-  { label: "Decor", href: "/shop/decor" },
-] as const;
-
 const tradeDeliverables = [
   {
-    title: "Trade pricing clarity",
-    body: "The conversation moves quickly into the 10% trade pricing structure, active availability, and whether a piece fits the budget before the client review drags on.",
+    title: "Project-based pricing",
+    body: "Quotes are built around the scope of your project, quantities, sourcing requirements, and opportunities to consolidate shipping.",
   },
   {
-    title: "Presentation-ready assets",
-    body: "High-resolution images and exact-piece confirmation support tear sheets, presentations, and internal review without having to rely on generic catalog references.",
+    title: "Exact-piece review",
+    body: "For one-of-a-kind Moroccan rugs and vintage pieces, you can review the exact item, including additional photos and details, before moving forward.",
   },
   {
-    title: "Project coordination",
-    body: "The studio reviews market, timing, hold status, and next-step logistics directly so sourcing decisions stay clean once the client is close to approval.",
-  },
-] as const;
-
-const projectHoldNotes = [
-  "Complimentary holds are available for up to 3 business days while a client reviews a selected piece.",
-  "If the project timeline needs something different, the studio confirms next-step availability directly against the item and destination market.",
-  "For ONE OF A KIND rugs, the hold conversation happens before the order moves forward so availability stays clear.",
-] as const;
-
-const categoryDetails = [
-  {
-    title: "Rugs",
-    body: "Hand-knotted Moroccan rugs for living rooms, bedrooms, and full-room installs where exact-piece review matters before client sign-off.",
+    title: "Client-ready imagery",
+    body: "Need images for a presentation, sourcing deck, or client approval? We can provide high-resolution photography of pieces under active consideration.",
   },
   {
-    title: "Vintage rugs",
-    body: "ONE OF A KIND vintage pieces for projects that need age, patina, and a more collected point of view rather than broad repeatable stock.",
-  },
-  {
-    title: "Poufs, pillows, and decor",
-    body: "Supporting pieces for styling layers, accessory packages, and the final room pass once the anchor textiles are already in view.",
-  },
-] as const;
-
-const tradeProofPoints = [
-  {
-    title: "Built around ONE OF A KIND inventory",
-    body: "The trade path exists because the strongest pieces are not repeatable stock. Designers need the exact item, clear timing, and a faster answer cycle.",
-  },
-  {
-    title: "Structured for client review",
-    body: "Imagery, availability, holds, and pricing are framed to help a designer move a shortlist through presentation and approval with less friction.",
-  },
-  {
-    title: "Direct studio coordination",
-    body: "Questions move through the studio instead of a general support queue, which keeps sourcing decisions closer to the actual piece and shipping context.",
+    title: "Project holds",
+    body: "When a one-of-a-kind piece is being reviewed by your client, we can usually reserve it for up to 3 business days. Longer holds can be discussed depending on the piece and project.",
   },
 ] as const;
 
@@ -116,28 +95,13 @@ const tradeTestimonials = customerReviews.filter((review) =>
 
 const featuredTradeTestimonialId = "emma-s-rug";
 
-const tradeFaq = [
-  {
-    question: "Who is the trade program for?",
-    answer:
-      "Interior designers, decorators, stylists, and project buyers sourcing for client work rather than personal retail orders.",
-  },
-  {
-    question: "How quickly does the studio reply?",
-    answer:
-      "Trade inquiries are answered within one business day, usually faster when the request already names the product category or exact piece.",
-  },
-  {
-    question: "Can the studio hold a rug during client review?",
-    answer:
-      "Yes. Complimentary holds are available for up to 3 business days, with any longer timing confirmed directly against the piece and project timeline.",
-  },
-  {
-    question: "Can I request imagery for a presentation deck?",
-    answer:
-      "Yes. Once a piece is in active consideration, the studio can prepare high-resolution imagery for client presentations and internal sourcing review.",
-  },
-] as const;
+// Same delivery transformation the live product imagery already uses, with the
+// cloud name read from env rather than hard-coded.
+function sourcingImageUrl(publicId: string) {
+  const { baseDeliveryUrl, folders } = getCloudinaryConfig();
+
+  return `${baseDeliveryUrl}/c_limit,w_1000,f_auto,q_auto/${folders.trade}/${publicId}`;
+}
 
 export function TradePageView() {
   return (
@@ -148,29 +112,26 @@ export function TradePageView() {
         <div className={styles.heroLayout}>
           <div className={styles.heroContent}>
             <p className={styles.eyebrow}>Interior design trade program</p>
-            <h1>Trade pricing and project support for interior designers.</h1>
+            <h1>
+              We help interior designers, architects, stylists, and project buyers source
+              authentic, handmade Moroccan pieces for residential and commercial projects.
+            </h1>
             <div className={styles.heroBody}>
               <p className={styles.lede}>
-                A standing 10% trade discount across active rugs, poufs, pillows, and decor.
-                Complimentary 3-business-day holds while clients review a selection. Direct
-                contact with the studio within one business day.
+                Whether you're sourcing a single statement rug or furnishing an entire project, my
+                service is built around helping you find what's right, not shifting whatever's in
+                stock.
               </p>
               <p className={styles.body}>
-                Open to interior designers, architects, stylists, and project buyers who need
-                direct sourcing support on active inventory.
+                Through relationships built over three generations—from my grandfather's bazaar to
+                my own sourcing today—I've got access to artisan workshops across Morocco. If
+                something can be sourced or made, I'll tell you. If it can't, I'll tell you that
+                too.
               </p>
             </div>
-            <ul className={styles.heroSignals} aria-label="Trade program highlights">
-              <li>10% trade pricing on active inventory</li>
-              <li>Exact-piece review before a project moves forward</li>
-              <li>High-resolution imagery for decks and tear sheets</li>
-            </ul>
             <div className={styles.contactActions}>
               <Link className={styles.primaryAction} href="/trade/apply">
                 Start a trade inquiry
-              </Link>
-              <Link className={styles.secondaryAction} href="/shop">
-                View available categories
               </Link>
             </div>
             <div>
@@ -189,195 +150,140 @@ export function TradePageView() {
                 </div>
               ))}
             </div>
-
-            <div className={styles.heroProofCard}>
-              <p className={styles.heroProofEyebrow}>Trade support includes</p>
-              <h2>Built for sourcing decisions that need client-ready proof.</h2>
-              <p className={styles.heroProofBody}>
-                The trade path is structured around exact-piece review, project holds, and direct
-                studio communication so selections can move from shortlist to approval with less
-                friction.
-              </p>
-              <div className={styles.heroCategoryBlock}>
-                <p className={styles.heroCategoryLabel}>Categories currently supported</p>
-                <div className={styles.heroCategoryChips}>
-                  {supportedCategories.map((category) => (
-                    <Link key={category.label} className={styles.heroCategoryChip} href={category.href}>
-                      {category.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
           </aside>
         </div>
       </section>
 
-      <section className={styles.heroVisualBand} aria-label="Trade image review">
-        <div className={styles.heroVisualLayout}>
-          <div className={styles.heroVisualCopy}>
-            <p className={styles.eyebrow}>Review image</p>
-            <h2>The exact piece stays visible while the project decision is being made.</h2>
-            <p className={styles.body}>
-              The trade path works best when imagery, pricing, hold timing, and availability are
-              all being reviewed against the actual piece rather than a generic style reference.
-            </p>
+      <section className={styles.sourcingSection} aria-label="Trade support details">
+        <div className={styles.sectionHeader}>
+          <p className={styles.eyebrow}>What you receive</p>
+          <h2>Practical support for real design projects</h2>
+          <p className={styles.body}>
+            From the first sourcing request to final shipment, we keep the process clear,
+            flexible, and tailored to your project.
+          </p>
+        </div>
+
+        <div className={styles.detailList}>
+          {tradeDeliverables.map((item) => (
+            <div key={item.title} className={styles.detailItem}>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.statBreak}>
+        <p>Quoted per project. Direct studio contact. 3-business-day holds.</p>
+      </section>
+
+      {tradeTestimonials.length > 0 ? (
+        <section className={`${styles.card} ${styles.testimonialCard}`}>
+          <p className={styles.eyebrow}>What customers say</p>
+          <h2>Clear communication and confidence in the final piece still matter most.</h2>
+          <div className={styles.testimonialGrid}>
+            {tradeTestimonials.map((testimonial) => (
+              <figure
+                key={testimonial.id}
+                className={`${styles.testimonialItem} ${
+                  testimonial.id === featuredTradeTestimonialId ? styles.testimonialItemFeatured : ""
+                }`}
+              >
+                <blockquote>{testimonial.body}</blockquote>
+                <figcaption>
+                  <span>{testimonial.customerName}</span>
+                  <span>{testimonial.country}</span>
+                  <span>{testimonial.productType}</span>
+                </figcaption>
+              </figure>
+            ))}
           </div>
-          <div className={styles.heroVisualFrame}>
-            <PlaceholderMedia
-              alt="Trade review photo placeholder"
-              aspectRatio="1 / 1"
-              label="Review photo pending"
-              sizes="(max-width: 1100px) 100vw, 28rem"
+        </section>
+      ) : null}
+
+      <section className={styles.pricingBand} aria-labelledby="trade-pricing-heading">
+        <div className={styles.pricingLayout}>
+          <div className={styles.pricingCopy}>
+            <p className={styles.eyebrow}>Trade pricing</p>
+            <h2 id="trade-pricing-heading">
+              Pricing is built around the project, not published as a list.
+            </h2>
+            <p className={styles.lede}>
+              I work with interior designers on everything from a single custom rug to a full
+              furnishing package, so one flat rate would be the wrong answer almost every time.
+              Each project gets quoted on what it actually asks for.
+            </p>
+            <p className={styles.body}>
+              Four things move the number. Send the brief and you get a figure you can put in
+              front of a client.
+            </p>
+            <dl className={styles.pricingDrivers}>
+              {pricingDrivers.map((driver) => (
+                <div key={driver.label} className={styles.pricingDriver}>
+                  <dt>{driver.label}</dt>
+                  <dd>{driver.body}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <div className={styles.pricingMediaFrame}>
+            <Image
+              alt="A Moroccan sourcing room stacked with hand-woven rugs, poufs, and cushions"
+              className={styles.pricingMediaImage}
+              fill
+              sizes="(max-width: 1100px) 100vw, 40rem"
+              src={sourcingImageUrl("sourcing-souk-showroom")}
             />
           </div>
         </div>
       </section>
 
-      <section className={styles.bandSection}>
-        <div className={styles.bandInner}>
-          <p className={styles.eyebrow}>What trade includes</p>
-          <h2>Use the trade path when the project needs more than a product page.</h2>
-          <div className={styles.cardBody}>
-            <ul className={styles.includeList}>
-              {tradeIncludes.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
+      <section className={styles.sourcingSection}>
+        <div className={styles.sectionHeader}>
+          <p className={styles.eyebrow}>What I can source</p>
+          <h2>If a project needs something from Morocco, it can be found.</h2>
+          <p className={styles.body}>
+            Photographed on sourcing trips. This is where the pieces sit before they reach a
+            specification.
+          </p>
         </div>
-      </section>
 
-      <section className={styles.utilityGrid} aria-label="Trade support details">
-        <article className={`${styles.card} ${styles.detailCard}`}>
-          <p className={styles.eyebrow}>What you receive</p>
-          <h2>Support that keeps the sourcing conversation moving forward.</h2>
-          <div className={styles.detailList}>
-            {tradeDeliverables.map((item) => (
-              <div key={item.title} className={styles.detailItem}>
-                <h3>{item.title}</h3>
+        <div className={styles.sourcingStrip}>
+          {sourcingScope.map((item) => (
+            <figure key={item.publicId} className={styles.sourcingItem}>
+              <div className={styles.sourcingFrame}>
+                <Image
+                  alt={item.alt}
+                  className={styles.sourcingImage}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1376px) 32vw, 27rem"
+                  src={sourcingImageUrl(item.publicId)}
+                />
+              </div>
+              <figcaption className={styles.sourcingCaption}>
+                <h3>{item.label}</h3>
                 <p>{item.body}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className={`${styles.card} ${styles.utilityCard}`}>
-          <p className={styles.eyebrow}>Project holds</p>
-          <h2>How a piece can stay reserved while the client decides.</h2>
-          <div className={styles.cardBody}>
-            <ul className={styles.includeList}>
-              {projectHoldNotes.map((note) => (
-                <li key={note}>{note}</li>
-              ))}
-            </ul>
-          </div>
-        </article>
-      </section>
-
-      <section className={styles.statBreak}>
-        <p>10% off. Direct studio contact. 3-business-day holds.</p>
-      </section>
-
-      <section className={styles.editorialSection}>
-        <div className={styles.editorialInner}>
-          <p className={styles.eyebrow}>Why designers use it</p>
-          <h2>The trade page works best when the project needs certainty, not more browsing.</h2>
-          <div className={styles.detailColumns}>
-            {tradeProofPoints.map((point) => (
-              <div key={point.title} className={styles.detailItem}>
-                <h3>{point.title}</h3>
-                <p>{point.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className={`${styles.card} ${styles.testimonialCard}`}>
-        <p className={styles.eyebrow}>What customers say</p>
-        <h2>Clear communication and confidence in the final piece still matter most.</h2>
-        <div className={styles.testimonialGrid}>
-          {tradeTestimonials.map((testimonial) => (
-            <figure
-              key={testimonial.id}
-              className={`${styles.testimonialItem} ${
-                testimonial.id === featuredTradeTestimonialId ? styles.testimonialItemFeatured : ""
-              }`}
-            >
-              <blockquote>{testimonial.body}</blockquote>
-              <figcaption>
-                <span>{testimonial.customerName}</span>
-                <span>{testimonial.country}</span>
-                <span>{testimonial.productType}</span>
               </figcaption>
             </figure>
           ))}
         </div>
       </section>
 
-      <section className={`${styles.card} ${styles.categoryCard}`}>
-        <p className={styles.eyebrow}>Categories available for trade</p>
-        <h2>Use the trade path across the collection, not just a single product type.</h2>
-        <div className={styles.detailColumns}>
-          {categoryDetails.map((category) => (
-            <div key={category.title} className={styles.detailItem}>
-              <h3>{category.title}</h3>
-              <p>{category.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className={styles.sectionHeader}>
-        <p className={styles.eyebrow}>Trade workflow</p>
-        <h2>A direct sourcing path for project buyers.</h2>
-        <p className={styles.body}>
-          The trade program is designed for designers who need a faster path from sourcing request
-          to exact-piece review, with fewer handoffs and clearer project communication.
-        </p>
-      </section>
-
-      <section className={styles.workflowGrid}>
-        {tradeWorkflow.map((step, index) => (
-          <article key={step.title} className={styles.card}>
-            <p className={styles.workflowStepLabel}>Step {index + 1}</p>
-            <h3>{step.title}</h3>
-            <div className={styles.cardBody}>
-              <p>{step.body}</p>
-            </div>
-          </article>
-        ))}
-      </section>
-
-      <section className={styles.faqSection}>
-        <div className={styles.faqInner}>
-          <p className={styles.eyebrow}>Trade FAQ</p>
-          <h2>Questions that come up before a designer reaches out.</h2>
-          <div className={styles.faqList}>
-            {tradeFaq.map((item) => (
-              <article key={item.question} className={styles.faqItem}>
-                <h3>{item.question}</h3>
-                <p>{item.answer}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className={styles.finalCta}>
         <div className={styles.finalCtaInner}>
           <div className={styles.finalCtaCopy}>
-            <p className={styles.eyebrow}>Trade inquiry</p>
-            <h2>Bring the project details and the studio will take it from there.</h2>
+            <p className={styles.eyebrow}>Start here</p>
+            <h2>What are you working on?</h2>
             <p className={styles.body}>
-              If you already know the category, size direction, destination market, or exact
-              piece, the inquiry can move straight into sourcing support and next-step pricing.
+              One custom rug or a whole house, I would rather hear about it early. Rooms, sizes,
+              timing, and budget direction are enough for me to come back with pieces and a quote.
             </p>
           </div>
           <div className={styles.contactActions}>
             <Link className={styles.primaryAction} href="/trade/apply">
-              Contact the studio
+              Start your inquiry
             </Link>
             <Link className={styles.secondaryAction} href="/sourcing">
               See the sourcing review path

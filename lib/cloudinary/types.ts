@@ -7,6 +7,7 @@ export const cloudinaryFolders = {
   productsMultiUnit: "loom-hearth/products/multi-unit",
   blog: "loom-hearth/blog",
   lookbook: "loom-hearth/lookbook",
+  trade: "loom-hearth/trade",
   og: "loom-hearth/og",
 } as const;
 

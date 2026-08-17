@@ -1,51 +1,30 @@
+/* Same container as the homepage and the content pages: a real 1rem gutter so
+   the sections that sit flush on the page ground (hero, section headers,
+   testimonials, FAQ) never touch the viewport edge. */
 .page {
   display: grid;
   gap: var(--space-7);
-  width: 100%;
-  max-width: var(--container-width-wide);
+  width: min(100% - 2rem, var(--container-width-wide));
   margin: 0 auto;
 }
 
-.hero,
+/* Flat panel treatment, same spec as the homepage sections and the about-page
+   cards: cream (or panel-tint) fill, 1px border, small radius, no shadow. The
+   previous version used translucent white glass, --radius-xl pills and
+   var(--shadow-soft) (a token that no longer exists in globals.css). */
 .card {
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: var(--shadow-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
 }
 
-.detailCard {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 244, 236, 0.9)),
-    radial-gradient(circle at top left, rgba(159, 84, 47, 0.06), transparent 38%);
-}
-
-.utilityCard {
-  background:
-    linear-gradient(180deg, rgba(243, 236, 225, 0.96), rgba(236, 226, 211, 0.86)),
-    radial-gradient(circle at bottom right, rgba(91, 107, 72, 0.08), transparent 40%);
-}
-
-.categoryCard {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(249, 247, 241, 0.9)),
-    radial-gradient(circle at top left, rgba(91, 107, 72, 0.06), transparent 42%);
-}
-
-.testimonialCard {
-  background:
-    linear-gradient(180deg, rgba(255, 250, 243, 0.96), rgba(244, 238, 227, 0.9)),
-    radial-gradient(circle at top left, rgba(159, 84, 47, 0.08), transparent 40%);
-  box-shadow: 0 1.2rem 2.4rem rgba(34, 33, 38, 0.08);
-}
-
+/* The hero is page ground now, not a card: no border, no fill, and no card
+   padding, so its copy lines up with the other flush sections instead of
+   sitting 3rem inside a frame that is no longer drawn. */
 .hero {
   display: grid;
   gap: var(--space-5);
-  padding: var(--space-7);
-  background:
-    radial-gradient(circle at top right, rgba(159, 84, 47, 0.14), transparent 34%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 228, 0.96));
+  padding: 0;
 }
 
 .heroLayout {
@@ -68,11 +47,15 @@
   max-width: 46rem;
 }
 
+/* Site-wide eyebrow spec (home, blog, about, account, footer): green, 0.72rem,
+   600, 0.08em tracking. The old 0.75rem/0.18em version was pre-3b. Margin is 0
+   because every eyebrow here sits inside a gapped grid. */
 .eyebrow {
-  margin: 0 0 var(--space-2);
-  color: var(--color-clay-terracotta);
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
+  margin: 0;
+  color: var(--color-green);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -80,10 +63,7 @@
 .sectionHeader h2,
 .card h2,
 .card h3,
-.editorialInner h2,
-.bandInner h2,
-.faqInner h2,
-.heroVisualCopy h2,
+.pricingCopy h2,
 .finalCta h2 {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
@@ -97,10 +77,7 @@
 }
 
 .sectionHeader h2,
-.editorialInner h2,
-.bandInner h2,
-.faqInner h2,
-.heroVisualCopy h2,
+.pricingCopy h2,
 .finalCta h2 {
   font-size: clamp(2rem, 3vw, 2.8rem);
   line-height: 1.2;
@@ -111,19 +88,25 @@
   line-height: 1.2;
 }
 
-.card h3 {
-  font-size: 1.9rem;
+/* One sub-heading size for the page (matches the about-page FAQ). Previously
+   card h3 was 1.9rem while the editorial and FAQ h3s had no size at all and
+   fell back to the browser default. */
+.card h3,
+.detailItem h3,
+.sourcingCaption h3 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
   line-height: 1.2;
 }
 
 .lede,
 .body,
 .card p,
-.includeList,
-.editorialInner p,
-.bandInner p,
-.faqInner p,
-.heroVisualCopy p,
+.pricingCopy p,
+.pricingDrivers dd,
+.sourcingCaption p,
 .finalCta p {
   margin: 0;
   color: var(--color-text-body);
@@ -135,34 +118,6 @@
   max-width: 42rem;
 }
 
-.heroSignals {
-  display: grid;
-  gap: 0.85rem;
-  max-width: 40rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.heroSignals li {
-  position: relative;
-  padding-left: 1.45rem;
-  color: var(--color-text-body);
-  line-height: 1.75;
-}
-
-.heroSignals li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.7rem;
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 999px;
-  background: var(--color-clay-terracotta);
-  box-shadow: 0 0 0 0.18rem rgba(159, 84, 47, 0.12);
-}
-
 .heroAside {
   display: grid;
   align-content: start;
@@ -170,12 +125,10 @@
   min-width: 0;
 }
 
-.heroFactRail,
-.heroProofCard {
-  border: 1px solid rgba(47, 47, 47, 0.12);
-  border-radius: 1.6rem;
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 1rem 2rem rgba(34, 33, 38, 0.08);
+.heroFactRail {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
 }
 
 .heroFactRail {
@@ -190,92 +143,26 @@
 }
 
 .heroFactItem:not(:last-child) {
-  border-bottom: 1px solid rgba(47, 47, 47, 0.1);
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
-.heroFactLabel,
-.heroProofEyebrow,
-.heroCategoryLabel,
-.workflowStepLabel {
+.heroFactLabel {
   margin: 0;
-  color: var(--color-clay-terracotta);
+  color: var(--color-green);
   font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   line-height: 1.35;
   text-transform: uppercase;
 }
 
 .heroFactValue {
   margin: 0;
-  color: var(--color-charcoal-ink);
+  color: var(--color-ink);
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.25rem;
   line-height: 1.2;
   letter-spacing: -0.03em;
-}
-
-.heroProofCard {
-  display: grid;
-  gap: var(--space-4);
-  padding: 1.35rem;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(245, 241, 232, 0.86)),
-    radial-gradient(circle at top right, rgba(159, 84, 47, 0.08), transparent 42%);
-}
-
-.heroProofCard h2 {
-  font-size: 2rem;
-  line-height: 1.2;
-}
-
-.heroProofBody {
-  margin: 0;
-  color: var(--color-text-body);
-  line-height: 1.75;
-}
-
-.heroCategoryBlock {
-  display: grid;
-  gap: 0.8rem;
-  padding-top: var(--space-3);
-  border-top: 1px solid rgba(47, 47, 47, 0.08);
-}
-
-.heroCategoryChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-}
-
-.heroCategoryChip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.15rem;
-  padding: 0.5rem 0.85rem;
-  border: 1px solid rgba(159, 84, 47, 0.14);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.8);
-  color: var(--color-charcoal-ink);
-  font-size: 0.9rem;
-  font-weight: 600;
-  line-height: 1.2;
-  text-decoration: none;
-  transition:
-    border-color 150ms ease,
-    background-color 150ms ease,
-    transform 150ms ease,
-    box-shadow 150ms ease;
-}
-
-.heroCategoryChip:hover,
-.heroCategoryChip:focus-visible {
-  border-color: rgba(159, 84, 47, 0.26);
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 0.8rem 1.6rem rgba(34, 33, 38, 0.08);
-  outline: none;
-  transform: translateY(-1px);
 }
 
 .card {
@@ -284,122 +171,41 @@
   padding: var(--space-6);
 }
 
-.cardBody {
-  display: grid;
-  gap: var(--space-4);
-  max-width: 36rem;
-}
-
-.heroVisualBand,
-.bandSection,
-.editorialSection,
-.faqSection,
+.pricingBand,
 .finalCta {
   width: auto;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
 }
 
-.heroVisualBand,
-.bandSection,
-.editorialSection,
-.faqSection {
+.pricingBand {
   padding-inline: 1rem;
 }
 
-.heroVisualLayout,
-.bandInner,
-.editorialInner,
-.faqInner,
+.pricingLayout,
 .finalCtaInner {
   width: min(100% - 2rem, var(--container-width-wide));
   margin: 0 auto;
 }
 
-.heroVisualBand {
-  padding-block: var(--space-2) var(--space-6);
-}
-
-.heroVisualLayout {
-  display: grid;
-  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
-  gap: var(--space-6);
-  align-items: center;
-}
-
-.heroVisualCopy {
-  display: grid;
-  gap: var(--space-3);
-  min-width: 0;
-}
-
-.heroVisualFrame {
-  position: relative;
-  overflow: hidden;
-  min-width: 0;
-  aspect-ratio: 1 / 0.72;
-  border-radius: 1.35rem;
-  background: rgba(245, 241, 232, 0.72);
-  box-shadow: 0 1.2rem 2.5rem rgba(34, 33, 38, 0.12);
-}
-
-.heroVisualImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.bandSection {
-  padding-block: var(--space-6);
-  background:
-    linear-gradient(180deg, rgba(247, 235, 219, 0.96), rgba(234, 216, 193, 0.86)),
-    radial-gradient(circle at top right, rgba(159, 84, 47, 0.08), transparent 42%);
-}
-
-.bandInner,
-.editorialInner,
-.faqInner,
 .finalCtaInner {
   display: grid;
   gap: var(--space-4);
 }
 
-.utilityGrid,
-.detailColumns {
-  display: grid;
-  gap: var(--space-5);
-}
-
-.utilityGrid {
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
-}
-
-.utilityGrid > *,
-.detailColumns > *,
-.workflowGrid > *,
-.finalCtaCopy,
-.cardBody {
+.pricingLayout > *,
+.sourcingStrip > *,
+.finalCtaCopy {
   min-width: 0;
 }
 
-.detailColumns {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.editorialSection {
-  padding-block: var(--space-7);
-  background: rgba(255, 255, 255, 0.98);
-}
-
 .detailList,
-.faqList,
 .testimonialGrid {
   display: grid;
   gap: var(--space-4);
 }
 
 .detailItem,
-.faqItem,
 .testimonialItem {
   display: grid;
   gap: var(--space-2);
@@ -407,7 +213,7 @@
 
 .detailItem {
   padding-top: var(--space-3);
-  border-top: 1px solid rgba(47, 47, 47, 0.08);
+  border-top: 1px solid var(--color-border-soft);
 }
 
 .detailItem:first-child {
@@ -419,18 +225,28 @@
   width: min(100% - 2rem, 38rem);
   margin: 0 auto;
   padding: var(--space-3) 0;
-  border-top: 1px solid rgba(159, 84, 47, 0.18);
-  border-bottom: 1px solid rgba(159, 84, 47, 0.18);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   text-align: center;
 }
 
 .statBreak p {
   margin: 0;
-  color: var(--color-charcoal-ink);
+  color: var(--color-ink);
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(1.7rem, 3vw, 2.4rem);
   letter-spacing: -0.03em;
   line-height: 1.2;
+}
+
+/* Testimonials are a plain section holding one level of cards — the old
+   treatment nested translucent cards inside a translucent card. Declared after
+   the .card layout rule so the padding reset wins. */
+.testimonialCard {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .testimonialGrid {
@@ -439,23 +255,21 @@
 
 .testimonialItem {
   margin: 0;
-  padding: 1.35rem;
-  border: 1px solid rgba(47, 47, 47, 0.08);
-  border-radius: 1.4rem;
-  background: rgba(255, 255, 255, 0.76);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
 }
 
 .testimonialItemFeatured {
   grid-row: span 2;
   align-content: space-between;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(245, 241, 232, 0.84)),
-    radial-gradient(circle at top right, rgba(159, 84, 47, 0.07), transparent 46%);
+  background: var(--color-panel);
 }
 
 .testimonialItem blockquote {
   margin: 0;
-  color: var(--color-charcoal-ink);
+  color: var(--color-ink);
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.35rem;
   line-height: 1.28;
@@ -471,7 +285,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem 0.7rem;
-  color: var(--color-olive-thread);
+  color: var(--color-text-subtle);
   font-size: 0.8rem;
   font-style: normal;
   font-weight: 600;
@@ -484,41 +298,114 @@
   margin-left: 0.7rem;
 }
 
-.includeList {
-  display: grid;
-  gap: 0.5rem;
-  padding-left: 1.35rem;
-}
-
 .sectionHeader {
   display: grid;
   gap: var(--space-3);
   max-width: 48rem;
 }
 
-.workflowGrid {
+/* Pricing band: full-bleed panel treatment, so the tailored-pricing message
+   reads as its own moment without a new surface language (no gradients, no
+   glass, no shadow). */
+.pricingBand {
+  padding-block: var(--space-7);
+  background: var(--color-panel);
+}
+
+.pricingLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: var(--space-6);
+  align-items: center;
+}
+
+.pricingCopy {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* Four drivers as a 2x2 scan block; each item borrows the .detailItem rule
+   (hairline top border, tight stack) rather than becoming another card. */
+.pricingDrivers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-5);
+  margin: 0;
+  padding-top: var(--space-2);
+}
+
+.pricingDriver {
+  display: grid;
+  gap: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.pricingDriver dt {
+  color: var(--color-ink);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.pricingDriver dd {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.pricingMediaFrame,
+.sourcingFrame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+
+.pricingMediaFrame {
+  aspect-ratio: 1 / 0.78;
+}
+
+.pricingMediaImage,
+.sourcingImage {
+  object-fit: cover;
+}
+
+.sourcingSection {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.sourcingStrip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-5);
 }
 
-.faqSection {
-  padding-block: var(--space-5) var(--space-3);
-  background: rgba(255, 255, 255, 0.98);
+.sourcingItem {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
 }
 
-.faqList {
-  gap: 0;
+.sourcingFrame {
+  aspect-ratio: 4 / 5;
 }
 
-.faqItem {
-  padding: var(--space-4) 0;
-  border-top: 1px solid rgba(47, 47, 47, 0.08);
+.sourcingCaption {
+  display: grid;
+  gap: var(--space-2);
 }
 
-.faqItem:first-child {
-  padding-top: 0;
-  border-top: 0;
+.sourcingCaption h3 {
+  font-size: 1.25rem;
+}
+
+.sourcingCaption p {
+  font-size: 0.95rem;
+  line-height: 1.65;
 }
 
 .contactActions {
@@ -527,11 +414,13 @@
   gap: var(--space-3);
 }
 
+/* Flat ink closing band, same spec as the about-page and blog closing sections
+   and the homepage "how it works" band. Replaces the brown/terracotta
+   gradient. */
 .finalCta {
   padding: var(--space-7) 1rem;
-  background:
-    linear-gradient(180deg, rgba(41, 33, 29, 0.98), rgba(57, 44, 38, 0.98)),
-    radial-gradient(circle at top right, rgba(198, 106, 61, 0.16), transparent 38%);
+  background: var(--color-ink);
+  color: var(--color-bg);
 }
 
 .finalCtaInner {
@@ -547,33 +436,40 @@
 }
 
 .finalCta h2 {
-  color: rgba(255, 251, 245, 0.98);
+  color: inherit;
 }
 
-.finalCta .eyebrow,
+.finalCta .eyebrow {
+  color: var(--color-mint);
+}
+
 .finalCta .body {
-  color: rgba(255, 251, 245, 0.82);
+  color: rgba(250, 250, 246, 0.78);
 }
 
 .finalCta .secondaryAction {
-  border-color: rgba(255, 251, 245, 0.24);
-  background: rgba(255, 251, 245, 0.08);
-  color: rgba(255, 251, 245, 0.92);
+  border-color: rgba(250, 250, 246, 0.35);
+  background: transparent;
+  color: var(--color-bg);
 }
 
+/* Same button spec as home, about, blog, shop and account: 2.8rem tall, 4px
+   radius, 0.95rem/500 sentence case, flat (no lift, no shadow), colour-only
+   transitions, and no outline override so the global green focus ring wins. */
 .primaryAction,
 .secondaryAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.95rem 1.25rem;
-  border-radius: 999px;
+  min-height: 2.8rem;
+  padding: 0.8rem 1rem;
+  border-radius: 4px;
   cursor: pointer;
   font: inherit;
   font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
   transition:
-    transform 150ms ease,
-    box-shadow 150ms ease,
     border-color 150ms ease,
     background-color 150ms ease,
     color 150ms ease;
@@ -591,26 +487,28 @@
   color: var(--button-secondary-text);
 }
 
+/* Inline link treatment shared with the about page and blog article body:
+   green, 1px underline, darker green on hover. Was uppercase 0.78rem/700 with
+   a terracotta underline. */
 .textAction {
   display: inline-flex;
   width: fit-content;
-  color: var(--color-charcoal-ink);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  color: var(--color-green);
+  font-size: 0.95rem;
+  font-weight: 500;
   text-decoration: underline;
-  text-decoration-color: rgba(159, 84, 47, 0.42);
-  text-underline-offset: 0.22em;
-  text-transform: uppercase;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: color 150ms ease;
 }
 
 .textAction:hover,
 .textAction:focus-visible {
-  color: var(--color-clay-terracotta);
-  text-decoration-color: currentColor;
-  outline: none;
+  color: var(--button-primary-bg-hover);
 }
 
+/* Fixed frame with the same vocabulary as the cookie banner and back-to-top
+   button: cream fill, 1px border, small radius, no shadow. */
 .stickyAction {
   position: fixed;
   left: 50%;
@@ -619,11 +517,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.45rem;
-  border: 1px solid rgba(47, 47, 47, 0.1);
-  border-radius: 999px;
-  background: rgba(255, 251, 245, 0.96);
-  box-shadow: 0 1rem 2rem rgba(34, 33, 38, 0.14);
+  padding: 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 0.75rem);
@@ -643,31 +540,26 @@
   align-items: center;
   justify-content: center;
   min-width: 12.5rem;
-  min-height: 2.65rem;
-  padding: 0.7rem 1.2rem;
-  border-radius: 999px;
+  min-height: 2.8rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--button-primary-bg);
+  border-radius: 4px;
   background: var(--button-primary-bg);
   color: var(--button-primary-text);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 0.95rem;
+  font-weight: 500;
   text-decoration: none;
-  text-transform: uppercase;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
 }
 
 .stickyActionButton:hover,
 .stickyActionButton:focus-visible,
 .primaryAction:hover,
-.primaryAction:focus-visible,
-.secondaryAction:hover,
-.secondaryAction:focus-visible {
-  transform: translateY(-1px);
-  outline: none;
-}
-
-.primaryAction:hover,
 .primaryAction:focus-visible {
-  box-shadow: 0 1rem 1.8rem rgba(159, 84, 47, 0.2);
+  border-color: var(--button-primary-bg-hover);
+  background: var(--button-primary-bg-hover);
 }
 
 .secondaryAction:hover,
@@ -678,23 +570,26 @@
 
 .finalCta .secondaryAction:hover,
 .finalCta .secondaryAction:focus-visible {
-  border-color: rgba(255, 251, 245, 0.4);
-  background: rgba(255, 251, 245, 0.14);
+  border-color: rgba(250, 250, 246, 0.6);
+  background: rgba(250, 250, 246, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryAction,
+  .secondaryAction,
+  .textAction,
+  .stickyAction,
+  .stickyActionButton {
+    transition: none;
+  }
 }
 
 @media (max-width: 1100px) {
   .heroLayout,
-  .utilityGrid,
-  .detailColumns,
-  .workflowGrid,
   .testimonialGrid,
   .finalCtaInner,
-  .heroVisualLayout {
+  .pricingLayout {
     grid-template-columns: 1fr;
-  }
-
-  .heroProofCard h2 {
-    font-size: 1.7rem;
   }
 
   .testimonialItemFeatured {
@@ -711,9 +606,12 @@
     width: min(100% - 1rem, var(--container-width-wide));
   }
 
-  .hero,
   .card {
     padding: var(--space-5);
+  }
+
+  .testimonialCard {
+    padding: 0;
   }
 
   .heroLayout {
@@ -724,29 +622,20 @@
     grid-template-columns: 1fr;
   }
 
-  .heroVisualBand,
-  .bandSection,
-  .editorialSection,
-  .faqSection,
+  .pricingBand,
   .finalCta {
     padding-inline: 0.75rem;
   }
 
+  .sourcingStrip,
+  .pricingDrivers {
+    grid-template-columns: 1fr;
+  }
+
   .card h2,
-  .editorialInner h2,
-  .bandInner h2,
-  .faqInner h2,
-  .heroVisualCopy h2,
+  .pricingCopy h2,
   .finalCta h2 {
     font-size: 1.6rem;
-  }
-
-  .card h3 {
-    font-size: 1.55rem;
-  }
-
-  .heroProofCard h2 {
-    font-size: 1.5rem;
   }
 
   .stickyActionButton {
