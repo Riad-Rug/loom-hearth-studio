@@ -567,10 +567,24 @@
   min-height: 60vh;
 }
 
+/* Card-first sizing: a 17rem floor decides the column count instead of a hard
+   `repeat(4, …)`, so the sidebar's 15.5rem bite can never squeeze a row down to
+   250px cards again. The wide container (84rem) minus the sidebar and its
+   var(--space-6) gutter leaves the grid 66.5rem, which tops out at three ~21rem
+   cards and can never fall back to four. `min(100%, 17rem)` keeps a track from
+   overflowing when the grid itself is narrower than the floor.
+   The custom properties below run the shared ProductCard at the shop grid's
+   larger scale; the PDP/contact recommendation rails stay on the compact
+   fallbacks declared inline further down. */
 .productGrid {
+  --product-card-padding: 1.25rem 1.25rem 1.35rem;
+  --product-card-content-gap: 0.7rem;
+  --product-card-title-size: 1.12rem;
+  --product-card-subtitle-size: 0.92rem;
+  --product-card-price-size: 1.6rem;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: var(--space-6) var(--space-5);
 }
 
 .productCard {
@@ -653,8 +667,8 @@
 .productContent {
   display: grid;
   align-content: start;
-  gap: 0.55rem;
-  padding: 1rem 1rem 1.05rem;
+  gap: var(--product-card-content-gap, 0.55rem);
+  padding: var(--product-card-padding, 1rem 1rem 1.05rem);
 }
 
 .productTitleRow {
@@ -680,14 +694,14 @@
 .productPrice {
   margin: 0;
   color: var(--color-green);
-  font-size: 1.45rem;
+  font-size: var(--product-card-price-size, 1.45rem);
   font-weight: 400;
 }
 
 .productContent h3 {
   margin: 0;
   font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1rem;
+  font-size: var(--product-card-title-size, 1rem);
   font-weight: 500;
   line-height: 1.16;
   letter-spacing: 0;
@@ -701,7 +715,7 @@
 .productDimensions {
   margin: 0;
   color: var(--color-text-subtle);
-  font-size: 0.84rem;
+  font-size: var(--product-card-subtitle-size, 0.84rem);
   line-height: 1.45;
 }
 
@@ -747,11 +761,13 @@
   line-height: 1.7;
 }
 
-/* The sidebar takes ~15.5rem out of the row, so four cards only stay legible on
-   genuinely wide viewports; below that the grid drops to three. */
-@media (max-width: 1400px) {
+/* Same 900px line the sidebar collapses on (MOBILE_LAYOUT_QUERY in
+   catalog-filter-controls.tsx): once the filters are a disclosure above the
+   grid the full container is available, so pin the row to two large cards
+   rather than letting the 17rem floor fit a third narrow one. */
+@media (max-width: 900px) {
   .productGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -764,8 +780,15 @@
     padding-top: 0;
   }
 
+  /* Phone cards are ~12rem wide, so they keep the compact card scale; only the
+     column gutter tightens to buy them a little more width. The h3/subtitle
+     rules below stay literal (not token overrides) because they intentionally
+     apply to every ProductCard on mobile, not just the shop grid. */
   .productGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    --product-card-padding: 1rem 1rem 1.05rem;
+    --product-card-content-gap: 0.55rem;
+    --product-card-price-size: 1.45rem;
+    gap: var(--space-5) var(--space-4);
   }
 
   .productContent h3 {
