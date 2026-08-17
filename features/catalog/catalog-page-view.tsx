@@ -27,9 +27,11 @@ import {
   parseSortOption,
   serializeCategoryFilter,
   serializePriceFilter,
+  serializeSizeFilter,
   sortCatalogProducts,
   toggleCategoryFilter,
   togglePriceFilter,
+  toggleSizeFilter,
 } from "@/features/catalog/catalog-filters";
 import { CatalogHistoryRecorder } from "@/features/catalog/catalog-history-recorder";
 import { CatalogProductBrowser } from "@/features/catalog/catalog-product-browser";
@@ -70,7 +72,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const [selectedPrices, setSelectedPrices] = useState<CatalogPriceFilter[]>(() =>
     parsePriceFilter(searchParams.get("price")),
   );
-  const [sizeFilter, setSizeFilter] = useState<CatalogSizeFilter>(() =>
+  const [selectedSizes, setSelectedSizes] = useState<CatalogSizeFilter[]>(() =>
     parseSizeFilter(searchParams.get("size")),
   );
   const [sortOption, setSortOption] = useState<CatalogSortOption>(() =>
@@ -93,7 +95,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
   const isRugOnlyView = products.length > 0 && products.every((product) => product.type === "rug");
   const sizeFilterOptions = isRugOnlyView ? rugSizeFilterOptions : genericSizeFilterOptions;
   const sizeBucketCounts = useMemo(() => {
-    const counts: Record<Exclude<CatalogSizeFilter, "all">, number> = {
+    const counts: Record<CatalogSizeFilter, number> = {
       accent: 0,
       small: 0,
       medium: 0,
@@ -110,14 +112,11 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     return counts;
   }, [products]);
   const visibleSizeFilterOptions = useMemo(
-    () =>
-      sizeFilterOptions.filter(
-        (option) => option.value === "all" || sizeBucketCounts[option.value] > 0,
-      ),
+    () => sizeFilterOptions.filter((option) => sizeBucketCounts[option.value] > 0),
     [sizeBucketCounts, sizeFilterOptions],
   );
-  // "All" plus a single tier is not a choice — every piece in view is that tier.
-  const showSizeFilter = visibleSizeFilterOptions.length > 2;
+  // A single tier is not a choice — every piece in view is that tier.
+  const showSizeFilter = visibleSizeFilterOptions.length > 1;
   const sortedProducts = useMemo(
     () => sortCatalogProducts(products, sortOption),
     [products, sortOption],
@@ -137,7 +136,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         return false;
       }
 
-      if (!matchesSizeFilter(product, sizeFilter)) {
+      if (!matchesSizeFilter(product, selectedSizes)) {
         return false;
       }
 
@@ -147,7 +146,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
 
       return true;
     });
-  }, [activeCategories, hideSold, normalizedQuery, selectedPrices, sizeFilter, sortedProducts]);
+  }, [activeCategories, hideSold, normalizedQuery, selectedPrices, selectedSizes, sortedProducts]);
   // How many products each category would contribute under the OTHER active
   // filters (price/size/search/availability), ignoring category selection
   // itself — so an option a shopper hasn't picked yet can be greyed out when
@@ -169,7 +168,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         continue;
       }
 
-      if (!matchesSizeFilter(product, sizeFilter)) {
+      if (!matchesSizeFilter(product, selectedSizes)) {
         continue;
       }
 
@@ -181,25 +180,26 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     }
 
     return counts;
-  }, [hideSold, isCategoryFilterEnabled, normalizedQuery, products, selectedPrices, sizeFilter]);
+  }, [hideSold, isCategoryFilterEnabled, normalizedQuery, products, selectedPrices, selectedSizes]);
   const displayedProductCountLabel = `${filteredProducts.length} ${
     filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
   const catalogDescription =
     category || hasExactCategoryLink
       ? heroCopy
-      : "Handcrafted rugs, poufs, and decor from Marrakech. ONE OF A KIND pieces do not return once sold.";
+      : "Handmade rugs, poufs, pillows, artisanal decor and antiques across Morocco.";
   const activeCategoryKey = serializeCategoryFilter(activeCategories);
   const activePriceKey = serializePriceFilter(selectedPrices);
+  const activeSizeKey = serializeSizeFilter(selectedSizes);
   const activeFilterCount = [
     Boolean(searchQuery.trim()),
     activeCategories.length > 0,
     selectedPrices.length > 0,
-    sizeFilter !== "all",
+    selectedSizes.length > 0,
     sortOption !== "newest",
     hideSold,
   ].filter(Boolean).length;
-  const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${sizeFilter}|${sortOption}|${hideSold}`;
+  const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${activeSizeKey}|${sortOption}|${hideSold}`;
   const lookbookSceneId = searchParams.get("scene");
   const fromLookbook = searchParams.get("from") === "lookbook";
   const lookbookContext = useMemo(() => {
@@ -219,7 +219,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
       updateQueryParam(nextParams, "q", searchQuery.trim());
       updateQueryParam(nextParams, "category", activeCategoryKey);
       updateQueryParam(nextParams, "price", activePriceKey);
-      updateQueryParam(nextParams, "size", sizeFilter === "all" ? "" : sizeFilter);
+      updateQueryParam(nextParams, "size", activeSizeKey);
       updateQueryParam(nextParams, "sort", sortOption === "newest" ? "" : sortOption);
       updateQueryParam(nextParams, "availability", hideSold ? "available" : "");
 
@@ -233,7 +233,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     }, 280);
 
     return () => window.clearTimeout(timer);
-  }, [activeCategoryKey, activePriceKey, hideSold, pathname, searchQuery, sizeFilter, sortOption]);
+  }, [activeCategoryKey, activePriceKey, activeSizeKey, hideSold, pathname, searchQuery, sortOption]);
 
   // Adopt filters that changed outside this component: the header's persistent search
   // bar (same-tab; it dispatches SHOP_QUERY_SYNC_EVENT after patching the address bar)
@@ -248,7 +248,8 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
       const nextCategoryKey = serializeCategoryFilter(nextCategories);
       const nextPrices = parsePriceFilter(params.get("price"));
       const nextPriceKey = serializePriceFilter(nextPrices);
-      const nextSize = parseSizeFilter(params.get("size"));
+      const nextSizes = parseSizeFilter(params.get("size"));
+      const nextSizeKey = serializeSizeFilter(nextSizes);
       const nextSort = parseSortOption(params.get("sort"));
       const nextHideSold = params.get("availability") === "available";
 
@@ -261,7 +262,9 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
       setSelectedPrices((current) =>
         serializePriceFilter(current) === nextPriceKey ? current : nextPrices,
       );
-      setSizeFilter((current) => (current === nextSize ? current : nextSize));
+      setSelectedSizes((current) =>
+        serializeSizeFilter(current) === nextSizeKey ? current : nextSizes,
+      );
       setSortOption((current) => (current === nextSort ? current : nextSort));
       setHideSold((current) => (current === nextHideSold ? current : nextHideSold));
     }
@@ -283,11 +286,15 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     setSelectedPrices((current) => togglePriceFilter(current, value));
   };
 
+  const handleSizeToggle = (value: CatalogSizeFilter) => {
+    setSelectedSizes((current) => toggleSizeFilter(current, value));
+  };
+
   const clearAllFilters = () => {
     setSearchQuery("");
     setSelectedCategories([]);
     setSelectedPrices([]);
-    setSizeFilter("all");
+    setSelectedSizes([]);
     setSortOption("newest");
     setHideSold(false);
   };
@@ -309,12 +316,12 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
               onClearAll={clearAllFilters}
               onHideSoldChange={setHideSold}
               onPriceToggle={handlePriceToggle}
-              onSizeFilterChange={setSizeFilter}
+              onSizeToggle={handleSizeToggle}
               onSortOptionChange={setSortOption}
               selectedCategories={activeCategories}
               selectedPrices={selectedPrices}
+              selectedSizes={selectedSizes}
               showSizeFilter={showSizeFilter}
-              sizeFilter={sizeFilter}
               sizeOptions={visibleSizeFilterOptions}
               sortOption={sortOption}
             />
@@ -329,7 +336,7 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                 </p>
               </div>
               <p className={styles.shopHeaderTrustNote}>
-                Every rug is ONE OF A KIND. Sold pieces are not restocked.
+                Each piece is individually made and won&apos;t be restocked.
               </p>
               <p className={styles.lede}>{catalogDescription}</p>
             </div>

@@ -141,21 +141,10 @@
   color: var(--color-green);
 }
 
-/* Second line on rug-only size chips: the concrete footprint range, so "Medium"
-   is not the only thing a shopper has to go on. Muted, never the chip's voice. */
-.filterChipHint {
-  color: var(--color-text-subtle);
-  font-size: 0.72rem;
-  font-weight: 400;
-  font-variant-numeric: tabular-nums;
-}
-
-.filterChip[data-active="true"] .filterChipHint {
-  color: var(--color-green);
-}
-
-/* Category is the one multi-select group, so it uses checkboxes rather than the
-   single-select chip. Native control, site accent, same 1px/4px vocabulary. */
+/* Category, price, and size are all multi-select groups, so they use checkboxes
+   rather than the chip (which now only serves the "Hide sold pieces" toggle and
+   the category links on category-scoped routes). Native control, site accent,
+   same 1px/4px vocabulary. */
 .filterCheckList {
   display: grid;
   gap: 0.15rem;
@@ -184,6 +173,28 @@
 .filterCheck[data-active="true"] {
   color: var(--color-green);
   font-weight: 500;
+}
+
+/* Two-line row (rug-only size tiers): label above its footprint range. Stacked
+   inside the row so the checkbox stays centred against both lines. */
+.filterCheckStack {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+/* Second line on rug-only size rows: the concrete footprint range, so "Medium"
+   is not the only thing a shopper has to go on. Muted, never the row's voice. */
+.filterCheckHint {
+  color: var(--color-text-subtle);
+  font-size: 0.72rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.filterCheck[data-active="true"] .filterCheckHint {
+  color: var(--color-green);
 }
 
 /* A category with zero matches under the current price/size/availability

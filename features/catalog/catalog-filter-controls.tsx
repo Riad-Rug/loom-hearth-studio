@@ -44,8 +44,8 @@ type CatalogFilterControlsProps = {
   categoryAvailability: CatalogCategoryAvailability;
   selectedPrices: readonly CatalogPriceFilter[];
   onPriceToggle: (value: CatalogPriceFilter) => void;
-  sizeFilter: CatalogSizeFilter;
-  onSizeFilterChange: (value: CatalogSizeFilter) => void;
+  selectedSizes: readonly CatalogSizeFilter[];
+  onSizeToggle: (value: CatalogSizeFilter) => void;
   sizeOptions: readonly CatalogSizeFilterOption[];
   showSizeFilter: boolean;
   sortOption: CatalogSortOption;
@@ -64,8 +64,8 @@ export function CatalogFilterControls({
   categoryAvailability,
   selectedPrices,
   onPriceToggle,
-  sizeFilter,
-  onSizeFilterChange,
+  selectedSizes,
+  onSizeToggle,
   sizeOptions,
   showSizeFilter,
   sortOption,
@@ -81,6 +81,7 @@ export function CatalogFilterControls({
   const groupsId = useId();
   const categoryLabelId = useId();
   const priceLabelId = useId();
+  const sizeLabelId = useId();
   const hasActiveFilters = activeFilterCount > 0;
 
   useEffect(() => {
@@ -215,27 +216,43 @@ export function CatalogFilterControls({
         </div>
 
         {showSizeFilter ? (
-          <div aria-label="Size" className={styles.filterGroup} role="group">
-            <span className={styles.filterGroupLabel}>Size</span>
-            <div className={styles.filterChipRow}>
-              {sizeOptions.map((option) => (
-                <button
-                  key={option.value}
-                  aria-label={option.spokenLabel}
-                  aria-pressed={sizeFilter === option.value}
-                  className={styles.filterChip}
-                  data-active={sizeFilter === option.value ? "true" : undefined}
-                  type="button"
-                  onClick={() => onSizeFilterChange(option.value)}
-                >
-                  {option.label}
-                  {option.hint ? (
-                    <span aria-hidden="true" className={styles.filterChipHint}>
-                      {option.hint}
-                    </span>
-                  ) : null}
-                </button>
-              ))}
+          <div aria-labelledby={sizeLabelId} className={styles.filterGroup} role="group">
+            <span className={styles.filterGroupLabel} id={sizeLabelId}>
+              Size
+            </span>
+            <div className={styles.filterCheckList}>
+              {sizeOptions.map((option) => {
+                const isChecked = selectedSizes.includes(option.value);
+
+                return (
+                  <label
+                    key={option.value}
+                    className={styles.filterCheck}
+                    data-active={isChecked ? "true" : undefined}
+                  >
+                    <input
+                      // Rug-only views spell out the footprint range ("Small, 13
+                      // to 17 square feet") so screen readers never read "ft²"
+                      // raw from the visible hint line below the label.
+                      aria-label={option.spokenLabel}
+                      checked={isChecked}
+                      className={styles.filterCheckInput}
+                      type="checkbox"
+                      onChange={() => onSizeToggle(option.value)}
+                    />
+                    {option.hint ? (
+                      <span className={styles.filterCheckStack}>
+                        <span>{option.label}</span>
+                        <span aria-hidden="true" className={styles.filterCheckHint}>
+                          {option.hint}
+                        </span>
+                      </span>
+                    ) : (
+                      <span>{option.label}</span>
+                    )}
+                  </label>
+                );
+              })}
             </div>
           </div>
         ) : null}

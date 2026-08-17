@@ -127,8 +127,9 @@ export const catalogCategoryFilterOptions = [
 
 export type CatalogCategoryFilterOption = (typeof catalogCategoryFilterOptions)[number];
 
+// Multi-select, like category and price: no selection means "every size", so
+// there's no "All" option to check.
 export type CatalogSizeFilter =
-  | "all"
   | "accent"
   | "small"
   | "medium"
@@ -149,7 +150,6 @@ export type CatalogSizeFilterOption = {
 // lib/catalog/service.ts). On rug-only views the tiers carry the concrete area
 // range, because "Medium" alone tells a shopper nothing about their room.
 export const rugSizeFilterOptions: readonly CatalogSizeFilterOption[] = [
-  { value: "all", label: "All" },
   { value: "accent", label: "Accent", hint: "to 13 ft²", spokenLabel: "Accent, up to 13 square feet" },
   { value: "small", label: "Small", hint: "13–17 ft²", spokenLabel: "Small, 13 to 17 square feet" },
   { value: "medium", label: "Medium", hint: "17–21 ft²", spokenLabel: "Medium, 17 to 21 square feet" },
@@ -165,7 +165,6 @@ export const rugSizeFilterOptions: readonly CatalogSizeFilterOption[] = [
 // Mixed views span rugs and much smaller pieces, so a single area range would be
 // wrong for half the grid: names only, each piece measured against its own scale.
 export const genericSizeFilterOptions: readonly CatalogSizeFilterOption[] = [
-  { value: "all", label: "All" },
   { value: "accent", label: "Accent" },
   { value: "small", label: "Small" },
   { value: "medium", label: "Medium" },

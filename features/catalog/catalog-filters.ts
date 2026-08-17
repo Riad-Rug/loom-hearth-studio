@@ -5,6 +5,7 @@
 import {
   catalogCategoryFilterOptions,
   catalogPriceFilterOptions,
+  genericSizeFilterOptions,
   type CatalogPriceFilter,
   type CatalogSizeFilter,
   type CatalogSortOption,
@@ -62,12 +63,14 @@ export function matchesSearchQuery(
   return haystack.includes(normalizedQuery);
 }
 
+// Multi-select, same shape as category and price: no selection means "every
+// size", which is also how products without dimensions (no sizeBucket) stay in
+// the unfiltered view.
 export function matchesSizeFilter(
   product: CatalogProductCardViewModel,
-  sizeFilter: CatalogSizeFilter,
+  selectedSizes: readonly CatalogSizeFilter[],
 ): boolean {
-  if (sizeFilter === "all") {
-    // Products without dimensions (no sizeBucket) still belong in the unfiltered view.
+  if (!selectedSizes.length) {
     return true;
   }
 
@@ -75,7 +78,7 @@ export function matchesSizeFilter(
     return false;
   }
 
-  return product.sizeBucket === sizeFilter;
+  return selectedSizes.includes(product.sizeBucket);
 }
 
 export function matchesCategoryFilter(
@@ -121,23 +124,11 @@ export function parseSortOption(value: string | null): CatalogSortOption {
   return value === "price-asc" || value === "price-desc" ? value : "newest";
 }
 
-const sizeFilterValues: readonly CatalogSizeFilter[] = [
-  "accent",
-  "small",
-  "medium",
-  "large",
-  "oversized",
-];
-
-export function parseSizeFilter(value: string | null): CatalogSizeFilter {
-  return sizeFilterValues.find((candidate) => candidate === value) ?? "all";
-}
-
 /**
  * Reads a comma-separated multi-select param into a de-duplicated list, in the
  * canonical option order so the value the URL round-trips to is stable no matter
  * what order the shopper ticked the boxes in. Unknown values are dropped. Shared
- * by the category and price filters, which both work this way.
+ * by the category, price, and size filters, which all work this way.
  */
 function parseMultiSelect<T extends string>(value: string | null, validValues: readonly T[]): T[] {
   if (!value) {
@@ -205,4 +196,24 @@ export function togglePriceFilter(
   price: CatalogPriceFilter,
 ): CatalogPriceFilter[] {
   return toggleMultiSelect(selectedPrices, price, priceValues);
+}
+
+// The rug-only and generic option lists carry the same five tiers in the same
+// order (only their labels/hints differ), so either one defines the canonical
+// order for the URL param.
+const sizeValues = genericSizeFilterOptions.map((option) => option.value);
+
+export function parseSizeFilter(value: string | null): CatalogSizeFilter[] {
+  return parseMultiSelect(value, sizeValues);
+}
+
+export function serializeSizeFilter(selectedSizes: readonly CatalogSizeFilter[]): string {
+  return serializeMultiSelect(selectedSizes, sizeValues);
+}
+
+export function toggleSizeFilter(
+  selectedSizes: readonly CatalogSizeFilter[],
+  size: CatalogSizeFilter,
+): CatalogSizeFilter[] {
+  return toggleMultiSelect(selectedSizes, size, sizeValues);
 }
