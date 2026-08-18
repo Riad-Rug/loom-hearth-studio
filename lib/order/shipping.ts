@@ -1,4 +1,4 @@
-export const freeShippingThresholdUsd = 150;
+export const freeShippingThresholdUsd = 210;
 export const flatShippingUsd = 50;
 
 export function calculateShippingUsd(subtotalAfterDiscountUsd: number): number {

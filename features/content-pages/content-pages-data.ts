@@ -232,7 +232,7 @@ We currently ship to the **United States**. If you are outside the United States
 
 ## 3. Shipping cost
 
-Shipping to the United States is **free on orders of $150 or more**. Orders under $150 ship for a **flat $50**. The shipping amount is shown at checkout before payment. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
+Shipping to the United States is **free on orders of $210 or more**. Orders under $210 ship for a **flat $50**. The shipping amount is shown at checkout before payment. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
 
 ---
 
@@ -821,7 +821,7 @@ If we cancel your order, we will notify you promptly by email and release any pa
 
 ### 4.1 Prices
 
-All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $150 or more; orders under $150 ship for a flat $50, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
+All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $210 or more; orders under $210 ship for a flat $50, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
 
 We reserve the right to correct pricing errors on the site at any time. If an error is identified after you have placed an order, we will contact you to confirm whether you wish to proceed at the correct price, or cancel for a full release of any held funds.
 
