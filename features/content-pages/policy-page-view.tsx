@@ -35,9 +35,6 @@ export function PolicyPageView({ slug }: PolicyPageViewProps) {
           <Link className={styles.secondaryAction} href="/faq">
             Read the FAQ
           </Link>
-          <Link className={styles.secondaryAction} href="/sourcing">
-            Review sourcing
-          </Link>
           <Link className={styles.primaryAction} href="/contact">
             Contact the studio
           </Link>

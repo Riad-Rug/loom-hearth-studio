@@ -269,9 +269,6 @@ export function TradePageView() {
             <Link className={styles.primaryAction} href="/trade/apply">
               Start your inquiry
             </Link>
-            <Link className={styles.secondaryAction} href="/sourcing">
-              See the sourcing review path
-            </Link>
           </div>
         </div>
       </section>

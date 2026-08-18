@@ -84,7 +84,6 @@ export const siteConfig = {
   supportNav: [
     { href: "/contact", label: "Contact" },
     { href: "/faq", label: "FAQ" },
-    { href: "/sourcing", label: "Sourcing" },
     { href: "/trade", label: "Trade" },
     { href: "/shipping-policy", label: "Shipping" },
     { href: "/returns-policy", label: "Returns" },

@@ -57,16 +57,6 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
       "Answers to common questions about ordering, pre-shipment verification, shipping, returns, and rug care at Loom & Hearth Studio.",
   },
   {
-    id: "static-sourcing",
-    label: "Sourcing",
-    entityType: "static_page",
-    entityKey: "sourcing",
-    path: "/sourcing",
-    fallbackTitle: "Sourcing & Authenticity",
-    fallbackDescription:
-      "How Loom & Hearth Studio approaches sourcing, authenticity, and product verification as the collection is assembled.",
-  },
-  {
     id: "static-trade",
     label: "Trade",
     entityType: "static_page",

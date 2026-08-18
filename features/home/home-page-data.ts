@@ -298,7 +298,6 @@ const defaultHomePageContent: HomePageContent = {
     exploreLinks: [
       { href: "/shop", label: "Shop" },
       { href: "/about", label: "About" },
-      { href: "/sourcing", label: "Sourcing" },
       { href: "/blog", label: "Journal" },
       { href: "/trade", label: "Trade" },
     ],

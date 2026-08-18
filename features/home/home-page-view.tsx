@@ -259,9 +259,6 @@ export function HomePageView({ content, inventoryProducts = [], liveCategories }
           <Link className={styles.primaryAction} href={content.brandStory.href as Route}>
             {content.brandStory.linkLabel}
           </Link>
-          <Link className={styles.secondaryAction} href="/sourcing">
-            See how I source
-          </Link>
         </div>
       </section>
 
