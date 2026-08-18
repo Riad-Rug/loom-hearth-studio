@@ -4,6 +4,7 @@ import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
 import type { Order } from "@/types/domain";
 
 export const adminOrderStatusOptions = [
+  "pending",
   "paid",
   "processing",
   "shipped",
@@ -55,7 +56,7 @@ export type AdminOrderManagementItem = {
   estimatedMarginLabel: string;
   placedAtLabel: string;
   allowedStatuses: AdminOrderStatusOption[];
-  financialSummary: string;
+  costEntryNote: string;
   costFields: AdminOrderCostField[];
 };
 
@@ -142,7 +143,7 @@ export async function updateAdminOrderStatus(
       status: "invalid-request",
       order: null,
       fulfillmentResult: null,
-      message: "Admin order status update request is invalid.",
+      message: "That status update request was invalid.",
     };
   }
 
@@ -154,7 +155,7 @@ export async function updateAdminOrderStatus(
       status: "invalid-request",
       order: null,
       fulfillmentResult: null,
-      message: "Persisted order was not found for admin status update.",
+      message: "Order not found.",
     };
   }
 
@@ -163,11 +164,17 @@ export async function updateAdminOrderStatus(
       status: "ignored",
       order,
       fulfillmentResult: null,
-      message: "Persisted order already has the requested admin status.",
+      message: "This order already has this status.",
     };
   }
 
-  const updatedOrder = await repository.updateStatus(input.orderId, input.status);
+  const paymentStatusForStatus = resolvePaymentStatusForOrderStatus(input.status);
+  const updatedOrder = paymentStatusForStatus
+    ? await repository.updatePaymentTransition(input.orderId, {
+        status: input.status,
+        paymentStatus: paymentStatusForStatus,
+      })
+    : await repository.updateStatus(input.orderId, input.status);
   const fulfillmentResult = await orchestrateLaunchOrderFulfillment({
     trigger: "admin-status-update",
     order: updatedOrder,
@@ -177,11 +184,25 @@ export async function updateAdminOrderStatus(
     status: "updated",
     order: updatedOrder,
     fulfillmentResult,
-    message:
-      fulfillmentResult.status === "recorded" || fulfillmentResult.status === "already-recorded"
-        ? "Persisted order status updated through the admin orders boundary and recorded a manual fulfillment action."
-        : "Persisted order status updated through the admin orders boundary.",
+    message: "Status updated.",
   };
+}
+
+// Keeps the local `paymentStatus` field consistent with an admin-driven status change.
+// Only "paid" and "refunded" have an unambiguous payment-status counterpart; other
+// statuses (processing, shipped, delivered, cancelled) don't imply a payment change.
+function resolvePaymentStatusForOrderStatus(
+  status: AdminOrderStatusOption,
+): Order["paymentStatus"] | null {
+  if (status === "paid") {
+    return "paid";
+  }
+
+  if (status === "refunded") {
+    return "refunded";
+  }
+
+  return null;
 }
 
 function createAdminOrderManagementItem(order: Order): AdminOrderManagementItem {
@@ -198,13 +219,13 @@ function createAdminOrderManagementItem(order: Order): AdminOrderManagementItem 
     statusLabel: formatOrderStatus(order.status),
     paymentStatus: order.paymentStatus,
     paymentLabel: formatPaymentStatus(order.paymentStatus),
-    totalPaidLabel: formatUsd(order.totalUsd),
+    totalPaidLabel: formatTotalPaidLabel(order),
     estimatedCostLabel: "Awaiting costs",
     estimatedProfitLabel: "Pending",
     estimatedMarginLabel: "Pending",
     placedAtLabel: formatPlacedAt(order.placedAt),
     allowedStatuses: [...adminOrderStatusOptions],
-    financialSummary: "Use a future order detail panel to enter cost inputs for this row.",
+    costEntryNote: "No costs entered yet.",
     costFields: createCostCaptureFields(),
   };
 }
@@ -255,6 +276,22 @@ function formatPlacedAt(placedAt: string) {
     day: "numeric",
     year: "numeric",
   }).format(new Date(placedAt));
+}
+
+function formatTotalPaidLabel(order: Order) {
+  switch (order.paymentStatus) {
+    case "paid":
+      return formatUsd(order.totalUsd);
+    case "authorized":
+      return `Authorized — ${formatUsd(order.totalUsd)}`;
+    case "refunded":
+      return `Refunded — ${formatUsd(order.totalUsd)}`;
+    case "failed":
+      return "Payment failed";
+    case "pending":
+    default:
+      return "Awaiting capture";
+  }
 }
 
 function formatUsd(amount: number) {

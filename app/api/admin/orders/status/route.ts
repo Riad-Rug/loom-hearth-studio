@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       {
         status: "invalid-request",
         order: null,
-        message: "Admin order status update request is invalid.",
+        message: "That status update request was invalid.",
       },
       { status: 400 },
     );

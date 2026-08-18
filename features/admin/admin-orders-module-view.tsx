@@ -27,16 +27,17 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
   const [items, setItems] = useState(props.items);
   const [selectedStatuses, setSelectedStatuses] = useState<Record<string, AdminOrderStatusOption>>(
     () =>
-      Object.fromEntries(props.items.map((item) => [item.id, item.status])) as Record<
-        string,
-        AdminOrderStatusOption
-      >,
-  );
-  const [updateStates, setUpdateStates] = useState<Record<string, UpdateState>>(
-    () =>
       Object.fromEntries(
-        props.items.map((item) => [item.id, { status: "idle", message: null }]),
-      ) as Record<string, UpdateState>,
+        props.items.map((item): [string, AdminOrderStatusOption] => [item.id, item.status]),
+      ),
+  );
+  const [updateStates, setUpdateStates] = useState<Record<string, UpdateState>>(() =>
+    Object.fromEntries(
+      props.items.map((item): [string, UpdateState] => [
+        item.id,
+        { status: "idle", message: null },
+      ]),
+    ),
   );
 
   async function handleStatusUpdate(orderId: string) {
@@ -76,7 +77,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
       }));
 
       if (result.order) {
-        const nextPersistedStatus = result.order.status as AdminOrderStatusOption;
+        const nextPersistedStatus = result.order.status;
 
         setItems((current) =>
           current.map((item) =>
@@ -99,7 +100,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
         ...current,
         [orderId]: {
           status: "failure",
-          message: "Admin order status update request failed before a response was returned.",
+          message: "Update failed — try again.",
         },
       }));
     }
@@ -185,10 +186,12 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
           </p>
         </div>
 
-        <div className={styles.tableScaffoldNote}>
-          <strong>Live table layout</strong>
-          <p>Rows will load here when orders are persisted. The main list stays summary-focused.</p>
-        </div>
+        {items.length === 0 ? (
+          <div className={styles.tableScaffoldNote}>
+            <strong>Live table layout</strong>
+            <p>Rows will load here when orders are persisted. The main list stays summary-focused.</p>
+          </div>
+        ) : null}
 
         <div className={styles.tableScroller}>
           <table className={styles.table}>
@@ -259,7 +262,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                       <td>
                         <div className={styles.financialCell}>
                           <strong>{item.estimatedCostLabel}</strong>
-                          <span>{item.costFields[0]?.label} through {item.costFields[4]?.label}</span>
+                          <span>{item.costEntryNote}</span>
                         </div>
                       </td>
                       <td>
@@ -271,7 +274,6 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                       <td>
                         <div className={styles.dateCell}>
                           <strong>{item.placedAtLabel}</strong>
-                          <span>{item.financialSummary}</span>
                         </div>
                       </td>
                       <td>
@@ -303,7 +305,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                             {updateState.status === "submitting" ? "Updating..." : "Save"}
                           </button>
                           <p className={styles.actionMessage} data-state={updateState.status}>
-                            {updateState.message ?? "Status updates remain available from this table."}
+                            {updateState.message ?? "Choose a status and save to update this order."}
                           </p>
                         </div>
                       </td>
