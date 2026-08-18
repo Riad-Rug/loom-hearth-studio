@@ -162,7 +162,7 @@ export function HomePageView({
         <div className={styles.sectionHeader}>
           <div>
             <p className={styles.eyebrow}>Inventory</p>
-            <h2>In the warehouse now</h2>
+            <h2>In stock right now</h2>
           </div>
           <p>Every piece is the only one. When it sells, it&apos;s gone.</p>
         </div>

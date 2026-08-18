@@ -82,7 +82,7 @@ export function InventoryProductPager({ products, pageSize = 8 }: InventoryProdu
   const rangeEnd = Math.min((activeIndex + 1) * pageSize, products.length);
 
   return (
-    <div role="group" aria-roledescription="carousel" aria-label="In the warehouse now">
+    <div role="group" aria-roledescription="carousel" aria-label="In stock right now">
       <div
         ref={trackRef}
         className={styles.inventoryTrack}
