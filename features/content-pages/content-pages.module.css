@@ -859,6 +859,21 @@
   align-items: start;
 }
 
+.aboutSplitSectionSingle {
+  max-width: 58rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.aboutSplitSectionSingle .aboutOpenBody {
+  max-width: none;
+  margin: 0 auto;
+}
+
+.aboutSplitSectionSingle .aboutOpenPanel h2 {
+  font-size: clamp(2rem, 3vw, 2.8rem);
+}
+
 .aboutOpenPanel {
   display: grid;
   align-content: start;
@@ -919,6 +934,76 @@
 .aboutExit .secondaryAction:focus-visible {
   border-color: rgba(250, 250, 246, 0.6);
   background: rgba(250, 250, 246, 0.08);
+}
+
+.aboutExitFlat {
+  border: none;
+  background: transparent;
+  color: var(--color-text-body);
+  grid-template-columns: minmax(0, 52rem);
+  justify-content: center;
+}
+
+.aboutExitFlat .aboutExitBody {
+  max-width: none;
+}
+
+.aboutExitRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.aboutExitStatement {
+  flex: 1;
+  text-align: center;
+}
+
+.aboutExitRowCentered {
+  justify-content: center;
+}
+
+.aboutExitRowCentered .aboutExitStatement {
+  flex: none;
+}
+
+@media (max-width: 700px) {
+  .aboutExitRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+}
+
+.aboutExitFlat h2 {
+  font-family: var(--font-body);
+  font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.aboutExitFlat .eyebrow {
+  color: var(--color-green);
+  text-align: center;
+}
+
+.aboutExitFlat .body {
+  color: var(--color-text-muted);
+  font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+  font-weight: 400;
+}
+
+.aboutExitFlat .secondaryAction {
+  border-color: var(--color-border);
+  background: transparent;
+  color: var(--color-text-body);
+}
+
+.aboutExitFlat .secondaryAction:hover,
+.aboutExitFlat .secondaryAction:focus-visible {
+  border-color: var(--color-ink);
+  background: rgba(20, 20, 20, 0.04);
 }
 
 .aboutCrossLinks {
@@ -1087,6 +1172,13 @@
   display: grid;
   gap: var(--space-3);
   max-width: 46rem;
+}
+
+.aboutBridgeSection {
+  max-width: 58rem;
+  margin: 0 auto;
+  justify-items: center;
+  text-align: center;
 }
 
 .sectionHeader h2 {

@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import type { CSSProperties } from "react";
 
 import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
@@ -211,7 +212,10 @@ export function HomePageView({ content, inventoryProducts = [], liveCategories }
           <p>{content.categories.paragraph}</p>
         </div>
 
-        <div className={styles.categoryGrid}>
+        <div
+          className={styles.categoryGrid}
+          style={{ "--category-count": categoryCards.length } as CSSProperties}
+        >
           {categoryCards.map((card) => {
             const imageSrc = getRenderableImage(card.image.src);
 
@@ -223,7 +227,7 @@ export function HomePageView({ content, inventoryProducts = [], liveCategories }
                       alt={card.image.alt}
                       className={styles.categoryImage}
                       fill
-                      sizes="(max-width: 980px) 100vw, 33vw"
+                      sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw"
                       src={imageSrc}
                     />
                   ) : (
@@ -231,7 +235,7 @@ export function HomePageView({ content, inventoryProducts = [], liveCategories }
                       alt={`${card.title} placeholder`}
                       aspectRatio="4 / 3"
                       label={`${card.title} photo pending`}
-                      sizes="(max-width: 980px) 100vw, 33vw"
+                      sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw"
                     />
                   )}
                 </div>

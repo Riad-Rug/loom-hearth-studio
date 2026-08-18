@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import type { ReactNode } from "react";
 
 import Image from "next/image";
@@ -7,9 +8,11 @@ import { aboutBridge, aboutHero, aboutSections } from "@/features/content-pages/
 
 import styles from "./content-pages.module.css";
 
+type ProductLink = { text: string; href: string };
+
 export function AboutPageView() {
   const heroParagraphs = aboutHero.body.split("\n\n");
-  const [craftSection, directionSection] = aboutSections.map((section) => ({
+  const [craftSection] = aboutSections.map((section) => ({
     ...section,
     paragraphs: section.body.split("\n\n"),
   }));
@@ -18,14 +21,18 @@ export function AboutPageView() {
     { text: "poufs", href: "/shop/poufs" },
     { text: "pillows", href: "/shop/pillows" },
   ] as const;
+  const heroLinks = [
+    { text: "Moroccan handmade artisanat", href: "/shop" },
+    { text: "rug", href: "/shop/rugs" },
+  ] as const;
 
-  function renderLinkedText(text: string): ReactNode {
-    const matches = productLinks
+  function renderLinkedText(text: string, links: readonly ProductLink[] = productLinks): ReactNode {
+    const matches = links
       .map((link) => {
         const index = text.indexOf(link.text);
         return index >= 0 ? { ...link, index } : null;
       })
-      .filter((value): value is (typeof productLinks)[number] & { index: number } => value !== null)
+      .filter((value): value is ProductLink & { index: number } => value !== null)
       .sort((a, b) => a.index - b.index);
 
     if (matches.length === 0) {
@@ -45,7 +52,7 @@ export function AboutPageView() {
       }
 
       nodes.push(
-        <Link key={`${match.href}-${match.index}`} className={styles.inlineLink} href={match.href}>
+        <Link key={`${match.href}-${match.index}`} className={styles.inlineLink} href={match.href as Route}>
           {match.text}
         </Link>,
       );
@@ -69,7 +76,7 @@ export function AboutPageView() {
           <div className={styles.heroBody}>
             {heroParagraphs.map((paragraph, index) => (
               <p key={`${index}-${paragraph.slice(0, 24)}`} className={styles.lede}>
-                {renderLinkedText(paragraph)}
+                {renderLinkedText(paragraph, heroLinks)}
               </p>
             ))}
           </div>
@@ -96,13 +103,13 @@ export function AboutPageView() {
         </div>
       </section>
 
-      <section className={styles.sectionHeader}>
+      <section className={`${styles.sectionHeader} ${styles.aboutBridgeSection}`}>
         <p className={styles.eyebrow}>{aboutBridge.eyebrow}</p>
         <h2>{aboutBridge.title}</h2>
         <p className={styles.body}>{renderLinkedText(aboutBridge.body)}</p>
       </section>
 
-      <section className={`${styles.twoColumn} ${styles.aboutSplitSection}`}>
+      <section className={`${styles.aboutSplitSection} ${styles.aboutSplitSectionSingle}`}>
         <article className={styles.aboutOpenPanel}>
           <p className={styles.eyebrow}>{craftSection.eyebrow}</p>
           <h2>{craftSection.title}</h2>
@@ -112,31 +119,21 @@ export function AboutPageView() {
             ))}
           </div>
         </article>
-
-        <article className={styles.aboutOpenPanel}>
-          <p className={styles.eyebrow}>{directionSection.eyebrow}</p>
-          <h2>{directionSection.title}</h2>
-          <div className={styles.aboutOpenBody}>
-            {directionSection.paragraphs.map((paragraph, index) => (
-              <p key={`${index}-${paragraph.slice(0, 24)}`}>{renderLinkedText(paragraph)}</p>
-            ))}
-          </div>
-        </article>
       </section>
 
-      <section className={styles.aboutExit}>
+      <section className={`${styles.aboutExit} ${styles.aboutExitFlat}`}>
         <div className={styles.aboutExitBody}>
           <p className={styles.eyebrow}>Continue</p>
-          <h2>Each piece is still chosen one at a time, then shipped from Casablanca.</h2>
-          <p className={styles.body}>
-            Browse Moroccan rugs, poufs, pillows, and antiques — or use the trade route if you&apos;re sourcing for a client project.
-          </p>
-          <div className={styles.policyActions}>
-            <Link className={styles.primaryAction} href="/shop">
-              Shop the collection
+          <div className={styles.aboutExitRow}>
+            <h2>Learn more about Moroccan Handmade rugs and artisanat.</h2>
+            <Link className={styles.secondaryAction} href="/blog">
+              Journal
             </Link>
-            <Link className={styles.secondaryAction} href="/sourcing">
-              Read the sourcing notes
+          </div>
+          <div className={`${styles.aboutExitRow} ${styles.aboutExitRowCentered}`}>
+            <p className={`${styles.body} ${styles.aboutExitStatement}`}>Find YOUR statement piece</p>
+            <Link className={styles.primaryAction} href="/shop">
+              Full Collection
             </Link>
           </div>
         </div>

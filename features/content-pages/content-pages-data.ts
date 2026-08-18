@@ -20,37 +20,26 @@ type LookbookItem = {
 };
 
 export const aboutHero = {
-  eyebrow: "ABOUT",
-  title: "A direct source for handmade Moroccan rugs, poufs, pillows, and antiques.",
-  body: `My grandfather traded rugs from a bazaar in Marrakech. The trade stayed in the family, and it runs on the same thing it always did: knowing what you're holding.
-
-Loom & Hearth carries that forward in a smaller, more direct form — one person sourcing, photographing, and shipping handmade Moroccan rugs, poufs, pillows, and antiques from Casablanca. My mom designs and hand-sews every pouf and pillow cover herself.
-
-The point is not scale. The point is being close enough to the material, condition, and daylight colour of each piece that the description can stay honest.`,
-  highlight: "The bazaar changed hands. The habit of noticing the right rug didn't.",
+  eyebrow: "Why it matters to me",
+  title: "What Moroccan Handmade artisanat means to me",
+  body: `I grew up surrounded by Moroccan craftsmanship. Because of my grandfather and now alongside my mother. I grew up seeing not just the finished pieces, but the world behind them. The artisans, the traders, the workshops and the long journey each piece takes before it finds its home. That is what Moroccan handmade artisanat means to me. It's the patience and the people as much as the final artwork. That's the perspective I bring to every Moroccan rug and handmade piece I source.`,
+  highlight: "Every handmade piece carries someone's time and patience. Being part of its journey is an honor.",
 } as const;
 
 export const aboutSections: AboutSection[] = [
   {
-    eyebrow: "Craft",
-    title: "Built on material knowledge and direct selection.",
+    eyebrow: "Sourcing Today",
+    title: "How that history shapes how I source today.",
     body:
-      "I select on construction and fibre quality, not trends. For rugs that means checking pile density by weight and feel, examining the back for knot structure, and assessing warp tension. Many pieces are the only one of their kind. Even repeatable designs stay handmade \u2014 no two come out exactly alike.\n\nThe poufs and pillows are my mom's work. She designs and hand-sews every one \u2014 cutting, matching, and seaming each piece herself. Most are made from rugs or rug material, so they carry the same fibre, weave structure, and colour as the source piece.",
-  },
-  {
-    eyebrow: "Direction",
-    title: "A focused collection. Not a marketplace.",
-    body: `Loom & Hearth is not a marketplace. I don't list everything I come across. The collection stays deliberately narrow \u2014 hand-knotted rugs, rug-based poufs and pillows, and a small selection of supporting decor and antiques.
-
-The criterion is simple: does this piece hold up on its own, in a room, without explanation?`,
+      "Sourcing handmade Moroccan pieces is still a hands-on process. It's easier now to call weavers, workshops, and traders, but discovering the right pieces still often means traveling to souks, walking through small towns and mountain villages, talking with the people who know what's out there. When I look at a piece, I don't just look at the pattern. I pay attention to the wool's quality and condition, the tightness and consistency of the knots, signs of repairs, and how it's been cared for over time. That history shapes how I work today. My goal isn't simply to find beautiful handmade pieces. It's to understand them, appreciate the craftsmanship behind them, and share them with people who feel that same appreciation.",
   },
 ] as const;
 
 export const aboutBridge = {
-  eyebrow: "How we source",
-  title: "This shop carries on my grandfather's bazaar.",
+  eyebrow: "Family history",
+  title: "Where it all began",
   body:
-    "I source across Morocco myself — the High Atlas, Zemmour, Taznakht, Beni Ourain — and check every piece in person for construction, fibre, and condition before it enters the stockroom. Nothing is bought sight-unseen, and nothing is listed from a supplier photo.",
+    "I grew up in a family where Moroccan handmade craftsmanship wasn't something we talked about in any theoretical way. It was just everyday life. My grandfather spent decades building relationships with artisans, traders and workshops across Morocco. And my mother has continued that work ever since. So I grew up seeing a side of Moroccan artisanat that most people never do. I wasn't just surrounded by finished pieces. I saw the work, the patience, the journey behind each one. I learned that a rug isn't just a rug, or a ceiling isn't just decoration. Every piece represents months, sometimes years of someone's time and skill. Today, Loom & Hearth is my way of carrying that story forward. It's not about recreating the past. It's about helping more people discover the beauty, the history, the human work behind every handmade piece.",
 } as const;
 
 export const contactData = {
