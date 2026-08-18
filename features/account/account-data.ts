@@ -10,11 +10,11 @@ export const accountAuthContent = {
     formTitle: "Returning customer sign-in",
     formBody:
       "Use the same email tied to your account so order-related account activity stays in one place. Guest checkout remains available if you would rather continue without signing in.",
-    supportTitle: "Access your saved pieces and order history",
+    supportTitle: "Access your order history",
     supportBody:
-      "Sign in to return to your account area, revisit saved pieces, and review order history tied to your account email.",
+      "Sign in to return to your account area and review order history tied to your account email.",
     supportExtra:
-      "Pieces held during client review and future order activity stay tied to the same account email.",
+      "Future order activity stays tied to the same account email.",
     reassurance:
       "Secure login. Your account and order history stay protected.",
   },
@@ -27,12 +27,12 @@ export const accountAuthContent = {
     formTitle: "Create your studio account",
     formBody:
       "Start with your full name, email, and password. Use the same email you plan to use at checkout for a more consistent account experience.",
-    supportTitle: "Track your orders and saved pieces",
+    supportTitle: "Track your orders",
     supportBody:
-      "Create an account to track your orders and saved pieces, access future product releases, and save your preferences for faster checkout.",
+      "Create an account to track your orders, access future product releases, and save your preferences for faster checkout.",
     supportExtra: null,
     reassurance:
-      "Keep your orders, saved pieces, and future checkout details tied to one account email.",
+      "Keep your orders and future checkout details tied to one account email.",
   },
   "forgot-password": {
     eyebrow: "Password reset",
@@ -69,6 +69,6 @@ export const accountDashboardSections = [
     id: "profile",
     title: "Profile Details",
     body:
-      "Update the contact details tied to this account.",
+      "The contact details tied to this account, from your most recent order.",
   },
 ] as const;

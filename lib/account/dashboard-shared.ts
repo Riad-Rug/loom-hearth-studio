@@ -41,6 +41,24 @@ export type AccountOrderReservationPanel = {
   lines: string[];
 };
 
+export type AccountOrderStageStepStatus = "complete" | "current" | "upcoming";
+
+export type AccountOrderStageStep = {
+  id: "reserved" | "photographed" | "approved" | "shipped" | "delivered";
+  label: string;
+  status: AccountOrderStageStepStatus;
+};
+
+export type AccountOrderStageTimeline =
+  | { kind: "steps"; steps: AccountOrderStageStep[] }
+  | { kind: "cancelled"; label: string };
+
+export type AccountOrderTrackingView = {
+  summaryLabel: string;
+  trackingNumber: string;
+  trackingHref?: string;
+};
+
 export type AccountOrderHistoryItem = {
   id: string;
   orderNumber: string;
@@ -52,6 +70,9 @@ export type AccountOrderHistoryItem = {
   items: AccountOrderLineItemView[];
   totals: AccountOrderTotalsView;
   reservationPanel: AccountOrderReservationPanel | null;
+  stageTimeline: AccountOrderStageTimeline;
+  tracking: AccountOrderTrackingView | null;
+  customerNote: string | null;
   contactHref: string;
 };
 

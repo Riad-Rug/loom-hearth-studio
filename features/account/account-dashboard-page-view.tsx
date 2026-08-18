@@ -16,10 +16,6 @@ import {
   type AccountProfileSummaryView,
 } from "@/lib/account/dashboard-shared";
 import { createAccountDashboardRouteViewModel } from "@/lib/account/dashboard-route";
-import {
-  createAccountProfileUpdatePayload,
-  createInitialAccountProfileUpdateState,
-} from "@/lib/account/profile-update";
 
 import styles from "./account.module.css";
 
@@ -33,24 +29,14 @@ export function AccountDashboardPageView(props: {
     routeKind: "dashboard",
   });
   const [signOutState, setSignOutState] = useState(createInitialSignOutRequestState());
-  const [profileFullName, setProfileFullName] = useState(
-    props.dashboardData?.profile.fullName ?? "",
-  );
-  const [profileEmail, setProfileEmail] = useState(props.dashboardData?.profile.email ?? "");
-  const [profilePhone, setProfilePhone] = useState(props.dashboardData?.profile.phone ?? "");
-  const [profileUpdateState, setProfileUpdateState] = useState(
-    createInitialAccountProfileUpdateState(),
-  );
   const routeViewModel = createAccountDashboardRouteViewModel({
     accessDecision,
     dashboardData: props.dashboardData,
     profileSummaryView: props.profileSummaryView,
     signOutState,
-    profileUpdateState,
     accountGuardTodo: "",
     accountDashboardDataTodo: "",
     signOutRequestTodo: "",
-    accountProfileUpdateTodo: "",
   });
 
   async function handleSignOutRequest() {
@@ -80,37 +66,6 @@ export function AccountDashboardPageView(props: {
         redirectTarget: null,
       });
     }
-  }
-
-  function handleProfileUpdateRequest() {
-    const payload = createAccountProfileUpdatePayload({
-      fullName: profileFullName,
-      email: profileEmail,
-      phone: profilePhone,
-    });
-
-    setProfileUpdateState({
-      status: "submitting",
-      payload,
-      message: null,
-    });
-
-    window.setTimeout(() => {
-      if (!payload) {
-        setProfileUpdateState({
-          status: "failure",
-          payload: null,
-          message: "Enter your full name and a valid email address before saving.",
-        });
-        return;
-      }
-
-      setProfileUpdateState({
-        status: "success",
-        payload,
-        message: "Your details are saved for this session.",
-      });
-    }, 350);
   }
 
   const recentOrder = props.dashboardData?.overview.recentOrder ?? null;
@@ -176,6 +131,37 @@ export function AccountDashboardPageView(props: {
                       </div>
                       <span className={styles.orderStatusLine}>{order.statusLabel}</span>
 
+                      {order.stageTimeline.kind === "steps" ? (
+                        <ol className={styles.stageTimeline} aria-label="Order progress">
+                          {order.stageTimeline.steps.map((step) => (
+                            <li
+                              key={step.id}
+                              className={`${styles.stageStep} ${
+                                step.status === "complete"
+                                  ? styles.stageStepComplete
+                                  : step.status === "current"
+                                    ? styles.stageStepCurrent
+                                    : styles.stageStepUpcoming
+                              }`}
+                            >
+                              <span className={styles.stageStepDot} aria-hidden="true" />
+                              <span className={styles.stageStepLabel}>{step.label}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      ) : (
+                        <span className={styles.stageTimelineCancelled}>
+                          {order.stageTimeline.label}
+                        </span>
+                      )}
+
+                      {order.customerNote ? (
+                        <p className={styles.orderCustomerNote}>
+                          <strong>Your note to the studio: </strong>
+                          {order.customerNote}
+                        </p>
+                      ) : null}
+
                       {order.reservationPanel ? (
                         <div className={styles.reservationPanel}>
                           <strong>{order.reservationPanel.title}</strong>
@@ -183,6 +169,22 @@ export function AccountDashboardPageView(props: {
                             <p key={line}>{line}</p>
                           ))}
                         </div>
+                      ) : null}
+
+                      {order.tracking ? (
+                        <p className={styles.orderTrackingLine}>
+                          {order.tracking.trackingHref ? (
+                            <a
+                              href={order.tracking.trackingHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {order.tracking.summaryLabel}
+                            </a>
+                          ) : (
+                            order.tracking.summaryLabel
+                          )}
+                        </p>
                       ) : null}
 
                       <div className={styles.orderLineItemList}>
@@ -251,64 +253,36 @@ export function AccountDashboardPageView(props: {
                 </div>
               ) : null}
               {section.id === "profile" ? (
-                <form
-                  className={styles.formStack}
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    handleProfileUpdateRequest();
-                  }}
-                >
-                  <label className={styles.field}>
-                    <span>Full name</span>
-                    <input
-                      placeholder="Full name"
-                      type="text"
-                      autoComplete="name"
-                      value={profileFullName}
-                      onChange={(event) => setProfileFullName(event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.field}>
-                    <span>Email address</span>
-                    <input
-                      placeholder="name@example.com"
-                      type="email"
-                      autoComplete="email"
-                      value={profileEmail}
-                      onChange={(event) => setProfileEmail(event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.field}>
-                    <span>Phone</span>
-                    <input
-                      placeholder="Phone number (optional)"
-                      type="tel"
-                      autoComplete="tel"
-                      value={profilePhone}
-                      onChange={(event) => setProfilePhone(event.target.value)}
-                    />
-                  </label>
-                  <button
-                    className={`${styles.primaryAction} ${styles.formPrimaryAction}`}
-                    type="submit"
-                    disabled={profileUpdateState.status === "submitting"}
-                  >
-                    Save details
-                  </button>
-                  {routeViewModel.profileUpdate.stateLine ? (
-                    <p className={styles.formSupportCopy} role="status">
-                      {routeViewModel.profileUpdate.stateLine}
-                    </p>
+                <div className={styles.profileSummary}>
+                  {props.profileSummaryView ? (
+                    <dl className={styles.profileSummaryList}>
+                      <div className={styles.profileSummaryRow}>
+                        <dt>Name</dt>
+                        <dd>{props.profileSummaryView.fullNameLabel}</dd>
+                      </div>
+                      {props.profileSummaryView.contactRows.map((row) => (
+                        <div key={row.id} className={styles.profileSummaryRow}>
+                          <dt>{row.label}</dt>
+                          <dd
+                            className={
+                              row.tone === "muted" ? styles.profileSummaryValueMuted : undefined
+                            }
+                          >
+                            {row.value}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
                   ) : null}
-                  {routeViewModel.profileUpdate.message ? (
-                    <p
-                      className={styles.formSupportCopy}
-                      role={profileUpdateState.status === "failure" ? "alert" : "status"}
-                    >
-                      {routeViewModel.profileUpdate.message}
-                    </p>
-                  ) : null}
-                </form>
+                  <p className={styles.formSupportCopy}>
+                    These details are from your most recent order. To update your shipping
+                    details, reply to your confirmation email or{" "}
+                    <Link className={styles.inlineDashboardLink} href={"/contact" as Route}>
+                      contact us
+                    </Link>
+                    .
+                  </p>
+                </div>
               ) : null}
             </article>
           );

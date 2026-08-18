@@ -3,7 +3,6 @@ import type {
   AccountDashboardData,
   AccountProfileSummaryView,
 } from "@/lib/account/dashboard-shared";
-import type { AccountProfileUpdateState } from "@/lib/account/profile-update";
 
 export type AccountDashboardSectionView = {
   id: "overview" | "orders" | "profile";
@@ -37,12 +36,6 @@ export type AccountDashboardRouteViewModel = {
     message: string | null;
     redirectTargetLine: string | null;
   };
-  profileUpdate: {
-    title: string;
-    stateLine: string;
-    message: string | null;
-    payloadLine: string | null;
-  };
   sections: AccountDashboardSectionView[];
   profileSummaryView: AccountProfileSummaryView | null;
 };
@@ -52,16 +45,14 @@ export function createAccountDashboardRouteViewModel(input: {
   dashboardData: AccountDashboardData | null;
   profileSummaryView: AccountProfileSummaryView | null;
   signOutState: SignOutRequestState;
-  profileUpdateState: AccountProfileUpdateState;
   accountGuardTodo: string;
   accountDashboardDataTodo: string;
   signOutRequestTodo: string;
-  accountProfileUpdateTodo: string;
 }): AccountDashboardRouteViewModel {
   return {
     hero: {
       title: "Your orders and details.",
-      body: "Review order history, update your contact details, and return to the collection from one place.",
+      body: "Review order history, see the contact details tied to your account, and return to the collection from one place.",
       emptyStateTitle: input.dashboardData?.overview.greeting ?? "Welcome back",
       emptyStateLines: input.dashboardData
         ? [`Signed in as ${input.dashboardData.overview.accountEmail}.`, input.dashboardData.overview.statusLabel]
@@ -86,17 +77,6 @@ export function createAccountDashboardRouteViewModel(input: {
       message: input.signOutState.message,
       redirectTargetLine: null,
     },
-    profileUpdate: {
-      title: "Save your details",
-      stateLine:
-        input.profileUpdateState.status === "submitting"
-          ? "Saving your details..."
-          : input.profileUpdateState.status === "idle"
-            ? "Update your contact details for future orders and inquiries."
-            : "",
-      message: input.profileUpdateState.message,
-      payloadLine: null,
-    },
     sections: [
       {
         id: "overview",
@@ -112,7 +92,7 @@ export function createAccountDashboardRouteViewModel(input: {
       },
       {
         id: "profile",
-        summaryBody: "Keep your checkout and inquiry details current for future orders.",
+        summaryBody: null,
         summaryMeta: null,
       },
     ],

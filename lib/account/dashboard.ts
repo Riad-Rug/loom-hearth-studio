@@ -5,7 +5,10 @@ import type {
   AccountOrderHistoryItem,
   AccountOrderLineItemView,
   AccountOrderReservationPanel,
+  AccountOrderStageStep,
+  AccountOrderStageTimeline,
   AccountOrderTotalsView,
+  AccountOrderTrackingView,
 } from "@/lib/account/dashboard-shared";
 import { getProductRoutePath } from "@/lib/catalog/helpers";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
@@ -105,10 +108,79 @@ function createAccountOrderHistoryItem(
     totalLabel: formatOrderTotal(order.totalUsd),
     items: createOrderLineItems(order, productMap),
     totals: createOrderTotals(order),
+    // Only render the reservation/pre-auth panel while the order is genuinely still
+    // reserved. Keying on paymentStatus alone is wrong: an admin cancellation only
+    // flips `status` to "cancelled" and leaves `paymentStatus` at "authorized" (see
+    // resolvePaymentStatusForOrderStatus in lib/admin/orders.ts), which would otherwise
+    // show "Cancelled" and the pre-auth/approval-window copy at the same time.
     reservationPanel:
-      order.paymentStatus === "authorized" ? createReservationPanel(order.placedAt) : null,
+      order.status === "pending" && order.paymentStatus === "authorized"
+        ? createReservationPanel(order.placedAt, order.photosSentAt)
+        : null,
+    stageTimeline: createStageTimeline(order.status, order.photosSentAt),
+    tracking: createOrderTrackingView(order),
+    customerNote: order.customerNotes?.trim() || null,
     contactHref: createOrderContactHref(order.orderNumber),
   };
+}
+
+const stageTimelineSteps: ReadonlyArray<{ id: AccountOrderStageStep["id"]; label: string }> = [
+  { id: "reserved", label: "Reserved" },
+  // "Photographed" only becomes reachable once `photosSentAt` is set — before that, the
+  // order sits on "Reserved" (still being photographed). This is the sub-state that used
+  // to be collapsed into "Reserved" before `photosSentAt` existed as a field.
+  { id: "photographed", label: "Photographed" },
+  { id: "approved", label: "Approved" },
+  { id: "shipped", label: "Shipped" },
+  { id: "delivered", label: "Delivered" },
+];
+
+function createStageTimeline(
+  status: OrderStatus,
+  photosSentAt: string | undefined,
+): AccountOrderStageTimeline {
+  if (status === "cancelled" || status === "refunded") {
+    return {
+      kind: "cancelled",
+      label: status === "refunded" ? "Refunded" : "Cancelled",
+    };
+  }
+
+  const currentStepIndex = resolveStageStepIndex(status, photosSentAt);
+
+  return {
+    kind: "steps",
+    steps: stageTimelineSteps.map((step, index) => ({
+      id: step.id,
+      label: step.label,
+      status:
+        index < currentStepIndex ? "complete" : index === currentStepIndex ? "current" : "upcoming",
+    })),
+  };
+}
+
+function resolveStageStepIndex(status: OrderStatus, photosSentAt: string | undefined): number {
+  if (status === "delivered") {
+    return 4;
+  }
+
+  if (status === "shipped") {
+    return 3;
+  }
+
+  // "processing" implies payment already completed, so it belongs with "paid" on the
+  // Approved step.
+  if (status === "paid" || status === "processing") {
+    return 2;
+  }
+
+  // Still pending/authorized: distinguish "being photographed" from "photos sent,
+  // awaiting your approval" using `photosSentAt`.
+  if (photosSentAt) {
+    return 1;
+  }
+
+  return 0;
 }
 
 function createOrderLineItems(order: Order, productMap: Map<string, Product>): AccountOrderLineItemView[] {
@@ -152,8 +224,26 @@ function createOrderTotals(order: Order): AccountOrderTotalsView {
 const oneDayMs = 24 * 60 * 60 * 1000;
 const approvalWindowDays = 5;
 
-function createReservationPanel(placedAt: string): AccountOrderReservationPanel {
+function createReservationPanel(
+  placedAt: string,
+  photosSentAt: string | undefined,
+): AccountOrderReservationPanel {
   const placedDate = new Date(placedAt);
+
+  if (photosSentAt) {
+    const photosSentDate = new Date(photosSentAt);
+    const approveByDate = new Date(photosSentDate.getTime() + approvalWindowDays * oneDayMs);
+
+    return {
+      title: "What happens next",
+      lines: [
+        "Your card is only pre-authorized — a temporary hold, like a hotel deposit. Nothing has been charged.",
+        `Photos sent ${formatOrderDateTimeLabel(photosSentDate)} — you have until ${formatOrderDateTimeLabel(approveByDate)} to approve. You will not be charged before then.`,
+        "Only once you approve is your card charged and the piece shipped — say no, or don't respond, and the hold releases automatically with nothing charged.",
+      ],
+    };
+  }
+
   const photosExpectedByDate = new Date(placedDate.getTime() + oneDayMs);
   const approvalWindowClosesByDate = new Date(
     photosExpectedByDate.getTime() + approvalWindowDays * oneDayMs,
@@ -166,6 +256,57 @@ function createReservationPanel(placedAt: string): AccountOrderReservationPanel 
       `We personally photograph this exact piece and email you the photos. Expected by ${formatOrderDateTimeLabel(photosExpectedByDate)}.`,
       `You'll then have 5 days to approve. Only once you approve is your card charged and the piece shipped — say no, or don't respond, and the hold releases automatically with nothing charged (by around ${formatOrderDateTimeLabel(approvalWindowClosesByDate)}).`,
     ],
+  };
+}
+
+const carrierTrackingUrlBuilders: ReadonlyArray<{
+  matches: (normalizedCarrier: string) => boolean;
+  buildHref: (trackingNumber: string) => string;
+}> = [
+  {
+    matches: (carrier) => carrier === "usps",
+    buildHref: (trackingNumber) =>
+      `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(trackingNumber)}`,
+  },
+  {
+    matches: (carrier) => carrier === "ups",
+    buildHref: (trackingNumber) =>
+      `https://www.ups.com/track?tracknum=${encodeURIComponent(trackingNumber)}`,
+  },
+  {
+    matches: (carrier) => carrier === "fedex",
+    buildHref: (trackingNumber) =>
+      `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(trackingNumber)}`,
+  },
+  {
+    matches: (carrier) => carrier === "dhl",
+    buildHref: (trackingNumber) =>
+      `https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id=${encodeURIComponent(trackingNumber)}`,
+  },
+];
+
+function resolveCarrierTrackingHref(carrier: string, trackingNumber: string): string | undefined {
+  const normalizedCarrier = carrier.trim().toLowerCase();
+  const builder = carrierTrackingUrlBuilders.find(({ matches }) => matches(normalizedCarrier));
+
+  return builder?.buildHref(trackingNumber);
+}
+
+function createOrderTrackingView(order: Order): AccountOrderTrackingView | null {
+  const isShippedOrDelivered = order.status === "shipped" || order.status === "delivered";
+
+  if (!isShippedOrDelivered || !order.trackingNumber || !order.carrier) {
+    return null;
+  }
+
+  const shippedAtLabel = order.shippedAt
+    ? ` on ${formatOrderPlacedAtLabel(order.shippedAt)}`
+    : "";
+
+  return {
+    summaryLabel: `Shipped via ${order.carrier}${shippedAtLabel} — tracking: ${order.trackingNumber}`,
+    trackingNumber: order.trackingNumber,
+    trackingHref: resolveCarrierTrackingHref(order.carrier, order.trackingNumber),
   };
 }
 
