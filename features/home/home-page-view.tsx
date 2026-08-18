@@ -294,10 +294,19 @@ export function HomePageView({
           <h2>{content.brandStory.title}</h2>
           <p>{content.brandStory.paragraph}</p>
         </div>
-        <div className={styles.storyActions}>
-          <Link className={styles.primaryAction} href={content.brandStory.href as Route}>
-            {content.brandStory.linkLabel}
-          </Link>
+        <div className={styles.storyMedia}>
+          <Image
+            alt="Entrance to the Marrakech rug bazaar, with rugs, poufs and pillows on display"
+            className={styles.storyImage}
+            fill
+            sizes="(max-width: 980px) 100vw, 38vw"
+            src="/home/marrakech-bazaar-entrance.png"
+          />
+          <div className={styles.storyActions}>
+            <Link className={styles.primaryAction} href={content.brandStory.href as Route}>
+              {content.brandStory.linkLabel}
+            </Link>
+          </div>
         </div>
       </section>
 

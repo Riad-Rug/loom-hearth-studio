@@ -97,7 +97,8 @@
 
 .heroMedia,
 .categoryMedia,
-.productImageWrap {
+.productImageWrap,
+.storyMedia {
   position: relative;
   overflow: hidden;
   border: 1px solid var(--color-border);
@@ -109,9 +110,14 @@
   min-height: 34rem;
 }
 
+.storyMedia {
+  min-height: 26rem;
+}
+
 .heroImage,
 .categoryImage,
-.productImage {
+.productImage,
+.storyImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -446,18 +452,25 @@
 }
 
 .storySection {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 30rem);
+  align-items: stretch;
 }
 
 .storyCopy {
   display: grid;
+  align-content: center;
   gap: var(--space-3);
   max-width: 42rem;
 }
 
 .storyCopy h2 {
   font-size: clamp(2rem, 3vw, 3rem);
+}
+
+.storyActions {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
 }
 
 .newsletterSection {
@@ -664,6 +677,10 @@
   .heroMedia {
     min-height: 24rem;
   }
+
+  .storyMedia {
+    min-height: 22rem;
+  }
 }
 
 @media (max-width: 700px) {
@@ -701,6 +718,10 @@
 
   .heroMedia {
     min-height: 20rem;
+  }
+
+  .storyMedia {
+    min-height: 18rem;
   }
 
   .stepsGrid,
