@@ -404,6 +404,29 @@
   aspect-ratio: 4 / 3;
 }
 
+/* Entry point to a category with nothing purchasable in it yet: the card or chip
+   stays exactly where it was and keeps its copy, it just stops being clickable.
+   Same greyed vocabulary as the shop sidebar's unavailable filter rows
+   (.filterCheck[data-unavailable="true"] in features/catalog/catalog-page.module.css). */
+.disabledEntry {
+  color: var(--color-text-subtle);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.disabledEntry:hover,
+.disabledEntry:focus-visible {
+  border-color: var(--color-border);
+  background: transparent;
+}
+
+.categoryBody .categoryComingSoon {
+  color: var(--color-text-subtle);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .categoryBody {
   display: grid;
   gap: 0.55rem;

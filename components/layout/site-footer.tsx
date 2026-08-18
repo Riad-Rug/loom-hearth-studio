@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
 import { siteConfig } from "@/config/site";
+import { listUnavailableCategoryHrefs } from "@/lib/catalog/service";
 import { getHomepageContent } from "@/lib/homepage/content";
 
 const socialChannels = [
@@ -32,7 +33,13 @@ const socialChannels = [
 ] as const;
 
 export async function SiteFooter() {
-  const content = await getHomepageContent();
+  // Live check, not a flag: a category route with nothing purchasable behind it
+  // keeps its footer entry but renders as inert text, and comes back on its own
+  // the moment stock lands.
+  const [content, unavailableHrefs] = await Promise.all([
+    getHomepageContent(),
+    listUnavailableCategoryHrefs(),
+  ]);
 
   if (!content.footer.visible) {
     return null;
@@ -43,6 +50,26 @@ export async function SiteFooter() {
   const collectionLinks = dedupeFooterLinks(content.footer.collectionLinks);
   const activeSocialChannels = socialChannels.filter((channel) => channel.href.trim().length > 0);
   const currentYear = new Date().getFullYear();
+
+  function renderFooterLink(item: { href: string; label: string }) {
+    if (unavailableHrefs.includes(item.href)) {
+      return (
+        <span
+          key={item.href}
+          aria-disabled="true"
+          className="site-footer__link site-footer__link--disabled"
+        >
+          {item.label}
+        </span>
+      );
+    }
+
+    return (
+      <Link key={item.href} className="site-footer__link" href={item.href as Route}>
+        {item.label}
+      </Link>
+    );
+  }
 
   return (
     <footer className="site-footer">
@@ -93,11 +120,7 @@ export async function SiteFooter() {
               {content.footer.exploreHeading}
             </h2>
             <nav aria-labelledby="site-footer-explore" className="site-footer__nav">
-              {exploreLinks.map((item) => (
-                <Link key={item.href} className="site-footer__link" href={item.href as Route}>
-                  {item.label}
-                </Link>
-              ))}
+              {exploreLinks.map((item) => renderFooterLink(item))}
             </nav>
           </div>
           <div className="site-footer__nav-group">
@@ -105,11 +128,7 @@ export async function SiteFooter() {
               {content.footer.supportHeading}
             </h2>
             <nav aria-labelledby="site-footer-support" className="site-footer__nav">
-              {supportLinks.map((item) => (
-                <Link key={item.href} className="site-footer__link" href={item.href as Route}>
-                  {item.label}
-                </Link>
-              ))}
+              {supportLinks.map((item) => renderFooterLink(item))}
             </nav>
           </div>
           <div className="site-footer__nav-group">
@@ -117,11 +136,7 @@ export async function SiteFooter() {
               {content.footer.collectionsHeading}
             </h2>
             <nav aria-labelledby="site-footer-collections" className="site-footer__nav">
-              {collectionLinks.map((item) => (
-                <Link key={item.href} className="site-footer__link" href={item.href as Route}>
-                  {item.label}
-                </Link>
-              ))}
+              {collectionLinks.map((item) => renderFooterLink(item))}
             </nav>
           </div>
         </div>

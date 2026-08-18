@@ -17,6 +17,12 @@ type HomePageViewProps = {
   content: HomePageContent;
   inventoryProducts?: CatalogProductCardViewModel[];
   liveCategories?: ProductCategory[];
+  /**
+   * Category routes with nothing purchasable behind them right now (live check,
+   * computed in app/page.tsx). Their card and chip stay exactly where they are
+   * and keep their copy, but stop being clickable.
+   */
+  unavailableCategoryHrefs?: readonly string[];
 };
 
 const founderNoteDesktop =
@@ -71,8 +77,14 @@ const inventoryChips = [
   { label: "Decor & Antiques", href: "/shop/decor" },
 ] as const;
 
-export function HomePageView({ content, inventoryProducts = [], liveCategories }: HomePageViewProps) {
+export function HomePageView({
+  content,
+  inventoryProducts = [],
+  liveCategories,
+  unavailableCategoryHrefs = [],
+}: HomePageViewProps) {
   const liveCategorySet = liveCategories ? new Set(liveCategories) : null;
+  const isUnavailableHref = (href: string) => unavailableCategoryHrefs.includes(href);
   const categoryCards = content.categories.cards.filter((card) => {
     if (!card.visible) {
       return false;
@@ -156,11 +168,21 @@ export function HomePageView({ content, inventoryProducts = [], liveCategories }
         </div>
 
         <div className={styles.filterChips} aria-label="Browse inventory by category">
-          {inventoryChips.map((chip) => (
-            <Link key={chip.href} className={styles.filterChip} href={chip.href as Route}>
-              {chip.label}
-            </Link>
-          ))}
+          {inventoryChips.map((chip) =>
+            isUnavailableHref(chip.href) ? (
+              <span
+                key={chip.href}
+                aria-disabled="true"
+                className={`${styles.filterChip} ${styles.disabledEntry}`}
+              >
+                {chip.label}
+              </span>
+            ) : (
+              <Link key={chip.href} className={styles.filterChip} href={chip.href as Route}>
+                {chip.label}
+              </Link>
+            ),
+          )}
         </div>
 
         {inventoryProducts.length === 0 ? (
@@ -218,9 +240,9 @@ export function HomePageView({ content, inventoryProducts = [], liveCategories }
         >
           {categoryCards.map((card) => {
             const imageSrc = getRenderableImage(card.image.src);
-
-            return (
-              <Link key={card.id} className={styles.categoryCard} href={card.href as Route}>
+            const isUnavailable = isUnavailableHref(card.href);
+            const cardContent = (
+              <>
                 <div className={styles.categoryMedia}>
                   {imageSrc ? (
                     <Image
@@ -242,7 +264,24 @@ export function HomePageView({ content, inventoryProducts = [], liveCategories }
                 <div className={styles.categoryBody}>
                   <h3>{card.title}</h3>
                   <p>{card.description}</p>
+                  {isUnavailable ? <p className={styles.categoryComingSoon}>Coming soon</p> : null}
                 </div>
+              </>
+            );
+
+            // Nothing purchasable in this category yet: the card keeps its place
+            // and its copy, it just stops being a link.
+            return isUnavailable ? (
+              <div
+                key={card.id}
+                aria-disabled="true"
+                className={`${styles.categoryCard} ${styles.disabledEntry}`}
+              >
+                {cardContent}
+              </div>
+            ) : (
+              <Link key={card.id} className={styles.categoryCard} href={card.href as Route}>
+                {cardContent}
               </Link>
             );
           })}

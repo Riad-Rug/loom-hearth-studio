@@ -26,6 +26,12 @@ type SiteHeaderClientProps = {
   announcementMobile: string;
   brandName: string;
   primaryNav: readonly SiteHeaderNavItem[];
+  /**
+   * Nav destinations with nothing purchasable behind them right now (computed
+   * server-side in SiteHeader). The item keeps its place and label but renders
+   * as inert text instead of a link, rather than disappearing from the menu.
+   */
+  unavailableHrefs?: readonly string[];
   isAuthenticated: boolean;
   accountFirstName: string | null;
 };
@@ -349,6 +355,10 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     }
   }
 
+  function isUnavailable(href: string) {
+    return props.unavailableHrefs?.includes(href) ?? false;
+  }
+
   function renderSearchInput(context: "desktop" | "mobile") {
     const inputId = `site-header-${context}-search`;
     const listboxId = `site-header-${context}-search-listbox`;
@@ -477,20 +487,30 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                       inert={!isOpen}
                       onKeyDown={(event) => handleGroupPanelKeyDown(event, panelId)}
                     >
-                      {item.items.map((subItem) => (
-                        <Link
-                          key={subItem.href}
-                          className={`site-header__nav-group-link ${
-                            isPathActive(pathname, subItem.href)
-                              ? "site-header__nav-group-link--active"
-                              : ""
-                          }`}
-                          href={subItem.href as Route}
-                          onClick={() => closeGroup()}
-                        >
-                          {subItem.label}
-                        </Link>
-                      ))}
+                      {item.items.map((subItem) =>
+                        isUnavailable(subItem.href) ? (
+                          <span
+                            key={subItem.href}
+                            aria-disabled="true"
+                            className="site-header__nav-group-link site-header__nav-group-link--disabled"
+                          >
+                            {subItem.label}
+                          </span>
+                        ) : (
+                          <Link
+                            key={subItem.href}
+                            className={`site-header__nav-group-link ${
+                              isPathActive(pathname, subItem.href)
+                                ? "site-header__nav-group-link--active"
+                                : ""
+                            }`}
+                            href={subItem.href as Route}
+                            onClick={() => closeGroup()}
+                          >
+                            {subItem.label}
+                          </Link>
+                        ),
+                      )}
                     </div>
                   </div>
                 );
@@ -570,20 +590,30 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
               "items" in item ? (
                 <div key={item.label} className="site-header__mobile-group">
                   <p className="site-header__mobile-group-label">{item.label}</p>
-                  {item.items.map((subItem) => (
-                    <Link
-                      key={`mobile-${subItem.href}`}
-                      className={`site-header__mobile-link ${
-                        isPathActive(pathname, subItem.href)
-                          ? "site-header__mobile-link--active"
-                          : ""
-                      }`}
-                      href={subItem.href as Route}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {subItem.label}
-                    </Link>
-                  ))}
+                  {item.items.map((subItem) =>
+                    isUnavailable(subItem.href) ? (
+                      <span
+                        key={`mobile-${subItem.href}`}
+                        aria-disabled="true"
+                        className="site-header__mobile-link site-header__mobile-link--disabled"
+                      >
+                        {subItem.label}
+                      </span>
+                    ) : (
+                      <Link
+                        key={`mobile-${subItem.href}`}
+                        className={`site-header__mobile-link ${
+                          isPathActive(pathname, subItem.href)
+                            ? "site-header__mobile-link--active"
+                            : ""
+                        }`}
+                        href={subItem.href as Route}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {subItem.label}
+                      </Link>
+                    ),
+                  )}
                 </div>
               ) : (
                 <Link

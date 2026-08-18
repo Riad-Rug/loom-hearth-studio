@@ -104,6 +104,21 @@ export function matchesAvailability(
   return product.status !== "sold";
 }
 
+/**
+ * Whether a product counts toward its category's filter-sidebar availability.
+ * Stricter than matchesAvailability on purpose: an out-of-stock multi-unit piece
+ * still belongs in the grid (it keeps its unavailable/notify-me treatment on the
+ * card), but it must not make a category's checkbox look tickable when checking
+ * it would surface nothing a shopper can buy. Rugs are quantity-1 pieces with no
+ * inventory, so they keep the plain matchesAvailability behaviour.
+ */
+export function countsTowardCategoryAvailability(
+  product: CatalogProductCardViewModel,
+  hideSold: boolean,
+): boolean {
+  return matchesAvailability(product, hideSold) && !product.isOutOfStock;
+}
+
 export function sortCatalogProducts(
   products: CatalogProductCardViewModel[],
   sortOption: CatalogSortOption,

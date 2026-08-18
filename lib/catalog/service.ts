@@ -6,12 +6,14 @@ import {
   formatRugDimensions,
   formatRugWeight,
   getCategoryLabel,
+  getCategoryRoutePath,
   getInventoryMessage,
   getInventoryState,
   getProductBadgeLabel,
   getProductMerchandisingNote,
   getProductRoutePath,
   getProductRoutePattern,
+  isPurchasableProduct,
 } from "@/lib/catalog/helpers";
 import type {
   CatalogProductCardViewModel,
@@ -35,7 +37,7 @@ import {
   normalizeDimensionSeparators,
   removeConstructionFromColor,
 } from "@/lib/catalog/product-card-name";
-import { normalizeSlug } from "@/lib/catalog/product-validation";
+import { normalizeSlug, productCategoryOptions } from "@/lib/catalog/product-validation";
 import {
   getInventoryShuffleSeed,
   shuffleWithSeed,
@@ -62,6 +64,45 @@ export async function listCatalogProductCards(input?: {
     : await repository.listAll();
 
   return products.map(createCatalogProductCardViewModel);
+}
+
+/**
+ * Does this category hold at least one piece a shopper can buy right now?
+ * Rows alone are not enough: a category whose only listing is active but out of
+ * stock (a notify-me presentation) counts as empty. See isPurchasableProduct.
+ */
+export async function categoryHasPurchasableProducts(
+  category: ProductCategory,
+  repository: ProductRepository = createProductRepository(),
+): Promise<boolean> {
+  noStore();
+
+  const products = await repository.listByCategory(category);
+
+  return products.some(isPurchasableProduct);
+}
+
+/**
+ * Landing-route hrefs for every category with nothing purchasable behind it
+ * right now, so nav, footer, and homepage renderers can grey their entry points
+ * in place instead of hardcoding which category is currently empty. Live read on
+ * every render: the moment real stock lands, the links come back on their own.
+ * One listAll() per request — these surfaces are already uncached (the footer's
+ * getHomepageContent calls noStore), so this is not a hot path.
+ */
+export async function listUnavailableCategoryHrefs(
+  repository: ProductRepository = createProductRepository(),
+): Promise<string[]> {
+  noStore();
+
+  const products = await repository.listAll();
+  const purchasableCategories = new Set(
+    products.filter(isPurchasableProduct).map((product) => product.category),
+  );
+
+  return productCategoryOptions
+    .filter((category) => !purchasableCategories.has(category))
+    .map(getCategoryRoutePath);
 }
 
 export async function listRugStyleProductCards(input: {
@@ -283,6 +324,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     type: product.type,
     availabilityLabel:
       product.status === "sold" ? "SOLD" : product.type === "rug" ? "ONE OF A KIND" : "Available now",
+    isOutOfStock: product.type === "multiUnit" && getInventoryState(product) === "outOfStock",
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
     description: normalizeDimensionSeparators(product.description),

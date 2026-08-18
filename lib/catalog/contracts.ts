@@ -29,6 +29,12 @@ export type CatalogProductCardViewModel = {
   status: Product["status"];
   type: Product["type"];
   availabilityLabel: string;
+  /**
+   * Multi-unit piece with nothing left on the shelf (inventory <= 0). Always
+   * false for rugs, which are quantity-1 pieces with no inventory field — their
+   * availability reads from `status` instead.
+   */
+  isOutOfStock: boolean;
   priceUsd: number;
   priceUsdLabel: string;
   description: string;

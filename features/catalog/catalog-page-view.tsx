@@ -16,6 +16,7 @@ import {
   type CatalogSortOption,
 } from "@/features/catalog/catalog-data";
 import {
+  countsTowardCategoryAvailability,
   matchesAvailability,
   matchesCategoryFilter,
   matchesPriceFilter,
@@ -171,7 +172,10 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
         continue;
       }
 
-      if (!matchesAvailability(product, hideSold)) {
+      // Stricter than the grid's own availability filter: an out-of-stock
+      // multi-unit piece still renders in the grid, but it must not keep its
+      // category's checkbox tickable when nothing there can be bought.
+      if (!countsTowardCategoryAvailability(product, hideSold)) {
         continue;
       }
 

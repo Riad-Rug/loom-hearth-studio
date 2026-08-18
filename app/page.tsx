@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 
 import { HomePageView } from "@/features/home/home-page-view";
-import { listCatalogProductCards, listRandomInventoryProductCards } from "@/lib/catalog/service";
+import {
+  listCatalogProductCards,
+  listRandomInventoryProductCards,
+  listUnavailableCategoryHrefs,
+} from "@/lib/catalog/service";
 import { getHomepageContent } from "@/lib/homepage/content";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import type { ProductCategory } from "@/types/domain";
@@ -20,10 +24,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [content, inventoryProducts, allProducts] = await Promise.all([
+  const [content, inventoryProducts, allProducts, unavailableCategoryHrefs] = await Promise.all([
     getHomepageContent(),
     listRandomInventoryProductCards({ limit: 24 }),
     listCatalogProductCards(),
+    listUnavailableCategoryHrefs(),
   ]);
   const liveCategories = [
     ...new Set<ProductCategory>(
@@ -38,6 +43,7 @@ export default async function HomePage() {
       content={content}
       inventoryProducts={inventoryProducts}
       liveCategories={liveCategories}
+      unavailableCategoryHrefs={unavailableCategoryHrefs}
     />
   );
 }

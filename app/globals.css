@@ -411,6 +411,18 @@ h6 {
   color: var(--color-green);
 }
 
+/* Collection row for a category with nothing purchasable in it yet: it keeps its
+   place and its label, but renders as inert text instead of a link. Same greyed
+   vocabulary as the shop sidebar's unavailable filter rows
+   (.filterCheck[data-unavailable="true"] in features/catalog/catalog-page.module.css). */
+.site-header__nav-group-link--disabled,
+.site-header__nav-group-link--disabled:hover {
+  background: none;
+  color: var(--color-text-subtle);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .site-header__search-form {
   position: relative;
   display: inline-flex;
@@ -721,6 +733,15 @@ h6 {
 .site-footer__link:hover,
 .site-footer__link:focus-visible {
   color: var(--color-green);
+}
+
+/* Footer entry for a category with nothing purchasable in it yet — greyed and
+   inert, never removed (see SiteFooter's renderFooterLink). */
+.site-footer__link--disabled,
+.site-footer__link--disabled:hover {
+  color: var(--color-text-subtle);
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .site-footer__social {
@@ -1062,6 +1083,13 @@ h6 {
 
   .site-header__mobile-link--active {
     color: var(--color-green);
+  }
+
+  /* Mobile twin of .site-header__nav-group-link--disabled. */
+  .site-header__mobile-link--disabled {
+    color: var(--color-text-subtle);
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   .site-header__mobile-group {
