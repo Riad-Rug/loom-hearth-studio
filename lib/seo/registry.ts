@@ -57,16 +57,6 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
       "Answers to common questions about ordering, pre-shipment verification, shipping, returns, and rug care at Loom & Hearth Studio.",
   },
   {
-    id: "static-lookbook",
-    label: "Lookbook",
-    entityType: "static_page",
-    entityKey: "lookbook",
-    path: "/lookbook",
-    fallbackTitle: "Moroccan Interior Lookbook",
-    fallbackDescription:
-      "Real-room photography for Moroccan rugs, poufs, pillows, and antiques is coming soon.",
-  },
-  {
     id: "static-sourcing",
     label: "Sourcing",
     entityType: "static_page",

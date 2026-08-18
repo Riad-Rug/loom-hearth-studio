@@ -20,7 +20,6 @@ const staticRoutes = [
   "/trade",
   "/contact",
   "/faq",
-  "/lookbook",
   "/accessibility-statement",
 ] as const;
 

@@ -685,15 +685,19 @@ h6 {
 .site-footer__eyebrow,
 .site-footer__heading {
   color: var(--color-green);
+  font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.08em;
+  line-height: 1.6;
   text-transform: uppercase;
 }
 
 .site-footer__statement {
   max-width: 22rem;
+  font-family: var(--font-display);
   font-size: clamp(1.45rem, 2vw, 1.8rem);
+  line-height: 1.25;
 }
 
 .site-footer__brand,
@@ -710,13 +714,43 @@ h6 {
 
 .site-footer__link {
   width: fit-content;
+  padding-block: 0.15rem;
   color: var(--color-ink);
 }
 
 .site-footer__link:hover,
 .site-footer__link:focus-visible {
   color: var(--color-green);
-  outline: none;
+}
+
+.site-footer__social {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  margin-left: -0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer__social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--color-ink);
+  transition: color 150ms ease;
+}
+
+.site-footer__social-link:hover,
+.site-footer__social-link:focus-visible {
+  color: var(--color-green);
+}
+
+.site-footer__social-icon {
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .site-footer__legal-line {

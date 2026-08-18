@@ -35,14 +35,6 @@ export type Testimonial = {
   sortOrder: number;
 };
 
-export type LookbookEntry = {
-  id: string;
-  title: string;
-  description?: string;
-  media: MediaAsset[];
-  sortOrder: number;
-};
-
 export type PolicyPage = SeoFields & {
   slug:
     | "shipping-policy"

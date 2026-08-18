@@ -75,6 +75,12 @@ export const siteConfig = {
     { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
   ],
+  // Paste the live profile URLs here once the accounts exist; an empty string
+  // hides that icon in the site footer, no other code change needed.
+  socialLinks: {
+    instagram: "",
+    tiktok: "",
+  } as { instagram: string; tiktok: string },
   supportNav: [
     { href: "/contact", label: "Contact" },
     { href: "/faq", label: "FAQ" },

@@ -35,7 +35,6 @@ import {
 } from "@/features/catalog/catalog-filters";
 import { CatalogHistoryRecorder } from "@/features/catalog/catalog-history-recorder";
 import { CatalogProductBrowser } from "@/features/catalog/catalog-product-browser";
-import { lookbookSceneContext } from "@/features/lookbook/lookbook-scene-context";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import type { ProductCategory } from "@/types/domain";
 
@@ -200,15 +199,6 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
     hideSold,
   ].filter(Boolean).length;
   const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${activeSizeKey}|${sortOption}|${hideSold}`;
-  const lookbookSceneId = searchParams.get("scene");
-  const fromLookbook = searchParams.get("from") === "lookbook";
-  const lookbookContext = useMemo(() => {
-    if (!fromLookbook || !lookbookSceneId) {
-      return null;
-    }
-
-    return lookbookSceneContext.find((item) => item.id === lookbookSceneId) ?? null;
-  }, [fromLookbook, lookbookSceneId]);
 
   // Reflect the filters into the address bar without a Next.js navigation: a real
   // navigation here (router.replace/push) re-runs the server component and refetches the
@@ -339,19 +329,6 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
               </p>
               <p className={styles.lede}>{catalogDescription}</p>
             </div>
-
-            {lookbookContext ? (
-              <div className={styles.lookbookContextBanner}>
-                <p className={styles.lookbookContextEyebrow}>From the lookbook</p>
-                <div className={styles.lookbookContextBannerBody}>
-                  <h2>{lookbookContext.title}</h2>
-                  <p>
-                    This collection is where that {lookbookContext.roomLabel.toLowerCase()} scene
-                    starts. Browse the related pieces without losing the room direction.
-                  </p>
-                </div>
-              </div>
-            ) : null}
 
             {filteredProducts.length ? (
               <CatalogProductBrowser products={filteredProducts} filterKey={filterKey} />

@@ -12,7 +12,6 @@ export type CloudinaryAssetRole =
   | "thumbnail"
   | "featured"
   | "og"
-  | "lookbook"
   | "detail"
   | "edge"
   | "back"

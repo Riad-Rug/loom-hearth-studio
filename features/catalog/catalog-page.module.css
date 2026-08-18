@@ -416,47 +416,6 @@
   margin-top: var(--space-1);
 }
 
-.lookbookContextBanner {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-5);
-  border: 1px solid rgba(198, 106, 61, 0.18);
-  border-radius: var(--radius-lg);
-  background:
-    linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(245, 241, 232, 0.94)),
-    radial-gradient(circle at top right, rgba(198, 106, 61, 0.08), transparent 38%);
-  box-shadow: var(--shadow-soft);
-}
-
-.lookbookContextEyebrow {
-  margin: 0;
-  color: var(--color-clay-terracotta);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.lookbookContextBannerBody h2 {
-  margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 1.35rem;
-  line-height: 1.2;
-  letter-spacing: -0.03em;
-}
-
-.lookbookContextBannerBody p {
-  margin: 0;
-  color: var(--color-text-body);
-  line-height: 1.6;
-}
-
-.lookbookContextBannerBody {
-  display: grid;
-  gap: 0.6rem;
-  max-width: 42rem;
-}
-
 .tradePanel {
   display: flex;
   align-items: center;

@@ -274,7 +274,7 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Newsletter signup | Loom & Hearth Studio",
       metaDescription:
-        "Join for a free Moroccan rug sourcing guide, plus new arrivals, vintage finds, lookbook updates, and early access to handcrafted releases.",
+        "Join for a free Moroccan rug sourcing guide, plus new arrivals, vintage finds, sourcing stories, and early access to handcrafted releases.",
     },
     eyebrow: "JOIN THE LIST",
     title: "New arrivals, sourcing stories, and first access to pieces before wider release.",
@@ -293,11 +293,10 @@ const defaultHomePageContent: HomePageContent = {
     },
     introTitle: siteConfig.name,
     introBody: "",
-    introMeta: "Prices in USD. Free shipping across the US.",
+    introMeta: "Prices in USD · Free shipping across the US.",
     exploreHeading: "Explore",
     exploreLinks: [
       { href: "/shop", label: "Shop" },
-      { href: "/lookbook", label: "Lookbook" },
       { href: "/about", label: "About" },
       { href: "/sourcing", label: "Sourcing" },
       { href: "/blog", label: "Journal" },

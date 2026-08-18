@@ -45,7 +45,6 @@ export const cloudinaryAssetRoleOptions = [
   "thumbnail",
   "featured",
   "og",
-  "lookbook",
 ] as const satisfies ReadonlyArray<MediaAsset["role"]>;
 export const mediaTypeOptions = ["image", "video"] as const satisfies ReadonlyArray<
   MediaAsset["mediaType"]

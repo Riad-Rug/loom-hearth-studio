@@ -184,7 +184,6 @@ export function ContactPageView({
               <div className={styles.contactSuccessLinks} aria-label="Suggested next steps">
                 <span>Keep browsing while we reply:</span>
                 <Link href="/shop">See the full collection</Link>
-                <Link href="/lookbook">Browse the lookbook</Link>
               </div>
             </div>
 
