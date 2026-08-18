@@ -150,6 +150,23 @@ model OrderRecord {
   stripeEventId     String
   stripeEventType   String
   placedAt          DateTime            @default(now())
+
+  // Photo/fulfillment tracking
+  photosSentAt      DateTime?
+
+  // Shipment tracking
+  trackingNumber    String?
+  carrier           String?
+  shippedAt         DateTime?
+
+  // Cost tracking (margin calculation)
+  productCostUsd    Decimal?            @db.Decimal(10, 2)
+  shippingCostUsd   Decimal?            @db.Decimal(10, 2)
+  packagingCostUsd  Decimal?            @db.Decimal(10, 2)
+  paymentFeeUsd     Decimal?            @db.Decimal(10, 2)
+  otherCostUsd      Decimal?            @db.Decimal(10, 2)
+  costsUpdatedAt    DateTime?
+
   fulfillmentExecutions FulfillmentExecutionRecord[]
   lineItems         OrderLineItemRecord[]
   promoRedemptions  PromoRedemptionRecord[]

@@ -22,6 +22,21 @@ export interface OrderRepository {
     transition: { status: Order["status"]; paymentStatus: Order["paymentStatus"] },
   ): Promise<Order>;
   updateCustomerNotesByPaymentIntentId(paymentIntentId: string, notes: string): Promise<Order | null>;
+  markPhotosSent(orderId: string): Promise<Order>;
+  updateTrackingInfo(
+    orderId: string,
+    input: { trackingNumber: string; carrier: string; shippedAt?: Date },
+  ): Promise<Order>;
+  updateOrderCosts(
+    orderId: string,
+    input: {
+      productCostUsd?: number;
+      shippingCostUsd?: number;
+      packagingCostUsd?: number;
+      paymentFeeUsd?: number;
+      otherCostUsd?: number;
+    },
+  ): Promise<Order>;
 }
 
 type OrderRecordWithLineItems = Prisma.OrderRecordGetPayload<{
@@ -176,6 +191,86 @@ export class PrismaOrderRepository implements OrderRepository {
       throw error;
     }
   }
+
+  // Always overwrites photosSentAt with the current time, so calling this
+  // repeatedly (e.g. photos resent) is safe and simply refreshes the
+  // timestamp to the most recent send.
+  async markPhotosSent(orderId: string) {
+    const updatedOrder = await this.context.client.orderRecord.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        photosSentAt: new Date(),
+      },
+      include: {
+        lineItems: true,
+      },
+    });
+
+    return mapOrderRecordToDomainOrder(updatedOrder);
+  }
+
+  async updateTrackingInfo(
+    orderId: string,
+    input: { trackingNumber: string; carrier: string; shippedAt?: Date },
+  ) {
+    const updatedOrder = await this.context.client.orderRecord.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        trackingNumber: input.trackingNumber,
+        carrier: input.carrier,
+        shippedAt: input.shippedAt ?? new Date(),
+      },
+      include: {
+        lineItems: true,
+      },
+    });
+
+    return mapOrderRecordToDomainOrder(updatedOrder);
+  }
+
+  async updateOrderCosts(
+    orderId: string,
+    input: {
+      productCostUsd?: number;
+      shippingCostUsd?: number;
+      packagingCostUsd?: number;
+      paymentFeeUsd?: number;
+      otherCostUsd?: number;
+    },
+  ) {
+    const updatedOrder = await this.context.client.orderRecord.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        ...(input.productCostUsd !== undefined && {
+          productCostUsd: createPrismaDecimal(input.productCostUsd),
+        }),
+        ...(input.shippingCostUsd !== undefined && {
+          shippingCostUsd: createPrismaDecimal(input.shippingCostUsd),
+        }),
+        ...(input.packagingCostUsd !== undefined && {
+          packagingCostUsd: createPrismaDecimal(input.packagingCostUsd),
+        }),
+        ...(input.paymentFeeUsd !== undefined && {
+          paymentFeeUsd: createPrismaDecimal(input.paymentFeeUsd),
+        }),
+        ...(input.otherCostUsd !== undefined && {
+          otherCostUsd: createPrismaDecimal(input.otherCostUsd),
+        }),
+        costsUpdatedAt: new Date(),
+      },
+      include: {
+        lineItems: true,
+      },
+    });
+
+    return mapOrderRecordToDomainOrder(updatedOrder);
+  }
 }
 
 export function createOrderRepository(context = createRepositoryContext()) {
@@ -254,6 +349,16 @@ function mapOrderRecordToDomainOrder(order: OrderRecordWithLineItems): Order {
     currency: order.currency as Order["currency"],
     placedAt: order.placedAt.toISOString(),
     stripePaymentIntentId: order.paymentIntentId ?? undefined,
+    photosSentAt: order.photosSentAt?.toISOString() ?? undefined,
+    trackingNumber: order.trackingNumber ?? undefined,
+    carrier: order.carrier ?? undefined,
+    shippedAt: order.shippedAt?.toISOString() ?? undefined,
+    productCostUsd: order.productCostUsd != null ? Number(order.productCostUsd) : undefined,
+    shippingCostUsd: order.shippingCostUsd != null ? Number(order.shippingCostUsd) : undefined,
+    packagingCostUsd: order.packagingCostUsd != null ? Number(order.packagingCostUsd) : undefined,
+    paymentFeeUsd: order.paymentFeeUsd != null ? Number(order.paymentFeeUsd) : undefined,
+    otherCostUsd: order.otherCostUsd != null ? Number(order.otherCostUsd) : undefined,
+    costsUpdatedAt: order.costsUpdatedAt?.toISOString() ?? undefined,
   };
 }
 

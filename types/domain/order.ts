@@ -50,5 +50,21 @@ export type Order = {
   stripePaymentIntentId?: string;
   // TODO: Validate final refund operation flow and Stripe object mapping.
   refundedAt?: string;
+
+  // Photo/fulfillment tracking
+  photosSentAt?: string;
+
+  // Shipment tracking
+  trackingNumber?: string;
+  carrier?: string;
+  shippedAt?: string;
+
+  // Cost tracking (margin calculation)
+  productCostUsd?: number;
+  shippingCostUsd?: number;
+  packagingCostUsd?: number;
+  paymentFeeUsd?: number;
+  otherCostUsd?: number;
+  costsUpdatedAt?: string;
 };
 
