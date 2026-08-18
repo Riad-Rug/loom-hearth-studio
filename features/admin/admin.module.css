@@ -874,6 +874,32 @@
   line-height: 1.45;
 }
 
+.orderItemsList {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+  color: rgba(34, 33, 38, 0.72);
+  line-height: 1.4;
+}
+
+.orderItemsList li {
+  overflow-wrap: anywhere;
+}
+
+.shippingAddressBlock {
+  display: grid;
+  gap: 0.1rem;
+  margin: 0.15rem 0 0;
+  font-style: normal;
+  font-size: 0.82rem;
+  color: rgba(34, 33, 38, 0.72);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
 .orderActionCell .navLink {
   justify-content: center;
 }
@@ -1366,6 +1392,67 @@
   margin: 0;
   color: rgba(34, 33, 38, 0.68);
   line-height: 1.55;
+}
+
+.statusFilterBar {
+  margin-bottom: 0;
+}
+
+.statusFilterBar .navLink {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.82rem;
+}
+
+.historyRow td {
+  padding: 0 0.85rem 1rem;
+  border-bottom: 1px solid rgba(34, 33, 38, 0.08);
+  background: rgba(245, 239, 228, 0.22);
+}
+
+.historyPanel {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(34, 33, 38, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.historyPanel strong {
+  color: var(--color-charcoal-ink);
+}
+
+.historyList {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historyItem {
+  display: grid;
+  gap: 0.15rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(34, 33, 38, 0.06);
+}
+
+.historyItem:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.historyTimestamp {
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(34, 33, 38, 0.55);
+}
+
+.historyNote {
+  font-size: 0.86rem;
+  color: rgba(34, 33, 38, 0.72);
+  line-height: 1.5;
 }
 
 .homepageSectionButton,
