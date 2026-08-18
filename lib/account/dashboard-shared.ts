@@ -1,9 +1,14 @@
-import type { OrderStatus } from "@/types/domain/order";
+import type { OrderStatus, PaymentStatus } from "@/types/domain/order";
 
 export type AccountDashboardOverview = {
   greeting: string;
   statusLabel: string;
   accountEmail: string;
+  recentOrder: {
+    orderNumber: string;
+    statusLabel: string;
+    contactHref: string;
+  } | null;
 };
 
 export type AccountOrderHistorySummary = {
@@ -12,13 +17,42 @@ export type AccountOrderHistorySummary = {
   latestOrderLabel: string;
 };
 
+export type AccountOrderLineItemView = {
+  id: string;
+  name: string;
+  href?: string;
+  variantLabel?: string;
+  quantityLabel: string;
+  priceLabel: string;
+  imageSrc?: string;
+  imageAlt?: string;
+};
+
+export type AccountOrderTotalsView = {
+  subtotalLabel: string;
+  shippingLabel: string;
+  taxLabel: string;
+  discountLabel?: string;
+  totalLabel: string;
+};
+
+export type AccountOrderReservationPanel = {
+  title: string;
+  lines: string[];
+};
+
 export type AccountOrderHistoryItem = {
   id: string;
   orderNumber: string;
   status: OrderStatus;
+  paymentStatus: PaymentStatus;
   statusLabel: string;
   placedAtLabel: string;
   totalLabel: string;
+  items: AccountOrderLineItemView[];
+  totals: AccountOrderTotalsView;
+  reservationPanel: AccountOrderReservationPanel | null;
+  contactHref: string;
 };
 
 export type AccountOrderHistoryData = AccountOrderHistorySummary & {

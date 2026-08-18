@@ -113,11 +113,11 @@ export function AccountDashboardPageView(props: {
     }, 350);
   }
 
-  const quickLinks: Array<{ href: Route; label: string }> = [
-    { href: "/shop" as Route, label: "Browse the collection" },
-    { href: "/contact" as Route, label: "Contact us about an order" },
-    { href: "/trade" as Route, label: "View the trade programme" },
-  ];
+  const recentOrder = props.dashboardData?.overview.recentOrder ?? null;
+  const overviewContactHref = (recentOrder?.contactHref ?? "/contact") as Route;
+  const overviewContactLabel = recentOrder
+    ? `Questions about order ${recentOrder.orderNumber}?`
+    : "Contact us about an order";
 
   return (
     <div className={styles.page}>
@@ -139,13 +139,6 @@ export function AccountDashboardPageView(props: {
         </div>
       </section>
 
-      <section className={styles.sessionCard}>
-        <p className={styles.eyebrow}>Account</p>
-        <h2>{routeViewModel.session.title}</h2>
-        <p>{routeViewModel.session.statusLine}</p>
-        {routeViewModel.session.accessLine ? <p>{routeViewModel.session.accessLine}</p> : null}
-      </section>
-
       <section className={styles.dashboardGrid}>
         {accountDashboardSections.map((section) => {
           const sectionView = routeViewModel.sections.find(
@@ -165,21 +158,94 @@ export function AccountDashboardPageView(props: {
               {sectionView?.summaryMeta ? <span>{sectionView.summaryMeta}</span> : null}
               {section.id === "overview" ? (
                 <div className={styles.quickLinkList}>
-                  {quickLinks.map((link) => (
-                    <Link key={link.href} className={styles.inlineDashboardLink} href={link.href}>
-                      {link.label}
-                    </Link>
-                  ))}
+                  <Link className={styles.inlineDashboardLink} href={"/shop" as Route}>
+                    Browse the collection
+                  </Link>
+                  <Link className={styles.inlineDashboardLink} href={overviewContactHref}>
+                    {overviewContactLabel}
+                  </Link>
                 </div>
               ) : null}
               {section.id === "orders" ? (
                 <div className={styles.orderHistoryList}>
                   {props.dashboardData?.orders.items.map((order) => (
                     <div key={order.id} className={styles.orderHistoryItem}>
-                      <strong>{order.orderNumber}</strong>
-                      <span>{order.statusLabel}</span>
-                      <span>{order.placedAtLabel}</span>
-                      <span>{order.totalLabel}</span>
+                      <div className={styles.orderHistoryItemHeader}>
+                        <strong>{order.orderNumber}</strong>
+                        <span>{order.placedAtLabel}</span>
+                      </div>
+                      <span className={styles.orderStatusLine}>{order.statusLabel}</span>
+
+                      {order.reservationPanel ? (
+                        <div className={styles.reservationPanel}>
+                          <strong>{order.reservationPanel.title}</strong>
+                          {order.reservationPanel.lines.map((line) => (
+                            <p key={line}>{line}</p>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      <div className={styles.orderLineItemList}>
+                        {order.items.map((item) => (
+                          <div key={item.id} className={styles.orderLineItem}>
+                            {item.imageSrc ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                className={styles.orderLineItemImage}
+                                src={item.imageSrc}
+                                alt={item.imageAlt ?? item.name}
+                                width={64}
+                                height={64}
+                                loading="lazy"
+                              />
+                            ) : null}
+                            <div className={styles.orderLineItemDetails}>
+                              {item.href ? (
+                                <Link className={styles.inlineDashboardLink} href={item.href as Route}>
+                                  {item.name}
+                                </Link>
+                              ) : (
+                                <span>{item.name}</span>
+                              )}
+                              {item.variantLabel ? (
+                                <span className={styles.orderLineItemMeta}>{item.variantLabel}</span>
+                              ) : null}
+                              <span className={styles.orderLineItemMeta}>{item.quantityLabel}</span>
+                            </div>
+                            <span className={styles.orderLineItemPrice}>{item.priceLabel}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className={styles.orderTotalsList}>
+                        <div>
+                          <span>Subtotal</span>
+                          <span>{order.totals.subtotalLabel}</span>
+                        </div>
+                        <div>
+                          <span>Shipping</span>
+                          <span>{order.totals.shippingLabel}</span>
+                        </div>
+                        <div>
+                          <span>Tax</span>
+                          <span>{order.totals.taxLabel}</span>
+                        </div>
+                        {order.totals.discountLabel ? (
+                          <div>
+                            <span>Discount</span>
+                            <span>{order.totals.discountLabel}</span>
+                          </div>
+                        ) : null}
+                        <div className={styles.orderTotalsGrandTotal}>
+                          <span>Total</span>
+                          <span>{order.totalLabel}</span>
+                        </div>
+                      </div>
+
+                      <Link className={styles.inlineDashboardLink} href={order.contactHref as Route}>
+                        Questions about this order? Reply to your confirmation email, or contact us and
+                        mention order {order.orderNumber}.
+                      </Link>
                     </div>
                   ))}
                 </div>

@@ -64,10 +64,7 @@ export function createAccountDashboardRouteViewModel(input: {
       body: "Review order history, update your contact details, and return to the collection from one place.",
       emptyStateTitle: input.dashboardData?.overview.greeting ?? "Welcome back",
       emptyStateLines: input.dashboardData
-        ? [
-            "Your orders are saved to this account.",
-            input.dashboardData.overview.statusLabel,
-          ]
+        ? [`Signed in as ${input.dashboardData.overview.accountEmail}.`, input.dashboardData.overview.statusLabel]
         : ["No orders are linked to this account yet."],
     },
     session: {
@@ -103,7 +100,9 @@ export function createAccountDashboardRouteViewModel(input: {
     sections: [
       {
         id: "overview",
-        summaryBody: "Use this account to move back into the collection, ask about an order, or view the trade route.",
+        summaryBody: input.dashboardData?.overview.recentOrder
+          ? `Most recent order: ${input.dashboardData.overview.recentOrder.orderNumber} — ${input.dashboardData.overview.recentOrder.statusLabel}`
+          : null,
         summaryMeta: null,
       },
       {

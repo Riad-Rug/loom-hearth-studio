@@ -57,7 +57,7 @@ export const accountDashboardSections = [
     id: "overview",
     title: "Overview",
     body:
-      "Review the details tied to this account and keep your contact information up to date.",
+      "A quick look at your most recent order, with a fast way to reach us about it.",
   },
   {
     id: "orders",
