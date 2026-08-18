@@ -5,13 +5,15 @@ import { Fragment, useState, type Dispatch, type SetStateAction } from "react";
 import {
   adminOrderStatusOptions,
   orderStatusTransitionNeedsConfirmation,
-  type AdminOrderCostsUpdateResult,
-  type AdminOrderManagementItem,
-  type AdminOrderPhotosSentUpdateResult,
   type AdminOrderStatusOption,
-  type AdminOrderStatusUpdateResult,
-  type AdminOrderTrackingUpdateResult,
-  type AdminOrdersModuleData,
+} from "@/lib/admin/order-status";
+import type {
+  AdminOrderCostsUpdateResult,
+  AdminOrderManagementItem,
+  AdminOrderPhotosSentUpdateResult,
+  AdminOrderStatusUpdateResult,
+  AdminOrderTrackingUpdateResult,
+  AdminOrdersModuleData,
 } from "@/lib/admin/orders";
 
 import styles from "./admin.module.css";
