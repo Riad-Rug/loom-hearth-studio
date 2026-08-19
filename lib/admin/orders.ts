@@ -2,6 +2,7 @@ import { db } from "@/lib/db/client";
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import type { FulfillmentOrchestrationResult } from "@/lib/fulfillment/contracts";
 import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
+import { formatOrderStatusLabel } from "@/lib/orders/customer-status-label";
 import type { Order } from "@/types/domain";
 
 import { adminOrderStatusOptions, type AdminOrderStatusOption } from "@/lib/admin/order-status";
@@ -81,10 +82,21 @@ export type AdminOrderManagementItem = {
   estimatedCostLabel: string;
   estimatedProfitLabel: string;
   estimatedMarginLabel: string;
+  // Raw ISO timestamp for the order's placed-at time — kept alongside
+  // `placedAtLabel` (the formatted display string) so the client can derive
+  // things like "days since placed" for the authorization-clock / attention
+  // logic without re-parsing the formatted label.
+  placedAt: string;
   placedAtLabel: string;
   allowedStatuses: AdminOrderStatusOption[];
   costEntryNote: string;
   history: AdminOrderFulfillmentHistoryEntry[];
+
+  // What the customer sees for this order's status on their account page —
+  // computed by the same pure function the account dashboard uses
+  // (lib/orders/customer-status-label.ts), so admins can tell at a glance
+  // when the internal status and the customer-facing copy diverge.
+  customerStatusLabel: string;
 
   // Photo/fulfillment tracking
   photosSentAt: string | null;
@@ -586,6 +598,7 @@ function createAdminOrderManagementItem(
     estimatedMarginLabel: costBreakdown.hasCostData
       ? formatPercent(costBreakdown.marginPct)
       : "Pending",
+    placedAt: order.placedAt,
     placedAtLabel: formatPlacedAt(order.placedAt),
     allowedStatuses: [...adminOrderStatusOptions],
     costEntryNote: costBreakdown.hasCostData
@@ -594,6 +607,8 @@ function createAdminOrderManagementItem(
         : "Costs entered"
       : "No costs entered yet.",
     history,
+
+    customerStatusLabel: formatOrderStatusLabel(order.status, order.paymentStatus),
 
     photosSentAt: order.photosSentAt ?? null,
     photosSentAtLabel: order.photosSentAt

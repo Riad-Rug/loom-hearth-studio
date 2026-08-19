@@ -606,6 +606,21 @@
   background: rgba(20, 20, 20, 0.03);
 }
 
+/* Orders table only: cancelled/refunded orders are done and inactive, so the
+   whole row recedes visually. Declared after :hover (same specificity as
+   .tableRow:hover, so source order decides) and given its own :hover rule
+   so a cancelled/refunded row still reads as "different" even while
+   hovered, instead of the hover tint winning outright. */
+.tableRow[data-status="cancelled"],
+.tableRow[data-status="refunded"] {
+  background: rgba(20, 20, 20, 0.05);
+}
+
+.tableRow[data-status="cancelled"]:hover,
+.tableRow[data-status="refunded"]:hover {
+  background: rgba(20, 20, 20, 0.07);
+}
+
 .tableRowSelected,
 .tableRowSelected:hover {
   background: rgba(23, 105, 90, 0.06);
@@ -727,6 +742,26 @@
 .statusBadgeArchived {
   background: rgba(20, 20, 20, 0.07);
   color: var(--color-text-muted);
+}
+
+.statusBadgeWarning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.statusBadgeUrgent {
+  background: rgba(170, 61, 42, 0.12);
+  color: var(--color-error);
+}
+
+.statusBadgeComplete {
+  background: rgba(23, 105, 90, 0.08);
+  color: var(--color-text-muted);
+}
+
+.statusBadgeRefunded {
+  background: rgba(170, 61, 42, 0.12);
+  color: var(--color-error);
 }
 
 .priceCell {

@@ -117,6 +117,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
     ),
   );
   const [statusFilter, setStatusFilter] = useState<StatusFilterOption>("all");
+  const [needsAttentionOnly, setNeedsAttentionOnly] = useState(false);
   const [expandedHistoryOrderIds, setExpandedHistoryOrderIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -547,8 +548,13 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
     await submitStatusUpdate(orderId, "shipped");
   }
 
-  const filteredItems =
+  const statusFilteredItems =
     statusFilter === "all" ? items : items.filter((item) => item.status === statusFilter);
+  const attentionFilteredItems = needsAttentionOnly
+    ? statusFilteredItems.filter((item) => resolveOrderAttention(item) !== null)
+    : statusFilteredItems;
+  const filteredItems = [...attentionFilteredItems].sort(compareByAttention);
+  const needsAttentionCount = items.filter((item) => resolveOrderAttention(item) !== null).length;
 
   return (
     <section className={styles.moduleShell}>
@@ -656,6 +662,15 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                 </button>
               );
             })}
+            <button
+              type="button"
+              role="tab"
+              aria-selected={needsAttentionOnly}
+              className={`${styles.navLink} ${needsAttentionOnly ? styles.navLinkActive : ""}`}
+              onClick={() => setNeedsAttentionOnly((current) => !current)}
+            >
+              Needs attention ({formatCount(needsAttentionCount)})
+            </button>
           </div>
         )}
 
@@ -749,6 +764,18 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                           <span className={`${styles.statusBadge} ${resolveStatusClassName(item.status)}`}>
                             {item.statusLabel}
                           </span>
+                          {(() => {
+                            const attention = resolveOrderAttention(item);
+
+                            return attention ? (
+                              <span
+                                className={`${styles.statusBadge} ${resolveAttentionClassName(attention.level)}`}
+                              >
+                                {attention.label}
+                              </span>
+                            ) : null;
+                          })()}
+                          <p className={styles.actionMessage}>Customer sees: {item.customerStatusLabel}</p>
                         </div>
                       </td>
                       <td>
@@ -1074,11 +1101,93 @@ function buildStatusConfirmationCopy(
 }
 
 function resolveStatusClassName(status: AdminOrderManagementItem["status"]) {
-  if (status === "cancelled" || status === "refunded") {
+  if (status === "pending") {
+    return styles.statusBadgeWarning;
+  }
+
+  if (status === "paid" || status === "processing") {
+    return styles.statusBadgeActive;
+  }
+
+  if (status === "shipped" || status === "delivered") {
+    return styles.statusBadgeComplete;
+  }
+
+  if (status === "cancelled") {
     return styles.statusBadgeArchived;
   }
 
+  if (status === "refunded") {
+    return styles.statusBadgeRefunded;
+  }
+
   return styles.statusBadgeActive;
+}
+
+type OrderAttentionLevel = "urgent" | "warning";
+type OrderAttention = { level: OrderAttentionLevel; label: string } | null;
+
+// Ranks orders by how urgently they need admin action, independent of the
+// active status filter. Rules are keyed off the same status/paymentStatus
+// combinations the rest of this codebase already treats as meaningful (e.g.
+// the "pending" + "authorized" pairing used for the reservation panel in
+// lib/account/dashboard.ts) so this stays consistent with what the customer
+// sees and with the authorize-then-capture 7-day window described in the
+// checkout/fulfillment docs.
+const authorizationWindowDays = 7;
+const photosPromiseDays = 2;
+const captureUrgentThresholdDays = 5;
+
+function resolveOrderAttention(item: AdminOrderManagementItem): OrderAttention {
+  const ageDays = Math.floor((Date.now() - new Date(item.placedAt).getTime()) / 86_400_000);
+
+  if (item.status === "pending" && item.paymentStatus === "authorized") {
+    if (ageDays >= captureUrgentThresholdDays) {
+      return {
+        level: "urgent",
+        label: `Auth expires in ~${Math.max(authorizationWindowDays - ageDays, 0)}d — capture or release`,
+      };
+    }
+
+    if (ageDays >= photosPromiseDays && !item.photosSentAtLabel) {
+      return { level: "warning", label: "Photos overdue (24h promise)" };
+    }
+  }
+
+  if (item.status === "shipped" && !item.trackingNumber) {
+    return { level: "urgent", label: "Shipped with no tracking" };
+  }
+
+  if (item.status === "cancelled" && item.paymentStatus === "authorized") {
+    return { level: "warning", label: "Release the Stripe hold" };
+  }
+
+  if ((item.status === "shipped" || item.status === "delivered") && item.paymentStatus !== "paid") {
+    return { level: "urgent", label: "Shipped but not captured" };
+  }
+
+  return null;
+}
+
+function resolveAttentionClassName(level: OrderAttentionLevel) {
+  return level === "urgent" ? styles.statusBadgeUrgent : styles.statusBadgeWarning;
+}
+
+// Stable sort: urgent first, then warning, then everything else — the
+// relative order within each group (and among items with no attention) is
+// left untouched, which preserves the newest-first order the list already
+// comes in from getAdminOrdersModuleData.
+const attentionSortWeight: Record<"urgent" | "warning" | "none", number> = {
+  urgent: 0,
+  warning: 1,
+  none: 2,
+};
+
+function compareByAttention(a: AdminOrderManagementItem, b: AdminOrderManagementItem): number {
+  const weightA = attentionSortWeight[resolveOrderAttention(a)?.level ?? "none"];
+  const weightB = attentionSortWeight[resolveOrderAttention(b)?.level ?? "none"];
+
+  return weightA - weightB;
 }
 
 const costDraftFieldConfig: Array<{ key: keyof CostDraft; label: string }> = [
