@@ -129,7 +129,19 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
   const toggleTracking = createExpandableSetToggle(setExpandedTrackingOrderIds);
   const toggleCosts = createExpandableSetToggle(setExpandedCostsOrderIds);
 
-  async function handlePhotosSent(orderId: string) {
+  function expandTrackingPanel(orderId: string) {
+    setExpandedTrackingOrderIds((current) => {
+      if (current.has(orderId)) {
+        return current;
+      }
+
+      const next = new Set(current);
+      next.add(orderId);
+      return next;
+    });
+  }
+
+  async function handlePhotosSent(orderId: string, overwrite: boolean) {
     setPhotosSentStates((current) => ({
       ...current,
       [orderId]: { status: "submitting", message: null },
@@ -139,7 +151,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
       const response = await fetch("/api/admin/orders/photos-sent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId }),
+        body: JSON.stringify({ orderId, overwrite }),
       });
       const result = (await response.json()) as AdminOrderPhotosSentUpdateResult;
 
@@ -174,7 +186,31 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
     }
   }
 
-  async function handleTrackingSave(orderId: string) {
+  // Thin wrapper around handlePhotosSent: recording for the first time needs
+  // no confirmation, but re-recording moves the customer-visible "approve
+  // by" deadline shown on their account page, so that path is gated behind
+  // an explicit confirm and passes `overwrite: true` through to the server.
+  async function handleRecordPhotosSent(orderId: string) {
+    const currentItem = items.find((item) => item.id === orderId);
+    const alreadySent = Boolean(currentItem?.photosSentAtLabel);
+
+    if (
+      alreadySent &&
+      !window.confirm(
+        `Photos were already recorded sent at ${currentItem?.photosSentAtLabel}. Re-recording will move the customer's visible "approve by" deadline shown on their account page. Continue?`,
+      )
+    ) {
+      return;
+    }
+
+    await handlePhotosSent(orderId, alreadySent);
+  }
+
+  // Shared save logic behind both the standalone "Save tracking" action and
+  // the combined "Save tracking & mark shipped" action. Returns whether the
+  // save succeeded so a caller can decide whether it's safe to chain a
+  // status update on top of it.
+  async function saveTracking(orderId: string): Promise<boolean> {
     const draft = trackingDrafts[orderId];
     const trackingNumber = draft?.trackingNumber.trim() ?? "";
     const carrier = draft?.carrier.trim() ?? "";
@@ -187,7 +223,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
           message: "Enter both a tracking number and a carrier.",
         },
       }));
-      return;
+      return false;
     }
 
     setTrackingUpdateStates((current) => ({
@@ -234,12 +270,19 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
           },
         }));
       }
+
+      return result.status === "updated";
     } catch {
       setTrackingUpdateStates((current) => ({
         ...current,
         [orderId]: { status: "failure", message: "Update failed — try again." },
       }));
+      return false;
     }
+  }
+
+  async function handleTrackingSave(orderId: string) {
+    await saveTracking(orderId);
   }
 
   async function handleCostsSave(orderId: string) {
@@ -350,23 +393,14 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
     }
   }
 
-  async function handleStatusUpdate(orderId: string) {
-    const nextStatus = selectedStatuses[orderId];
-    const currentItem = items.find((item) => item.id === orderId);
-
-    if (!nextStatus || !currentItem) {
-      return;
-    }
-
-    if (
-      orderStatusTransitionNeedsConfirmation(currentItem.status, nextStatus) &&
-      !window.confirm(
-        `Change order ${currentItem.orderNumber} from "${formatLabel(currentItem.status)}" to "${formatLabel(nextStatus)}"?\n\nThis has real customer/financial implications and can't be easily undone. Only continue if you're correcting a mistake or intentionally cancelling/refunding this order.`,
-      )
-    ) {
-      return;
-    }
-
+  // Shared submit logic behind both the standalone "Save" status action and
+  // the combined "Save tracking & mark shipped" action. Returns whether the
+  // update succeeded (or was a no-op because the order already had that
+  // status).
+  async function submitStatusUpdate(
+    orderId: string,
+    nextStatus: AdminOrderStatusOption,
+  ): Promise<boolean> {
     setUpdateStates((current) => ({
       ...current,
       [orderId]: {
@@ -415,6 +449,8 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
           [orderId]: nextPersistedStatus,
         }));
       }
+
+      return result.status === "updated" || result.status === "ignored";
     } catch {
       setUpdateStates((current) => ({
         ...current,
@@ -423,7 +459,92 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
           message: "Update failed — try again.",
         },
       }));
+      return false;
     }
+  }
+
+  // Shared confirmation gate behind both the standalone status dropdown and
+  // the combined "Save tracking & mark shipped" action, so a transition that
+  // needs a confirmation (e.g. reopening a cancelled/refunded/delivered
+  // order into "shipped") can't bypass it just by going through the tracking
+  // panel instead of the dropdown. Returns true when it's safe to proceed.
+  function confirmStatusTransition(
+    currentItem: AdminOrderManagementItem,
+    nextStatus: AdminOrderStatusOption,
+  ): boolean {
+    if (
+      orderStatusTransitionNeedsConfirmation(currentItem.status, nextStatus) &&
+      !window.confirm(buildStatusConfirmationCopy(currentItem, nextStatus))
+    ) {
+      return false;
+    }
+
+    if (
+      nextStatus === "paid" &&
+      currentItem.paymentStatus === "failed" &&
+      !window.confirm("This order's last payment attempt failed. Really mark it Paid?")
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  async function handleStatusUpdate(orderId: string) {
+    const nextStatus = selectedStatuses[orderId];
+    const currentItem = items.find((item) => item.id === orderId);
+
+    if (!nextStatus || !currentItem) {
+      return;
+    }
+
+    if (nextStatus === "shipped" && !currentItem.trackingNumber) {
+      setUpdateStates((current) => ({
+        ...current,
+        [orderId]: {
+          status: "failure",
+          message:
+            'Add a tracking number before marking this order Shipped — the tracking panel is now open below, or use "Save tracking & mark shipped" there.',
+        },
+      }));
+      expandTrackingPanel(orderId);
+      return;
+    }
+
+    if (!confirmStatusTransition(currentItem, nextStatus)) {
+      return;
+    }
+
+    await submitStatusUpdate(orderId, nextStatus);
+  }
+
+  // Combined action for the tracking panel: saves tracking first, and only
+  // if that succeeds, immediately follows with the status update to
+  // "shipped" — skipping handleStatusUpdate's own missing-tracking guard
+  // since tracking was just saved, but still routed through the same
+  // confirmation gate (e.g. this can still be "reopening a terminal order"
+  // if the order was cancelled/refunded/delivered before tracking was
+  // fixed up). Reuses the same shared helpers as the standalone actions
+  // rather than duplicating their request/state logic.
+  async function handleSaveTrackingAndShip(orderId: string) {
+    const currentItem = items.find((item) => item.id === orderId);
+
+    if (!currentItem || !confirmStatusTransition(currentItem, "shipped")) {
+      return;
+    }
+
+    const trackingSaved = await saveTracking(orderId);
+
+    if (!trackingSaved) {
+      return;
+    }
+
+    setSelectedStatuses((current) => ({
+      ...current,
+      [orderId]: "shipped",
+    }));
+
+    await submitStatusUpdate(orderId, "shipped");
   }
 
   const filteredItems =
@@ -634,6 +755,16 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                         <div className={styles.paymentCell}>
                           <strong>{item.paymentLabel}</strong>
                           <span>{item.totalPaidLabel} order total</span>
+                          {item.paymentIntentId ? (
+                            <a
+                              className={styles.stripeLink}
+                              href={`https://dashboard.stripe.com/payments/${item.paymentIntentId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              View in Stripe →
+                            </a>
+                          ) : null}
                         </div>
                       </td>
                       <td className={styles.priceCell}>{item.totalPaidLabel}</td>
@@ -692,21 +823,30 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                           >
                             {isHistoryExpanded ? "Hide history" : `History (${item.history.length})`}
                           </button>
-                          <button
-                            className={styles.navLink}
-                            type="button"
-                            onClick={() => void handlePhotosSent(item.id)}
-                            disabled={photosSentState.status === "submitting"}
-                          >
-                            {photosSentState.status === "submitting"
-                              ? "Marking..."
-                              : item.photosSentAtLabel
-                                ? "Photos sent — resend"
-                                : "Mark photos sent"}
-                          </button>
                           {item.photosSentAtLabel ? (
-                            <p className={styles.actionMessage}>Photos sent {item.photosSentAtLabel}</p>
-                          ) : null}
+                            <>
+                              <p className={styles.actionMessage}>Photos sent {item.photosSentAtLabel}</p>
+                              <button
+                                className={styles.secondaryInlineAction}
+                                type="button"
+                                onClick={() => void handleRecordPhotosSent(item.id)}
+                                disabled={photosSentState.status === "submitting"}
+                              >
+                                {photosSentState.status === "submitting" ? "Updating..." : "Re-record time"}
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              className={styles.navLink}
+                              type="button"
+                              onClick={() => void handleRecordPhotosSent(item.id)}
+                              disabled={photosSentState.status === "submitting"}
+                            >
+                              {photosSentState.status === "submitting"
+                                ? "Recording..."
+                                : "Record photos sent"}
+                            </button>
+                          )}
                           {photosSentState.message ? (
                             <p className={styles.actionMessage} data-state={photosSentState.status}>
                               {photosSentState.message}
@@ -786,14 +926,31 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                                 className={styles.navLink}
                                 type="button"
                                 onClick={() => void handleTrackingSave(item.id)}
-                                disabled={trackingUpdateState.status === "submitting"}
+                                disabled={
+                                  trackingUpdateState.status === "submitting" ||
+                                  updateState.status === "submitting"
+                                }
                               >
                                 {trackingUpdateState.status === "submitting" ? "Saving..." : "Save tracking"}
+                              </button>
+                              <button
+                                className={styles.navLink}
+                                type="button"
+                                onClick={() => void handleSaveTrackingAndShip(item.id)}
+                                disabled={
+                                  trackingUpdateState.status === "submitting" ||
+                                  updateState.status === "submitting"
+                                }
+                              >
+                                {trackingUpdateState.status === "submitting" ||
+                                updateState.status === "submitting"
+                                  ? "Saving..."
+                                  : "Save tracking & mark shipped"}
                               </button>
                             </div>
                             <p className={styles.actionMessage} data-state={trackingUpdateState.status}>
                               {trackingUpdateState.message ??
-                                "Saving sets the ship date to right now. The customer only sees tracking once this order's status is set to Shipped."}
+                                "The ship date is set the first time you save tracking, and preserved after that. The customer only sees tracking once this order's status is set to Shipped."}
                             </p>
                           </div>
                         </td>
@@ -894,6 +1051,26 @@ function formatCount(value: number) {
 
 function formatLabel(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+// Status-specific confirm copy for the transitions that carry real
+// financial weight. "Paid" and "Refunded" get explicit wording because
+// neither one ever calls Stripe — this codebase has no
+// paymentIntents.capture/cancel or refunds.create call anywhere — so the
+// confirm dialog needs to say plainly that this only updates the website.
+function buildStatusConfirmationCopy(
+  item: AdminOrderManagementItem,
+  nextStatus: AdminOrderStatusOption,
+): string {
+  if (nextStatus === "paid") {
+    return `Change order ${item.orderNumber} from "${formatLabel(item.status)}" to "Paid"?\n\nMarking Paid only updates this website — it does NOT capture the payment in Stripe. Confirm you have already captured this payment in Stripe before continuing.`;
+  }
+
+  if (nextStatus === "refunded") {
+    return `Change order ${item.orderNumber} from "${formatLabel(item.status)}" to "Refunded"?\n\nMarking Refunded does NOT send money back to the customer. Confirm the refund has already been issued in Stripe before continuing.`;
+  }
+
+  return `Change order ${item.orderNumber} from "${formatLabel(item.status)}" to "${formatLabel(nextStatus)}"?\n\nThis has real customer/financial implications and can't be easily undone. Only continue if you're correcting a mistake or intentionally cancelling/refunding this order.`;
 }
 
 function resolveStatusClassName(status: AdminOrderManagementItem["status"]) {

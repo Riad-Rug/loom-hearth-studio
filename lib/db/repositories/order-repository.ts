@@ -192,9 +192,11 @@ export class PrismaOrderRepository implements OrderRepository {
     }
   }
 
-  // Always overwrites photosSentAt with the current time, so calling this
-  // repeatedly (e.g. photos resent) is safe and simply refreshes the
-  // timestamp to the most recent send.
+  // Always overwrites photosSentAt with the current time — the caller
+  // (markAdminOrderPhotosSent in lib/admin/orders.ts) is responsible for
+  // only invoking this a second time when the admin has explicitly
+  // confirmed an overwrite, since re-recording moves the customer-visible
+  // "approve by" deadline.
   async markPhotosSent(orderId: string) {
     const updatedOrder = await this.context.client.orderRecord.update({
       where: {
@@ -215,6 +217,22 @@ export class PrismaOrderRepository implements OrderRepository {
     orderId: string,
     input: { trackingNumber: string; carrier: string; shippedAt?: Date },
   ) {
+    // The ship date is set the first time tracking is saved for an order,
+    // then preserved on every later save (e.g. fixing a tracking-number
+    // typo) — without this, saving tracking again would reset `shippedAt`
+    // to "now" even on an order that actually shipped days ago. An explicit
+    // `input.shippedAt` still wins when a caller passes one.
+    const existingOrder = await this.context.client.orderRecord.findUnique({
+      where: {
+        id: orderId,
+      },
+      select: {
+        shippedAt: true,
+      },
+    });
+
+    const shippedAt = input.shippedAt ?? existingOrder?.shippedAt ?? new Date();
+
     const updatedOrder = await this.context.client.orderRecord.update({
       where: {
         id: orderId,
@@ -222,7 +240,7 @@ export class PrismaOrderRepository implements OrderRepository {
       data: {
         trackingNumber: input.trackingNumber,
         carrier: input.carrier,
-        shippedAt: input.shippedAt ?? new Date(),
+        shippedAt,
       },
       include: {
         lineItems: true,

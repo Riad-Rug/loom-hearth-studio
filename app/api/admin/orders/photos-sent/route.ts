@@ -44,7 +44,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const result = await markAdminOrderPhotosSent({ orderId: payload.orderId });
+  const result = await markAdminOrderPhotosSent({
+    orderId: payload.orderId,
+    overwrite: payload.overwrite === true,
+  });
 
   return NextResponse.json(result, {
     status: result.status === "updated" ? 200 : 400,

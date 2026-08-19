@@ -71,6 +71,11 @@ export type AdminOrderManagementItem = {
   statusLabel: string;
   paymentStatus: Order["paymentStatus"];
   paymentLabel: string;
+  // Stripe's PaymentIntent id for this order, when one exists — lets the
+  // admin table link straight through to the real payment/capture/refund
+  // state in the Stripe dashboard, since none of the "Paid"/"Refunded"
+  // status actions in this file ever call the Stripe API themselves.
+  paymentIntentId: string | null;
   totalUsd: number;
   totalPaidLabel: string;
   estimatedCostLabel: string;
@@ -125,6 +130,10 @@ export type AdminOrderStatusUpdateResult = {
 
 export type AdminOrderPhotosSentUpdateRequest = {
   orderId: string;
+  // Required to be explicitly true when the order already has a
+  // `photosSentAt` value — a plain (no-flag) call only ever records a
+  // first-time send and never silently overwrites an existing timestamp.
+  overwrite?: boolean;
 };
 
 export type AdminOrderPhotosSentUpdateResult = {
@@ -299,6 +308,15 @@ export async function updateAdminOrderStatus(
     };
   }
 
+  if (input.status === "shipped" && !order.trackingNumber) {
+    return {
+      status: "invalid-request",
+      order: null,
+      fulfillmentResult: null,
+      message: "Add a tracking number before marking this order Shipped.",
+    };
+  }
+
   const paymentStatusForStatus = resolvePaymentStatusForOrderStatus(input.status);
   const updatedOrder = paymentStatusForStatus
     ? await repository.updatePaymentTransition(input.orderId, {
@@ -355,6 +373,15 @@ export async function markAdminOrderPhotosSent(
       status: "invalid-request",
       order: null,
       message: "Order not found.",
+    };
+  }
+
+  if (order.photosSentAt && input.overwrite !== true) {
+    return {
+      status: "invalid-request",
+      order: null,
+      message:
+        "Photos were already recorded sent for this order. Re-recording requires explicit confirmation.",
     };
   }
 
@@ -549,6 +576,7 @@ function createAdminOrderManagementItem(
     statusLabel: formatOrderStatus(order.status),
     paymentStatus: order.paymentStatus,
     paymentLabel: formatPaymentStatus(order.paymentStatus),
+    paymentIntentId: order.stripePaymentIntentId ?? null,
     totalUsd: order.totalUsd,
     totalPaidLabel: formatTotalPaidLabel(order),
     estimatedCostLabel: costBreakdown.hasCostData

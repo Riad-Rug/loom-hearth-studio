@@ -939,6 +939,42 @@
   color: var(--color-green);
 }
 
+.stripeLink {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 180ms ease;
+}
+
+.stripeLink:hover,
+.stripeLink:focus-visible {
+  color: var(--color-green);
+}
+
+.secondaryInlineAction {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color 180ms ease;
+}
+
+.secondaryInlineAction:hover,
+.secondaryInlineAction:focus-visible {
+  color: var(--color-green);
+}
+
 @media (max-width: 1400px) {
   .metricsGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));

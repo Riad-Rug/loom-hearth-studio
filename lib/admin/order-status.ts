@@ -31,12 +31,16 @@ export function isTerminalOrderStatus(status: AdminOrderStatusOption): boolean {
 }
 
 // Guard rail for the admin status dropdown: the common forward progression
-// (pending -> paid/cancelled -> processing -> shipped -> delivered) should
-// save without friction. Two situations get a confirmation step instead of a
-// silent save, because they can't be casually reversed and carry real
+// (pending -> processing -> shipped -> delivered) should save without
+// friction. Three situations get a confirmation step instead of a silent
+// save, because they can't be casually reversed and carry real
 // customer/financial weight:
-//   1. Applying "cancelled" or "refunded" to any order.
-//   2. Moving an order out of a terminal status (delivered/cancelled/refunded)
+//   1. Applying "paid" to any order — marking Paid only updates this
+//      website, it never touches Stripe, so an admin needs to explicitly
+//      confirm they already captured the payment there.
+//   2. Applying "cancelled" or "refunded" to any order — refunded in
+//      particular never sends money back to the customer on its own.
+//   3. Moving an order out of a terminal status (delivered/cancelled/refunded)
 //      back into a non-terminal, in-progress status.
 export function orderStatusTransitionNeedsConfirmation(
   currentStatus: AdminOrderStatusOption,
@@ -46,7 +50,7 @@ export function orderStatusTransitionNeedsConfirmation(
     return false;
   }
 
-  if (nextStatus === "cancelled" || nextStatus === "refunded") {
+  if (nextStatus === "paid" || nextStatus === "cancelled" || nextStatus === "refunded") {
     return true;
   }
 
