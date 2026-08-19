@@ -54,11 +54,14 @@ export async function POST(request: Request) {
   for (const key of orderCostFieldKeys) {
     const value = payload[key];
 
-    if (value === undefined || value === null) {
+    if (value === undefined) {
       continue;
     }
 
-    if (typeof value !== "number") {
+    // `null` is a deliberate "clear this field" signal, distinct from
+    // `undefined` (leave unchanged) — pass it through rather than dropping
+    // it, so a field that already has a value can actually be cleared.
+    if (value !== null && typeof value !== "number") {
       return NextResponse.json(
         {
           status: "invalid-request",

@@ -966,6 +966,29 @@
   justify-content: center;
 }
 
+/* The one primary "what's next" action surfaced per order row — mirrors the
+   solid green treatment .inlineActionLinkPrimary already uses elsewhere in
+   this file, layered onto .navLink's sizing/layout the same way. */
+.actionPrimary {
+  border-color: var(--color-green);
+  background: var(--color-green);
+  color: var(--color-bg);
+  font-weight: 600;
+}
+
+.actionPrimary:hover,
+.actionPrimary:focus-visible {
+  border-color: var(--button-primary-bg-hover);
+  background: var(--button-primary-bg-hover);
+  color: var(--color-bg);
+  outline: none;
+}
+
+.actionPrimary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .actionMessage[data-state="failure"] {
   color: var(--color-error);
 }
@@ -1074,6 +1097,35 @@
   margin: 0;
   color: var(--color-text-muted);
   line-height: 1.6;
+}
+
+/* Finding 11: the cost-tracking explainer is now a closed-by-default
+   <details> disclosure rendered after the orders table, instead of a
+   permanently-open panel above it. */
+.costPanel > details > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.costPanel > details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.costPanel > details > summary::before {
+  content: "▸";
+  margin-right: 0.6rem;
+  color: var(--color-green);
+  font-size: 0.75rem;
+}
+
+.costPanel > details[open] > summary::before {
+  content: "▾";
+}
+
+.costPanelBody {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .costPanelGrid {
@@ -1349,6 +1401,13 @@
   padding: 0 0.85rem 1rem;
   border-bottom: 1px solid var(--color-border-soft);
   background: var(--color-panel);
+}
+
+/* Wraps the History/Tracking/Costs/Photo tracking subsections shown
+   together under a single row's "Details" toggle (Finding 10). */
+.detailsGrid {
+  display: grid;
+  gap: 0.75rem;
 }
 
 .historyPanel {

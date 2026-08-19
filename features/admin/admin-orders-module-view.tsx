@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, type Dispatch, type SetStateAction } from "react";
+import { Fragment, useState } from "react";
 
 import {
   adminOrderStatusOptions,
@@ -8,6 +8,7 @@ import {
   type AdminOrderStatusOption,
 } from "@/lib/admin/order-status";
 import type {
+  AdminOrderCostsUpdateRequest,
   AdminOrderCostsUpdateResult,
   AdminOrderManagementItem,
   AdminOrderPhotosSentUpdateResult,
@@ -15,6 +16,7 @@ import type {
   AdminOrderTrackingUpdateResult,
   AdminOrdersModuleData,
 } from "@/lib/admin/orders";
+import { knownCarrierNames } from "@/lib/orders/carrier-tracking";
 
 import styles from "./admin.module.css";
 
@@ -55,20 +57,47 @@ const costDraftFieldKeys = [
   "otherCostUsd",
 ] as const satisfies ReadonlyArray<keyof CostDraft>;
 
-function createExpandableSetToggle(setState: Dispatch<SetStateAction<Set<string>>>) {
-  return (orderId: string) => {
-    setState((current) => {
-      const next = new Set(current);
+// Case-insensitive match against the same carrier names the customer-facing
+// tracking-link matcher (lib/orders/carrier-tracking.ts) accepts, so the
+// carrier select can pre-select the right known option regardless of the
+// exact casing an existing order's `carrier` value happens to have on file.
+function resolveKnownCarrierMatch(carrier: string): (typeof knownCarrierNames)[number] | null {
+  const trimmed = carrier.trim();
 
-      if (next.has(orderId)) {
-        next.delete(orderId);
-      } else {
-        next.add(orderId);
-      }
+  return knownCarrierNames.find((name) => name.toLowerCase() === trimmed.toLowerCase()) ?? null;
+}
 
-      return next;
-    });
-  };
+// An order's carrier value is in "Other" mode when it's a non-empty string
+// that doesn't match one of the known carriers — i.e. an unrecognized value
+// that must be shown back in the free-text field rather than silently
+// dropped or forced to fall back to a known option.
+function resolveIsCarrierOtherMode(carrier: string | null | undefined): boolean {
+  const trimmed = carrier?.trim() ?? "";
+
+  return trimmed.length > 0 && resolveKnownCarrierMatch(trimmed) === null;
+}
+
+// Pure Set helpers shared by the row-expansion state below (History,
+// Tracking, Costs, and the outer Details toggle that groups them together)
+// — used inside each set's functional setState updater.
+function addOrderIdToSet(current: Set<string>, orderId: string): Set<string> {
+  if (current.has(orderId)) {
+    return current;
+  }
+
+  const next = new Set(current);
+  next.add(orderId);
+  return next;
+}
+
+function removeOrderIdFromSet(current: Set<string>, orderId: string): Set<string> {
+  if (!current.has(orderId)) {
+    return current;
+  }
+
+  const next = new Set(current);
+  next.delete(orderId);
+  return next;
 }
 
 export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
@@ -111,6 +140,19 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
       ]),
     ),
   );
+  // Tracks, per order, whether the carrier field is in "Other" (free-text)
+  // mode — separate from `TrackingDraft.carrier` itself because that field
+  // has to stay a plain string (including the empty string while an admin is
+  // mid-typing a custom carrier name), so the string alone can't distinguish
+  // "nothing chosen yet" from "explicitly chose Other, haven't typed a name
+  // yet". Initialized from each order's persisted carrier so an unrecognized
+  // existing value opens straight into Other mode instead of being dropped.
+  const [carrierOtherModeByOrderId, setCarrierOtherModeByOrderId] = useState<Record<string, boolean>>(
+    () =>
+      Object.fromEntries(
+        props.items.map((item): [string, boolean] => [item.id, resolveIsCarrierOtherMode(item.carrier)]),
+      ),
+  );
   const [costDrafts, setCostDrafts] = useState<Record<string, CostDraft>>(() =>
     Object.fromEntries(
       props.items.map((item): [string, CostDraft] => [item.id, createCostDraftFromItem(item)]),
@@ -118,6 +160,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
   );
   const [statusFilter, setStatusFilter] = useState<StatusFilterOption>("all");
   const [needsAttentionOnly, setNeedsAttentionOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [expandedHistoryOrderIds, setExpandedHistoryOrderIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -125,21 +168,39 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
     () => new Set(),
   );
   const [expandedCostsOrderIds, setExpandedCostsOrderIds] = useState<Set<string>>(() => new Set());
+  // Single outer toggle that groups History, Tracking, and Costs into one
+  // "Details" disclosure per row (Finding 10) — the three inner flags above
+  // are kept exactly as they were (other code, notably expandTrackingPanel
+  // below, still keys off expandedTrackingOrderIds specifically) and are
+  // simply all switched on together whenever Details is opened.
+  const [expandedDetailsOrderIds, setExpandedDetailsOrderIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
-  const toggleHistory = createExpandableSetToggle(setExpandedHistoryOrderIds);
-  const toggleTracking = createExpandableSetToggle(setExpandedTrackingOrderIds);
-  const toggleCosts = createExpandableSetToggle(setExpandedCostsOrderIds);
-
+  // Wave 1 behavior: auto-opens the tracking panel when an admin tries to
+  // ship without a tracking number on file. Also opens the outer Details
+  // section now that Tracking lives inside it, so the panel is actually
+  // visible instead of just being flagged open underneath a collapsed
+  // Details toggle.
   function expandTrackingPanel(orderId: string) {
-    setExpandedTrackingOrderIds((current) => {
-      if (current.has(orderId)) {
-        return current;
-      }
+    setExpandedTrackingOrderIds((current) => addOrderIdToSet(current, orderId));
+    setExpandedDetailsOrderIds((current) => addOrderIdToSet(current, orderId));
+  }
 
-      const next = new Set(current);
-      next.add(orderId);
-      return next;
-    });
+  function toggleDetails(orderId: string) {
+    const isExpanded = expandedDetailsOrderIds.has(orderId);
+
+    if (isExpanded) {
+      setExpandedDetailsOrderIds((current) => removeOrderIdFromSet(current, orderId));
+      return;
+    }
+
+    // Opening Details reveals History, Tracking, and Costs together, so the
+    // admin doesn't have to expand each one separately.
+    setExpandedDetailsOrderIds((current) => addOrderIdToSet(current, orderId));
+    setExpandedHistoryOrderIds((current) => addOrderIdToSet(current, orderId));
+    setExpandedTrackingOrderIds((current) => addOrderIdToSet(current, orderId));
+    setExpandedCostsOrderIds((current) => addOrderIdToSet(current, orderId));
   }
 
   async function handlePhotosSent(orderId: string, overwrite: boolean) {
@@ -270,6 +331,10 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
             carrier: order.carrier ?? "",
           },
         }));
+        setCarrierOtherModeByOrderId((current) => ({
+          ...current,
+          [orderId]: resolveIsCarrierOtherMode(order.carrier),
+        }));
       }
 
       return result.status === "updated";
@@ -288,23 +353,33 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
 
   async function handleCostsSave(orderId: string) {
     const draft = costDrafts[orderId];
+    const currentItem = items.find((item) => item.id === orderId);
 
-    if (!draft) {
+    if (!draft || !currentItem) {
       return;
     }
 
-    const payload: Record<string, string | number> = { orderId };
+    const payload: Partial<AdminOrderCostsUpdateRequest> = { orderId };
     let hasInvalidValue = false;
-    let hasAnyValue = false;
+    let hasAnyChange = false;
 
     for (const key of costDraftFieldKeys) {
       const rawValue = draft[key].trim();
 
       if (!rawValue) {
+        // Blank field: if it previously had a value, send an explicit `null`
+        // to clear it — distinct from omitting the key entirely, which means
+        // "untouched, leave whatever is already saved alone". A field that
+        // was already blank and is still blank stays omitted (true no-op).
+        // Sending `0` here would be wrong: 0 means "known to cost nothing",
+        // not "unknown/not entered", and would skew the profit-margin math.
+        if (currentItem[key] !== null) {
+          payload[key] = null;
+          hasAnyChange = true;
+        }
         continue;
       }
 
-      hasAnyValue = true;
       const parsedValue = Number(rawValue);
 
       if (!Number.isFinite(parsedValue) || parsedValue < 0) {
@@ -313,6 +388,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
       }
 
       payload[key] = parsedValue;
+      hasAnyChange = true;
     }
 
     if (hasInvalidValue) {
@@ -323,7 +399,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
       return;
     }
 
-    if (!hasAnyValue) {
+    if (!hasAnyChange) {
       setCostsUpdateStates((current) => ({
         ...current,
         [orderId]: { status: "failure", message: "Enter at least one cost value to save." },
@@ -491,12 +567,26 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
     return true;
   }
 
-  async function handleStatusUpdate(orderId: string) {
-    const nextStatus = selectedStatuses[orderId];
+  // `statusOverride` lets a primary-action button (e.g. "Mark paid", "Mark
+  // delivered") drive this exact same guarded flow — missing-tracking guard,
+  // confirmation copy, submit — as if the admin had picked that status in
+  // the dropdown and clicked Save, without depending on `selectedStatuses`
+  // state having already been updated (which would otherwise race the
+  // click). When an override is given, the visible dropdown is updated to
+  // match so the row reflects what's about to happen.
+  async function handleStatusUpdate(orderId: string, statusOverride?: AdminOrderStatusOption) {
+    const nextStatus = statusOverride ?? selectedStatuses[orderId];
     const currentItem = items.find((item) => item.id === orderId);
 
     if (!nextStatus || !currentItem) {
       return;
+    }
+
+    if (statusOverride) {
+      setSelectedStatuses((current) => ({
+        ...current,
+        [orderId]: statusOverride,
+      }));
     }
 
     if (nextStatus === "shipped" && !currentItem.trackingNumber) {
@@ -548,12 +638,51 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
     await submitStatusUpdate(orderId, "shipped");
   }
 
+  // Drives the single "what's next" primary action surfaced per row
+  // (Finding 10). Every branch reuses the row's existing handler/guard/
+  // confirmation plumbing — nothing here bypasses handleStatusUpdate's
+  // confirmation gate or the shipped-without-tracking guard.
+  async function handlePrimaryAction(item: AdminOrderManagementItem) {
+    const primaryAction = resolveOrderPrimaryAction(item);
+
+    if (!primaryAction) {
+      return;
+    }
+
+    if (primaryAction.kind === "record-photos-sent") {
+      await handleRecordPhotosSent(item.id);
+      return;
+    }
+
+    if (primaryAction.kind === "mark-paid") {
+      await handleStatusUpdate(item.id, "paid");
+      return;
+    }
+
+    if (primaryAction.kind === "add-tracking-and-ship") {
+      if (item.trackingNumber) {
+        await handleSaveTrackingAndShip(item.id);
+      } else {
+        expandTrackingPanel(item.id);
+      }
+      return;
+    }
+
+    if (primaryAction.kind === "mark-delivered") {
+      await handleStatusUpdate(item.id, "delivered");
+    }
+  }
+
   const statusFilteredItems =
     statusFilter === "all" ? items : items.filter((item) => item.status === statusFilter);
   const attentionFilteredItems = needsAttentionOnly
     ? statusFilteredItems.filter((item) => resolveOrderAttention(item) !== null)
     : statusFilteredItems;
-  const filteredItems = [...attentionFilteredItems].sort(compareByAttention);
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const searchFilteredItems = normalizedSearchQuery
+    ? attentionFilteredItems.filter((item) => orderMatchesSearchQuery(item, normalizedSearchQuery))
+    : attentionFilteredItems;
+  const filteredItems = [...searchFilteredItems].sort(compareByAttention);
   const needsAttentionCount = items.filter((item) => resolveOrderAttention(item) !== null).length;
 
   return (
@@ -580,51 +709,6 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
         ))}
       </div>
 
-      <section className={styles.costPanel}>
-        <div className={styles.sectionHeaderCompact}>
-          <div className={styles.moduleHeaderCompact}>
-            <p className={styles.eyebrow}>Cost tracking</p>
-            <h3>{props.costPanelTitle}</h3>
-          </div>
-          <p className={styles.dashboardMetaInline}>{props.tableStatusNote}</p>
-        </div>
-        <p className={styles.costPanelCopy}>{props.costPanelDescription}</p>
-
-        <div className={styles.costPanelGrid}>
-          <section className={styles.costPanelSection}>
-            <p className={styles.cardEyebrow}>Shown on the main table</p>
-            <div className={styles.costFieldList}>
-              {props.mainTableFields.map((field) => (
-                <div key={field} className={styles.costFieldRow}>
-                  <strong>{field}</strong>
-                  <span>Summary column</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className={styles.costPanelSection}>
-            <p className={styles.cardEyebrow}>Needed for cost capture</p>
-            <div className={styles.costFieldList}>
-              {props.costCaptureFields.map((field) => (
-                <div key={field.key} className={styles.costFieldRow}>
-                  <div className={styles.costFieldCopy}>
-                    <strong>{field.label}</strong>
-                    <span>{field.note}</span>
-                  </div>
-                  <span className={styles.costFieldStatus}>{field.statusLabel}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <div className={styles.costEntryNote}>
-          <strong>Cost entry path</strong>
-          <p>{props.costCapturePathNote}</p>
-        </div>
-      </section>
-
       <section className={styles.tableCard}>
         <div className={styles.sectionHeaderCompact}>
           <div className={styles.moduleHeaderCompact}>
@@ -632,16 +716,28 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
             <h3>Order list</h3>
           </div>
           <p className={styles.dashboardMetaInline}>
-            {items.length > 0 ? `${formatCount(items.length)} rows ready` : "Waiting for the first row"}
+            {items.length > 0
+              ? `${formatCount(items.length)} order${items.length === 1 ? "" : "s"} on file`
+              : "No orders yet"}
           </p>
         </div>
 
         {items.length === 0 ? (
           <div className={styles.tableScaffoldNote}>
-            <strong>Live table layout</strong>
-            <p>Rows will load here when orders are persisted. The main list stays summary-focused.</p>
+            <strong>No orders yet</strong>
+            <p>Orders will appear here automatically as soon as a customer completes checkout.</p>
           </div>
         ) : (
+          <>
+          <label className={styles.searchField}>
+            <span>Search orders</span>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search by order #, customer name, email, or tracking number"
+            />
+          </label>
           <div className={`${styles.actionRow} ${styles.statusFilterBar}`} role="tablist" aria-label="Filter orders by status">
             {statusFilterOptions.map((option) => {
               const count =
@@ -672,6 +768,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
               Needs attention ({formatCount(needsAttentionCount)})
             </button>
           </div>
+          </>
         )}
 
         <div className={styles.tableScroller}>
@@ -695,17 +792,17 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                   <td colSpan={9} className={styles.emptyTableCell}>
                     <div className={styles.emptyState}>
                       <p className={styles.cardEyebrow}>
-                        {items.length === 0 ? "No persisted orders yet" : "No orders match this filter"}
+                        {items.length === 0 ? "No orders yet" : "No orders match this filter"}
                       </p>
                       <h3>
                         {items.length === 0
-                          ? "First orders will land in this table"
-                          : "Try a different status filter"}
+                          ? "Orders will appear here automatically"
+                          : "Try a different search or filter"}
                       </h3>
                       <p>
                         {items.length === 0
-                          ? "Once checkout orders are persisted, this table will show order status, payment state, total paid, estimated cost, estimated margin, and row actions."
-                          : "No orders currently have this status."}
+                          ? "Once a customer completes checkout, this table will show order status, payment state, total paid, estimated cost, estimated margin, and row actions."
+                          : "No orders match the current search and filters."}
                       </p>
                     </div>
                   </td>
@@ -717,10 +814,18 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                   const trackingUpdateState = trackingUpdateStates[item.id] ?? EMPTY_UPDATE_STATE;
                   const costsUpdateState = costsUpdateStates[item.id] ?? EMPTY_UPDATE_STATE;
                   const trackingDraft = trackingDrafts[item.id] ?? { trackingNumber: "", carrier: "" };
+                  const isCarrierOtherMode =
+                    carrierOtherModeByOrderId[item.id] ?? resolveIsCarrierOtherMode(item.carrier);
                   const costDraft = costDrafts[item.id] ?? createCostDraftFromItem(item);
                   const isHistoryExpanded = expandedHistoryOrderIds.has(item.id);
                   const isTrackingExpanded = expandedTrackingOrderIds.has(item.id);
                   const isCostsExpanded = expandedCostsOrderIds.has(item.id);
+                  const isDetailsExpanded = expandedDetailsOrderIds.has(item.id);
+                  const primaryAction = resolveOrderPrimaryAction(item);
+                  const isPrimaryActionBusy =
+                    updateState.status === "submitting" ||
+                    photosSentState.status === "submitting" ||
+                    trackingUpdateState.status === "submitting";
 
                   return (
                     <Fragment key={item.id}>
@@ -814,6 +919,16 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                       </td>
                       <td>
                         <div className={styles.orderActionCell}>
+                          {primaryAction ? (
+                            <button
+                              className={`${styles.navLink} ${styles.actionPrimary}`}
+                              type="button"
+                              onClick={() => void handlePrimaryAction(item)}
+                              disabled={isPrimaryActionBusy}
+                            >
+                              {isPrimaryActionBusy ? "Working..." : primaryAction.label}
+                            </button>
+                          ) : null}
                           <label className={styles.fieldStack}>
                             <span>Order status</span>
                             <select
@@ -840,69 +955,61 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                           >
                             {updateState.status === "submitting" ? "Updating..." : "Save"}
                           </button>
-                          <p className={styles.actionMessage} data-state={updateState.status}>
-                            {updateState.message ?? "Choose a status and save to update this order."}
-                          </p>
-                          <button
-                            className={styles.navLink}
-                            type="button"
-                            onClick={() => toggleHistory(item.id)}
-                          >
-                            {isHistoryExpanded ? "Hide history" : `History (${item.history.length})`}
-                          </button>
-                          {item.photosSentAtLabel ? (
-                            <>
-                              <p className={styles.actionMessage}>Photos sent {item.photosSentAtLabel}</p>
-                              <button
-                                className={styles.secondaryInlineAction}
-                                type="button"
-                                onClick={() => void handleRecordPhotosSent(item.id)}
-                                disabled={photosSentState.status === "submitting"}
-                              >
-                                {photosSentState.status === "submitting" ? "Updating..." : "Re-record time"}
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              className={styles.navLink}
-                              type="button"
-                              onClick={() => void handleRecordPhotosSent(item.id)}
-                              disabled={photosSentState.status === "submitting"}
-                            >
-                              {photosSentState.status === "submitting"
-                                ? "Recording..."
-                                : "Record photos sent"}
-                            </button>
-                          )}
-                          {photosSentState.message ? (
-                            <p className={styles.actionMessage} data-state={photosSentState.status}>
-                              {photosSentState.message}
+                          {updateState.status !== "idle" ? (
+                            <p className={styles.actionMessage} data-state={updateState.status}>
+                              {updateState.message ?? "Updating…"}
                             </p>
                           ) : null}
                           <button
                             className={styles.navLink}
                             type="button"
-                            onClick={() => toggleTracking(item.id)}
+                            onClick={() => toggleDetails(item.id)}
                           >
-                            {isTrackingExpanded
-                              ? "Hide tracking"
-                              : item.trackingNumber
-                                ? "Tracking ✓ — edit"
-                                : "Add tracking"}
-                          </button>
-                          <button
-                            className={styles.navLink}
-                            type="button"
-                            onClick={() => toggleCosts(item.id)}
-                          >
-                            {isCostsExpanded ? "Hide costs" : "Costs"}
+                            {isDetailsExpanded ? "Hide details" : "Details"}
                           </button>
                         </div>
                       </td>
                     </tr>
-                    {isTrackingExpanded ? (
+                    {isDetailsExpanded ? (
                       <tr className={styles.historyRow}>
                         <td colSpan={9}>
+                          <div className={styles.detailsGrid}>
+                          <div className={styles.historyPanel}>
+                            <strong>Photo tracking</strong>
+                            {item.photosSentAtLabel ? (
+                              <>
+                                <p>Photos sent {item.photosSentAtLabel}</p>
+                                <button
+                                  className={styles.secondaryInlineAction}
+                                  type="button"
+                                  onClick={() => void handleRecordPhotosSent(item.id)}
+                                  disabled={photosSentState.status === "submitting"}
+                                >
+                                  {photosSentState.status === "submitting" ? "Updating..." : "Re-record time"}
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <p>No photos recorded sent yet for this order.</p>
+                                <button
+                                  className={styles.navLink}
+                                  type="button"
+                                  onClick={() => void handleRecordPhotosSent(item.id)}
+                                  disabled={photosSentState.status === "submitting"}
+                                >
+                                  {photosSentState.status === "submitting"
+                                    ? "Recording..."
+                                    : "Record photos sent"}
+                                </button>
+                              </>
+                            )}
+                            {photosSentState.message ? (
+                              <p className={styles.actionMessage} data-state={photosSentState.status}>
+                                {photosSentState.message}
+                              </p>
+                            ) : null}
+                          </div>
+                          {isTrackingExpanded ? (
                           <div className={styles.historyPanel}>
                             <strong>Shipment tracking</strong>
                             {item.trackingNumber ? (
@@ -933,21 +1040,65 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                               </label>
                               <label className={styles.formField}>
                                 <span>Carrier</span>
-                                <input
-                                  type="text"
-                                  value={trackingDraft.carrier}
-                                  onChange={(event) =>
+                                <select
+                                  value={
+                                    isCarrierOtherMode
+                                      ? "other"
+                                      : (resolveKnownCarrierMatch(trackingDraft.carrier) ?? "")
+                                  }
+                                  onChange={(event) => {
+                                    const value = event.target.value;
+                                    const nextIsOther = value === "other";
+
+                                    setCarrierOtherModeByOrderId((current) => ({
+                                      ...current,
+                                      [item.id]: nextIsOther,
+                                    }));
                                     setTrackingDrafts((current) => ({
                                       ...current,
                                       [item.id]: {
                                         ...(current[item.id] ?? { trackingNumber: "", carrier: "" }),
-                                        carrier: event.target.value,
+                                        carrier: nextIsOther ? "" : value,
                                       },
-                                    }))
-                                  }
-                                />
+                                    }));
+                                  }}
+                                >
+                                  <option value="" disabled>
+                                    Select a carrier…
+                                  </option>
+                                  {knownCarrierNames.map((carrierName) => (
+                                    <option key={carrierName} value={carrierName}>
+                                      {carrierName}
+                                    </option>
+                                  ))}
+                                  <option value="other">Other…</option>
+                                </select>
                               </label>
                             </div>
+                            {isCarrierOtherMode ? (
+                              <div className={styles.inlineGroup}>
+                                <label className={styles.formField}>
+                                  <span>Carrier name</span>
+                                  <input
+                                    type="text"
+                                    value={trackingDraft.carrier}
+                                    onChange={(event) =>
+                                      setTrackingDrafts((current) => ({
+                                        ...current,
+                                        [item.id]: {
+                                          ...(current[item.id] ?? { trackingNumber: "", carrier: "" }),
+                                          carrier: event.target.value,
+                                        },
+                                      }))
+                                    }
+                                  />
+                                </label>
+                                <p className={styles.actionMessage}>
+                                  No tracking link will be shown to the customer for this carrier — they&rsquo;ll
+                                  see the number only.
+                                </p>
+                              </div>
+                            ) : null}
                             <div className={styles.actionRow}>
                               <button
                                 className={styles.navLink}
@@ -980,18 +1131,14 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                                 "The ship date is set the first time you save tracking, and preserved after that. The customer only sees tracking once this order's status is set to Shipped."}
                             </p>
                           </div>
-                        </td>
-                      </tr>
-                    ) : null}
-                    {isCostsExpanded ? (
-                      <tr className={styles.historyRow}>
-                        <td colSpan={9}>
+                          ) : null}
+                          {isCostsExpanded ? (
                           <div className={styles.historyPanel}>
                             <strong>Order costs</strong>
                             <p>
                               {item.costsUpdatedAtLabel
-                                ? `Costs last updated ${item.costsUpdatedAtLabel}. Only fields with a value are saved.`
-                                : "No costs entered yet. Only fields with a value are saved."}
+                                ? `Costs last updated ${item.costsUpdatedAtLabel}. A field left blank and untouched stays as-is; clearing a field that already has a value removes it.`
+                                : "No costs entered yet. A field left blank and untouched stays as-is; clearing a field that already has a value removes it."}
                             </p>
                             <div className={styles.formGrid}>
                               {costDraftFieldConfig.map((field) => (
@@ -1027,15 +1174,12 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                               </button>
                             </div>
                             <p className={styles.actionMessage} data-state={costsUpdateState.status}>
-                              {costsUpdateState.message ?? "Leave a field blank to leave it unchanged."}
+                              {costsUpdateState.message ??
+                                "Leave a field blank to leave it unchanged — clear a field that already has a value and save to remove it."}
                             </p>
                           </div>
-                        </td>
-                      </tr>
-                    ) : null}
-                    {isHistoryExpanded ? (
-                      <tr className={styles.historyRow}>
-                        <td colSpan={9}>
+                          ) : null}
+                          {isHistoryExpanded ? (
                           <div className={styles.historyPanel}>
                             <strong>Fulfillment history</strong>
                             {item.history.length === 0 ? (
@@ -1055,6 +1199,8 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                               </ul>
                             )}
                           </div>
+                          ) : null}
+                          </div>
                         </td>
                       </tr>
                     ) : null}
@@ -1065,6 +1211,55 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className={styles.costPanel}>
+        <details>
+          <summary className={styles.sectionHeaderCompact}>
+            <div className={styles.moduleHeaderCompact}>
+              <p className={styles.eyebrow}>Cost tracking</p>
+              <h3>{props.costPanelTitle}</h3>
+            </div>
+            <p className={styles.dashboardMetaInline}>{props.tableStatusNote}</p>
+          </summary>
+          <div className={styles.costPanelBody}>
+            <p className={styles.costPanelCopy}>{props.costPanelDescription}</p>
+
+            <div className={styles.costPanelGrid}>
+              <section className={styles.costPanelSection}>
+                <p className={styles.cardEyebrow}>Shown on the main table</p>
+                <div className={styles.costFieldList}>
+                  {props.mainTableFields.map((field) => (
+                    <div key={field} className={styles.costFieldRow}>
+                      <strong>{field}</strong>
+                      <span>Summary column</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className={styles.costPanelSection}>
+                <p className={styles.cardEyebrow}>Needed for cost capture</p>
+                <div className={styles.costFieldList}>
+                  {props.costCaptureFields.map((field) => (
+                    <div key={field.key} className={styles.costFieldRow}>
+                      <div className={styles.costFieldCopy}>
+                        <strong>{field.label}</strong>
+                        <span>{field.note}</span>
+                      </div>
+                      <span className={styles.costFieldStatus}>{field.statusLabel}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <div className={styles.costEntryNote}>
+              <strong>Cost entry path</strong>
+              <p>{props.costCapturePathNote}</p>
+            </div>
+          </div>
+        </details>
       </section>
     </section>
   );
@@ -1122,6 +1317,57 @@ function resolveStatusClassName(status: AdminOrderManagementItem["status"]) {
   }
 
   return styles.statusBadgeActive;
+}
+
+type OrderPrimaryActionKind =
+  | "record-photos-sent"
+  | "mark-paid"
+  | "add-tracking-and-ship"
+  | "mark-delivered";
+
+type OrderPrimaryAction = { kind: OrderPrimaryActionKind; label: string } | null;
+
+// Derives the ONE primary "what's next" action for an order row (Finding
+// 10), based on the same status/paymentStatus/photosSentAtLabel/
+// trackingNumber signals resolveOrderAttention already reads. Mirrors the
+// real fulfillment pipeline — photos sent, then paid, then tracking/ship,
+// then delivered — so the row always prompts the single next correct step
+// instead of the admin choosing one out of a shelf of equally-weighted
+// controls. Terminal statuses (delivered/cancelled/refunded) don't need a
+// next-step prompt.
+function resolveOrderPrimaryAction(item: AdminOrderManagementItem): OrderPrimaryAction {
+  if (item.status === "pending") {
+    if (!item.photosSentAtLabel) {
+      return { kind: "record-photos-sent", label: "Record photos sent" };
+    }
+
+    return { kind: "mark-paid", label: "Mark paid (after Stripe capture)" };
+  }
+
+  if (item.status === "paid" || item.status === "processing") {
+    return { kind: "add-tracking-and-ship", label: "Add tracking & ship" };
+  }
+
+  if (item.status === "shipped") {
+    return { kind: "mark-delivered", label: "Mark delivered" };
+  }
+
+  return null;
+}
+
+// Case-insensitive substring match against the fields an admin is most
+// likely to have on hand when tracking down a specific order: order number,
+// customer name/email, and tracking number. `normalizedQuery` is expected to
+// already be trimmed and lowercased by the caller.
+function orderMatchesSearchQuery(item: AdminOrderManagementItem, normalizedQuery: string): boolean {
+  const searchableValues: Array<string | null> = [
+    item.orderNumber,
+    item.customerName,
+    item.customerEmail,
+    item.trackingNumber,
+  ];
+
+  return searchableValues.some((value) => value?.toLowerCase().includes(normalizedQuery) ?? false);
 }
 
 type OrderAttentionLevel = "urgent" | "warning";

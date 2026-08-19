@@ -168,11 +168,17 @@ export type AdminOrderTrackingUpdateResult = {
 
 export type AdminOrderCostsUpdateRequest = {
   orderId: string;
-  productCostUsd?: number;
-  shippingCostUsd?: number;
-  packagingCostUsd?: number;
-  paymentFeeUsd?: number;
-  otherCostUsd?: number;
+  // Each cost field is tri-state: `undefined`/absent means "leave whatever
+  // is already saved unchanged", `null` means "explicitly clear this field
+  // back to not-entered", and a number sets it. Distinguishing `null` from
+  // `undefined` is what lets a field that already has a value be cleared —
+  // sending `0` would incorrectly mean "known to cost nothing" and would
+  // skew the profit-margin math downstream.
+  productCostUsd?: number | null;
+  shippingCostUsd?: number | null;
+  packagingCostUsd?: number | null;
+  paymentFeeUsd?: number | null;
+  otherCostUsd?: number | null;
 };
 
 export type AdminOrderCostsUpdateResult = {
@@ -233,11 +239,11 @@ export async function getAdminOrdersModuleData(): Promise<AdminOrdersModuleData>
     mainTableFields: ["Total paid", "Estimated cost", "Estimated margin"],
     costCaptureFields: createCostCaptureFields(costedOrders.length, orders.length),
     costCapturePathNote:
-      'Entry path: expand "Costs" on an order row, enter whichever of the five cost fields you have, and save — partial entries are fine.',
+      'Entry path: open "Details" on an order row, then enter whichever of the five cost fields you have under Order costs, and save — partial entries are fine.',
     tableStatusNote:
       orders.length > 0
-        ? `${formatInteger(orders.length)} rows loaded`
-        : "Zero-state table scaffold is live",
+        ? `${formatInteger(orders.length)} order${orders.length === 1 ? "" : "s"} on file`
+        : "No orders yet",
     items: orders.map((order) =>
       createAdminOrderManagementItem(order, historyByOrderId.get(order.id) ?? []),
     ),
@@ -462,7 +468,7 @@ export async function updateAdminOrderCosts(
     };
   }
 
-  const providedCosts: Partial<Record<(typeof orderCostFieldKeys)[number], number>> = {};
+  const providedCosts: Partial<Record<(typeof orderCostFieldKeys)[number], number | null>> = {};
 
   for (const key of orderCostFieldKeys) {
     const value = input[key];
@@ -471,7 +477,7 @@ export async function updateAdminOrderCosts(
       continue;
     }
 
-    if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    if (value !== null && (typeof value !== "number" || !Number.isFinite(value) || value < 0)) {
       return {
         status: "invalid-request",
         order: null,
@@ -636,7 +642,7 @@ function createCostCaptureFields(
 ): AdminOrderCostField[] {
   const captureStatusLabel =
     costedOrderCount > 0 ? `Entered on ${formatInteger(costedOrderCount)}` : "Available";
-  const captureNote = `Entered per-order via the "Costs" action on each row (${formatInteger(costedOrderCount)} of ${formatInteger(totalOrderCount)} orders so far).`;
+  const captureNote = `Entered per-order via "Details" on each row (${formatInteger(costedOrderCount)} of ${formatInteger(totalOrderCount)} orders so far).`;
 
   return [
     createLiveCostField("product-cost", "Product cost", captureStatusLabel, captureNote),

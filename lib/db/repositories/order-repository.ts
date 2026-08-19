@@ -30,11 +30,14 @@ export interface OrderRepository {
   updateOrderCosts(
     orderId: string,
     input: {
-      productCostUsd?: number;
-      shippingCostUsd?: number;
-      packagingCostUsd?: number;
-      paymentFeeUsd?: number;
-      otherCostUsd?: number;
+      // `undefined`/absent = leave unchanged, `null` = explicitly clear the
+      // field, a number = set it. See AdminOrderCostsUpdateRequest in
+      // lib/admin/orders.ts for the full rationale.
+      productCostUsd?: number | null;
+      shippingCostUsd?: number | null;
+      packagingCostUsd?: number | null;
+      paymentFeeUsd?: number | null;
+      otherCostUsd?: number | null;
     },
   ): Promise<Order>;
 }
@@ -253,11 +256,11 @@ export class PrismaOrderRepository implements OrderRepository {
   async updateOrderCosts(
     orderId: string,
     input: {
-      productCostUsd?: number;
-      shippingCostUsd?: number;
-      packagingCostUsd?: number;
-      paymentFeeUsd?: number;
-      otherCostUsd?: number;
+      productCostUsd?: number | null;
+      shippingCostUsd?: number | null;
+      packagingCostUsd?: number | null;
+      paymentFeeUsd?: number | null;
+      otherCostUsd?: number | null;
     },
   ) {
     const updatedOrder = await this.context.client.orderRecord.update({
@@ -265,20 +268,28 @@ export class PrismaOrderRepository implements OrderRepository {
         id: orderId,
       },
       data: {
+        // A key is only included when the caller actually provided a value
+        // for it (undefined means "leave unchanged, don't include in the
+        // update at all"). Within an included key, `null` explicitly clears
+        // the column back to NULL in the database — distinct from a number,
+        // which sets it — so Prisma actually receives `null` for a cleared
+        // field rather than the field being silently skipped.
         ...(input.productCostUsd !== undefined && {
-          productCostUsd: createPrismaDecimal(input.productCostUsd),
+          productCostUsd: input.productCostUsd === null ? null : createPrismaDecimal(input.productCostUsd),
         }),
         ...(input.shippingCostUsd !== undefined && {
-          shippingCostUsd: createPrismaDecimal(input.shippingCostUsd),
+          shippingCostUsd:
+            input.shippingCostUsd === null ? null : createPrismaDecimal(input.shippingCostUsd),
         }),
         ...(input.packagingCostUsd !== undefined && {
-          packagingCostUsd: createPrismaDecimal(input.packagingCostUsd),
+          packagingCostUsd:
+            input.packagingCostUsd === null ? null : createPrismaDecimal(input.packagingCostUsd),
         }),
         ...(input.paymentFeeUsd !== undefined && {
-          paymentFeeUsd: createPrismaDecimal(input.paymentFeeUsd),
+          paymentFeeUsd: input.paymentFeeUsd === null ? null : createPrismaDecimal(input.paymentFeeUsd),
         }),
         ...(input.otherCostUsd !== undefined && {
-          otherCostUsd: createPrismaDecimal(input.otherCostUsd),
+          otherCostUsd: input.otherCostUsd === null ? null : createPrismaDecimal(input.otherCostUsd),
         }),
         costsUpdatedAt: new Date(),
       },

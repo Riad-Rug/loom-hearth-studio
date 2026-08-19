@@ -14,6 +14,7 @@ import { getProductRoutePath } from "@/lib/catalog/helpers";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import { createProductRepository } from "@/lib/db/repositories/product-repository";
+import { resolveCarrierTrackingHref } from "@/lib/orders/carrier-tracking";
 import { formatOrderStatusLabel } from "@/lib/orders/customer-status-label";
 import type { Order } from "@/types/domain";
 import type { OrderStatus } from "@/types/domain/order";
@@ -258,39 +259,6 @@ function createReservationPanel(
       `You'll then have 5 days to approve. Only once you approve is your card charged and the piece shipped — say no, or don't respond, and the hold releases automatically with nothing charged (by around ${formatOrderDateTimeLabel(approvalWindowClosesByDate)}).`,
     ],
   };
-}
-
-const carrierTrackingUrlBuilders: ReadonlyArray<{
-  matches: (normalizedCarrier: string) => boolean;
-  buildHref: (trackingNumber: string) => string;
-}> = [
-  {
-    matches: (carrier) => carrier === "usps",
-    buildHref: (trackingNumber) =>
-      `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(trackingNumber)}`,
-  },
-  {
-    matches: (carrier) => carrier === "ups",
-    buildHref: (trackingNumber) =>
-      `https://www.ups.com/track?tracknum=${encodeURIComponent(trackingNumber)}`,
-  },
-  {
-    matches: (carrier) => carrier === "fedex",
-    buildHref: (trackingNumber) =>
-      `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(trackingNumber)}`,
-  },
-  {
-    matches: (carrier) => carrier === "dhl",
-    buildHref: (trackingNumber) =>
-      `https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id=${encodeURIComponent(trackingNumber)}`,
-  },
-];
-
-function resolveCarrierTrackingHref(carrier: string, trackingNumber: string): string | undefined {
-  const normalizedCarrier = carrier.trim().toLowerCase();
-  const builder = carrierTrackingUrlBuilders.find(({ matches }) => matches(normalizedCarrier));
-
-  return builder?.buildHref(trackingNumber);
 }
 
 function createOrderTrackingView(order: Order): AccountOrderTrackingView | null {
