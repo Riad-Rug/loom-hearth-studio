@@ -60,3 +60,11 @@ export function orderStatusTransitionNeedsConfirmation(
 
   return false;
 }
+
+// Capitalizes the first letter of a lowercase status-like string (e.g.
+// "paid" -> "Paid"). Shared by lib/admin/orders.ts (order/payment status
+// labels) and the admin orders view (status filter/dropdown/confirm-copy
+// labels) so this trivial formatting isn't duplicated across both.
+export function capitalizeLabel(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}

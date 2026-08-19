@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 
 import {
   adminOrderStatusOptions,
+  capitalizeLabel,
   orderStatusTransitionNeedsConfirmation,
   type AdminOrderStatusOption,
 } from "@/lib/admin/order-status";
@@ -431,32 +432,45 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
       if (result.order) {
         const order = result.order;
 
-        const nextItems = items.map((item) => {
-          if (item.id !== orderId) {
-            return item;
-          }
+        // Derive from `current` (the functional updater's argument), not the
+        // `items` render-time closure — if a status/tracking/photos update
+        // for this or another row resolves while this costs save is still in
+        // flight, reading the stale `items` closure here and writing it back
+        // with a non-functional `setItems(nextItems)` would silently clobber
+        // that other update once this one finally lands.
+        setItems((current) => {
+          const nextItems = current.map((item) => {
+            if (item.id !== orderId) {
+              return item;
+            }
 
-          const updatedItem: AdminOrderManagementItem = {
-            ...item,
-            productCostUsd: order.productCostUsd ?? null,
-            shippingCostUsd: order.shippingCostUsd ?? null,
-            packagingCostUsd: order.packagingCostUsd ?? null,
-            paymentFeeUsd: order.paymentFeeUsd ?? null,
-            otherCostUsd: order.otherCostUsd ?? null,
-            costsUpdatedAtLabel: order.costsUpdatedAt ? formatTimestamp(order.costsUpdatedAt) : null,
-          };
+            const updatedItem: AdminOrderManagementItem = {
+              ...item,
+              productCostUsd: order.productCostUsd ?? null,
+              shippingCostUsd: order.shippingCostUsd ?? null,
+              packagingCostUsd: order.packagingCostUsd ?? null,
+              paymentFeeUsd: order.paymentFeeUsd ?? null,
+              otherCostUsd: order.otherCostUsd ?? null,
+              costsUpdatedAtLabel: order.costsUpdatedAt ? formatTimestamp(order.costsUpdatedAt) : null,
+            };
 
-          return { ...updatedItem, ...deriveCostLabels(updatedItem) };
+            return { ...updatedItem, ...deriveCostLabels(updatedItem) };
+          });
+
+          // Kept inside this updater (rather than computed from the outer
+          // `nextItems`, which doesn't exist here) so the profit metric is
+          // always derived from the same up-to-date items array that was
+          // just committed, never from the stale closure.
+          setSummaryMetrics((currentMetrics) =>
+            currentMetrics.map((metric) =>
+              metric.label === "Estimated profit"
+                ? { ...metric, ...computeEstimatedProfitMetric(nextItems) }
+                : metric,
+            ),
+          );
+
+          return nextItems;
         });
-
-        setItems(nextItems);
-        setSummaryMetrics((currentMetrics) =>
-          currentMetrics.map((metric) =>
-            metric.label === "Estimated profit"
-              ? { ...metric, ...computeEstimatedProfitMetric(nextItems) }
-              : metric,
-          ),
-        );
         setCostDrafts((current) => ({
           ...current,
           [orderId]: createCostDraftFromOrderFields(order),
@@ -516,7 +530,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
               ? {
                   ...item,
                   status: nextPersistedStatus,
-                  statusLabel: formatLabel(nextPersistedStatus),
+                  statusLabel: capitalizeLabel(nextPersistedStatus),
                 }
               : item,
           ),
@@ -738,7 +752,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
               placeholder="Search by order #, customer name, email, or tracking number"
             />
           </label>
-          <div className={`${styles.actionRow} ${styles.statusFilterBar}`} role="tablist" aria-label="Filter orders by status">
+          <div className={`${styles.actionRow} ${styles.statusFilterBar}`} aria-label="Filter orders by status">
             {statusFilterOptions.map((option) => {
               const count =
                 option === "all"
@@ -749,19 +763,17 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                 <button
                   key={option}
                   type="button"
-                  role="tab"
-                  aria-selected={statusFilter === option}
+                  aria-pressed={statusFilter === option}
                   className={`${styles.navLink} ${statusFilter === option ? styles.navLinkActive : ""}`}
                   onClick={() => setStatusFilter(option)}
                 >
-                  {option === "all" ? "All" : formatLabel(option)} ({formatCount(count)})
+                  {option === "all" ? "All" : capitalizeLabel(option)} ({formatCount(count)})
                 </button>
               );
             })}
             <button
               type="button"
-              role="tab"
-              aria-selected={needsAttentionOnly}
+              aria-pressed={needsAttentionOnly}
               className={`${styles.navLink} ${needsAttentionOnly ? styles.navLinkActive : ""}`}
               onClick={() => setNeedsAttentionOnly((current) => !current)}
             >
@@ -779,7 +791,6 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                 <th scope="col">Customer</th>
                 <th scope="col">Status</th>
                 <th scope="col">Payment</th>
-                <th scope="col">Total paid</th>
                 <th scope="col">Estimated cost</th>
                 <th scope="col">Estimated margin</th>
                 <th scope="col">Date</th>
@@ -789,7 +800,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
             <tbody>
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className={styles.emptyTableCell}>
+                  <td colSpan={8} className={styles.emptyTableCell}>
                     <div className={styles.emptyState}>
                       <p className={styles.cardEyebrow}>
                         {items.length === 0 ? "No orders yet" : "No orders match this filter"}
@@ -899,7 +910,6 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                           ) : null}
                         </div>
                       </td>
-                      <td className={styles.priceCell}>{item.totalPaidLabel}</td>
                       <td>
                         <div className={styles.financialCell}>
                           <strong>{item.estimatedCostLabel}</strong>
@@ -915,6 +925,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                       <td>
                         <div className={styles.dateCell}>
                           <strong>{item.placedAtLabel}</strong>
+                          <span>{formatRelativeTime(item.placedAt)}</span>
                         </div>
                       </td>
                       <td>
@@ -942,7 +953,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                             >
                               {item.allowedStatuses.map((statusOption) => (
                                 <option key={statusOption} value={statusOption}>
-                                  {formatLabel(statusOption)}
+                                  {capitalizeLabel(statusOption)}
                                 </option>
                               ))}
                             </select>
@@ -956,7 +967,7 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                             {updateState.status === "submitting" ? "Updating..." : "Save"}
                           </button>
                           {updateState.status !== "idle" ? (
-                            <p className={styles.actionMessage} data-state={updateState.status}>
+                            <p className={styles.actionMessage} data-state={updateState.status} aria-live="polite">
                               {updateState.message ?? "Updating…"}
                             </p>
                           ) : null}
@@ -964,6 +975,8 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                             className={styles.navLink}
                             type="button"
                             onClick={() => toggleDetails(item.id)}
+                            aria-expanded={isDetailsExpanded}
+                            aria-controls={`order-details-${item.id}`}
                           >
                             {isDetailsExpanded ? "Hide details" : "Details"}
                           </button>
@@ -971,8 +984,8 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                       </td>
                     </tr>
                     {isDetailsExpanded ? (
-                      <tr className={styles.historyRow}>
-                        <td colSpan={9}>
+                      <tr className={styles.historyRow} id={`order-details-${item.id}`}>
+                        <td colSpan={8}>
                           <div className={styles.detailsGrid}>
                           <div className={styles.historyPanel}>
                             <strong>Photo tracking</strong>
@@ -1004,7 +1017,11 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                               </>
                             )}
                             {photosSentState.message ? (
-                              <p className={styles.actionMessage} data-state={photosSentState.status}>
+                              <p
+                                className={styles.actionMessage}
+                                data-state={photosSentState.status}
+                                aria-live="polite"
+                              >
                                 {photosSentState.message}
                               </p>
                             ) : null}
@@ -1126,7 +1143,11 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                                   : "Save tracking & mark shipped"}
                               </button>
                             </div>
-                            <p className={styles.actionMessage} data-state={trackingUpdateState.status}>
+                            <p
+                              className={styles.actionMessage}
+                              data-state={trackingUpdateState.status}
+                              aria-live="polite"
+                            >
                               {trackingUpdateState.message ??
                                 "The ship date is set the first time you save tracking, and preserved after that. The customer only sees tracking once this order's status is set to Shipped."}
                             </p>
@@ -1173,7 +1194,11 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
                                 {costsUpdateState.status === "submitting" ? "Saving..." : "Save costs"}
                               </button>
                             </div>
-                            <p className={styles.actionMessage} data-state={costsUpdateState.status}>
+                            <p
+                              className={styles.actionMessage}
+                              data-state={costsUpdateState.status}
+                              aria-live="polite"
+                            >
                               {costsUpdateState.message ??
                                 "Leave a field blank to leave it unchanged — clear a field that already has a value and save to remove it."}
                             </p>
@@ -1271,10 +1296,6 @@ function formatCount(value: number) {
   }).format(value);
 }
 
-function formatLabel(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
 // Status-specific confirm copy for the transitions that carry real
 // financial weight. "Paid" and "Refunded" get explicit wording because
 // neither one ever calls Stripe — this codebase has no
@@ -1285,14 +1306,14 @@ function buildStatusConfirmationCopy(
   nextStatus: AdminOrderStatusOption,
 ): string {
   if (nextStatus === "paid") {
-    return `Change order ${item.orderNumber} from "${formatLabel(item.status)}" to "Paid"?\n\nMarking Paid only updates this website — it does NOT capture the payment in Stripe. Confirm you have already captured this payment in Stripe before continuing.`;
+    return `Change order ${item.orderNumber} from "${capitalizeLabel(item.status)}" to "Paid"?\n\nMarking Paid only updates this website — it does NOT capture the payment in Stripe. Confirm you have already captured this payment in Stripe before continuing.`;
   }
 
   if (nextStatus === "refunded") {
-    return `Change order ${item.orderNumber} from "${formatLabel(item.status)}" to "Refunded"?\n\nMarking Refunded does NOT send money back to the customer. Confirm the refund has already been issued in Stripe before continuing.`;
+    return `Change order ${item.orderNumber} from "${capitalizeLabel(item.status)}" to "Refunded"?\n\nMarking Refunded does NOT send money back to the customer. Confirm the refund has already been issued in Stripe before continuing.`;
   }
 
-  return `Change order ${item.orderNumber} from "${formatLabel(item.status)}" to "${formatLabel(nextStatus)}"?\n\nThis has real customer/financial implications and can't be easily undone. Only continue if you're correcting a mistake or intentionally cancelling/refunding this order.`;
+  return `Change order ${item.orderNumber} from "${capitalizeLabel(item.status)}" to "${capitalizeLabel(nextStatus)}"?\n\nThis has real customer/financial implications and can't be easily undone. Only continue if you're correcting a mistake or intentionally cancelling/refunding this order.`;
 }
 
 function resolveStatusClassName(status: AdminOrderManagementItem["status"]) {
@@ -1548,6 +1569,39 @@ function formatTimestamp(value: string) {
   }).format(new Date(value));
 }
 
+// Day-granularity relative label ("Today", "Yesterday", "N days ago") shown
+// under the absolute placed-at date. Deliberately simple — no library, no
+// hour/minute precision — since the admin only needs a rough sense of order
+// age at a glance; resolveOrderAttention already does the precise ageDays
+// math for anything that actually needs to be exact.
+function formatRelativeTime(placedAt: string): string {
+  const placedDate = new Date(placedAt);
+  const startOfPlacedDay = new Date(
+    placedDate.getFullYear(),
+    placedDate.getMonth(),
+    placedDate.getDate(),
+  );
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dayDiff = Math.round(
+    (startOfToday.getTime() - startOfPlacedDay.getTime()) / 86_400_000,
+  );
+
+  if (dayDiff <= 0) {
+    return "Today";
+  }
+
+  if (dayDiff === 1) {
+    return "Yesterday";
+  }
+
+  return `${formatCount(dayDiff)} days ago`;
+}
+
+// USD-only today — AdminOrderManagementItem doesn't carry a currency field
+// through to this formatter (Order.currency is currently the literal "USD"
+// in types/domain/order.ts). If the store ever supports other currencies,
+// this needs to format against the order's own `currency` instead.
 function formatUsd(amount: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

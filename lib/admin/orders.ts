@@ -5,7 +5,11 @@ import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
 import { formatOrderStatusLabel } from "@/lib/orders/customer-status-label";
 import type { Order } from "@/types/domain";
 
-import { adminOrderStatusOptions, type AdminOrderStatusOption } from "@/lib/admin/order-status";
+import {
+  adminOrderStatusOptions,
+  capitalizeLabel,
+  type AdminOrderStatusOption,
+} from "@/lib/admin/order-status";
 
 export * from "@/lib/admin/order-status";
 
@@ -274,7 +278,7 @@ async function getFulfillmentHistoryByOrderId(
     const entry: AdminOrderFulfillmentHistoryEntry = {
       id: record.id,
       createdAtLabel: formatHistoryTimestamp(record.createdAt),
-      orderStatusLabel: formatOrderStatus(record.orderStatus as Order["status"]),
+      orderStatusLabel: capitalizeLabel(record.orderStatus as Order["status"]),
       triggerLabel: formatFulfillmentTrigger(record.trigger),
       actionLabel: record.actionLabel,
       resultLabel: record.resultLabel,
@@ -591,9 +595,9 @@ function createAdminOrderManagementItem(
     items: createAdminOrderLineItems(order),
     shippingAddress: createAdminOrderShippingAddress(order.shippingAddress),
     status: order.status,
-    statusLabel: formatOrderStatus(order.status),
+    statusLabel: capitalizeLabel(order.status),
     paymentStatus: order.paymentStatus,
-    paymentLabel: formatPaymentStatus(order.paymentStatus),
+    paymentLabel: capitalizeLabel(order.paymentStatus),
     paymentIntentId: order.stripePaymentIntentId ?? null,
     totalUsd: order.totalUsd,
     totalPaidLabel: formatTotalPaidLabel(order),
@@ -738,6 +742,9 @@ function formatTotalPaidLabel(order: Order) {
   }
 }
 
+// USD-only today — Order.currency is currently typed as the literal "USD"
+// (types/domain/order.ts) and isn't read here. If the store ever supports
+// other currencies, this needs to format against `order.currency` instead.
 function formatUsd(amount: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -749,12 +756,4 @@ function formatInteger(value: number) {
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
   }).format(value);
-}
-
-function formatOrderStatus(status: Order["status"]) {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-}
-
-function formatPaymentStatus(status: Order["paymentStatus"]) {
-  return status.charAt(0).toUpperCase() + status.slice(1);
 }
