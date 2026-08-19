@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Fragment } from "react";
 import type { ReactNode } from "react";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
@@ -200,7 +201,7 @@ export function renderMarkdownBody(body: string) {
       const preamble = lines.slice(0, tableStartIndex).join(" ").trim();
 
       return (
-        <>
+        <Fragment key={index}>
           {preamble ? <p key={`${index}-preamble`}>{renderInline(preamble)}</p> : null}
           <table key={`${index}-table`}>
             <thead>
@@ -220,7 +221,7 @@ export function renderMarkdownBody(body: string) {
               ))}
             </tbody>
           </table>
-        </>
+        </Fragment>
       );
     }
 
@@ -250,6 +251,15 @@ export function renderMarkdownBody(body: string) {
       );
     }
 
-    return <p key={index}>{renderInline(lines.join(" "))}</p>;
+    return (
+      <p key={index}>
+        {lines.map((line, lineIndex) => (
+          <Fragment key={lineIndex}>
+            {lineIndex > 0 ? <br /> : null}
+            {renderInline(line)}
+          </Fragment>
+        ))}
+      </p>
+    );
   });
 }

@@ -935,6 +935,75 @@
   display: grid;
   gap: var(--space-4);
   max-width: 52rem;
+  min-width: 0;
+}
+
+.policyBody a {
+  color: var(--color-green);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: color 150ms ease;
+}
+
+.policyBody a:hover,
+.policyBody a:focus-visible {
+  color: var(--button-primary-bg-hover);
+}
+
+.policyBody h2,
+.policyBody h3 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.03em;
+}
+
+.policyBody h2 {
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  line-height: 1.25;
+}
+
+.policyBody h3 {
+  font-size: 1.4rem;
+  line-height: 1.3;
+}
+
+.policyBody ul,
+.policyBody ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text-body);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.policyBody hr {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.policyBody table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.policyBody th,
+.policyBody td {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.policyBody th {
+  background: var(--color-panel);
+  font-weight: 600;
 }
 
 .sectionHeader {

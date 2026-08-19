@@ -593,7 +593,7 @@ Last updated: March 29, 2026
 
 ## 1. Who we are
 
-This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor, shipping all orders directly from Morocco.
+This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We sell handcrafted Moroccan rugs, poufs, pillows, and home décor, shipping all orders directly from Morocco.
 
 For any privacy-related questions or requests, contact us at:
 **hello@loomandhearthstudio.com**
@@ -608,12 +608,12 @@ We collect only what is necessary to operate this store and communicate with you
 |---|---|---|
 | Full name | Creating your account; processing and fulfilling orders | Contract performance |
 | Email address | Account registration; order confirmations; password reset emails; newsletter (if you opted in) | Contract performance / Legitimate interest / Consent (newsletter only) |
-| Password (stored as a one-way hash  never the raw password) | Authenticating your account | Contract performance |
-| Shipping address  street, city, state, postal code, country | Delivering your order; customs documentation | Contract performance |
+| Password (stored as a one-way hash — never the raw password) | Authenticating your account | Contract performance |
+| Shipping address — street, city, state, postal code, country | Delivering your order; customs documentation | Contract performance |
 | Phone number (only if you choose to provide one during order handling) | Carrier delivery coordination if required | Contract performance |
-| Order details  items ordered, prices, quantities, Stripe session and payment intent identifiers, order status | Fulfilling your order; resolving disputes; financial record-keeping | Contract performance / Legal obligation |
+| Order details — items ordered, prices, quantities, Stripe session and payment intent identifiers, order status | Fulfilling your order; resolving disputes; financial record-keeping | Contract performance / Legal obligation |
 | Session token | Keeping you logged in during your visit | Legitimate interest (security) |
-| Hashed login identifier (a one-way SHA-256 hash derived from your email address, IP address, and the login surface  the raw IP and raw email are never stored in this record) | Preventing automated login abuse and brute-force attacks | Legitimate interest (security) |
+| Hashed login identifier (a one-way SHA-256 hash derived from your email address, IP address, and the login surface — the raw IP and raw email are never stored in this record) | Preventing automated login abuse and brute-force attacks | Legitimate interest (security) |
 
 We may run consent-based analytics and advertising tags, including Google Analytics, Google Ads, Meta Pixel, and Pinterest tag. These optional tags stay off unless you accept optional tracking. We do not use session recording tools unless this policy is updated first.
 
@@ -621,12 +621,12 @@ We may run consent-based analytics and advertising tags, including Google Analyt
 
 ## 3. Cookies and local storage
 
-### Strictly necessary  no consent required
+### Strictly necessary — no consent required
 
 | Name | Type | Purpose | Expiry |
 |---|---|---|---|
-| \`loom_hearth_cookie_consent\` | First-party cookie | Stores your cookie consent preference so we do not ask again | 180 days |
-| Auth.js session cookies (\`next-auth.session-token\` and related) | First-party cookies | Keeps you authenticated while browsing account areas of the site | Session / rolling |
+| ${"`"}loom_hearth_cookie_consent${"`"} | First-party cookie | Stores your cookie consent preference so we do not ask again | 180 days |
+| NextAuth session cookies (${"`"}next-auth.session-token${"`"} and related) | First-party cookies | Keeps you authenticated while browsing account areas of the site | Session / rolling |
 
 ### Local storage (not cookies)
 
@@ -640,15 +640,15 @@ Analytics and marketing cookies stay off unless you accept optional tracking in 
 
 We share your data with the following third parties only to the extent necessary to operate the store. We do not sell your personal data to anyone.
 
-**Stripe**  payment processing. If you proceed with an order after direct confirmation with us, your email address, order line items, and order metadata are transmitted to Stripe so payment can be authorised and, if approved after verification, captured. Your payment card details are entered directly on Stripe's servers and are never seen or stored by us. Stripe's privacy policy is available at stripe.com/privacy.
+**Stripe** — payment processing. If you proceed with an order after direct confirmation with us, your email address, order line items, and order metadata are transmitted to Stripe so payment can be authorised and, if approved after verification, captured. Your payment card details are entered directly on Stripe's servers and are never seen or stored by us. Stripe's privacy policy is available at stripe.com/privacy.
 
-**Postmark**  transactional email delivery. When you proceed with an order after direct confirmation with us, or request a password reset, we transmit your email address, name, order details, and shipping address to Postmark to deliver your confirmation or reset email. Postmark's privacy policy is available at postmarkapp.com/privacy-policy.
+**Postmark** — transactional email delivery. When you proceed with an order after direct confirmation with us, or request a password reset, we transmit your email address, name, order details, and shipping address to Postmark to deliver your confirmation or reset email. Postmark's privacy policy is available at postmarkapp.com/privacy-policy.
 
-**Vercel**  website hosting. This site is hosted on Vercel's infrastructure. As with any web host, Vercel's servers process requests from your browser and may retain standard server access logs including IP addresses for a limited period as part of normal hosting operations. Vercel's privacy policy is available at vercel.com/legal/privacy-policy.
+**Vercel** — website hosting. This site is hosted on Vercel's infrastructure. As with any web host, Vercel's servers process requests from your browser and may retain standard server access logs including IP addresses for a limited period as part of normal hosting operations. Vercel's privacy policy is available at vercel.com/legal/privacy-policy.
 
-**Shipping carriers (DHL Express, FedEx International, Aramex)**  order fulfilment. When your order is dispatched, we share your full name, shipping address, and where required by the carrier and provided during order handling, your phone number with the carrier responsible for delivering your order. These carriers process your data solely to complete delivery.
+**Shipping carriers (DHL Express, FedEx International, Aramex)** — order fulfilment. When your order is dispatched, we share your full name, shipping address, and where required by the carrier and provided during order handling, your phone number with the carrier responsible for delivering your order. These carriers process your data solely to complete delivery.
 
-No other third-party service currently receives your personal data. If we add a tool that requires sharing your data  for example an email marketing platform or analytics service  we will update this policy before activating that tool.
+No other third-party service currently receives your personal data. If we add a tool that requires sharing your data — for example an email marketing platform or analytics service — we will update this policy before activating that tool.
 
 ---
 
@@ -660,7 +660,7 @@ No other third-party service currently receives your personal data. If we add a 
 | Account data (name, email, password hash) | Until you request deletion, or 3 years of account inactivity | Allowing you to access your order history |
 | Session tokens | Until the session expires or you log out | Authentication |
 | Password reset tokens | Until used or expired (short-lived) | Security |
-| Hashed login rate-limit records | 24 hours from creation | Security  short-term abuse prevention |
+| Hashed login rate-limit records | 24 hours from creation | Security — short-term abuse prevention |
 | Newsletter subscriber email | Until you unsubscribe or request deletion | Marketing consent |
 
 When a retention period ends, we delete or anonymise the relevant data.
@@ -675,16 +675,16 @@ If you are located in the European Union or United Kingdom, transfers of your pe
 
 ---
 
-## 7. Your rights  EU and UK residents (GDPR and UK GDPR)
+## 7. Your rights — EU and UK residents (GDPR and UK GDPR)
 
 If you are located in the European Union or United Kingdom, you have the following rights under the General Data Protection Regulation (GDPR) and UK GDPR:
 
-- **Right of access**  you may request a copy of all personal data we hold about you.
-- **Right to erasure**  you may request that we delete all personal data we hold about you, subject to our legal retention obligations (for example, we must retain order records for tax purposes).
-- **Right to portability**  you may request your data in a structured, machine-readable format (CSV).
-- **Right to rectification**  you may request that we correct inaccurate data.
-- **Right to object**  you may object to processing based on legitimate interest, including direct marketing.
-- **Right to restrict processing**  you may request that we limit processing while a dispute is resolved.
+- **Right of access** — you may request a copy of all personal data we hold about you.
+- **Right to erasure** — you may request that we delete all personal data we hold about you, subject to our legal retention obligations (for example, we must retain order records for tax purposes).
+- **Right to portability** — you may request your data in a structured, machine-readable format (CSV).
+- **Right to rectification** — you may request that we correct inaccurate data.
+- **Right to object** — you may object to processing based on legitimate interest, including direct marketing.
+- **Right to restrict processing** — you may request that we limit processing while a dispute is resolved.
 
 We will respond to all rights requests within 30 days. To submit a request, email **hello@loomandhearthstudio.com** with the subject line "Privacy Request" and a description of what you are requesting.
 
@@ -692,14 +692,14 @@ If you are unsatisfied with our response, you have the right to lodge a complain
 
 ---
 
-## 8. Your rights  California residents (CCPA)
+## 8. Your rights — California residents (CCPA)
 
 If you are a California resident, the California Consumer Privacy Act (CCPA) gives you the following rights:
 
-- **Right to know**  you may request disclosure of the categories and specific pieces of personal information we have collected about you, the purposes for collection, and the categories of third parties with whom we share it.
-- **Right to deletion**  you may request that we delete your personal information, subject to legal retention obligations.
-- **Right to opt out of sale**  we do not sell your personal information to any third party. There is nothing to opt out of.
-- **Right to non-discrimination**  exercising any of these rights will not result in different pricing or service levels.
+- **Right to know** — you may request disclosure of the categories and specific pieces of personal information we have collected about you, the purposes for collection, and the categories of third parties with whom we share it.
+- **Right to deletion** — you may request that we delete your personal information, subject to legal retention obligations.
+- **Right to opt out of sale** — we do not sell your personal information to any third party. There is nothing to opt out of.
+- **Right to non-discrimination** — exercising any of these rights will not result in different pricing or service levels.
 
 To submit a request, email **hello@loomandhearthstudio.com** with the subject line "California Privacy Request." We will respond within 45 days.
 
@@ -718,7 +718,7 @@ We do not send marketing emails to anyone who has not explicitly opted in.
 We take reasonable technical and organisational measures to protect your personal data, including:
 
 - All connections to this site are encrypted via HTTPS.
-- Passwords are stored as one-way hashes  we cannot read your password.
+- Passwords are stored as one-way hashes — we cannot read your password.
 - Login attempts are rate-limited to reduce the risk of unauthorised access.
 - Payment card data is processed entirely by Stripe and never stored on our servers.
 
@@ -776,7 +776,7 @@ By accessing this website or placing an order, you agree to these Terms of Servi
 
 ## 2. What we sell
 
-We sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor items. Products are sourced directly from artisans and bazaars in Morocco and are described on each product page.
+We sell handcrafted Moroccan rugs, poufs, pillows, and home décor items. Products are sourced directly from artisans and bazaars in Morocco and are described on each product page.
 
 **ONE OF A KIND products.** Many rugs in our collection are unique, ONE OF A KIND handmade pieces. These are identified clearly on their product pages. For ONE OF A KIND items:
 
@@ -784,7 +784,7 @@ We sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€
 - Once sold, the item will not be restocked. A similar piece may be listed in the future as a separate product.
 - Product pages for sold ONE OF A KIND items remain visible on the site marked as Sold Out. This is intentional.
 
-**Multi-unit products.** Poufs, pillows, and some dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor items may have more than one unit available. These products may have variants such as size or colour, which are specified on the product page.
+**Multi-unit products.** Poufs, pillows, and some décor items may have more than one unit available. These products may have variants such as size or colour, which are specified on the product page.
 
 We make every effort to represent colour, texture, size, and condition accurately. Natural lighting conditions in Morocco and the hand-made nature of all products mean that slight variation in colour rendering across different screens is inherent. Our pre-shipment verification process (described in section 5) exists specifically to address this before payment is captured.
 
