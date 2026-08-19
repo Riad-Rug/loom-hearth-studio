@@ -765,7 +765,7 @@ Last updated: March 29, 2026
 
 ## 1. Who we are
 
-This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We source and sell handcrafted Moroccan rugs, poufs, pillows, and home dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cor. All products are sourced in Morocco and ship directly from Morocco to your delivery address.
+This website is operated by **Loom and Hearth Studio LLC**, a company registered in the state of Wyoming, United States. We source and sell handcrafted Moroccan rugs, poufs, pillows, and home décor. All products are sourced in Morocco and ship directly from Morocco to your delivery address.
 
 For any legal or commercial questions, contact us at:
 **hello@loomandhearthstudio.com**
@@ -780,7 +780,7 @@ We sell handcrafted Moroccan rugs, poufs, pillows, and home décor items. Produc
 
 **ONE OF A KIND products.** Many rugs in our collection are unique, ONE OF A KIND handmade pieces. These are identified clearly on their product pages. For ONE OF A KIND items:
 
-- The photographs and description represent the exact item being sold  not a representative sample or a style reference.
+- The photographs and description represent the exact item being sold — not a representative sample or a style reference.
 - Once sold, the item will not be restocked. A similar piece may be listed in the future as a separate product.
 - Product pages for sold ONE OF A KIND items remain visible on the site marked as Sold Out. This is intentional.
 
@@ -803,11 +803,11 @@ The confirmation email constitutes our acceptance of your order. If we are unabl
 
 ### 3.2 Accurate information
 
-When proceeding with an order you agree to provide accurate, complete, and current information  including your name, email address, and shipping address. Orders placed with incorrect or incomplete shipping addresses may be delayed or undeliverable. We are not responsible for non-delivery resulting from inaccurate information you provide.
+When proceeding with an order you agree to provide accurate, complete, and current information — including your name, email address, and shipping address. Orders placed with incorrect or incomplete shipping addresses may be delayed or undeliverable. We are not responsible for non-delivery resulting from inaccurate information you provide.
 
 ### 3.3 Our right to cancel before dispatch
 
-We reserve the right to cancel any order before the item is handed to the carrier  for example if:
+We reserve the right to cancel any order before the item is handed to the carrier — for example if:
 
 - The item is found to be damaged during pre-shipment verification.
 - A pricing or product description error is identified on the listing.
@@ -825,15 +825,15 @@ All prices are displayed in United States Dollars (USD). Shipping to the United 
 
 We reserve the right to correct pricing errors on the site at any time. If an error is identified after you have placed an order, we will contact you to confirm whether you wish to proceed at the correct price, or cancel for a full release of any held funds.
 
-### 4.2 How payment works  authorisation and capture
+### 4.2 How payment works — authorisation and capture
 
 **This is important to read.** Our payment process works in two steps, and understanding it prevents confusion when you check your bank statement.
 
-**Step 1  Authorisation after confirmation.** If you decide to proceed after direct confirmation with us, your payment method is authorised for the order total. This places a hold on the funds on your card or account. You will see this as a pending charge. No money is transferred to us at this point.
+**Step 1 — Authorisation after confirmation.** If you decide to proceed after direct confirmation with us, your payment method is authorised for the order total. This places a hold on the funds on your card or account. You will see this as a pending charge. No money is transferred to us at this point.
 
-**Step 2  Capture after verification.** Payment is captured  meaning funds are actually collected  only after your pre-shipment verification is complete (see section 5). Verification is typically completed within 24 to 48 hours of your order. In the rare case we cannot reach you, the capture window extends up to 7 days from the order date (see section 5).
+**Step 2 — Capture after verification.** Payment is captured — meaning funds are actually collected — only after your pre-shipment verification is complete (see section 5). Verification is typically completed within 24 to 48 hours of your order. In the rare case we cannot reach you, the capture window extends up to 7 days from the order date (see section 5).
 
-If you confirm after seeing the verification video that you are happy with the item, we capture payment and your order ships. If we cancel the order for any reason, or if you choose not to proceed after the verification, the authorisation is released in full and no funds are collected. The time for a released authorisation to disappear from your statement depends on your card issuer  typically 3 to 7 business days.
+If you confirm after seeing the verification video that you are happy with the item, we capture payment and your order ships. If we cancel the order for any reason, or if you choose not to proceed after the verification, the authorisation is released in full and no funds are collected. The time for a released authorisation to disappear from your statement depends on your card issuer — typically 3 to 7 business days.
 
 ### 4.3 Payment processing
 
@@ -843,15 +843,15 @@ Payments are processed by Stripe if you proceed after direct confirmation with u
 
 ## 5. Pre-shipment verification
 
-We offer a pre-shipment video verification for every order. This is a core part of how we operate  not a delay.
+We offer a pre-shipment video verification for every order. This is a core part of how we operate — not a delay.
 
-**How it works.** Within 24 hours of your confirmed order request, we will contact you by email to offer a short video of the actual piece you selected  shown in natural light in Morocco, with a tape measure for scale, so you can see the colour, texture, and size before your payment is captured and your item ships. Most verifications are completed within 24 to 48 hours of your order.
+**How it works.** Within 24 hours of your confirmed order request, we will contact you by email to offer a short video of the actual piece you selected — shown in natural light in Morocco, with a tape measure for scale, so you can see the colour, texture, and size before your payment is captured and your item ships. Most verifications are completed within 24 to 48 hours of your order.
 
-**Your options.** You can confirm by reply email, request a live video call via WhatsApp or FaceTime, or receive a short recorded video clip  whichever suits you best.
+**Your options.** You can confirm by reply email, request a live video call via WhatsApp or FaceTime, or receive a short recorded video clip — whichever suits you best.
 
 **If you are happy.** We capture payment and your item ships.
 
-**If something is not right.** Contact us before confirming and we will work with you to resolve it before the item ships. This is the right moment to raise any concern  it is far easier to resolve before shipment than after.
+**If something is not right.** Contact us before confirming and we will work with you to resolve it before the item ships. This is the right moment to raise any concern — it is far easier to resolve before shipment than after.
 
 **If we cannot reach you.** If we do not receive a response within 7 days of the order date after two contact attempts, we will keep the order on hold and will not capture payment until destination, timing, and delivery conditions are confirmed.
 
@@ -878,7 +878,7 @@ These are estimates, not guarantees. Customs clearance, carrier delays, and circ
 
 ### 6.4 Dispatch timing
 
-Orders are dispatched after pre-shipment verification is complete and payment is captured. Verification is typically completed within 24 to 48 hours of the order date, so dispatch usually follows shortly after. If we are unable to reach you, this process can take up to 7 days  see section 5.
+Orders are dispatched after pre-shipment verification is complete and payment is captured. Verification is typically completed within 24 to 48 hours of the order date, so dispatch usually follows shortly after. If we are unable to reach you, this process can take up to 7 days — see section 5.
 
 ### 6.5 Risk of loss
 
@@ -910,7 +910,7 @@ We reserve the right to suspend or close accounts that are used in breach of the
 
 ## 9. Intellectual property
 
-All content on this website  including product photographs, written descriptions, blog posts, brand assets, and design  is owned by or licensed to Loom and Hearth Studio LLC. You may not reproduce, copy, redistribute, or use any content from this site for commercial purposes without our prior written permission.
+All content on this website — including product photographs, written descriptions, blog posts, brand assets, and design — is owned by or licensed to Loom and Hearth Studio LLC. You may not reproduce, copy, redistribute, or use any content from this site for commercial purposes without our prior written permission.
 
 ---
 
@@ -922,7 +922,7 @@ We make every reasonable effort to ensure that product descriptions, dimensions,
 - Colour rendering varies across screens and viewing conditions. Our pre-shipment video process is designed specifically to address this before dispatch.
 - Minor imperfections consistent with age or hand production are disclosed in the product description where present and are not grounds for return unless they constitute a material misdescription.
 
-If you believe an item was materially misdescribed  meaning the listing contained a significant factual error that influenced your purchase decision  contact us before initiating a return. We will address it fairly.
+If you believe an item was materially misdescribed — meaning the listing contained a significant factual error that influenced your purchase decision — contact us before initiating a return. We will address it fairly.
 
 ---
 
