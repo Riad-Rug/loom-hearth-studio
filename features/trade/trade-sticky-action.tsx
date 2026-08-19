@@ -51,7 +51,7 @@ export function TradeStickyAction() {
       aria-hidden={!isVisible}
       inert={!isVisible}
     >
-      <Link className={styles.stickyActionButton} href="/trade/apply">
+      <Link className={styles.stickyActionButton} href="/contact?inquiryType=trade-request">
         Start trade inquiry
       </Link>
     </div>

@@ -266,7 +266,7 @@ export function TradePageView() {
             </p>
           </div>
           <div className={styles.contactActions}>
-            <Link className={styles.primaryAction} href="/trade/apply">
+            <Link className={styles.primaryAction} href="/contact?inquiryType=trade-request">
               Start your inquiry
             </Link>
           </div>

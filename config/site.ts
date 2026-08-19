@@ -76,6 +76,7 @@ export const siteConfig = {
     { href: "/trade", label: "Trade" },
     { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
+    { href: "/contact", label: "Contact" },
   ],
   // Paste the live profile URLs here once the accounts exist; an empty string
   // hides that icon in the site footer, no other code change needed.

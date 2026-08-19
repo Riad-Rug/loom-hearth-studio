@@ -33,7 +33,7 @@ export const aboutBridge = {
 export const contactData = {
   title: "Get in touch",
   body:
-    "Tell us what you're looking for and we'll reply personally within 24 hours - usually with photos or a short video of the actual piece.",
+    "Whether you have a question about an order, a piece you have your eye on, or a trade project to price out, this is the place. We reply personally within 24 hours - usually with photos or a short video of the actual piece.",
   legalNameLabel: publicBusinessDetails.legalName,
   emailLabel: publicBusinessDetails.email,
   whatsappLabel: publicBusinessDetails.whatsappLabel,
