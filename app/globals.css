@@ -9,6 +9,7 @@
   --color-panel: #efede3;
   --color-border: rgba(20, 20, 20, 0.15);
   --color-border-soft: rgba(20, 20, 20, 0.12);
+  --color-border-strong: rgba(20, 20, 20, 0.24);
   --font-display: "Young Serif", Georgia, serif;
   --font-body: "Outfit", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
@@ -33,6 +34,8 @@
   --button-tertiary-underline-hover: var(--color-green);
   --color-error: #aa3d2a;
   --color-success: var(--color-green);
+  --color-warning: #96631a;
+  --color-warning-soft: rgba(150, 99, 26, 0.12);
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -49,6 +52,7 @@
   --container-width: 76rem;
   --container-width-narrow: 56rem;
   --container-width-wide: 84rem;
+  --container-width-admin: 104rem;
 }
 
 *,
@@ -169,6 +173,14 @@ h6 {
   flex: 1;
   padding: var(--space-7) 0 var(--space-8);
   overflow-x: clip;
+}
+
+/* Admin is a dense back-office UI, not a marketing page: the admin module's
+   own .page/.moduleShell wrappers already carry their own internal spacing
+   (features/admin/admin.module.css), so this only needs a light trim above
+   and below the content rather than the full marketing padding. */
+.site-main--admin {
+  padding: var(--space-5) 0 var(--space-6);
 }
 
 .page-stack {
