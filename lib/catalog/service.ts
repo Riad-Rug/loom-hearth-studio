@@ -574,8 +574,8 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
     product.shippingNotes?.filter(Boolean).length
       ? product.shippingNotes.filter(Boolean).map(normalizeDimensionSeparators)
       : [
-          "Ships from our Marrakech atelier via DHL tracked service.",
-          "Typical dispatch window is 5 to 7 business days.",
+          "Ships from our Marrakech atelier via tracked international carrier.",
+          "Typical dispatch window is 24 to 48 hours.",
           "Duties are included for US delivery.",
         ];
 
@@ -604,7 +604,7 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
       eyebrow: "Shipping",
       title: "Shipping and delivery notes",
       body:
-        "Ships from our Marrakech atelier via DHL tracked service, typically in 5 to 7 business days. Duties are included for US delivery - no surprise charges at delivery.",
+        "Ships from our Marrakech atelier via tracked international carrier, typically arriving 7 to 14 business days after dispatch. Duties are included for US delivery - no surprise charges at delivery.",
       items: shippingItems,
     },
   ];
