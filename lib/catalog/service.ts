@@ -105,6 +105,33 @@ export async function listUnavailableCategoryHrefs(
     .map(getCategoryRoutePath);
 }
 
+/**
+ * Rug-style slugs with at least one piece a shopper can buy right now, so the
+ * /shop/rugs style nav and the sitemap can list exactly the styles that have
+ * stock instead of hardcoding which ones do. Rows alone are not enough here
+ * either: a style whose every rug is sold counts as empty (see
+ * isPurchasableProduct). Live read on every render — rugs are one of a kind, so
+ * a style drops out when its last piece sells and returns on its own the moment
+ * new stock lands. One listByCategory("rugs") per call.
+ */
+export async function listAvailableRugStyleSlugs(
+  repository: ProductRepository = createProductRepository(),
+): Promise<Set<string>> {
+  noStore();
+
+  const products = await repository.listByCategory("rugs");
+
+  return new Set(
+    products
+      .filter(
+        (product): product is RugProduct =>
+          product.type === "rug" && isPurchasableProduct(product),
+      )
+      .map((product) => normalizeSlug(product.rugStyle))
+      .filter(Boolean),
+  );
+}
+
 export async function listRugStyleProductCards(input: {
   style: string;
   repository?: ProductRepository;

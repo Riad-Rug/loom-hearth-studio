@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -60,9 +61,21 @@ type CatalogPageViewProps = {
     bullets: readonly string[];
     href?: string;
   };
+  /**
+   * Optional sub-category navigation rendered under the page lede — currently
+   * the rug-style collections on /shop/rugs. Links, not filters: each one is a
+   * separate indexable route, so they navigate rather than toggle. The server
+   * decides which ones exist (only styles with stock are passed in).
+   */
+  styleLinks?: readonly { label: string; href: string }[];
 };
 
-export function CatalogPageView({ category, products, collection }: CatalogPageViewProps) {
+export function CatalogPageView({
+  category,
+  products,
+  collection,
+  styleLinks,
+}: CatalogPageViewProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
@@ -332,6 +345,22 @@ export function CatalogPageView({ category, products, collection }: CatalogPageV
                 Each piece is individually made and won&apos;t be restocked.
               </p>
               <p className={styles.lede}>{catalogDescription}</p>
+              {styleLinks?.length ? (
+                <nav aria-label="Shop by style" className={styles.styleNav}>
+                  <span className={styles.filterGroupLabel}>Shop by style</span>
+                  <div className={styles.styleNavLinks}>
+                    {styleLinks.map((styleLink) => (
+                      <Link
+                        key={styleLink.href}
+                        className={styles.filterChip}
+                        href={styleLink.href as Route}
+                      >
+                        {styleLink.label}
+                      </Link>
+                    ))}
+                  </div>
+                </nav>
+              ) : null}
             </div>
 
             {filteredProducts.length ? (

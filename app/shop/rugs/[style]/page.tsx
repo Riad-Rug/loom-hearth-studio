@@ -30,12 +30,32 @@ export async function generateMetadata({
     });
   }
 
+  // Every canonical rug style has a collection page, but one-of-a-kind stock
+  // means a style can legitimately stand at zero pieces for a while. Same rule
+  // that was applied by hand to /shop/decor — don't let an indexable page show
+  // "0 pieces" — except computed live per style, because which styles are empty
+  // changes every time a rug sells or lands.
+  //
+  // This is a second read of the same rows the page body loads below: nothing in
+  // this codebase wraps repository reads in React cache(), and service.ts leans
+  // on noStore() rather than memoisation, so generateMetadata and the render
+  // each issue their own query. Accepted deliberately — the alternative is
+  // hardcoding today's empty styles into the source, which is exactly the
+  // staleness this change removes.
+  const products = await listRugStyleProductCards({ style });
+  // Mirrors isPurchasableProduct against the card view model: active, and not an
+  // out-of-stock multi-unit listing.
+  const hasPurchasableProducts = products.some(
+    (product) => product.status === "active" && !product.isOutOfStock,
+  );
+
   return buildManagedMetadata({
     entityType: "category",
     entityKey: `rugs-${style}`,
     title: collection.title,
     description: collection.description,
     path: `/shop/rugs/${style}`,
+    noIndex: !hasPurchasableProducts,
   });
 }
 

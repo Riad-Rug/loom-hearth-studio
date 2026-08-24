@@ -12,6 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       "Browse supporting Moroccan decor pieces selected to sit alongside rugs, poufs, and collected textile interiors.",
     path: "/shop/decor",
+    noIndex: true,
   });
 }
 

@@ -135,6 +135,20 @@
   color: var(--color-green);
 }
 
+/* Sub-category navigation under the page lede (rug styles on /shop/rugs). The
+   pills are .filterChip links — same 1px/4px control vocabulary as the sidebar
+   chips, laid out as a wrapping row instead of a stacked filter group. */
+.styleNav {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.styleNavLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
 /* Category, price, and size are all multi-select groups, so they use checkboxes
    rather than the chip (which now only serves the "Hide sold pieces" toggle).
    Native control, site accent, same 1px/4px vocabulary. */

@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 
 import { policyPages } from "@/features/content-pages/content-pages-data";
-import { listCatalogProductCards } from "@/lib/catalog/service";
+import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
+import { listAvailableRugStyleSlugs, listCatalogProductCards } from "@/lib/catalog/service";
 import { getBlogPostsState } from "@/lib/blog/posts";
 import { absoluteUrl } from "@/lib/seo/metadata";
 
@@ -9,7 +10,6 @@ const staticRoutes = [
   "/",
   "/shop",
   "/shop/rugs",
-  "/shop/rugs/beni-ourain",
   "/shop/vintage",
   "/shop/poufs",
   "/shop/pillows",
@@ -28,6 +28,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: path === "/" || path === "/shop" ? "weekly" as const : "monthly" as const,
     priority: path === "/" ? 1 : path === "/shop" ? 0.9 : 0.7,
   }));
+
+  // Rug-style category routes are listed live rather than hardcoded: the pages
+  // exist for every canonical style, but a style with nothing purchasable right
+  // now is served noindex (see app/shop/rugs/[style]/page.tsx), so it must not
+  // be advertised here either. Styles without a collection entry — "Unclassified"
+  // is the admin catch-all — have no page to point at.
+  const rugStyleEntries = [...(await listAvailableRugStyleSlugs())]
+    .filter((style) => getRugStyleCollection(style))
+    .sort()
+    .map((style) => ({
+      url: absoluteUrl(`/shop/rugs/${style}`),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
 
   const { posts: blogPosts } = await getBlogPostsState();
   const blogEntries = blogPosts.map((post) => ({
@@ -50,7 +64,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticEntries, ...blogEntries, ...policyEntries, ...productEntries];
+  return [
+    ...staticEntries,
+    ...rugStyleEntries,
+    ...blogEntries,
+    ...policyEntries,
+    ...productEntries,
+  ];
 }
 
 function readValidLastModified(value: string) {
