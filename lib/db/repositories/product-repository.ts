@@ -6,8 +6,20 @@ import type { ProductMutationInput } from "@/lib/catalog/product-validation";
 import { createRepositoryContext, type RepositoryContext } from "@/lib/db";
 import type { Product } from "@/types/domain";
 
+/**
+ * A listed product paired with its raw persistence timestamp. Kept as a
+ * separate shape rather than a field on Product: updatedAt is a database
+ * concern with a single consumer (the sitemap's <lastmod>), and folding it
+ * into the domain type would push it through every catalog surface.
+ */
+export type ProductWithUpdatedAt = {
+  product: Product;
+  updatedAt: Date;
+};
+
 export interface ProductRepository {
   listAll(): Promise<Product[]>;
+  listAllWithUpdatedAt(): Promise<ProductWithUpdatedAt[]>;
   listByCategory(category: Product["category"]): Promise<Product[]>;
   listHomepageFeatured(limit: number): Promise<Product[]>;
   listInventoryEligible(): Promise<Product[]>;
@@ -34,6 +46,24 @@ export class PrismaProductRepository implements ProductRepository {
     });
 
     return products.map(mapCatalogProductRecordToDomainProduct);
+  }
+
+  // Same rows and ordering as listAll(), carrying each record's updatedAt
+  // alongside the mapped domain product.
+  async listAllWithUpdatedAt() {
+    const products = await this.context.client.catalogProduct.findMany({
+      where: {
+        status: { in: ["active", "sold"] },
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+
+    return products.map((record) => ({
+      product: mapCatalogProductRecordToDomainProduct(record),
+      updatedAt: record.updatedAt,
+    }));
   }
 
   async listByCategory(category: Product["category"]) {

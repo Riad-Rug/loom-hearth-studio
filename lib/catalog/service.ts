@@ -132,6 +132,25 @@ export async function listAvailableRugStyleSlugs(
   );
 }
 
+/**
+ * Route href paired with the last database write for every listed product, so
+ * app/sitemap.ts can emit a real <lastmod> per product URL instead of leaving
+ * the whole catalog dateless. Deliberately narrow: updatedAt is a persistence
+ * timestamp with exactly one consumer, so it stays off the domain Product and
+ * CatalogProductCardViewModel types rather than being threaded through every
+ * catalog surface for this one field. One listAllWithUpdatedAt() per call.
+ */
+export async function listProductSitemapEntries(
+  repository: ProductRepository = createProductRepository(),
+): Promise<Array<{ href: string; updatedAt: Date }>> {
+  const records = await repository.listAllWithUpdatedAt();
+
+  return records.map(({ product, updatedAt }) => ({
+    href: getProductRoutePath(product),
+    updatedAt,
+  }));
+}
+
 export async function listRugStyleProductCards(input: {
   style: string;
   repository?: ProductRepository;

@@ -187,11 +187,12 @@ export function productSchema(input: {
     name: input.name,
     description: input.description,
     image: input.imageUrls,
-    brand: {
-      "@type": "Brand",
-      name: "Loom & Hearth Studio",
-      url: absoluteUrl("/"),
-    },
+    // Reference the canonical Organization node (organizationSchema, rendered
+    // globally from app/layout.tsx) by @id instead of re-embedding a flat copy
+    // of the same entity on every product. @id resolution is a literal string
+    // match and works across separate JSON-LD blocks in one document, so this
+    // must stay byte-identical to organizationSchema()'s own @id.
+    brand: { "@id": `${absoluteUrl("/")}#organization` },
     sku: input.id,
     mpn: input.id,
     productID: input.id,
@@ -227,11 +228,7 @@ export function productSchema(input: {
         input.category === "vintage"
           ? "https://schema.org/UsedCondition"
           : "https://schema.org/NewCondition",
-      seller: {
-        "@type": "Organization",
-        name: "Loom & Hearth Studio",
-        url: absoluteUrl("/"),
-      },
+      seller: { "@id": `${absoluteUrl("/")}#organization` },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         applicableCountry: ["US"],
@@ -248,6 +245,25 @@ export function productSchema(input: {
           "@type": "MonetaryAmount",
           value: 0,
           currency: "USD",
+        },
+        // Figures come from the shipping policy page (the authoritative copy in
+        // features/content-pages/content-pages-data.ts): verification completes
+        // in 24-48 hours (1-2 days handling), then 7-14 business days in transit
+        // to the US.
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 1,
+            maxValue: 2,
+            unitCode: "DAY",
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 7,
+            maxValue: 14,
+            unitCode: "DAY",
+          },
         },
       })),
     },
