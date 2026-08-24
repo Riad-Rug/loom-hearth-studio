@@ -34,6 +34,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             description: post.excerpt,
             path: `/blog/${post.categorySlug}/${post.slug}`,
             publishedAt: post.publishedAt,
+            imageUrl: post.images[0]?.src || null,
+            author: author.name ? { name: author.name, photoUrl: author.photoUrl } : null,
           }),
           breadcrumbSchema([
             { name: "Home", path: "/" },

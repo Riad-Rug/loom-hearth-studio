@@ -90,19 +90,76 @@ export function itemListSchema(input: {
   };
 }
 
+/**
+ * Blog posts store `publishedAt` as free-text display copy (e.g. "August 10, 2026").
+ * Schema.org requires ISO 8601, so parse to `YYYY-MM-DD` here only — storage and the
+ * UI keep the human-readable string. Returns null for empty or unparseable input so
+ * callers can omit the field instead of emitting "Invalid Date".
+ */
+export function toSchemaDate(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  // Already ISO-ish: keep the calendar date as written rather than re-deriving it
+  // through the server's local timezone.
+  const isoPrefix = value.match(/^(\d{4}-\d{2}-\d{2})/);
+
+  if (isoPrefix) {
+    return isoPrefix[1];
+  }
+
+  // "Month D, YYYY" parses to local midnight, so read back local parts. Using
+  // toISOString() here would shift the date a day backwards east of UTC.
+  const year = String(parsed.getFullYear()).padStart(4, "0");
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export function articleSchema(input: {
   title: string;
   description: string;
   path: string;
   publishedAt?: string;
+  imageUrl?: string | null;
+  author?: { name: string; photoUrl?: string | null } | null;
 }) {
+  const datePublished = toSchemaDate(input.publishedAt);
+  const authorName = input.author?.name?.trim();
+
   return {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: input.title,
     description: input.description,
     url: absoluteUrl(input.path),
-    datePublished: input.publishedAt,
+    ...(datePublished ? { datePublished } : {}),
+    ...(input.imageUrl ? { image: [input.imageUrl] } : {}),
+    ...(authorName
+      ? {
+          author: {
+            "@type": "Person",
+            name: authorName,
+            ...(input.author?.photoUrl ? { image: input.author.photoUrl } : {}),
+          },
+        }
+      : {}),
+    publisher: {
+      "@type": "Organization",
+      name: "Loom & Hearth Studio",
+      logo: {
+        "@type": "ImageObject",
+        url: absoluteUrl("/brand/logo.png"),
+      },
+    },
   };
 }
 

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 
+import { JsonLd } from "@/components/seo/json-ld";
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
 import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
 import { listAvailableRugStyleSlugs, listCatalogProductCards } from "@/lib/catalog/service";
 import { normalizeSlug, productRugStyleOptions } from "@/lib/catalog/product-validation";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
+import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
@@ -32,5 +34,27 @@ export default async function RugsPage() {
     .filter(({ slug }) => availableStyles.has(slug) && getRugStyleCollection(slug))
     .map(({ label, slug }) => ({ label, href: `/shop/rugs/${slug}` }));
 
-  return <CatalogPageView category="rugs" products={products} styleLinks={styleLinks} />;
+  return (
+    <>
+      <JsonLd
+        data={[
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Shop", path: "/shop" },
+            { name: "Rugs", path: "/shop/rugs" },
+          ]),
+          itemListSchema({
+            path: "/shop/rugs",
+            name: "Rugs",
+            items: products.map((product) => ({
+              name: product.name,
+              path: product.href,
+              image: product.primaryImage?.src,
+            })),
+          }),
+        ]}
+      />
+      <CatalogPageView category="rugs" products={products} styleLinks={styleLinks} />
+    </>
+  );
 }
