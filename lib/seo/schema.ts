@@ -4,7 +4,7 @@ import { publicBusinessDetails } from "@/config/public-business-details";
 export function organizationSchema() {
   return {
     "@context": "https://schema.org",
-    "@type": ["Organization", "LocalBusiness"],
+    "@type": ["Organization", "OnlineStore"],
     "@id": `${absoluteUrl("/")}#organization`,
     name: "Loom & Hearth Studio",
     url: absoluteUrl("/"),
@@ -22,14 +22,6 @@ export function organizationSchema() {
       contactType: "customer support",
       email: publicBusinessDetails.email,
       availableLanguage: ["English"],
-    },
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "5830 E 2ND ST, STE 7000 #34442",
-      addressLocality: "Casper",
-      addressRegion: "WY",
-      postalCode: "82609",
-      addressCountry: "US",
     },
   };
 }

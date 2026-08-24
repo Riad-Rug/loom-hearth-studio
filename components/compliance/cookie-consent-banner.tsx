@@ -14,8 +14,13 @@ export function CookieConsentBanner() {
       <div className="cookie-banner__eyebrow">Privacy preferences</div>
       <p className="cookie-banner__title">Choose whether to allow optional tracking.</p>
       <p className="cookie-banner__copy">
-        Strictly necessary cookies always stay on. Analytics and marketing cookies stay off unless
-        you accept them.
+        <span className="cookie-banner__copy-full">
+          Strictly necessary cookies always stay on. Analytics and marketing cookies stay off unless
+          you accept them.
+        </span>
+        <span className="cookie-banner__copy-short">
+          Necessary cookies always stay on. Optional ones stay off unless you accept.
+        </span>
       </p>
       <ul className="cookie-banner__list" aria-label="Cookie categories">
         <li>Strictly necessary</li>

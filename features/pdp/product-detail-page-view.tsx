@@ -11,6 +11,7 @@ import {
   TabPanels,
 } from "@headlessui/react";
 import type { Route } from "next";
+import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
@@ -19,7 +20,7 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
 import { useCart } from "@/features/cart/cart-provider";
-import { ProductCard } from "@/features/catalog/product-card";
+import { ProductCard, recommendationRailCardSizes } from "@/features/catalog/product-card";
 import { trackViewItem } from "@/lib/analytics/gtag";
 import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
 import {
@@ -145,7 +146,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                     <Tab
                       key={item.id}
                       className={({ selected }) =>
-                        `block aspect-square p-0 border-0 rounded-[var(--radius-md)] bg-[var(--color-panel)] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-green)] focus-visible:ring-offset-2 ${
+                        `relative block aspect-square p-0 border-0 rounded-[var(--radius-md)] bg-[var(--color-panel)] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-green)] focus-visible:ring-offset-2 ${
                           selected
                             ? "ring-2 ring-inset ring-[color:var(--color-green)]"
                             : "ring-1 ring-inset ring-[color:var(--color-border)]"
@@ -153,10 +154,12 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                       }
                     >
                       {item.src && !failedImageIds.has(item.id) ? (
-                        <img
+                        <NextImage
                           alt={item.altText ? `${item.altText} — ${item.label}` : `${product.name} — ${item.label}`}
-                          className="block w-full h-full object-cover object-center"
+                          className="block object-cover object-center"
+                          fill
                           loading="lazy"
+                          sizes="5rem"
                           src={item.thumbSrc}
                           onError={() => handleImageError(item.id)}
                         />
@@ -174,7 +177,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                 </TabList>
 
                 <TabPanels as={Fragment}>
-                  {gallery.map((item) => (
+                  {gallery.map((item, index) => (
                     <TabPanel
                       key={item.id}
                       className="h-[min(78vh,40rem)] max-[700px]:h-[60vh] flex items-center justify-center overflow-hidden border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)] max-[700px]:order-1"
@@ -183,6 +186,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                         isBroken={failedImageIds.has(item.id)}
                         isPointerFine={isPointerFine}
                         item={item}
+                        priority={index === 0}
                         productName={product.name}
                         onImageError={handleImageError}
                         onOpenLightbox={() => setIsLightboxOpen(true)}
@@ -306,7 +310,11 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               aria-label={recommendationPresentation.ariaLabel}
             >
               {displayedRecommendations.map((item) => (
-                <ProductCard key={item.id} product={item} />
+                <ProductCard
+                  key={item.id}
+                  product={item}
+                  sizes={recommendationRailCardSizes}
+                />
               ))}
             </div>
           </div>
@@ -325,7 +333,11 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
               aria-label={crossSellPresentation.ariaLabel}
             >
               {displayedCrossSellRecommendations.map((item) => (
-                <ProductCard key={item.id} product={item} />
+                <ProductCard
+                  key={item.id}
+                  product={item}
+                  sizes={recommendationRailCardSizes}
+                />
               ))}
             </div>
           </div>
@@ -387,6 +399,7 @@ function ProductHeroImage({
   productName,
   isBroken,
   isPointerFine,
+  priority,
   onImageError,
   onOpenLightbox,
 }: {
@@ -394,6 +407,7 @@ function ProductHeroImage({
   productName: string;
   isBroken: boolean;
   isPointerFine: boolean;
+  priority: boolean;
   onImageError: (id: string) => void;
   onOpenLightbox: () => void;
 }) {
@@ -419,7 +433,7 @@ function ProductHeroImage({
         alt={productName}
         aspectRatio="4 / 5"
         label="Photo pending"
-        priority
+        priority={priority}
         sizes="(max-width: 700px) 100vw, (max-width: 1100px) 90vw, 52vw"
         tone={item.tone === "condition" ? "condition" : "neutral"}
       />
@@ -520,14 +534,20 @@ function ProductHeroImage({
         type="button"
         onClick={onOpenLightbox}
       >
-        <img
+        <NextImage
           alt={item.altText || productName}
-          className="block w-full h-full object-contain"
-          height={naturalSize?.height ?? item.height}
+          className="block object-contain"
+          fill
+          priority={priority}
+          // Matches the PlaceholderMedia fallback declared for this same slot
+          // above, so the real photo and the placeholder reserve identical space.
+          sizes="(max-width: 700px) 100vw, (max-width: 1100px) 90vw, 52vw"
           src={item.src}
-          width={naturalSize?.width ?? item.width}
           onError={() => onImageError(item.id)}
           onLoad={(event) => {
+            // next/image forwards the underlying <img>'s load event, so
+            // naturalWidth/naturalHeight are still readable here and continue to
+            // drive the container's aspect ratio.
             const target = event.currentTarget;
             setNaturalSize({ width: target.naturalWidth, height: target.naturalHeight });
           }}

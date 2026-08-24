@@ -25,6 +25,14 @@ type BuildMetadataOptions = {
   ogImageHeight?: number;
 };
 
+/**
+ * Intrinsic size of `siteConfig.ogImagePath`, used whenever a caller doesn't
+ * pass its own image dimensions. Social scrapers need width/height to reserve
+ * layout before the image loads; omitting them degrades the link preview.
+ */
+const defaultOgImageWidth = 1200;
+const defaultOgImageHeight = 630;
+
 type BuildManagedMetadataOptions = BuildMetadataOptions & {
   entityType: string;
   entityKey: string;
@@ -46,8 +54,8 @@ export function buildMetadata({
   ogDescription,
   ogImageUrl,
   ogImageAlt,
-  ogImageWidth,
-  ogImageHeight,
+  ogImageWidth = defaultOgImageWidth,
+  ogImageHeight = defaultOgImageHeight,
 }: BuildMetadataOptions): Metadata {
   const shouldIndex = !noIndex && !noIndexFollow;
   const shouldFollow = noIndexFollow || !noIndex;

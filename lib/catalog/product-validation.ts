@@ -23,11 +23,11 @@ export const productCategoryOptions = [
   "vintage",
 ] as const satisfies ReadonlyArray<Product["category"]>;
 export const productRugStyleOptions = [
-  "Boujad-style",
-  "Azilal-style",
-  "Beni Ourain-style",
-  "Beni M'Guild-style",
-  "Zemmour-style",
+  "Boujad",
+  "Azilal",
+  "Beni Ourain",
+  "Beni M'Guild",
+  "Zemmour",
   "Boucherouite",
   "Flatweave (Hanbel)",
   "Mixed technique",

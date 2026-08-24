@@ -868,9 +868,72 @@ h6 {
   outline: none;
 }
 
+.cookie-banner__copy-short {
+  display: none;
+}
+
+/*
+ * Mobile: the full card (eyebrow + title + paragraph + three pill badges + two
+ * stacked buttons) is tall enough to bury the hero CTAs on a 390x844 screen.
+ * Collapse it into a slim strip: no eyebrow, a one-line disclosure, the three
+ * consent categories as a single inline list, and the actions side by side.
+ * All three categories stay disclosed and the buttons keep a 2.75rem target.
+ */
 @media (max-width: 700px) {
   .cookie-banner {
+    right: 0.75rem;
+    left: 0.75rem;
     bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    gap: 0.5rem;
+    width: auto;
+    padding: 0.8rem 0.9rem;
+  }
+
+  .cookie-banner__eyebrow {
+    display: none;
+  }
+
+  .cookie-banner__title {
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+
+  .cookie-banner__copy,
+  .cookie-banner__list li {
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .cookie-banner__copy-full {
+    display: none;
+  }
+
+  .cookie-banner__copy-short {
+    display: inline;
+  }
+
+  .cookie-banner__list {
+    gap: 0.25rem;
+  }
+
+  .cookie-banner__list li {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .cookie-banner__list li:not(:last-child)::after {
+    content: ",";
+  }
+
+  .cookie-banner__actions {
+    gap: 0.5rem;
+  }
+
+  .cookie-banner__button {
+    flex: 1 1 0;
+    min-height: 2.75rem;
+    padding: 0.6rem 0.75rem;
   }
 }
 
