@@ -16,6 +16,7 @@ export function organizationSchema() {
       "https://www.instagram.com/loomandhearthstudio/",
       "https://www.pinterest.com/loomandhearthstudio/",
       "https://www.tiktok.com/@loomandhearthstudio",
+      "https://www.youtube.com/@LoomandHearthStudio",
     ],
     contactPoint: {
       "@type": "ContactPoint",
