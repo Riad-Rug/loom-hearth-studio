@@ -100,6 +100,31 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        /**
+         * bfcache rescue for `/`.
+         *
+         * The homepage is deliberately dynamic: listRandomInventoryProductCards()
+         * calls unstable_noStore() so the "In stock right now" shuffle is
+         * recomputed per request instead of frozen at build time. That is staying
+         * exactly as-is. The side effect is that Next's default header for a
+         * dynamic route is `private, no-cache, no-store, max-age=0,
+         * must-revalidate`, and the `no-store` token alone makes Chrome refuse to
+         * put the page in the back/forward cache.
+         *
+         * `no-store` is not what keeps the route dynamic — Next's Full Route Cache
+         * is a server-side concern decided by noStore(), not by this response
+         * header. Dropping only `no-store` (keeping `no-cache` +
+         * `must-revalidate`) still forces the browser to revalidate with the
+         * server on every real navigation, so the shuffle stays fresh, while
+         * restoring bfcache eligibility for back/forward navigation, which never
+         * touches the network at all.
+         */
+        source: "/",
+        headers: [
+          { key: "Cache-Control", value: "private, no-cache, must-revalidate" },
+        ],
+      },
+      {
         source: "/(.*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },

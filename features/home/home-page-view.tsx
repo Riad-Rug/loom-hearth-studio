@@ -131,9 +131,18 @@ export function HomePageView({
 
         <div className={styles.heroMedia}>
           {heroImage ? (
+            /* `fetchPriority` is passed EXPLICITLY and is not redundant with
+               `priority`. Despite the docs, next/image in 15.5.x does not
+               derive it: get-img-props.js destructures `fetchPriority` from
+               user props and forwards it verbatim, so `priority` alone only
+               yields loading="eager" plus a preload, and both the <img> and
+               the <link rel="preload"> ship with no fetchpriority at all
+               (verified against the live production HTML). Passing it here
+               puts fetchpriority="high" on both. */
             <Image
               alt={content.hero.image.alt || "Texture photograph placeholder"}
               className={styles.heroImage}
+              fetchPriority="high"
               fill
               priority
               sizes="(max-width: 700px) calc(100vw - 3rem), (max-width: 980px) calc(100vw - 6rem), 42vw"

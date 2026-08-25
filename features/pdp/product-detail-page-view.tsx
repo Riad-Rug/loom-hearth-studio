@@ -255,7 +255,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
 
             {product.merchandisingNote ? (
               <section className={PANEL_CARD}>
-                <p className={PANEL_EYEBROW}>Founder sourcing note</p>
+                <p className={PANEL_EYEBROW}>Availability</p>
                 <p>{product.merchandisingNote}</p>
               </section>
             ) : null}
