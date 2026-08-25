@@ -5,43 +5,25 @@ import Script from "next/script";
 import { ConsentGate } from "@/components/compliance/cookie-consent-provider";
 
 type MarketingPixelsProps = {
-  googleAdsId: string;
   metaPixelId: string;
   pinterestTagId: string;
 };
 
 export function MarketingPixels({
-  googleAdsId,
   metaPixelId,
   pinterestTagId,
 }: MarketingPixelsProps) {
-  if (!googleAdsId && !metaPixelId && !pinterestTagId) {
+  if (!metaPixelId && !pinterestTagId) {
     return null;
   }
 
   return (
     <ConsentGate category="marketing">
       <>
-        {googleAdsId ? <GoogleAdsTag conversionId={googleAdsId} /> : null}
         {metaPixelId ? <MetaPixel pixelId={metaPixelId} /> : null}
         {pinterestTagId ? <PinterestTag tagId={pinterestTagId} /> : null}
       </>
     </ConsentGate>
-  );
-}
-
-function GoogleAdsTag({ conversionId }: { conversionId: string }) {
-  return (
-    <>
-      <Script src={`https://www.googletagmanager.com/gtag/js?id=${conversionId}`} strategy="afterInteractive" />
-      <Script id="loom-hearth-google-ads" strategy="afterInteractive">
-        {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-window.gtag = window.gtag || gtag;
-window.gtag('js', new Date());
-window.gtag('config', '${conversionId}');`}
-      </Script>
-    </>
   );
 }
 

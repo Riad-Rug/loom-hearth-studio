@@ -14,11 +14,6 @@ export const envDefinitions = {
     required: false,
     description: "Microsoft Clarity project ID for consent-aware session analytics.",
   },
-  NEXT_PUBLIC_GOOGLE_ADS_ID: {
-    scope: "public",
-    required: false,
-    description: "Google Ads conversion ID such as AW-123456789 for consent-aware marketing tags.",
-  },
   NEXT_PUBLIC_META_PIXEL_ID: {
     scope: "public",
     required: false,
@@ -108,7 +103,6 @@ export const envGroups = {
     "NEXT_PUBLIC_SITE_URL",
     "NEXT_PUBLIC_GA_MEASUREMENT_ID",
     "NEXT_PUBLIC_MICROSOFT_CLARITY_ID",
-    "NEXT_PUBLIC_GOOGLE_ADS_ID",
     "NEXT_PUBLIC_META_PIXEL_ID",
     "NEXT_PUBLIC_PINTEREST_TAG_ID",
   ],

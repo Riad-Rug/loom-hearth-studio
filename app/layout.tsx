@@ -40,7 +40,6 @@ const mono = IBM_Plex_Mono({
 });
 
 const marketingPixelIds = {
-  googleAdsId: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID?.trim() || "",
   metaPixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim() || "",
   pinterestTagId: process.env.NEXT_PUBLIC_PINTEREST_TAG_ID?.trim() || "",
 };
