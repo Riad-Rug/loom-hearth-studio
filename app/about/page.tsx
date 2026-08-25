@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
+import { JsonLd } from "@/components/seo/json-ld";
 import { AboutPageView } from "@/features/content-pages/about-page-view";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
+import { personSchema } from "@/lib/seo/schema";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
@@ -15,5 +17,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function AboutPage() {
-  return <AboutPageView />;
+  return (
+    <>
+      <JsonLd data={personSchema()} />
+      <AboutPageView />
+    </>
+  );
 }

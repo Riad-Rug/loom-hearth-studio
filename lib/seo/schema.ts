@@ -1,5 +1,34 @@
 import { absoluteUrl } from "@/lib/seo/metadata";
 import { publicBusinessDetails } from "@/config/public-business-details";
+import { DEFAULT_BLOG_AUTHOR } from "@/features/blog/blog-author-data";
+import { aboutHero } from "@/features/content-pages/content-pages-data";
+
+/**
+ * Canonical @id for the founder Person node. The node itself is only emitted on
+ * /about (personSchema, rendered from app/about/page.tsx) because that is where
+ * the name, portrait, and bio are actually visible. Other schemas reference this
+ * string, so it must stay byte-identical to personSchema()'s own @id.
+ */
+const PERSON_ID = `${absoluteUrl("/about")}#person`;
+
+/**
+ * The founder behind the site's first-person voice. Name is reused from the
+ * blog author constant so a single code-level source spells it, and the
+ * description reuses the About page's own hero copy rather than restating it.
+ */
+export function personSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": PERSON_ID,
+    name: DEFAULT_BLOG_AUTHOR.name,
+    jobTitle: "Founder",
+    url: absoluteUrl("/about"),
+    image: absoluteUrl("/about/founder-portrait.png"),
+    description: aboutHero.body,
+    worksFor: { "@id": `${absoluteUrl("/")}#organization` },
+  };
+}
 
 export function organizationSchema() {
   return {
@@ -24,6 +53,10 @@ export function organizationSchema() {
       email: publicBusinessDetails.email,
       availableLanguage: ["English"],
     },
+    // Reference the Person node defined on /about by @id rather than inlining a
+    // second copy of it here — this Organization block is reprinted on every
+    // page from app/layout.tsx.
+    founder: { "@id": PERSON_ID },
   };
 }
 
