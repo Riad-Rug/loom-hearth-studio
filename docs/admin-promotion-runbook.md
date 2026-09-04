@@ -22,6 +22,11 @@ npm run admin:promote-user -- --email "user@example.com" --role admin
 
 This updates an existing registered user only. It does not create a new user.
 
+> Note: `npm run db:sync-from-prod` resets and repopulates the local database
+> from production content (never customer/auth data — that never leaves
+> production). A reset wipes local users, so re-register and re-promote
+> afterward. See [`local-db-sync.md`](./local-db-sync.md) for details.
+
 ## Local procedure
 
 1. Ensure the user has already registered through the current auth flow.
