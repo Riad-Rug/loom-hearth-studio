@@ -6,7 +6,18 @@ import { listCatalogProductCards } from "@/lib/catalog/service";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
-export async function generateMetadata(): Promise<Metadata> {
+type ShopPageProps = {
+  searchParams?: Promise<{ q?: string | string[] }>;
+};
+
+export async function generateMetadata({ searchParams }: ShopPageProps): Promise<Metadata> {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  // The header search form submits to /shop?q=..., and the legacy /search path 308s here
+  // with its query intact. Every search someone runs would otherwise be a new crawlable,
+  // indexable URL. Search results are noindexed but still followed so product links on
+  // them keep being discovered; the canonical stays /shop.
+  const isSearchResults = hasSearchQuery(resolvedSearchParams?.q);
+
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "shop",
@@ -14,7 +25,13 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       "Browse Moroccan rugs, poufs, pillows, and decor sourced in Marrakech and prepared for review-first buying.",
     path: "/shop",
+    noIndexFollow: isSearchResults,
   });
+}
+
+function hasSearchQuery(value: string | string[] | undefined) {
+  const query = Array.isArray(value) ? value[0] : value;
+  return typeof query === "string" && query.trim().length > 0;
 }
 
 export default async function ShopPage() {
