@@ -105,7 +105,11 @@ read_env_var() {
 # a PostgreSQL 17 server (Neon). Prefer the PGDG package's binaries, but
 # accept anything on PATH that reports major version 17.
 # ---------------------------------------------------------------------------
-PG17_BIN_DIR="/usr/lib/postgresql/17/bin"
+PG17_BIN_DIR="${PG17_BIN_DIR:-/usr/lib/postgresql/17/bin}"
+# No-sudo alternative: the PGDG postgresql-client-17 and libpq5 .debs unpacked
+# with `dpkg-deb -x` into ~/pg17 (see docs/local-db-sync.md). The unpacked
+# pg_dump needs the unpacked libpq, hence the LD_LIBRARY_PATH export.
+PG17_USER_DIR="${PG17_USER_DIR:-$HOME/pg17}"
 PG_DUMP17=""
 PG_RESTORE17=""
 
@@ -113,6 +117,11 @@ find_pg17_binary() {
   local name="$1"
   if [ -x "${PG17_BIN_DIR}/${name}" ]; then
     printf '%s' "${PG17_BIN_DIR}/${name}"
+    return 0
+  fi
+  if [ -x "${PG17_USER_DIR}/usr/lib/postgresql/17/bin/${name}" ]; then
+    export LD_LIBRARY_PATH="${PG17_USER_DIR}/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    printf '%s' "${PG17_USER_DIR}/usr/lib/postgresql/17/bin/${name}"
     return 0
   fi
   if command -v "$name" >/dev/null 2>&1; then
@@ -134,6 +143,8 @@ One-time install (needs sudo, requires a password to be entered interactively):
   sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
   sudo apt-get update
   sudo apt-get install -y postgresql-client-17
+No sudo? Unpack the PGDG postgresql-client-17 and libpq5 .debs into ~/pg17 with
+dpkg-deb -x instead (or set PG17_USER_DIR / PG17_BIN_DIR).
 See docs/local-db-sync.md for details."
 
 PG17_AVAILABLE=1
@@ -224,6 +235,10 @@ for t in "${EXCLUDE_TABLES[@]}"; do
   EXCLUDE_ARGS+=(--exclude-table="public.\"${t}\"")
 done
 EXCLUDE_ARGS+=(--exclude-table="public._prisma_migrations")
+# Excluding a table does not exclude its sequence, and a data-only dump still
+# emits setval() for it. The stray Neon sample table has a serial id, so match
+# the table and its sequence together. (Prisma tables use cuid ids: no sequences.)
+EXCLUDE_ARGS+=(--exclude-table="public.playing_with_neon*")
 
 # --data-only on the DUMP (not just the restore) matters: the schema always
 # comes from `prisma migrate reset`, never from the dump, and pg_dump only
@@ -242,12 +257,18 @@ RESET_CMD=(npx prisma migrate reset --force --skip-seed)
 # copied table references an excluded one.
 # --exit-on-error ensures a partial restore fails the script loudly instead
 # of being mistaken for success.
-RESTORE_CMD=("$PG_RESTORE17" -d "$LOCAL_URL" --data-only --exit-on-error --no-owner "$DUMP_FILE")
+# The restore goes through psql rather than straight into the database:
+# pg_restore 17 emits `SET transaction_timeout = 0;`, a parameter that only
+# exists from Postgres 17, and the local server is 16, so that one line is
+# dropped from the SQL stream. psql runs the rest as a single transaction with
+# ON_ERROR_STOP, so a partial restore rolls back instead of looking like success.
+RESTORE_EMIT_CMD=("$PG_RESTORE17" --data-only --no-owner -f - "$DUMP_FILE")
+RESTORE_LOAD_CMD=(psql -v ON_ERROR_STOP=1 --single-transaction -q -d "$LOCAL_URL")
 
 # Display-only copies with credentials masked. Never log $NEON_URL / $LOCAL_URL
 # in full — only these redacted forms.
 DUMP_CMD_DISPLAY=("$PG_DUMP17" "$(redact_url "$NEON_URL")" --format=custom --data-only --no-owner --no-privileges --file="$DUMP_FILE" "${EXCLUDE_ARGS[@]}")
-RESTORE_CMD_DISPLAY=("$PG_RESTORE17" -d "$(redact_url "$LOCAL_URL")" --data-only --exit-on-error --no-owner "$DUMP_FILE")
+RESTORE_CMD_DISPLAY=("${RESTORE_EMIT_CMD[@]}" "|" "grep -v ^SET.transaction_timeout" "|" psql -v ON_ERROR_STOP=1 --single-transaction -q -d "$(redact_url "$LOCAL_URL")")
 
 if [ "$DRY_RUN" -eq 1 ]; then
   log "--dry-run: no database will be touched. Steps that would run:"
@@ -273,7 +294,7 @@ DATABASE_URL="$LOCAL_URL_RAW" "${RESET_CMD[@]}"
 
 log "Restoring dumped data into local database ..."
 unset PGOPTIONS
-"${RESTORE_CMD[@]}"
+"${RESTORE_EMIT_CMD[@]}" | grep -v '^SET transaction_timeout' | "${RESTORE_LOAD_CMD[@]}"
 
 log "Comparing row counts (Neon vs local) ..."
 

@@ -66,10 +66,29 @@ sudo apt-get update
 sudo apt-get install -y postgresql-client-17
 ```
 
-The script looks for these binaries at `/usr/lib/postgresql/17/bin/pg_dump`
-and `pg_restore` (falling back to any `pg_dump`/`pg_restore` on `PATH` that
-reports major version 17). Without them, the script prints these same
-instructions and refuses to run for real, but `--dry-run` still works.
+No sudo available? The same packages can be unpacked into your home
+directory without root. The client needs a libpq of at least 17.11, which
+Ubuntu's own `libpq5` (v16) is not, so unpack the PGDG `libpq5` too:
+
+```bash
+cd /tmp
+P=https://apt.postgresql.org/pub/repos/apt/pool/main/p
+curl -sO "$P/postgresql-17/postgresql-client-17_17.11-1.pgdg24.04+2_amd64.deb"
+curl -sO "$P/postgresql-18/libpq5_18.6-1.pgdg24.04+2_amd64.deb"
+mkdir -p ~/pg17
+dpkg-deb -x postgresql-client-17_17.11-1.pgdg24.04+2_amd64.deb ~/pg17
+dpkg-deb -x libpq5_18.6-1.pgdg24.04+2_amd64.deb ~/pg17
+LD_LIBRARY_PATH=~/pg17/usr/lib/x86_64-linux-gnu ~/pg17/usr/lib/postgresql/17/bin/pg_dump --version
+```
+
+(Check the PGDG pool for newer file names if those 404.)
+
+The script looks for the binaries at `/usr/lib/postgresql/17/bin/`, then at
+`~/pg17/usr/lib/postgresql/17/bin/` (setting `LD_LIBRARY_PATH` to the
+unpacked libpq automatically), then falls back to any `pg_dump`/`pg_restore`
+on `PATH` that reports major version 17. `PG17_BIN_DIR` and `PG17_USER_DIR`
+override the first two locations. Without a v17 client, the script prints
+these instructions and refuses to run for real, but `--dry-run` still works.
 
 ## What the script does, in order
 
@@ -85,7 +104,10 @@ instructions and refuses to run for real, but `--dry-run` still works.
    --force --skip-seed` — this applies every committed migration, including
    any not yet deployed to production.
 5. Restores just the data from the dump into the freshly-migrated local
-   database (`pg_restore --data-only --exit-on-error`). `_prisma_migrations`
+   database. `pg_restore --data-only` emits the SQL, one line
+   (`SET transaction_timeout`, a Postgres 17-only parameter the local v16
+   server rejects) is dropped, and `psql --single-transaction` with
+   `ON_ERROR_STOP` loads it, so a failed restore rolls back. `_prisma_migrations`
    is excluded from the *dump itself* (via `pg_dump --exclude-table`, step 3)
    rather than at restore time — `pg_restore` has no `--exclude-table` option
    in PG16/PG17, so this can't be done at the restore step. Local's own
