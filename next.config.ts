@@ -152,6 +152,14 @@ const nextConfig: NextConfig = {
         destination: "/contact?inquiryType=trade-request",
         permanent: true,
       },
+      {
+        // Pre-launch placeholder path for the grandfather story. The published post lives
+        // under /blog/stories-sourcing/marrakech-rug-bazaar-grandfather-1967 and the old
+        // path was linked from every post's "More from the journal" block until Sept 2026.
+        source: "/blog/sourcing/marrakech-rug-bazaar-my-grandfather",
+        destination: "/blog/stories-sourcing/marrakech-rug-bazaar-grandfather-1967",
+        permanent: true,
+      },
     ];
   },
 };

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { renderMarkdownBody, renderPlainBody } from "@/components/content/markdown-body";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { BlogAuthorBlock } from "@/features/blog/blog-author-block";
-import { blogPosts } from "@/features/blog/blog-post-data";
 import type { BlogAuthor, BlogPost } from "@/types/domain";
 
 import styles from "./blog.module.css";
@@ -17,13 +16,20 @@ type PlaceholderBlogPost = BlogPost & {
   bodyFormat?: "plain" | "markdown";
 };
 
+export type RelatedBlogPostLink = Pick<
+  PlaceholderBlogPost,
+  "id" | "slug" | "categorySlug" | "categoryLabel" | "title"
+>;
+
 type BlogPostPageViewProps = {
   post: PlaceholderBlogPost;
   author: BlogAuthor;
+  /** Published posts to link from the "More from the journal" block. Must never include placeholder data. */
+  relatedPosts?: RelatedBlogPostLink[];
 };
 
-export function BlogPostPageView({ post, author }: BlogPostPageViewProps) {
-  const adjacentPosts = blogPosts.filter((candidate) => candidate.id !== post.id).slice(0, 2);
+export function BlogPostPageView({ post, author, relatedPosts = [] }: BlogPostPageViewProps) {
+  const adjacentPosts = relatedPosts.filter((candidate) => candidate.id !== post.id).slice(0, 2);
 
   return (
     <div className={styles.page}>
@@ -68,24 +74,26 @@ export function BlogPostPageView({ post, author }: BlogPostPageViewProps) {
         <BlogAuthorBlock author={author} />
       </article>
 
-      <section className={styles.relatedSection}>
-        <div className={styles.relatedHeader}>
-          <p className={styles.eyebrow}>More from the journal</p>
-          <h2>Continue reading the collection story.</h2>
-        </div>
-        <div className={styles.relatedGrid}>
-          {adjacentPosts.map((item) => (
-            <Link
-              key={item.id}
-              className={styles.relatedCard}
-              href={`/blog/${item.categorySlug}/${item.slug}` as Route}
-            >
-              <span>{item.categoryLabel}</span>
-              <strong>{item.title}</strong>
-            </Link>
-          ))}
-        </div>
-      </section>
+      {adjacentPosts.length > 0 ? (
+        <section className={styles.relatedSection}>
+          <div className={styles.relatedHeader}>
+            <p className={styles.eyebrow}>More from the journal</p>
+            <h2>Continue reading the collection story.</h2>
+          </div>
+          <div className={styles.relatedGrid}>
+            {adjacentPosts.map((item) => (
+              <Link
+                key={item.id}
+                className={styles.relatedCard}
+                href={`/blog/${item.categorySlug}/${item.slug}` as Route}
+              >
+                <span>{item.categoryLabel}</span>
+                <strong>{item.title}</strong>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

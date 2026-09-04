@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/seo/json-ld";
 import { BlogPostPageView } from "@/features/blog/blog-post-page-view";
 import { getDefaultBlogAuthor } from "@/lib/blog/author";
-import { getBlogPostByParams } from "@/lib/blog/posts";
+import { getBlogPostByParams, getBlogPosts } from "@/lib/blog/posts";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { articleSchema, breadcrumbSchema } from "@/lib/seo/schema";
 
@@ -17,12 +17,21 @@ type BlogPostPageProps = {
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const resolvedParams = await params;
-  const post = await getBlogPostByParams(resolvedParams.category, resolvedParams.slug);
+  const posts = await getBlogPosts();
+  const post =
+    posts.find(
+      (candidate) =>
+        candidate.categorySlug === resolvedParams.category && candidate.slug === resolvedParams.slug,
+    ) ?? null;
 
   if (!post) {
     notFound();
   }
 
+  // Related links must come from the same published set as the post itself, never from
+  // the placeholder data in features/blog/blog-post-data.ts, which links to paths that
+  // do not exist in production.
+  const relatedPosts = posts.filter((candidate) => candidate.id !== post.id).slice(0, 2);
   const author = await getDefaultBlogAuthor();
 
   return (
@@ -44,7 +53,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           ]),
         ]}
       />
-      <BlogPostPageView author={author} post={post} />
+      <BlogPostPageView author={author} post={post} relatedPosts={relatedPosts} />
     </>
   );
 }

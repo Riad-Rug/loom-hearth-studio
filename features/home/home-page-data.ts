@@ -267,7 +267,7 @@ const defaultHomePageContent: HomePageContent = {
     paragraph:
       "I grew up surrounded by Moroccan artisanat. My grandfather started the family business in 1967, and much of what I know today comes from being raised around the people, places, and work that shaped it. Over the years, I have developed my own understanding of Moroccan artisanat and built relationships with makers, workshops, and traders across the country. I know where to look, who to speak to, what good workmanship should look like, and what is realistic when it comes to price, timing, and production. Some of the people I work with come from families that have practiced their craft for generations; others belong to a newer generation of makers bringing a different perspective to traditional Moroccan work. Today, my mother and I are taking what came before us and building something of our own with Loom & Hearth — sourcing carefully, being straightforward about what is possible, and helping people find pieces we genuinely believe are worth bringing into their homes and projects.",
     linkLabel: "READ THE FULL STORY",
-    href: "/blog/sourcing/marrakech-rug-bazaar-my-grandfather",
+    href: "/blog/stories-sourcing/marrakech-rug-bazaar-grandfather-1967",
   },
   newsletter: {
     visible: true,
