@@ -212,6 +212,7 @@ model CatalogProduct {
   catalogNumber    String?         @unique
   type             String
   slug             String
+  previousSlugs    String[]        @default([])
   name             String
   cardName         String?
   category         ProductCategory

@@ -4,7 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
-import { getRugProductDetailByParams } from "@/lib/catalog/service";
+import { getProductRedirectPathForSlug, getRugProductDetailByParams } from "@/lib/catalog/service";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
@@ -26,6 +26,15 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
   });
 
   if (!product) {
+    // A slug the product used before, or the right slug under the wrong style segment,
+    // 301s to the current URL. Only a slug nobody has ever used is a 404.
+    const redirectPath = await getProductRedirectPathForSlug({ slug: resolvedParams.slug });
+    const requestedPath = `/shop/rugs/${resolvedParams.style}/${resolvedParams.slug}`;
+
+    if (redirectPath && redirectPath !== requestedPath) {
+      permanentRedirect(redirectPath as Route);
+    }
+
     notFound();
   }
 

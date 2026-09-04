@@ -353,6 +353,22 @@ export async function getCategoryProductDetailByParams(input: {
   return createProductDetailPageViewModel(product, allProducts);
 }
 
+/**
+ * Where a product URL that did not resolve should 301 to, or null for a real 404.
+ * Matches the current slug first (wrong category or style segment in the request),
+ * then any slug the product used before.
+ */
+export async function getProductRedirectPathForSlug(input: {
+  slug: string;
+  repository?: ProductRepository;
+}): Promise<string | null> {
+  const repository = input.repository ?? createProductRepository();
+  const product =
+    (await repository.getBySlug(input.slug)) ?? (await repository.getByPreviousSlug(input.slug));
+
+  return product ? getProductRoutePath(product) : null;
+}
+
 function createCatalogProductCardViewModel(product: Product): CatalogProductCardViewModel {
   const primaryImage = getPrimaryImage(product);
   const secondaryImage = getSecondaryImage(product, primaryImage?.id);

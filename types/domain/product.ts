@@ -11,6 +11,8 @@ export type ProductBase = SeoFields & {
   id: string;
   catalogNumber?: string;
   slug: string;
+  /** Slugs this product used before; old URLs 301 to the current slug. Maintained by the repository. */
+  previousSlugs?: string[];
   name: string;
   cardName?: string;
   category: ProductCategory;

@@ -10,6 +10,7 @@ export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): 
     id: record.id,
     catalogNumber: record.catalogNumber ?? undefined,
     slug: record.slug,
+    previousSlugs: record.previousSlugs,
     name: record.name,
     cardName: record.cardName ?? undefined,
     category: mapPrismaProductCategoryToDomain(record.category),

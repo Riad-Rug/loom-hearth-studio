@@ -24,6 +24,8 @@ export interface ProductRepository {
   listHomepageFeatured(limit: number): Promise<Product[]>;
   listInventoryEligible(): Promise<Product[]>;
   getBySlug(slug: string): Promise<Product | null>;
+  /** Finds the listed product that previously used `slug`, so the old URL can 301 to the current one. */
+  getByPreviousSlug(slug: string): Promise<Product | null>;
   listForAdmin(): Promise<Product[]>;
   getById(id: string): Promise<Product | null>;
   create(input: ProductMutationInput): Promise<Product>;
@@ -139,6 +141,20 @@ export class PrismaProductRepository implements ProductRepository {
     return product ? mapCatalogProductRecordToDomainProduct(product) : null;
   }
 
+  async getByPreviousSlug(slug: string) {
+    const product = await this.context.client.catalogProduct.findFirst({
+      where: {
+        previousSlugs: { has: slug },
+        status: { in: ["active", "sold"] },
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+
+    return product ? mapCatalogProductRecordToDomainProduct(product) : null;
+  }
+
   async listForAdmin() {
     const products = await this.context.client.catalogProduct.findMany({
       orderBy: {
@@ -178,11 +194,30 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async update(input: ProductMutationInput & { id: string }) {
+    // When the slug changes, remember the old one so the old URL keeps resolving
+    // (see getByPreviousSlug). Runs on every admin save, so nothing is done by hand.
+    const existingProduct = await this.context.client.catalogProduct.findUnique({
+      where: { id: input.id },
+      select: { slug: true, previousSlugs: true },
+    });
+    const previousSlugs =
+      existingProduct && existingProduct.slug !== input.slug
+        ? [
+            ...existingProduct.previousSlugs.filter(
+              (slug) => slug !== input.slug && slug !== existingProduct.slug,
+            ),
+            existingProduct.slug,
+          ]
+        : undefined;
+
     const updatedProduct = await this.context.client.catalogProduct.update({
       where: {
         id: input.id,
       },
-      data: mapProductMutationInputToUpdateInput(input),
+      data: {
+        ...mapProductMutationInputToUpdateInput(input),
+        ...(previousSlugs ? { previousSlugs } : {}),
+      },
     });
 
     return mapCatalogProductRecordToDomainProduct(updatedProduct);

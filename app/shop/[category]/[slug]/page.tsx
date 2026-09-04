@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import type { Route } from "next";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
-import { getCategoryProductDetailByParams } from "@/lib/catalog/service";
+import {
+  getCategoryProductDetailByParams,
+  getProductRedirectPathForSlug,
+} from "@/lib/catalog/service";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
@@ -26,6 +30,15 @@ export default async function CategoryProductPage({
   });
 
   if (!product) {
+    // A slug the product used before, or the right slug under the wrong category,
+    // 301s to the current URL. Only a slug nobody has ever used is a 404.
+    const redirectPath = await getProductRedirectPathForSlug({ slug: resolvedParams.slug });
+    const requestedPath = `/shop/${resolvedParams.category}/${resolvedParams.slug}`;
+
+    if (redirectPath && redirectPath !== requestedPath) {
+      permanentRedirect(redirectPath as Route);
+    }
+
     notFound();
   }
 

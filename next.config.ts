@@ -160,6 +160,42 @@ const nextConfig: NextConfig = {
         destination: "/blog/stories-sourcing/marrakech-rug-bazaar-grandfather-1967",
         permanent: true,
       },
+      // Product URLs Google still has on file: listings that were deleted and re-created
+      // under new slugs, plus the "boujad-style" -> "boujad" category rename. Specific
+      // rules first, then the two pattern rules. New slug changes made through the admin
+      // are covered by CatalogProduct.previousSlugs instead of entries here.
+      {
+        source: "/shop/rugs/azilal/azilal-pile-rug-ivory-vertical-zigzag-axis-fuchsia-corner-blocks",
+        destination: "/shop/rugs/azilal/azilal-type-high-atlas-pile-rug-magenta-lattice",
+        permanent: true,
+      },
+      {
+        source: "/shop/rugs/boujad/boujad-pile-rug-deep-burgundy-red-abstract-salmon-teal-mustard",
+        destination: "/shop/rugs/boujad/boujad-style-rug-red-coral-teal",
+        permanent: true,
+      },
+      {
+        source:
+          "/shop/rugs/beni-ourain/beni-ourain-pile-rug-ivory-black-checkerboard-zigzag-diamond-borders",
+        destination: "/shop/rugs/beni-ourain/beni-ourain-pile-rug-ivory-dark-brown-diamonds",
+        permanent: true,
+      },
+      {
+        source:
+          "/shop/rugs/middle-atlas-pile/certified-pre-1990-pile-rug-aged-ivory-camel-motifs-eight-register-composition",
+        destination: "/shop/vintage",
+        permanent: true,
+      },
+      {
+        source: "/shop/rugs/boujad-style/:path*",
+        destination: "/shop/rugs/boujad/:path*",
+        permanent: true,
+      },
+      {
+        source: "/shop/rugs/middle-atlas-pile/:path*",
+        destination: "/shop/rugs",
+        permanent: true,
+      },
     ];
   },
 };
