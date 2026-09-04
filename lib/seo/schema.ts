@@ -1,5 +1,6 @@
 import { absoluteUrl } from "@/lib/seo/metadata";
 import { publicBusinessDetails } from "@/config/public-business-details";
+import { siteConfig } from "@/config/site";
 import { DEFAULT_BLOG_AUTHOR } from "@/features/blog/blog-author-data";
 import { aboutHero } from "@/features/content-pages/content-pages-data";
 
@@ -30,7 +31,21 @@ export function personSchema() {
   };
 }
 
+/**
+ * Confirmed public profiles, derived from the single source of truth in
+ * config/site.ts so the footer icons and this sameAs array can never drift
+ * apart. Empty values are dropped, and the key is omitted entirely rather than
+ * emitted as an empty array if every channel is cleared.
+ */
+function organizationSameAs() {
+  return Object.values(siteConfig.socialLinks)
+    .map((url) => url.trim())
+    .filter((url) => url.length > 0);
+}
+
 export function organizationSchema() {
+  const sameAs = organizationSameAs();
+
   return {
     "@context": "https://schema.org",
     "@type": ["Organization", "OnlineStore"],
@@ -41,12 +56,7 @@ export function organizationSchema() {
       "@type": "ImageObject",
       url: absoluteUrl("/brand/logo.png"),
     },
-    sameAs: [
-      "https://www.instagram.com/loomandhearthstudio/",
-      "https://www.pinterest.com/loomandhearthstudio/",
-      "https://www.tiktok.com/@loomandhearthstudio",
-      "https://www.youtube.com/@LoomandHearthStudio",
-    ],
+    ...(sameAs.length > 0 ? { sameAs } : {}),
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",

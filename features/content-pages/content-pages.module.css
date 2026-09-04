@@ -850,6 +850,14 @@
   text-align: center;
 }
 
+/* Follow links in the About exit block: same buttons as the other exit rows,
+   just allowed to wrap onto a second line at narrow widths. */
+.aboutExitLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
 .aboutExitRowCentered {
   justify-content: center;
 }

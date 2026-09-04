@@ -78,12 +78,14 @@ export const siteConfig = {
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
   ],
-  // Paste the live profile URLs here once the accounts exist; an empty string
-  // hides that icon in the site footer, no other code change needed.
+  // Single source of truth for the owner's public profiles: the footer icons and
+  // the Organization JSON-LD sameAs array both read from here. Clearing a value
+  // to an empty string hides that channel everywhere, no other code change needed.
   socialLinks: {
-    instagram: "",
-    tiktok: "",
-  } as { instagram: string; tiktok: string },
+    instagram: "https://www.instagram.com/loom.andhearth/",
+    youtube: "https://www.youtube.com/@LoomandHearthStudio",
+    tiktok: "https://www.tiktok.com/@loom.hearth",
+  },
   supportNav: [
     { href: "/contact", label: "Contact" },
     { href: "/faq", label: "FAQ" },

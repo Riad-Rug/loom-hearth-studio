@@ -4,11 +4,22 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { siteConfig } from "@/config/site";
 import { aboutBridge, aboutHero, aboutSections } from "@/features/content-pages/content-pages-data";
 
 import styles from "./content-pages.module.css";
 
 type ProductLink = { text: string; href: string };
+
+// Labelled (not icon-only) follow links, read from the same config the footer
+// icons use so clearing a URL there removes it here too.
+const socialFollowLinks = (
+  [
+    { label: "Instagram", href: siteConfig.socialLinks.instagram },
+    { label: "YouTube", href: siteConfig.socialLinks.youtube },
+    { label: "TikTok", href: siteConfig.socialLinks.tiktok },
+  ] as const
+).filter((link) => link.href.trim().length > 0);
 
 export function AboutPageView() {
   const heroParagraphs = aboutHero.body.split("\n\n");
@@ -136,6 +147,24 @@ export function AboutPageView() {
               Full Collection
             </Link>
           </div>
+          {socialFollowLinks.length > 0 ? (
+            <div className={styles.aboutExitRow}>
+              <p className={styles.body}>Follow the workshop</p>
+              <div className={styles.aboutExitLinks}>
+                {socialFollowLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    className={styles.secondaryAction}
+                    href={link.href}
+                    target="_blank"
+                    rel="me noopener noreferrer"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

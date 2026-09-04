@@ -20,6 +20,17 @@ const socialChannels = [
     ),
   },
   {
+    key: "youtube",
+    label: `${siteConfig.name} on YouTube`,
+    href: siteConfig.socialLinks.youtube,
+    icon: (
+      <>
+        <rect x="2.5" y="5.5" width="19" height="13" rx="4" />
+        <path d="M10.4 9.4 15.4 12l-5 2.6Z" />
+      </>
+    ),
+  },
+  {
     key: "tiktok",
     label: `${siteConfig.name} on TikTok`,
     href: siteConfig.socialLinks.tiktok,
@@ -86,14 +97,14 @@ export async function SiteFooter() {
               <p className="site-footer__meta">{content.footer.introMeta}</p>
             ) : null}
             {activeSocialChannels.length > 0 ? (
-              <ul className="site-footer__social">
+              <ul className="site-footer__social" aria-label="Follow Loom &amp; Hearth">
                 {activeSocialChannels.map((channel) => (
                   <li key={channel.key}>
                     <a
                       className="site-footer__social-link"
                       href={channel.href}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="me noopener noreferrer"
                       aria-label={channel.label}
                     >
                       <svg
