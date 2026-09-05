@@ -20,6 +20,13 @@ const imageHostOrigins = allowedImageHostnames.map((hostname) => `https://${host
  * in components/analytics/* are inline `next/script` blocks with no nonce
  * wiring. Moving to a nonce-based policy is a follow-up hardening step.
  */
+// `next dev` serves its React Refresh runtime by evaluating strings, so a CSP
+// without 'unsafe-eval' makes main-app.js throw before hydration ever runs: the
+// pages still render, but not one client component anywhere on the site is
+// interactive. Production builds need no eval, so this widens the policy in
+// development only and leaves the shipped header byte-identical.
+const isDevelopment = process.env.NODE_ENV !== "production";
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   // googletagmanager: GA4 gtag.js. clarity.ms: Microsoft Clarity tag.
@@ -28,7 +35,7 @@ const contentSecurityPolicy = [
   // googleads.g.doubleclick.net + googleadservices.com were previously listed
   // here for the Google Ads viewthroughconversion script; both were removed with
   // the Google Ads tag itself.
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms https://connect.facebook.net https://s.pinimg.com https://js.stripe.com",
+  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.clarity.ms https://connect.facebook.net https://s.pinimg.com https://js.stripe.com`,
   // 'unsafe-inline' is genuinely required, verified empirically against a
   // PRODUCTION build: removing it produced 89 violations across the homepage,
   // a product page and the checkout payment step — both style-src-attr (inline
