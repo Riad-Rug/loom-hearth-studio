@@ -401,6 +401,21 @@
   gap: var(--space-4);
 }
 
+/* Rug style links under the category grid. They belong to the Moroccan Rugs
+   card above them rather than standing as their own section, so the label is
+   quiet and the row reuses the .filterChip vocabulary of the inventory chips. */
+.rugStyleNav {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.rugStyleNavLabel {
+  margin: 0;
+  color: var(--color-text-subtle);
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
 .categoryCard {
   display: grid;
   gap: var(--space-3);

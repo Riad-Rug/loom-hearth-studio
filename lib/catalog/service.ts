@@ -2,6 +2,10 @@ import { unstable_noStore as noStore } from "next/cache";
 
 import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
 import {
+  rugStyleNavLinks,
+  type RugStyleNavLink,
+} from "@/features/catalog/rug-style-collections";
+import {
   formatProductPriceUsd,
   formatRugDimensions,
   formatRugWeight,
@@ -130,6 +134,39 @@ export async function listAvailableRugStyleSlugs(
       .map((product) => normalizeSlug(product.rugStyle))
       .filter(Boolean),
   );
+}
+
+/**
+ * Every rug style nav entry paired with whether it has something purchasable
+ * behind it right now, so the header dropdown, the homepage strip and the
+ * sibling strips can all gate on the same live check instead of each deciding
+ * for themselves. Styles with no stock are served noindex by
+ * app/shop/rugs/[style]/page.tsx, so linking one as a normal anchor would point
+ * crawl signal at a page we are asking not to be indexed: callers must either
+ * grey the entry (header, footer) or omit it (content strips).
+ *
+ * Order and anchor text come from rugStyleNavLinks; this only adds liveness.
+ * One listByCategory("rugs") per call, same cost profile as
+ * listAvailableRugStyleSlugs above.
+ */
+export async function listRugStyleNavLinks(
+  repository: ProductRepository = createProductRepository(),
+): Promise<(RugStyleNavLink & { available: boolean })[]> {
+  const availableStyles = await listAvailableRugStyleSlugs(repository);
+
+  return rugStyleNavLinks.map((link) => ({
+    ...link,
+    available: availableStyles.has(link.slug),
+  }));
+}
+
+/** Style hrefs with nothing purchasable behind them, for `unavailableHrefs` consumers. */
+export async function listUnavailableRugStyleHrefs(
+  repository: ProductRepository = createProductRepository(),
+): Promise<string[]> {
+  const links = await listRugStyleNavLinks(repository);
+
+  return links.filter((link) => !link.available).map((link) => link.href);
 }
 
 /**

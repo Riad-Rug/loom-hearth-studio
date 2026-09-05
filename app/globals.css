@@ -435,6 +435,84 @@ h6 {
   opacity: 0.5;
 }
 
+/* A dropdown row that also opens a flyout of its own: the row keeps its link
+   and its click target, and the chevron beside it owns the flyout, so reaching
+   the rug styles never costs a shopper the ability to reach /shop/rugs. */
+.site-header__nav-group-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.site-header__nav-submenu-trigger {
+  display: inline-flex;
+  width: 1.9rem;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.site-header__nav-submenu-trigger::after {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: translateX(-0.1rem) rotate(-45deg);
+  transition: transform 150ms ease;
+}
+
+.site-header__nav-submenu-trigger:hover,
+.site-header__nav-submenu-trigger:focus-visible {
+  border-color: var(--color-border);
+  background: rgba(23, 105, 90, 0.08);
+  color: var(--color-green);
+  outline: none;
+}
+
+.site-header__nav-submenu-trigger[aria-expanded="true"]::after {
+  transform: translateX(0.1rem) rotate(-45deg);
+}
+
+/* Opens to the right of the Collection panel, which is the leftmost nav item,
+   so even at the tight 901-1120px band the panel and the flyout together end
+   well short of the viewport edge. Left is pulled back over the panel's own
+   padding on purpose: a dead gap between the two would drop the hover on the
+   way across. */
+.site-header__nav-submenu {
+  position: absolute;
+  top: -0.4rem;
+  left: calc(100% - 0.35rem);
+  z-index: 71;
+  display: grid;
+  width: max-content;
+  min-width: 12.5rem;
+  max-width: min(16rem, calc(100vw - 2rem));
+  padding: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  box-shadow: 0 1.1rem 2.4rem rgba(20, 20, 20, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-0.3rem);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.site-header__nav-submenu--open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
 .site-header__search-form {
   position: relative;
   display: inline-flex;
@@ -534,7 +612,11 @@ h6 {
   }
 
   .site-header__nav-group-panel,
-  .site-header__nav-group-trigger::after {
+  .site-header__nav-group-trigger::after,
+  .site-header__nav-submenu,
+  .site-header__nav-submenu-trigger::after,
+  .site-header__mobile-submenu,
+  .site-header__mobile-subgroup-trigger::after {
     transition: none;
   }
 }
@@ -1094,7 +1176,11 @@ h6 {
   }
 
   .site-header__mobile-menu--open {
-    max-height: 46rem;
+    /* Headroom for the rug-style accordion under Rugs: with it expanded the
+       drawer is nine rows taller, and a ceiling it can outgrow would leave
+       those rows spilling over the page below (the drawer is overflow:visible
+       once open). */
+    max-height: 74rem;
     padding: 0 0 var(--space-4);
     /* Visible so the search suggestions dropdown is not clipped by the
        collapse mask; the fade still covers the open transition. */
@@ -1174,6 +1260,73 @@ h6 {
   .site-header__mobile-group {
     display: grid;
     gap: 0.35rem;
+  }
+
+  /* Mobile twin of the desktop flyout: the Rugs row keeps its link, the button
+     beside it expands the styles underneath it as an indented accordion. */
+  .site-header__mobile-subgroup {
+    display: grid;
+  }
+
+  .site-header__mobile-subgroup-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .site-header__mobile-subgroup-trigger {
+    display: inline-flex;
+    width: 3rem;
+    height: 3rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-ink);
+  }
+
+  .site-header__mobile-subgroup-trigger::after {
+    content: "";
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+    transform: translateY(-0.15rem) rotate(45deg);
+    transition: transform 150ms ease;
+  }
+
+  .site-header__mobile-subgroup-trigger[aria-expanded="true"] {
+    border-color: rgba(23, 105, 90, 0.35);
+    color: var(--color-green);
+  }
+
+  .site-header__mobile-subgroup-trigger[aria-expanded="true"]::after {
+    transform: translateY(0.05rem) rotate(225deg);
+  }
+
+  /* Collapsed to nothing rather than unmounted: the style anchors have to stay
+     in the rendered HTML even when the accordion has never been opened. */
+  .site-header__mobile-submenu {
+    display: grid;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      max-height 240ms ease,
+      opacity 200ms ease;
+  }
+
+  .site-header__mobile-submenu--open {
+    max-height: 30rem;
+    opacity: 1;
+  }
+
+  .site-header__mobile-link--nested {
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--color-border-soft);
+    font-size: 0.92rem;
   }
 
   .site-header__mobile-group-label {

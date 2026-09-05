@@ -3,8 +3,11 @@ import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
-import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
-import { listRugStyleProductCards } from "@/lib/catalog/service";
+import {
+  allRugsNavLink,
+  getRugStyleCollection,
+} from "@/features/catalog/rug-style-collections";
+import { listRugStyleNavLinks, listRugStyleProductCards } from "@/lib/catalog/service";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
@@ -67,7 +70,23 @@ export default async function RugStylePage({ params }: RugStylePageProps) {
     notFound();
   }
 
-  const products = await listRugStyleProductCards({ style });
+  const [products, styleNavLinks] = await Promise.all([
+    listRugStyleProductCards({ style }),
+    listRugStyleNavLinks(),
+  ]);
+
+  // Before this strip existed each style page had exactly one inbound internal
+  // link, from the chip row on /shop/rugs, which left the six pages that should
+  // rank for "beni ourain rug" and its siblings starved while /shop and
+  // /shop/rugs absorbed the weight. Every stocked style now links to every other
+  // one under its own keyword-exact anchor. Styles with nothing purchasable are
+  // omitted rather than greyed — this is a content strip with no fixed slots,
+  // and their pages are served noindex, so an anchor here would aim crawl signal
+  // at a page we are asking Google to skip. They rejoin on their own the moment
+  // stock lands.
+  const siblingStyleLinks = styleNavLinks.filter(
+    (link) => link.available && link.slug !== style,
+  );
 
   return (
     <>
@@ -100,6 +119,10 @@ export default async function RugStylePage({ params }: RugStylePageProps) {
           href: `/shop/rugs/${style}`,
         }}
         products={products}
+        styleLinks={
+          siblingStyleLinks.length ? [allRugsNavLink, ...siblingStyleLinks] : undefined
+        }
+        styleNavLabel="Other rug types"
       />
     </>
   );

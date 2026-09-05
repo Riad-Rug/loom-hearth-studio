@@ -21,8 +21,10 @@ import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
 import { useCart } from "@/features/cart/cart-provider";
 import { ProductCard, recommendationRailCardSizes } from "@/features/catalog/product-card";
+import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
 import { trackViewItem } from "@/lib/analytics/gtag";
 import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
+import { normalizeSlug } from "@/lib/catalog/product-validation";
 import {
   getTopRecommendationHistoryCategory,
   recordCategoryInterest,
@@ -38,6 +40,14 @@ import "./tailwind.css";
 
 type ProductDetailPageViewProps = {
   product: ProductDetailPageViewModel;
+  /**
+   * Whether the rug's style page has something purchasable behind it right now.
+   * Only the rug route can answer that (it is a live catalog read), and while a
+   * style is empty its page is served noindex, so neither the breadcrumb nor the
+   * Style row may link to it. Defaults to true because the category route never
+   * renders a style level at all and has nothing to report.
+   */
+  rugStyleHasStock?: boolean;
 };
 
 type DisplayGalleryItem = ProductDetailPageViewModel["gallery"][number] & {
@@ -49,7 +59,10 @@ const PANEL_EYEBROW = "text-[var(--color-green)] text-[0.72rem] font-semibold tr
 const PRIMARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium";
 const PURCHASE_MICROCOPY = "text-[var(--color-text-muted)] text-[0.92rem]";
 
-export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
+export function ProductDetailPageView({
+  product,
+  rugStyleHasStock = true,
+}: ProductDetailPageViewProps) {
   const gallery = useMemo(() => createDisplayGallery(product), [product]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [preferredHistoryCategory, setPreferredHistoryCategory] = useState<ProductCategory | null>(null);
@@ -132,7 +145,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
     displayedCrossSellRecommendations,
     preferredHistoryCategory,
   );
-  const specRows = buildSpecificationRows(product);
+  const specRows = buildSpecificationRows(product, rugStyleHasStock);
 
   return (
     <div className="grid gap-[var(--space-7)] max-[700px]:pb-[5rem]">
@@ -207,7 +220,7 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
           <div
             className="grid gap-[var(--space-4)] p-[var(--space-5)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-bg)] col-start-2 row-start-1 row-span-3 self-start sticky top-[var(--site-header-scroll-offset)] max-[1100px]:static max-[1100px]:col-start-auto max-[1100px]:row-start-auto max-[1100px]:row-span-1"
           >
-            <ProductBreadcrumb product={product} />
+            <ProductBreadcrumb product={product} rugStyleHasStock={rugStyleHasStock} />
 
             <div className="flex flex-wrap gap-[0.6rem]">
               <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-green)] rounded-full text-[var(--color-green)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
@@ -272,7 +285,9 @@ export function ProductDetailPageView({ product }: ProductDetailPageViewProps) {
                   <dt className="text-[var(--color-text-subtle)] text-[0.82rem] uppercase tracking-[0.08em]">
                     {row.label}
                   </dt>
-                  <dd className="m-0 text-[var(--color-ink)] leading-[1.65]">{row.value}</dd>
+                  <dd className="m-0 text-[var(--color-ink)] leading-[1.65]">
+                    {row.href ? <Link href={row.href}>{row.value}</Link> : row.value}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -582,8 +597,8 @@ function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalle
   }));
 }
 
-function buildSpecificationRows(product: ProductDetailPageViewModel) {
-  const rows: { label: string; value: string }[] = [];
+function buildSpecificationRows(product: ProductDetailPageViewModel, rugStyleHasStock: boolean) {
+  const rows: { label: string; value: string; href?: Route }[] = [];
 
   const sizeValue =
     product.type === "rug"
@@ -602,7 +617,13 @@ function buildSpecificationRows(product: ProductDetailPageViewModel) {
   );
 
   if (product.type === "rug") {
-    rows.push({ label: "Style", value: product.rugStyle ?? "Handwoven rug" });
+    const styleCrumb = getRugStyleCrumb(product, rugStyleHasStock);
+
+    rows.push({
+      label: "Style",
+      value: product.rugStyle ?? "Handwoven rug",
+      ...(styleCrumb ? { href: styleCrumb.href } : {}),
+    });
     if (product.techniqueLabel) {
       rows.push({ label: "Technique", value: product.techniqueLabel });
     }
@@ -636,12 +657,52 @@ function extractConditionNote(product: ProductDetailPageViewModel) {
   return `${conditionSection.split(/\n|(?<=[.!?])\s/u)[0]} Photo shown in the condition view.`;
 }
 
-function ProductBreadcrumb({ product }: { product: ProductDetailPageViewModel }) {
+/**
+ * The style level of a rug's hierarchy, or null when the product has no style
+ * page to point at. The derivation deliberately repeats what the rug PDP route
+ * does for its BreadcrumbList JSON-LD (app/shop/rugs/[style]/[slug]/page.tsx):
+ * normalize the stored rugStyle, look the collection up, and drop the level when
+ * the lookup misses, so a rug filed as "Unclassified" is skipped in both places
+ * and the visible trail can never describe a different hierarchy than the schema.
+ *
+ * Vintage rugs are excluded on category rather than on type, because they carry a
+ * rugStyle too but live at /shop/vintage/{slug} with no style page above them —
+ * and "vintage" is itself a key in rugStyleCollections, so a type-only check
+ * would invent a /shop/rugs/vintage ancestor that the route does not serve.
+ *
+ * An empty style is dropped for the same reason the route drops it from the
+ * schema: its page is noindex until stock lands, and a crawlable anchor from a
+ * still-indexable sold-rug PDP would point crawl signal at it.
+ */
+function getRugStyleCrumb(product: ProductDetailPageViewModel, rugStyleHasStock: boolean) {
+  if (!rugStyleHasStock || product.type !== "rug" || product.category === "vintage") {
+    return null;
+  }
+
+  const styleSlug = normalizeSlug(product.rugStyle);
+  const collection = getRugStyleCollection(styleSlug);
+
+  if (!collection) {
+    return null;
+  }
+
+  return { label: collection.title, href: `/shop/rugs/${styleSlug}` as Route };
+}
+
+function ProductBreadcrumb({
+  product,
+  rugStyleHasStock,
+}: {
+  product: ProductDetailPageViewModel;
+  rugStyleHasStock: boolean;
+}) {
   const categoryPath = getProductCategoryHref(product);
+  const styleCrumb = getRugStyleCrumb(product, rugStyleHasStock);
   const items: Array<{ label: string; href?: Route }> = [
     { label: "Home", href: "/" },
     { label: "Shop", href: "/shop" },
     { label: getCategoryLabel(product.category), href: categoryPath as Route },
+    ...(styleCrumb ? [styleCrumb] : []),
     { label: product.name },
   ];
 

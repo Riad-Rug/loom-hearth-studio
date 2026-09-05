@@ -1,3 +1,4 @@
+import { allRugsNavLink, rugStyleNavLinks } from "@/features/catalog/rug-style-collections";
 import { freeShippingThresholdUsd } from "@/lib/order/shipping";
 
 const productionSiteUrl = "https://www.loomandhearthstudio.com";
@@ -66,7 +67,16 @@ export const siteConfig = {
       href: "/shop",
       items: [
         { href: "/shop", label: "The Full Collection" },
-        { href: "/shop/rugs", label: "Rugs" },
+        {
+          href: "/shop/rugs",
+          label: "Rugs",
+          // Each rug style page used to be reachable from one place only, the chip
+          // row on /shop/rugs, which left the style pages starved of internal link
+          // weight next to /shop and /shop/rugs. Hanging the styles off this row
+          // puts a keyword-exact anchor to every one of them in the rendered HTML
+          // of every page on the site.
+          items: [allRugsNavLink, ...rugStyleNavLinks],
+        },
         { href: "/shop/vintage", label: "Vintage Rugs" },
         { href: "/shop/poufs", label: "Poufs" },
         { href: "/shop/pillows", label: "Pillows" },

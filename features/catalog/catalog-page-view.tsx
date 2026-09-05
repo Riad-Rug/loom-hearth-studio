@@ -68,6 +68,12 @@ type CatalogPageViewProps = {
    * decides which ones exist (only styles with stock are passed in).
    */
   styleLinks?: readonly { label: string; href: string }[];
+  /**
+   * Heading for that navigation. The rugs landing page is offering the shopper a
+   * way in ("Shop by style"), while a style page is offering the way sideways to
+   * its siblings ("Other rug types"), and the two read wrong under one label.
+   */
+  styleNavLabel?: string;
 };
 
 export function CatalogPageView({
@@ -75,6 +81,7 @@ export function CatalogPageView({
   products,
   collection,
   styleLinks,
+  styleNavLabel = "Shop by style",
 }: CatalogPageViewProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -344,10 +351,14 @@ export function CatalogPageView({
               <p className={styles.shopHeaderTrustNote}>
                 Each piece is individually made and won&apos;t be restocked.
               </p>
-              <p className={styles.lede}>{catalogDescription}</p>
+              {catalogDescription.split("\n\n").map((paragraph, index) => (
+                <p className={styles.lede} key={index}>
+                  {paragraph}
+                </p>
+              ))}
               {styleLinks?.length ? (
-                <nav aria-label="Shop by style" className={styles.styleNav}>
-                  <span className={styles.filterGroupLabel}>Shop by style</span>
+                <nav aria-label={styleNavLabel} className={styles.styleNav}>
+                  <span className={styles.filterGroupLabel}>{styleNavLabel}</span>
                   <div className={styles.styleNavLinks}>
                     {styleLinks.map((styleLink) => (
                       <Link

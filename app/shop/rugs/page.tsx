@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
-import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
-import { listAvailableRugStyleSlugs, listCatalogProductCards } from "@/lib/catalog/service";
-import { normalizeSlug, productRugStyleOptions } from "@/lib/catalog/product-validation";
+import { listCatalogProductCards, listRugStyleNavLinks } from "@/lib/catalog/service";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
@@ -20,19 +18,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RugsPage() {
-  const [products, availableStyles] = await Promise.all([
+  const [products, styleNavLinks] = await Promise.all([
     listCatalogProductCards({ category: "rugs" }),
-    listAvailableRugStyleSlugs(),
+    listRugStyleNavLinks(),
   ]);
 
   // Only styles that currently have a purchasable piece get a link: a chip
-  // leading to an empty (and noindex) collection page is a dead end. Driven off
-  // the canonical dropdown order so the row reads the same way the admin does,
-  // minus "Unclassified", which is an internal catch-all with no page.
-  const styleLinks = productRugStyleOptions
-    .map((style) => ({ label: style, slug: normalizeSlug(style) }))
-    .filter(({ slug }) => availableStyles.has(slug) && getRugStyleCollection(slug))
-    .map(({ label, slug }) => ({ label, href: `/shop/rugs/${slug}` }));
+  // leading to an empty (and noindex) collection page is a dead end. Labels come
+  // from rugStyleNavLinks rather than the admin's rugStyle options, so the chip
+  // here reads "Beni Ourain Rugs" — the same anchor the header, the homepage
+  // strip and the sibling strips give that page, which is the whole point of
+  // pushing link weight down to these six routes.
+  const styleLinks = styleNavLinks.filter((link) => link.available);
 
   return (
     <>

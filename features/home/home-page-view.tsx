@@ -18,6 +18,15 @@ type HomePageViewProps = {
   inventoryProducts?: CatalogProductCardViewModel[];
   liveCategories?: ProductCategory[];
   /**
+   * Rug style collections with stock right now, already filtered in app/page.tsx.
+   * Deliberately a code-owned prop rather than CMS content: the homepage sections
+   * are database-driven and merged by index over the code defaults, so adding
+   * these as category cards would render "photo pending" placeholders until six
+   * images were uploaded. Empty styles are omitted rather than greyed — a strip
+   * has no fixed slots to hold open, and their pages are noindex.
+   */
+  rugStyleLinks?: readonly { href: string; label: string }[];
+  /**
    * Category routes with nothing purchasable behind them right now (live check,
    * computed in app/page.tsx). Their card and chip stay exactly where they are
    * and keep their copy, but stop being clickable.
@@ -81,6 +90,7 @@ export function HomePageView({
   content,
   inventoryProducts = [],
   liveCategories,
+  rugStyleLinks = [],
   unavailableCategoryHrefs = [],
 }: HomePageViewProps) {
   const liveCategorySet = liveCategories ? new Set(liveCategories) : null;
@@ -295,6 +305,28 @@ export function HomePageView({
             );
           })}
         </div>
+
+        {/* One rug card cannot carry eight collections, so the styles get their
+            own row of anchors straight off the homepage — the strongest page on
+            the site — using the same wording every other surface uses for them.
+            A single surviving style would read as an odd one-item list rather
+            than a way to browse, so the row waits for two. */}
+        {rugStyleLinks.length > 1 ? (
+          <nav aria-label="Shop Moroccan rugs by style" className={styles.rugStyleNav}>
+            <p className={styles.rugStyleNavLabel}>Shop Moroccan rugs by style</p>
+            <div className={styles.filterChips}>
+              {rugStyleLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  className={styles.filterChip}
+                  href={link.href as Route}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        ) : null}
       </section>
 
       <section className={styles.storySection}>

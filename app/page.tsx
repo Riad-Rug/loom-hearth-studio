@@ -4,6 +4,7 @@ import { HomePageView } from "@/features/home/home-page-view";
 import {
   listCatalogProductCards,
   listRandomInventoryProductCards,
+  listRugStyleNavLinks,
   listUnavailableCategoryHrefs,
 } from "@/lib/catalog/service";
 import { getHomepageContent } from "@/lib/homepage/content";
@@ -24,12 +25,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [content, inventoryProducts, allProducts, unavailableCategoryHrefs] = await Promise.all([
-    getHomepageContent(),
-    listRandomInventoryProductCards({ limit: 24 }),
-    listCatalogProductCards(),
-    listUnavailableCategoryHrefs(),
-  ]);
+  const [content, inventoryProducts, allProducts, unavailableCategoryHrefs, rugStyleLinks] =
+    await Promise.all([
+      getHomepageContent(),
+      listRandomInventoryProductCards({ limit: 24 }),
+      listCatalogProductCards(),
+      listUnavailableCategoryHrefs(),
+      listRugStyleNavLinks(),
+    ]);
   const liveCategories = [
     ...new Set<ProductCategory>(
       allProducts
@@ -43,6 +46,7 @@ export default async function HomePage() {
       content={content}
       inventoryProducts={inventoryProducts}
       liveCategories={liveCategories}
+      rugStyleLinks={rugStyleLinks.filter((link) => link.available)}
       unavailableCategoryHrefs={unavailableCategoryHrefs}
     />
   );

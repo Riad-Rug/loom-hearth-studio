@@ -4,7 +4,12 @@ import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
-import { getProductRedirectPathForSlug, getRugProductDetailByParams } from "@/lib/catalog/service";
+import { getCategoryLabel } from "@/lib/catalog/helpers";
+import {
+  getProductRedirectPathForSlug,
+  getRugProductDetailByParams,
+  listAvailableRugStyleSlugs,
+} from "@/lib/catalog/service";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
@@ -46,6 +51,16 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
     permanentRedirect(productPath as Route);
   }
 
+  // A style page is served noindex while nothing of that style is purchasable,
+  // and a sold rug's PDP stays indexable, so the last piece of a style to sell
+  // would otherwise keep a crawlable breadcrumb aimed at a page we are asking
+  // Google to ignore. The schema below and the visible trail drop the style
+  // level together in that case; the view is told the answer so it cannot
+  // disagree with the schema.
+  const rugStyleHasStock = collection
+    ? (await listAvailableRugStyleSlugs()).has(rugStyleSlug)
+    : false;
+
   return (
     <>
       <JsonLd
@@ -65,8 +80,8 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
         data={breadcrumbSchema([
           { name: "Home", path: "/" },
           { name: "Shop", path: "/shop" },
-          { name: "Rugs", path: "/shop/rugs" },
-          ...(collection
+          { name: getCategoryLabel(product.category), path: "/shop/rugs" },
+          ...(collection && rugStyleHasStock
             ? [
                 {
                   name: collection.title,
@@ -77,7 +92,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           { name: product.name, path: productPath },
         ])}
       />
-      <ProductDetailPageView product={product} />
+      <ProductDetailPageView product={product} rugStyleHasStock={rugStyleHasStock} />
     </>
   );
 }

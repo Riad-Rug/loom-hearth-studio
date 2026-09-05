@@ -13,10 +13,21 @@ type SiteHeaderNavLink = {
   label: string;
 };
 
+/**
+ * A row inside a dropdown that can itself open a submenu. The nesting stops
+ * here on purpose, and `items` deliberately lives on this type rather than on
+ * SiteHeaderNavLink: the top-level nav still discriminates groups from plain
+ * links with an `in` check, so a link that could carry children would make a
+ * child-bearing top-level entry silently render as a sixth dropdown.
+ */
+type SiteHeaderNavSubItem = SiteHeaderNavLink & {
+  items?: readonly SiteHeaderNavLink[];
+};
+
 type SiteHeaderNavGroup = {
   label: string;
   href?: string;
-  items: readonly SiteHeaderNavLink[];
+  items: readonly SiteHeaderNavSubItem[];
 };
 
 type SiteHeaderNavItem = SiteHeaderNavLink | SiteHeaderNavGroup;
@@ -58,7 +69,13 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
   const [isPointerFine, setIsPointerFine] = useState(false);
   const [openGroupLabel, setOpenGroupLabel] = useState<string | null>(null);
   const [focusFirstGroupLinkOnOpen, setFocusFirstGroupLinkOnOpen] = useState(false);
+  // Keyed by the submenu's own panel id, so the desktop flyout and the mobile
+  // accordion for the same row are independent and the open effect can find the
+  // panel it has to move focus into.
+  const [openSubmenuKey, setOpenSubmenuKey] = useState<string | null>(null);
+  const [focusFirstSubmenuLinkOnOpen, setFocusFirstSubmenuLinkOnOpen] = useState(false);
   const groupCloseTimeoutRef = useRef<number | null>(null);
+  const submenuCloseTimeoutRef = useRef<number | null>(null);
   const showAnnouncement = pathname !== "/contact";
   const trimmedQuery = searchQuery.trim();
   const showSuggestions =
@@ -72,6 +89,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     setIsMobileMenuOpen(false);
     setAreSuggestionsOpen(false);
     setOpenGroupLabel(null);
+    setOpenSubmenuKey(null);
   }, [pathname]);
 
   useEffect(() => {
@@ -80,6 +98,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
         setIsMobileMenuOpen(false);
         setAreSuggestionsOpen(false);
         setOpenGroupLabel(null);
+        setOpenSubmenuKey(null);
       }
     }
 
@@ -88,6 +107,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
         setIsMobileMenuOpen(false);
         setAreSuggestionsOpen(false);
         setOpenGroupLabel(null);
+        setOpenSubmenuKey(null);
       }
     }
 
@@ -120,6 +140,10 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
       if (groupCloseTimeoutRef.current) {
         window.clearTimeout(groupCloseTimeoutRef.current);
       }
+
+      if (submenuCloseTimeoutRef.current) {
+        window.clearTimeout(submenuCloseTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -134,6 +158,16 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     (firstLink as HTMLAnchorElement | null)?.focus();
     setFocusFirstGroupLinkOnOpen(false);
   }, [openGroupLabel, focusFirstGroupLinkOnOpen]);
+
+  useEffect(() => {
+    if (!openSubmenuKey || !focusFirstSubmenuLinkOnOpen) {
+      return;
+    }
+
+    const firstLink = document.getElementById(openSubmenuKey)?.querySelector("a");
+    (firstLink as HTMLAnchorElement | null)?.focus();
+    setFocusFirstSubmenuLinkOnOpen(false);
+  }, [openSubmenuKey, focusFirstSubmenuLinkOnOpen]);
 
   useEffect(() => {
     const query = searchQuery.trim();
@@ -286,6 +320,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
 
     groupCloseTimeoutRef.current = window.setTimeout(() => {
       setOpenGroupLabel(null);
+      setOpenSubmenuKey(null);
       groupCloseTimeoutRef.current = null;
     }, GROUP_CLOSE_DELAY_MS);
   }
@@ -296,11 +331,63 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
       groupCloseTimeoutRef.current = null;
     }
 
+    if (submenuCloseTimeoutRef.current) {
+      window.clearTimeout(submenuCloseTimeoutRef.current);
+      submenuCloseTimeoutRef.current = null;
+    }
+
     setOpenGroupLabel(null);
+    setOpenSubmenuKey(null);
 
     if (focusTriggerId) {
       document.getElementById(focusTriggerId)?.focus();
     }
+  }
+
+  function openSubmenu(submenuId: string) {
+    if (submenuCloseTimeoutRef.current) {
+      window.clearTimeout(submenuCloseTimeoutRef.current);
+      submenuCloseTimeoutRef.current = null;
+    }
+
+    setOpenSubmenuKey(submenuId);
+  }
+
+  function scheduleCloseSubmenu() {
+    if (!isPointerFine) {
+      return;
+    }
+
+    if (submenuCloseTimeoutRef.current) {
+      window.clearTimeout(submenuCloseTimeoutRef.current);
+    }
+
+    submenuCloseTimeoutRef.current = window.setTimeout(() => {
+      setOpenSubmenuKey(null);
+      submenuCloseTimeoutRef.current = null;
+    }, GROUP_CLOSE_DELAY_MS);
+  }
+
+  function closeSubmenu(focusTriggerId?: string) {
+    if (submenuCloseTimeoutRef.current) {
+      window.clearTimeout(submenuCloseTimeoutRef.current);
+      submenuCloseTimeoutRef.current = null;
+    }
+
+    setOpenSubmenuKey(null);
+
+    if (focusTriggerId) {
+      document.getElementById(focusTriggerId)?.focus();
+    }
+  }
+
+  function toggleSubmenu(submenuId: string) {
+    if (openSubmenuKey === submenuId) {
+      closeSubmenu();
+      return;
+    }
+
+    openSubmenu(submenuId);
   }
 
   function handleGroupBlur(event: React.FocusEvent<HTMLDivElement>, label: string) {
@@ -310,6 +397,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
 
     if (openGroupLabel === label) {
       setOpenGroupLabel(null);
+      setOpenSubmenuKey(null);
     }
   }
 
@@ -331,9 +419,27 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     }
   }
 
+  /**
+   * The arrow-key targets belonging to one menu container, and only that
+   * container. A plain "a" query would be wrong for the Collection panel: the
+   * nested style submenu is always in the DOM — that is the whole point of it,
+   * a crawler has to find those anchors on every page — so a plain query hands
+   * back links that are inert and refuse focus while the submenu is shut. A row
+   * is either a direct anchor or an anchor inside a row wrapper one level down;
+   * the submenu's own anchors sit a level deeper again and stay out of the
+   * parent's cycle, and the submenu passes its own id here to walk just itself.
+   */
+  function getMenuLinks(containerId: string) {
+    const container = document.getElementById(containerId);
+
+    return Array.from(
+      container?.querySelectorAll<HTMLAnchorElement>(":scope > a, :scope > * > a") ?? [],
+    );
+  }
+
   function handleGroupPanelKeyDown(event: React.KeyboardEvent<HTMLDivElement>, panelId: string) {
     const panel = document.getElementById(panelId);
-    const links = Array.from(panel?.querySelectorAll("a") ?? []) as HTMLAnchorElement[];
+    const links = getMenuLinks(panelId);
     const currentIndex = links.indexOf(document.activeElement as HTMLAnchorElement);
 
     if (event.key === "ArrowDown") {
@@ -355,8 +461,109 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     }
   }
 
+  function handleSubmenuTriggerKeyDown(
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    submenuId: string,
+  ) {
+    if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+      event.preventDefault();
+      // The trigger sits inside the group panel, whose own handler would
+      // otherwise read the same ArrowDown and move focus along the panel rows.
+      event.stopPropagation();
+      setFocusFirstSubmenuLinkOnOpen(true);
+      openSubmenu(submenuId);
+      return;
+    }
+
+    if (event.key === "Escape" && openSubmenuKey === submenuId) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeSubmenu();
+    }
+  }
+
+  function handleSubmenuPanelKeyDown(
+    event: React.KeyboardEvent<HTMLDivElement>,
+    submenuId: string,
+  ) {
+    const links = getMenuLinks(submenuId);
+    const currentIndex = links.indexOf(document.activeElement as HTMLAnchorElement);
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      event.stopPropagation();
+      const step = event.key === "ArrowDown" ? 1 : -1;
+      links[(currentIndex + step + links.length) % links.length]?.focus();
+      return;
+    }
+
+    // Escape here backs out one level only, to the trigger; the group panel is
+    // still open and a second Escape on that trigger bubbles up and closes it.
+    if (event.key === "Escape" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      event.stopPropagation();
+      closeSubmenu(
+        document.getElementById(submenuId)?.getAttribute("aria-labelledby") ?? undefined,
+      );
+    }
+  }
+
   function isUnavailable(href: string) {
     return props.unavailableHrefs?.includes(href) ?? false;
+  }
+
+  function renderGroupLink(item: SiteHeaderNavLink) {
+    if (isUnavailable(item.href)) {
+      return (
+        <span
+          key={item.href}
+          aria-disabled="true"
+          className="site-header__nav-group-link site-header__nav-group-link--disabled"
+        >
+          {item.label}
+        </span>
+      );
+    }
+
+    return (
+      <Link
+        key={item.href}
+        className={`site-header__nav-group-link ${
+          isPathActive(pathname, item.href) ? "site-header__nav-group-link--active" : ""
+        }`}
+        href={item.href as Route}
+        onClick={() => closeGroup()}
+      >
+        {item.label}
+      </Link>
+    );
+  }
+
+  function renderMobileGroupLink(item: SiteHeaderNavLink, extraClassName = "") {
+    if (isUnavailable(item.href)) {
+      return (
+        <span
+          key={`mobile-${item.href}`}
+          aria-disabled="true"
+          className={`site-header__mobile-link site-header__mobile-link--disabled ${extraClassName}`}
+        >
+          {item.label}
+        </span>
+      );
+    }
+
+    return (
+      <Link
+        key={`mobile-${item.href}`}
+        className={`site-header__mobile-link ${
+          isPathActive(pathname, item.href) ? "site-header__mobile-link--active" : ""
+        } ${extraClassName}`}
+        href={item.href as Route}
+        onClick={() => setIsMobileMenuOpen(false)}
+      >
+        {item.label}
+      </Link>
+    );
   }
 
   function renderSearchInput(context: "desktop" | "mobile") {
@@ -487,30 +694,77 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                       inert={!isOpen}
                       onKeyDown={(event) => handleGroupPanelKeyDown(event, panelId)}
                     >
-                      {item.items.map((subItem) =>
-                        isUnavailable(subItem.href) ? (
-                          <span
+                      {item.items.map((subItem) => {
+                        const submenuItems = subItem.items;
+
+                        if (!submenuItems?.length) {
+                          return renderGroupLink(subItem);
+                        }
+
+                        const submenuId = `site-header-submenu-desktop-${toMenuId(subItem.href)}`;
+                        const submenuTriggerId = `${submenuId}-trigger`;
+                        const isSubmenuOpen = openSubmenuKey === submenuId;
+
+                        return (
+                          <div
                             key={subItem.href}
-                            aria-disabled="true"
-                            className="site-header__nav-group-link site-header__nav-group-link--disabled"
+                            className="site-header__nav-group-row"
+                            onMouseEnter={() => {
+                              if (isPointerFine) {
+                                openSubmenu(submenuId);
+                              }
+                            }}
+                            onMouseLeave={scheduleCloseSubmenu}
+                            onKeyDown={(event) => {
+                              // ArrowRight on the row's own link opens the
+                              // flyout, the gesture a menubar user expects.
+                              // Keys pressed inside the flyout belong to it.
+                              if (
+                                event.key !== "ArrowRight" ||
+                                document.getElementById(submenuId)?.contains(event.target as Node)
+                              ) {
+                                return;
+                              }
+
+                              event.preventDefault();
+                              event.stopPropagation();
+                              setFocusFirstSubmenuLinkOnOpen(true);
+                              openSubmenu(submenuId);
+                            }}
                           >
-                            {subItem.label}
-                          </span>
-                        ) : (
-                          <Link
-                            key={subItem.href}
-                            className={`site-header__nav-group-link ${
-                              isPathActive(pathname, subItem.href)
-                                ? "site-header__nav-group-link--active"
-                                : ""
-                            }`}
-                            href={subItem.href as Route}
-                            onClick={() => closeGroup()}
-                          >
-                            {subItem.label}
-                          </Link>
-                        ),
-                      )}
+                            {renderGroupLink(subItem)}
+                            <button
+                              id={submenuTriggerId}
+                              className="site-header__nav-submenu-trigger"
+                              type="button"
+                              aria-haspopup="true"
+                              aria-expanded={isSubmenuOpen}
+                              aria-controls={submenuId}
+                              aria-label={`${subItem.label} by style`}
+                              onClick={() => toggleSubmenu(submenuId)}
+                              onKeyDown={(event) =>
+                                handleSubmenuTriggerKeyDown(event, submenuId)
+                              }
+                            />
+                            {/* Stays mounted and merely inert when shut: these
+                                anchors are the reason this submenu exists, so
+                                they have to be in the rendered HTML of every
+                                page whether or not anyone opens the menu. */}
+                            <div
+                              id={submenuId}
+                              role="group"
+                              aria-labelledby={submenuTriggerId}
+                              className={`site-header__nav-submenu ${
+                                isSubmenuOpen ? "site-header__nav-submenu--open" : ""
+                              }`}
+                              inert={!isSubmenuOpen}
+                              onKeyDown={(event) => handleSubmenuPanelKeyDown(event, submenuId)}
+                            >
+                              {submenuItems.map((styleItem) => renderGroupLink(styleItem))}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
@@ -590,30 +844,48 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
               "items" in item ? (
                 <div key={item.label} className="site-header__mobile-group">
                   <p className="site-header__mobile-group-label">{item.label}</p>
-                  {item.items.map((subItem) =>
-                    isUnavailable(subItem.href) ? (
-                      <span
-                        key={`mobile-${subItem.href}`}
-                        aria-disabled="true"
-                        className="site-header__mobile-link site-header__mobile-link--disabled"
-                      >
-                        {subItem.label}
-                      </span>
-                    ) : (
-                      <Link
-                        key={`mobile-${subItem.href}`}
-                        className={`site-header__mobile-link ${
-                          isPathActive(pathname, subItem.href)
-                            ? "site-header__mobile-link--active"
-                            : ""
-                        }`}
-                        href={subItem.href as Route}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {subItem.label}
-                      </Link>
-                    ),
-                  )}
+                  {item.items.map((subItem) => {
+                    const submenuItems = subItem.items;
+
+                    if (!submenuItems?.length) {
+                      return renderMobileGroupLink(subItem);
+                    }
+
+                    const submenuId = `site-header-submenu-mobile-${toMenuId(subItem.href)}`;
+                    const submenuTriggerId = `${submenuId}-trigger`;
+                    const isSubmenuOpen = openSubmenuKey === submenuId;
+
+                    return (
+                      <div key={`mobile-${subItem.href}`} className="site-header__mobile-subgroup">
+                        <div className="site-header__mobile-subgroup-row">
+                          {renderMobileGroupLink(subItem)}
+                          <button
+                            id={submenuTriggerId}
+                            className="site-header__mobile-subgroup-trigger"
+                            type="button"
+                            aria-haspopup="true"
+                            aria-expanded={isSubmenuOpen}
+                            aria-controls={submenuId}
+                            aria-label={`${subItem.label} by style`}
+                            onClick={() => toggleSubmenu(submenuId)}
+                          />
+                        </div>
+                        <div
+                          id={submenuId}
+                          role="group"
+                          aria-labelledby={submenuTriggerId}
+                          className={`site-header__mobile-submenu ${
+                            isSubmenuOpen ? "site-header__mobile-submenu--open" : ""
+                          }`}
+                          inert={!isSubmenuOpen}
+                        >
+                          {submenuItems.map((styleItem) =>
+                            renderMobileGroupLink(styleItem, "site-header__mobile-link--nested"),
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <Link
@@ -707,6 +979,15 @@ function SearchSuggestionsPanel(props: SearchSuggestionsPanelProps) {
       </button>
     </div>
   );
+}
+
+/**
+ * A DOM-id fragment derived from a route, e.g. "/shop/rugs" -> "shop-rugs".
+ * Route-derived rather than label-derived so the submenu ids cannot collide
+ * with the label-derived site-header-group-panel-* ids of the top-level groups.
+ */
+function toMenuId(href: string) {
+  return href.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 function isPathActive(pathname: string, href: string) {
