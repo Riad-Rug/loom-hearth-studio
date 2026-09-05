@@ -46,10 +46,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             imageUrl: post.images[0]?.src || null,
             author: author.name ? { name: author.name, photoUrl: author.photoUrl } : null,
           }),
+          // The final crumb is the post itself, not its category: there is no
+          // /blog/[category] route for a category crumb to point at, so labelling this
+          // crumb with post.categoryLabel while pointing it at the post's own permalink
+          // made the name and the item URL disagree. If a real category index is ever
+          // added, insert a category crumb ahead of this one rather than relabelling it.
           breadcrumbSchema([
             { name: "Home", path: "/" },
             { name: "Blog", path: "/blog" },
-            { name: post.categoryLabel, path: `/blog/${post.categorySlug}/${post.slug}` },
+            { name: post.title, path: `/blog/${post.categorySlug}/${post.slug}` },
           ]),
         ]}
       />

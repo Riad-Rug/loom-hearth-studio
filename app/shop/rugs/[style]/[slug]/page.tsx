@@ -71,6 +71,10 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           path: productPath,
           priceUsdLabel: product.priceUsdLabel,
           category: product.category,
+          // Real recorded condition for schema's itemCondition, read off the
+          // domain record the view model already carries; the storefront
+          // category cannot answer this on its own.
+          ageClass: product.cartProduct.ageClass,
           imageUrls: product.gallery.map((image) => image.src),
           availability: product.status === "sold" ? "outOfStock" : "inStock",
           isOneOfOne: true,

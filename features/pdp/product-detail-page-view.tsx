@@ -361,7 +361,7 @@ export function ProductDetailPageView({
 
       {product.status !== "sold" ? (
         <div
-          className="hidden max-[700px]:fixed max-[700px]:inset-x-0 max-[700px]:bottom-0 max-[700px]:z-40 max-[700px]:flex max-[700px]:items-center max-[700px]:justify-between max-[700px]:gap-[var(--space-3)] max-[700px]:px-[var(--space-4)] max-[700px]:py-[var(--space-3)] max-[700px]:pb-[calc(var(--space-3)_+_env(safe-area-inset-bottom))] max-[700px]:border-t max-[700px]:border-[color:var(--color-border)] max-[700px]:bg-[var(--color-bg)] max-[700px]:shadow-[0_-4px_12px_rgba(20,20,20,0.12)]"
+          className="pdp-sticky-buy hidden max-[700px]:fixed max-[700px]:inset-x-0 max-[700px]:bottom-0 max-[700px]:z-40 max-[700px]:flex max-[700px]:items-center max-[700px]:justify-between max-[700px]:gap-[var(--space-3)] max-[700px]:px-[var(--space-4)] max-[700px]:py-[var(--space-3)] max-[700px]:pb-[calc(var(--space-3)_+_env(safe-area-inset-bottom))] max-[700px]:border-t max-[700px]:border-[color:var(--color-border)] max-[700px]:bg-[var(--color-bg)] max-[700px]:shadow-[0_-4px_12px_rgba(20,20,20,0.12)]"
         >
           <span className="text-[var(--color-green)] text-[1.1rem] font-semibold whitespace-nowrap">
             {product.priceUsdLabel}

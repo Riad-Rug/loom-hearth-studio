@@ -2,11 +2,26 @@ import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
-import { listCatalogProductCards } from "@/lib/catalog/service";
+import {
+  categoryHasPurchasableProducts,
+  listCatalogProductCards,
+} from "@/lib/catalog/service";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
 export async function generateMetadata(): Promise<Metadata> {
+  // Decor stands at zero purchasable pieces today, and an indexable page showing
+  // "0 pieces" is the kind of thin result Google logs against the whole shop. The
+  // check is live rather than a hardcoded flag — same rule the rug-style pages
+  // apply per style (app/shop/rugs/[style]/page.tsx) — so the page starts asking
+  // to be indexed again on its own the moment decor is stocked. app/sitemap.ts
+  // gates the /shop/decor entry on this same helper, so the two never disagree.
+  //
+  // noIndexFollow, not noIndex: this page's links (breadcrumbs, nav, and any
+  // companion products the view renders) all point at pages that do want crawl
+  // signal, so there is nothing to gain from the "nofollow" half.
+  const hasPurchasableProducts = await categoryHasPurchasableProducts("decor");
+
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "decor",
@@ -14,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       "Browse supporting Moroccan decor pieces selected to sit alongside rugs, poufs, and collected textile interiors.",
     path: "/shop/decor",
-    noIndex: true,
+    noIndexFollow: !hasPurchasableProducts,
   });
 }
 

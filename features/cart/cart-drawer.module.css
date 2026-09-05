@@ -1,6 +1,9 @@
 /* The cart is a page-level floating affordance pinned to the middle of the
-   right edge, deliberately clear of the bottom-right corner where the cookie
-   banner and the back-to-top button already live.
+   right edge, deliberately clear of the bottom-right corner where the
+   back-to-top button lives. The cookie banner used to share that corner; it is
+   now a full-bleed strip across the bottom edge (see .cookie-banner in
+   app/globals.css), so the clearance that matters here is vertical, not
+   cornerwise.
 
    The rail spans the full height and centres the trigger with flexbox rather
    than a transform: a transform here would make the shell the containing block

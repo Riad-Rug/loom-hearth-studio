@@ -3,6 +3,7 @@ import { publicBusinessDetails } from "@/config/public-business-details";
 import { siteConfig } from "@/config/site";
 import { DEFAULT_BLOG_AUTHOR } from "@/features/blog/blog-author-data";
 import { aboutHero } from "@/features/content-pages/content-pages-data";
+import { calculateShippingUsd } from "@/lib/order/shipping";
 
 /**
  * Canonical @id for the founder Person node. The node itself is only emitted on
@@ -207,6 +208,37 @@ export function articleSchema(input: {
   };
 }
 
+/**
+ * ageClass is a free-text column, not an enum, so it cannot be compared against
+ * a fixed literal. The admin form offers "Contemporary" / "Vintage, estimated" /
+ * "Antique, estimated" / "Not Stated" (ageClassOptions in
+ * features/admin/admin-product-form.tsx), but the live catalog predates that
+ * vocabulary and carries prose instead — every one of the 58 published pieces
+ * reads either "Handmade contemporary piece" (53) or "Vintage" (5). Both
+ * shapes have to be recognised, so these match on the meaningful word rather
+ * than on the whole string.
+ *
+ * Age is tested before newness deliberately: mislabelling a used piece as new
+ * is a merchant-listing accuracy violation, while the reverse merely undersells
+ * it. When a value says both, the cautious reading wins.
+ */
+const AGED_CONDITION_PATTERN = /vintage|antique/i;
+/**
+ * Deliberately narrow. A bare `new` alternation would match inside "Renewed"
+ * and, word-bounded, would still read "Pre-owned, like new" as new — the one
+ * direction that is a merchant-listing accuracy violation rather than a
+ * missed opportunity. Only the two phrasings that actually mean "made new"
+ * are matched; anything else falls through to the category reading below.
+ */
+const CONTEMPORARY_CONDITION_PATTERN = /contemporary|newly\s+made/i;
+
+/**
+ * How long a published price is declared good for. Nothing in this catalog runs
+ * on a promotional calendar, so the honest answer is a rolling window rather
+ * than a stored expiry date.
+ */
+const PRICE_VALIDITY_DAYS = 90;
+
 export function productSchema(input: {
   id: string;
   name: string;
@@ -214,6 +246,12 @@ export function productSchema(input: {
   path: string;
   priceUsdLabel: string;
   category: string;
+  /**
+   * The piece's own recorded age class (Prisma CatalogProduct.ageClass), which
+   * is what itemCondition below is derived from. Optional because older records
+   * predate the field; see the fallback where it is read.
+   */
+  ageClass?: string;
   imageUrls: string[];
   availability?: "inStock" | "outOfStock";
   isOneOfOne?: boolean;
@@ -223,6 +261,48 @@ export function productSchema(input: {
     input.availability === "outOfStock"
       ? "https://schema.org/OutOfStock"
       : "https://schema.org/InStock";
+
+  // priceUsdLabel is Intl currency output ("$1,250.00"), so the currency symbol
+  // and any thousands separators both have to come off before schema.org — or
+  // Number() — reads it. Parsed once here and reused for the Offer price and
+  // for the shipping-rate threshold below.
+  const priceValue = input.priceUsdLabel.replace(/[$,]/g, "");
+
+  /**
+   * itemCondition follows the piece's own recorded age class, not its storefront
+   * category. A pillow cover sewn from vintage Battania sits in the `pillows`
+   * category but is genuinely a new cover, while a rug sold as-is is genuinely
+   * used — the merchandising bucket answers neither question.
+   *
+   * An age class that matches neither pattern (including "Not Stated", and any
+   * future vocabulary) falls back to the category reading rather than guessing,
+   * so an unrecognised value can never silently flip the whole catalog. That
+   * fallback is also what records predating the field get.
+   */
+  const ageClass = input.ageClass?.trim();
+  const isUsedCondition =
+    ageClass && AGED_CONDITION_PATTERN.test(ageClass)
+      ? true
+      : ageClass && CONTEMPORARY_CONDITION_PATTERN.test(ageClass)
+        ? false
+        : input.category === "vintage";
+  const itemCondition = isUsedCondition
+    ? "https://schema.org/UsedCondition"
+    : "https://schema.org/NewCondition";
+
+  /**
+   * priceValidUntil is a recommended Offer field and Search Console warns when
+   * it is missing. It is computed per call rather than once at module scope, so
+   * a long-lived server process (or a prerendered bundle) can never ship a date
+   * frozen at build time; the builder only ever runs server-side, inside the
+   * JsonLd server component, so there is no client render to mismatch. UTC is
+   * used deliberately here — unlike toSchemaDate above, this is a rolling
+   * horizon rather than a stored calendar date, so a day of timezone drift on a
+   * 90-day window is meaningless.
+   */
+  const priceValidUntil = new Date(Date.now() + PRICE_VALIDITY_DAYS * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
 
   return {
     "@context": "https://schema.org",
@@ -242,10 +322,7 @@ export function productSchema(input: {
     productID: input.id,
     category: input.category,
     url,
-    itemCondition:
-      input.category === "vintage"
-        ? "https://schema.org/UsedCondition"
-        : "https://schema.org/NewCondition",
+    itemCondition,
     additionalProperty: [
       {
         "@type": "PropertyValue",
@@ -265,13 +342,11 @@ export function productSchema(input: {
     offers: {
       "@type": "Offer",
       priceCurrency: "USD",
-      price: input.priceUsdLabel.replace("$", ""),
+      price: priceValue,
+      priceValidUntil,
       availability,
       url,
-      itemCondition:
-        input.category === "vintage"
-          ? "https://schema.org/UsedCondition"
-          : "https://schema.org/NewCondition",
+      itemCondition,
       seller: { "@id": `${absoluteUrl("/")}#organization` },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
@@ -285,9 +360,19 @@ export function productSchema(input: {
           "@type": "DefinedRegion",
           addressCountry: country,
         },
+        // Shipping is free at or above the order threshold and a flat fee below
+        // it, so the rate is not a constant — it is whatever checkout would
+        // actually charge, computed by the same function checkout uses
+        // (calculateShippingUsd in lib/order/shipping.ts). schema.org carries
+        // one rate per destination, so the honest figure is the one this piece
+        // alone incurs: a single-item order at this price, before any promo
+        // code. A basket that crosses the threshold ships free and a shopper
+        // never pays more than what is declared here. An unparseable price
+        // falls through to the flat fee rather than a free-shipping claim we
+        // might not honour.
         shippingRate: {
           "@type": "MonetaryAmount",
-          value: 0,
+          value: calculateShippingUsd(Number(priceValue)),
           currency: "USD",
         },
         // Figures come from the shipping policy page (the authoritative copy in

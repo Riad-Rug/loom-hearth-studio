@@ -54,6 +54,11 @@ export default async function CategoryProductPage({
           path: productPath,
           priceUsdLabel: product.priceUsdLabel,
           category: product.category,
+          // Real recorded condition for schema's itemCondition, read off the
+          // domain record the view model already carries; the storefront
+          // category cannot answer this (a pillow cover cut from vintage
+          // Battania is still a new cover).
+          ageClass: product.cartProduct.ageClass,
           imageUrls: product.gallery.map((image) => image.src),
           availability:
             product.status === "sold" ||

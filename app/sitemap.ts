@@ -2,7 +2,11 @@ import type { MetadataRoute } from "next";
 
 import { policyPages } from "@/features/content-pages/content-pages-data";
 import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
-import { listAvailableRugStyleSlugs, listProductSitemapEntries } from "@/lib/catalog/service";
+import {
+  categoryHasPurchasableProducts,
+  listAvailableRugStyleSlugs,
+  listProductSitemapEntries,
+} from "@/lib/catalog/service";
 import { getBlogPostsState } from "@/lib/blog/posts";
 import { absoluteUrl } from "@/lib/seo/metadata";
 
@@ -13,7 +17,6 @@ const staticRoutes = [
   "/shop/vintage",
   "/shop/poufs",
   "/shop/pillows",
-  "/shop/decor",
   "/blog",
   "/about",
   "/trade",
@@ -41,6 +44,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: absoluteUrl(`/shop/rugs/${style}`),
     }));
 
+  // /shop/decor gets the same treatment for the same reason, which is why it is
+  // not in staticRoutes above: the page is served noindex while decor has nothing
+  // purchasable (see app/shop/decor/page.tsx), and submitting a noindex URL here
+  // is what Search Console reports as "Submitted URL marked noindex". Both sides
+  // read categoryHasPurchasableProducts, so the entry reappears by itself as soon
+  // as decor is stocked. The other category landings are always-on stock lines and
+  // stay hardcoded.
+  const decorEntries = (await categoryHasPurchasableProducts("decor"))
+    ? [{ url: absoluteUrl("/shop/decor") }]
+    : [];
+
   const { posts: blogPosts } = await getBlogPostsState();
   const blogEntries = blogPosts.map((post) => ({
     url: absoluteUrl(`/blog/${post.categorySlug}/${post.slug}`),
@@ -59,6 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticEntries,
+    ...decorEntries,
     ...rugStyleEntries,
     ...blogEntries,
     ...policyEntries,
