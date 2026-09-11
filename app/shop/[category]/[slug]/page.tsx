@@ -114,6 +114,14 @@ export async function generateMetadata({
     ogImageAlt: ogImage?.altText || product.name,
     ogImageWidth: 1600,
     ogImageHeight: 1200,
+    product: {
+      priceAmount: product.priceUsd,
+      availability:
+        product.status === "sold" ||
+        (product.type === "multiUnit" && product.inventoryState === "outOfStock")
+          ? "oos"
+          : "instock",
+    },
   });
 }
 
