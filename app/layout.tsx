@@ -58,6 +58,14 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    // Pinterest business account "Claim website" (renders <meta name="p:domain_verify">).
+    // Lives under `verification` rather than `other` so product pages, which set
+    // their own `other` block, don't shadow it.
+    other: {
+      "p:domain_verify": "ef05a361758af924a242b921499adca5",
+    },
+  },
   openGraph: {
     title: siteConfig.name,
     description: siteConfig.description,

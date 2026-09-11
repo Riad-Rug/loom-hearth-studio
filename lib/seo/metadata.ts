@@ -23,6 +23,17 @@ type BuildMetadataOptions = {
   ogImageAlt?: string;
   ogImageWidth?: number;
   ogImageHeight?: number;
+  /**
+   * Product-only Open Graph tags consumed by Pinterest Rich Pins, Meta and
+   * other social scrapers. Only emitted when `type === "product"`.
+   */
+  product?: ProductOpenGraphOptions;
+};
+
+export type ProductOpenGraphOptions = {
+  priceAmount: number;
+  priceCurrency?: string;
+  availability: "instock" | "oos" | "preorder";
 };
 
 /**
@@ -56,6 +67,7 @@ export function buildMetadata({
   ogImageAlt,
   ogImageWidth = defaultOgImageWidth,
   ogImageHeight = defaultOgImageHeight,
+  product,
 }: BuildMetadataOptions): Metadata {
   const shouldIndex = !noIndex && !noIndexFollow;
   const shouldFollow = noIndexFollow || !noIndex;
@@ -104,8 +116,30 @@ export function buildMetadata({
       description: resolvedOgDescription,
       images: [resolvedOgImage],
     },
-    other: type === "product" ? { "og:type": "product" } : undefined,
+    other: type === "product" ? buildProductOpenGraphTags(product) : undefined,
   };
+}
+
+/**
+ * Pinterest reads `og:type=product` plus the `product:*` price tags and
+ * `og:availability` to turn a saved pin into a Product Rich Pin that shows live
+ * price and stock. Values follow the Open Graph product spec:
+ * https://developers.pinterest.com/docs/web-features/rich-pins-overview/
+ */
+function buildProductOpenGraphTags(
+  product: ProductOpenGraphOptions | undefined,
+): NonNullable<Metadata["other"]> {
+  const tags: NonNullable<Metadata["other"]> = { "og:type": "product" };
+
+  if (!product || !Number.isFinite(product.priceAmount)) {
+    return tags;
+  }
+
+  tags["product:price:amount"] = product.priceAmount.toFixed(2);
+  tags["product:price:currency"] = product.priceCurrency || siteConfig.currency;
+  tags["og:availability"] = product.availability;
+
+  return tags;
 }
 
 export async function buildManagedMetadata({
@@ -124,6 +158,7 @@ export async function buildManagedMetadata({
   ogImageAlt,
   ogImageWidth,
   ogImageHeight,
+  product,
 }: BuildManagedMetadataOptions): Promise<Metadata> {
   const setting = await getSeoSetting({ entityType, entityKey });
   const managedTitle = cleanManagedString(setting?.title);
@@ -151,6 +186,7 @@ export async function buildManagedMetadata({
     ogImageAlt,
     ogImageWidth,
     ogImageHeight,
+    product,
   });
 }
 
