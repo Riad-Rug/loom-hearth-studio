@@ -858,3 +858,31 @@
     display: block;
   }
 }
+
+/* Long-form category copy, set below the product grid (see
+   catalogBelowGridEssays). The measure runs a little wider than .lede because
+   this is a multi-paragraph read rather than a single header note, and the
+   section drops its top padding so it reads as a continuation of the grid
+   above rather than a separate band. */
+.catalogEssaySection {
+  padding-top: 0;
+}
+
+.catalogEssay {
+  max-width: 44rem;
+}
+
+.catalogEssay h2 {
+  margin: 0 0 var(--space-3);
+}
+
+.catalogEssay p {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-body);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.catalogEssay p:last-child {
+  margin-bottom: 0;
+}

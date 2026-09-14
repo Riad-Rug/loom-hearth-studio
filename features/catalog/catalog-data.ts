@@ -108,6 +108,20 @@ export const catalogIntros: Partial<Record<"shop" | ProductCategory, CatalogIntr
   },
 };
 
+/**
+ * Routes whose editorial description is rendered in its own section below the
+ * product grid rather than in the page header. These are exactly the routes
+ * carrying tiered intro copy up top (see `catalogIntros`): the long read is
+ * worth keeping on the page for what it says about the pieces, but not at the
+ * cost of pushing the grid below the fold. The prose itself stays in
+ * `catalogCategories`, so there is one description per route either way.
+ */
+export const catalogBelowGridEssays: Partial<
+  Record<"shop" | ProductCategory, { heading: string }>
+> = {
+  rugs: { heading: "About Moroccan rugs" },
+};
+
 export const catalogCategories = [
   {
     key: "rugs",
@@ -115,7 +129,7 @@ export const catalogCategories = [
     title: "Moroccan Rugs",
     href: "/shop/rugs",
     description:
-      "A Moroccan rug is a product of geography before it's a product of a name. Climate sets the pile thickness. Altitude shapes the wool. Trade routes decided which dyes were within reach. I learned to look at rugs this way before I learned any style names, and it's the order I still work in.\n\nMost buyers start with a label \u2014 Beni Ourain, Azilal, Boucherouite \u2014 because that's how the market sells rugs. I'd rather start with where a rug comes from. The Middle Atlas is mountain tribal weaving: thick pile built for cold winters, the ivory-and-dark-line rugs of the Beni Ourain confederation, and their neighbours in deep reds and golds, the Beni M'Guild. The High Atlas gives you both pile and flatweave \u2014 banded, graphic pieces in the Glaoua tradition, and the light-ground, colour-struck rugs people call Azilal. The central plains carry the warm, painterly Boujad palette and the bold red-ground geometry of Zemmour. And in the south, around Taznakht and the Siroua massif, you find some of the most pattern-dense, colour-sophisticated weaving in the country \u2014 pieces that mix pile and flatweave in a single rug, not one technique alone.\n\nI use these names because buyers search for them and because they're useful shorthand \u2014 not because they're guaranteed provenance. Even auction houses hedge attribution when they're not certain, and I do the same. What I check in person before a rug is listed: the wool (hand-spun wool has a slight irregularity a machine can't fake), the back (individual knots, not a uniform fabric grid), the weight, the way the pile catches light. Where I'm not certain of a rug's exact origin, I say so rather than dress it up.\n\nONE OF A KIND means exactly that. When a piece sells, it isn't rewoven or restocked.",
+      "Moroccan rugs are often sold by names such as Beni Ourain, Azilal, Boujad, Beni M'Guild, Zemmour, Glaoua, Boucherouite and Taznakht. Those names are useful, but I prefer to start with something more basic: where the rug comes from, how it was woven, and what the materials can tell us.\n\nGeography has always influenced weaving in Morocco. Colder mountain regions often produced heavier, higher-pile rugs, while other areas developed lighter flatweaves or combinations of pile and flatweave. Local wool, available dyes, trade routes and weaving traditions all played a part in how rugs from different parts of Morocco developed.\n\nThe Middle Atlas is closely associated with thick wool rugs made for colder conditions. The best-known examples are Beni Ourain rugs, usually recognized for their ivory wool and darker geometric lines. Other Middle Atlas traditions, including Beni M'Guild rugs, are often much richer in colour, with deep reds, oranges and other warm tones.\n\nIn the High Atlas, weaving can take several forms. Glaoua rugs are known for combining techniques, often mixing flatwoven sections with pile and graphic bands. Rugs sold as Azilal are frequently lighter in ground colour, with expressive geometric forms and stronger contrasts.\n\nAcross the central plains, you find other very different traditions. Boujad rugs are often associated with warm reds, pinks, oranges and painterly compositions, while Zemmour rugs are known for strong geometric structures and, in many examples, rich red grounds.\n\nFurther south, around Taznakht and the Siroua region, rugs can become especially detailed. Some combine pile, flatweave and other weaving techniques within the same piece, with dense patterns and complex colour combinations.\n\nThese regional and tribal names are useful, especially because they are the terms most people use when looking for Moroccan rugs. But I do not treat every label as absolute proof of origin.\n\nAttribution can be complicated. Rugs move between villages, markets, dealers and cities, and similar techniques may appear across neighbouring areas. When I am confident about a rug's origin or tradition, I say so. When I am not, I would rather describe it carefully than give it a more precise label than the evidence supports.\n\nWhen I examine a rug, I pay attention to the wool, weave, back, knots, weight, pile and overall construction. Hand-spun wool often has natural variations in thickness, and the back of a hand-knotted rug can reveal individual knots rather than the regular structure of machine-made fabric. I also look at condition, repairs, wear and how the pile changes when it catches the light.\n\nSome rugs in the collection are older pieces that cannot simply be reproduced, while others come from continuing Moroccan weaving traditions. In every case, the aim is the same: to describe each rug as accurately as I can and let the materials, construction and design speak for themselves.",
     bullets: [
       "Hand-knotted pile rugs, Moroccan flatweaves (hanbel), and ONE OF A KIND vintage pieces",
       "Construction details \u2014 pile depth, fibre type, knot structure \u2014 documented in every listing",

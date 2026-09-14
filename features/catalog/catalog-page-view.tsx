@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Section } from "@/components/layout/section";
 import { CatalogFilterControls } from "@/features/catalog/catalog-filter-controls";
 import {
+  catalogBelowGridEssays,
   catalogCategories,
   catalogIntros,
   type CatalogIntroTier,
@@ -220,6 +221,7 @@ export function CatalogPageView({
   const isLandingView = !category && !hasExactCategoryLink;
   const introKey = isLandingView ? "shop" : collection ? null : category ?? null;
   const intro = introKey ? catalogIntros[introKey] ?? null : null;
+  const belowGridEssay = introKey ? catalogBelowGridEssays[introKey] ?? null : null;
 
   const renderIntroTier = (tier: CatalogIntroTier, tierClassName: string, tierKey: string) => (
     <>
@@ -447,6 +449,17 @@ export function CatalogPageView({
           </div>
         </div>
       </Section>
+
+      {belowGridEssay ? (
+        <Section className={styles.catalogEssaySection} width="wide">
+          <div className={styles.catalogEssay}>
+            <h2>{belowGridEssay.heading}</h2>
+            {heroCopy.split("\n\n").map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
+          </div>
+        </Section>
+      ) : null}
 
       <Section className={styles.categoryTradeSection} tone="muted" width="wide">
         <div className={styles.tradePanel}>
