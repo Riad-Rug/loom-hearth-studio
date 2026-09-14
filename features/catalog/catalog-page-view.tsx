@@ -207,10 +207,31 @@ export function CatalogPageView({
   const displayedProductCountLabel = `${filteredProducts.length} ${
     filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
-  const catalogDescription =
-    category || hasExactCategoryLink
-      ? heroCopy
-      : "Handmade rugs, poufs, pillows, artisanal decor and antiques across Morocco.";
+  // The generic /shop view, as opposed to a category route or a rug-style
+  // collection. It is the one view with no editorial description of its own, so
+  // it carries the studio's own three-tier intro copy instead of `heroCopy`.
+  const isLandingView = !category && !hasExactCategoryLink;
+  const internationalInquiryHref = "/contact?inquiryType=international-shipping" as Route;
+  /**
+   * Shipping scope, shortened as the column narrows. Written per tier for the
+   * same reason as the landing intro above. The phone tier is a bare statement
+   * with no link, as specified by the studio; if mobile shoppers need the
+   * inquiry route, that is the line to change.
+   */
+  const shippingScopeNote = (
+    <>
+      <p className={`${styles.shopHeaderTrustNote} ${styles.desktopCopy}`}>
+        Shipping to the US. Outside the US?{" "}
+        <Link href={internationalInquiryHref}>Send an inquiry</Link> and we&apos;ll confirm
+        shipping before you order.
+      </p>
+      <p className={`${styles.shopHeaderTrustNote} ${styles.tabletCopy}`}>
+        Shipping to the US. Outside the US?{" "}
+        <Link href={internationalInquiryHref}>Send an inquiry</Link>.
+      </p>
+      <p className={`${styles.shopHeaderTrustNote} ${styles.phoneCopy}`}>Shipping to the US.</p>
+    </>
+  );
   const activeCategoryKey = serializeCategoryFilter(activeCategories);
   const activePriceKey = serializePriceFilter(selectedPrices);
   const activeSizeKey = serializeSizeFilter(selectedSizes);
@@ -348,21 +369,47 @@ export function CatalogPageView({
                   {displayedProductCountLabel}
                 </p>
               </div>
-              <p className={styles.shopHeaderTrustNote}>
-                Each piece is individually made and won&apos;t be restocked.
-              </p>
-              <p className={styles.shopHeaderTrustNote}>
-                We ship to the US. Outside the US?{" "}
-                <Link href={"/contact?inquiryType=international-shipping" as Route}>
-                  Send an inquiry
-                </Link>{" "}
-                and we confirm availability before payment.
-              </p>
-              {catalogDescription.split("\n\n").map((paragraph, index) => (
-                <p className={styles.lede} key={index}>
-                  {paragraph}
-                </p>
-              ))}
+              {isLandingView ? (
+                <>
+                  {catalogLanding.intro.desktop.map((paragraph, index) => (
+                    <p
+                      className={`${styles.lede} ${styles.desktopCopy}`}
+                      key={`intro-desktop-${index}`}
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                  {catalogLanding.intro.tablet.map((paragraph, index) => (
+                    <p
+                      className={`${styles.lede} ${styles.tabletCopy}`}
+                      key={`intro-tablet-${index}`}
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                  {catalogLanding.intro.phone.map((paragraph, index) => (
+                    <p
+                      className={`${styles.lede} ${styles.phoneCopy}`}
+                      key={`intro-phone-${index}`}
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                  {shippingScopeNote}
+                </>
+              ) : (
+                <>
+                  <p className={styles.shopHeaderTrustNote}>
+                    Each piece is individually made and won&apos;t be restocked.
+                  </p>
+                  {shippingScopeNote}
+                  {heroCopy.split("\n\n").map((paragraph, index) => (
+                    <p className={styles.lede} key={index}>
+                      {paragraph}
+                    </p>
+                  ))}
+                </>
+              )}
               {styleLinks?.length ? (
                 <nav aria-label={styleNavLabel} className={styles.styleNav}>
                   <span className={styles.filterGroupLabel}>{styleNavLabel}</span>

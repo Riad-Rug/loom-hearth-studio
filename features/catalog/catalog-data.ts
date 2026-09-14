@@ -5,6 +5,26 @@ export const catalogLanding = {
   title: "The Full Collection",
   description:
     "Handcrafted Moroccan rugs, poufs, pillows, and decor \u2014 sourced directly from Marrakech. Every rug is ONE OF A KIND. When a piece sells, it does not return.",
+  /**
+   * The /shop header intro, written once per viewport tier rather than
+   * truncated: the desktop column has room for a second sentence about age and
+   * selection, the tablet column fits the first sentence alone, and the phone
+   * column gets a shorter rewrite of it. Only the matching tier is displayed
+   * (.desktopCopy / .tabletCopy / .phoneCopy in catalog-page.module.css), the
+   * same display-toggle pattern home-page.module.css already uses.
+   */
+  intro: {
+    desktop: [
+      "Handmade Moroccan rugs, pillows, poufs, vintage pieces and artisanal decor, sourced and selected across Morocco.",
+      "Some pieces are old, some are newly made — each one is chosen for its materials, craftsmanship and character.",
+    ],
+    tablet: [
+      "Handmade Moroccan rugs, pillows, poufs, vintage pieces and artisanal decor, sourced and selected across Morocco.",
+    ],
+    phone: [
+      "Moroccan rugs, pillows, poufs, vintage pieces and handmade decor, sourced across Morocco.",
+    ],
+  },
   bullets: [
     "Hand-knotted rugs, rug-made poufs, cactus silk pillows, and handcrafted decor",
     "Every rug is ONE OF A KIND \u2014 sold pieces are not restocked",

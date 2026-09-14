@@ -827,3 +827,34 @@
   outline: 2px solid var(--color-green);
   outline-offset: 2px;
 }
+
+/* Three-tier responsive copy for the shop header. The landing intro and the
+   shipping-scope note are authored once per tier and toggled by display rather
+   than truncated, the same vocabulary home-page.module.css uses for its
+   .desktopCopy/.mobileCopy pairs. The breakpoints are the catalog's own: 900px
+   is where the filter sidebar collapses above the grid, 768px where the grid
+   drops to phone gutters. */
+.tabletCopy,
+.phoneCopy {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .desktopCopy {
+    display: none;
+  }
+
+  .tabletCopy {
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .tabletCopy {
+    display: none;
+  }
+
+  .phoneCopy {
+    display: block;
+  }
+}
