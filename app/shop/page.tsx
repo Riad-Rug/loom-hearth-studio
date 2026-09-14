@@ -21,9 +21,9 @@ export async function generateMetadata({ searchParams }: ShopPageProps): Promise
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "shop",
-    title: "Shop",
+    title: "Shop Handmade Moroccan Rugs, Poufs & Pillows",
     description:
-      "Browse Moroccan rugs, poufs, pillows, and decor sourced in Marrakech and prepared for review-first buying.",
+      "One-of-a-kind Moroccan rugs, poufs, pillows and decor, photographed in daylight and approved by you before payment. Ships from Casablanca to the US.",
     path: "/shop",
     noIndexFollow: isSearchResults,
   });

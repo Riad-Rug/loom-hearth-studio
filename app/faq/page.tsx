@@ -10,9 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "static_page",
     entityKey: "faq",
-    title: "FAQ",
+    title: "FAQ: Buying Moroccan Rugs, Shipping & Returns",
     description:
-      "Answers to common questions about ordering, pre-shipment verification, shipping, returns, and rug care at Loom & Hearth Studio.",
+      "Answers on approval-before-payment, US shipping from Morocco, customs, returns and how one-of-a-kind rugs are photographed.",
     path: "/faq",
   });
 }

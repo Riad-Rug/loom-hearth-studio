@@ -8,9 +8,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "static_page",
     entityKey: "blog",
-    title: "Blog",
+    title: "Moroccan Rug Guides & Sourcing Stories",
     description:
-      "Journal articles from Loom & Hearth Studio on Moroccan rugs, sourcing, interiors, and collected living.",
+      "Guides to Beni Ourain, Azilal and kilim rugs, care, sizing and sourcing stories from Morocco.",
     path: "/blog",
   });
 }

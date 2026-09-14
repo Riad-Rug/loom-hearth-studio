@@ -25,9 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "decor",
-    title: "Decor",
+    title: "Moroccan Decor & Antiques",
     description:
-      "Browse supporting Moroccan decor pieces selected to sit alongside rugs, poufs, and collected textile interiors.",
+      "Handmade Moroccan decor and antique pieces, sourced in person. Exact-piece photos before payment; ships from Casablanca.",
     path: "/shop/decor",
     noIndexFollow: !hasPurchasableProducts,
   });

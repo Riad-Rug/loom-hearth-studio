@@ -9,9 +9,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "static_page",
     entityKey: "about",
-    title: "About",
+    title: "About Loom & Hearth: Moroccan Rugs Sourced in Person",
     description:
-      "About Loom & Hearth Studio, its Marrakech sourcing roots, and its approach to handcrafted Moroccan rugs and home decor.",
+      "The founder sources every Moroccan rug and handmade piece himself, from souks to mountain workshops, and photographs it in Casablanca before you pay.",
     path: "/about",
   });
 }

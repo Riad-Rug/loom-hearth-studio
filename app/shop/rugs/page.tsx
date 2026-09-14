@@ -10,9 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "rugs",
-    title: "Rugs",
+    title: "Moroccan Rugs: Beni Ourain, Azilal, Kilim & More",
     description:
-      "Browse handcrafted Moroccan rugs sourced in Marrakech, including ONE OF A KIND pieces prepared for review-first buying.",
+      "Hand-knotted and flatweave Moroccan rugs by style and size. Every rug is the exact piece photographed; approve fresh photos before you pay.",
     path: "/shop/rugs",
   });
 }

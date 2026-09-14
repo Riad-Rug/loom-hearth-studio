@@ -7,9 +7,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "static_page",
     entityKey: "trade",
-    title: "Trade",
+    title: "Trade Program for Interior Designers: Moroccan Rugs & Decor",
     description:
-      "Trade pricing, sourcing support, and direct studio contact for interior designers working with Loom & Hearth Studio.",
+      "Trade pricing and sourcing support for designers buying Moroccan rugs, poufs, pillows and antiques. Direct studio contact, exact-piece photos, US shipping.",
     path: "/trade",
   });
 }

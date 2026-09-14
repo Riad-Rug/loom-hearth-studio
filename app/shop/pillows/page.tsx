@@ -10,9 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "pillows",
-    title: "Pillows",
+    title: "Moroccan Pillow Covers, Handwoven",
     description:
-      "Browse Moroccan pillows and textile accents designed to layer with rugs, poufs, and collected interiors.",
+      "Handwoven Moroccan pillow covers cut from kilim and vintage Battania textiles. One of a kind, approved by you before payment.",
     path: "/shop/pillows",
   });
 }

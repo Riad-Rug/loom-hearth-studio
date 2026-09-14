@@ -10,9 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "vintage",
-    title: "Vintage Rugs",
+    title: "Vintage Moroccan Rugs, One of a Kind",
     description:
-      "Browse one-of-a-kind vintage Moroccan rugs with condition and provenance stated piece by piece.",
+      "Vintage Beni Ourain, Azilal and Boujad rugs with honest condition photos. Approve daylight photos of the exact rug before you pay.",
     path: "/shop/vintage",
   });
 }

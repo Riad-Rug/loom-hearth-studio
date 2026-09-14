@@ -10,9 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "poufs",
-    title: "Poufs",
+    title: "Moroccan Leather & Wool Poufs",
     description:
-      "Browse Moroccan poufs and rug-based seating pieces sourced in Marrakech for layered, tactile interiors.",
+      "Handmade Moroccan poufs in leather and wool, sourced in Marrakech. See your exact pouf before payment; free US shipping over $210.",
     path: "/shop/poufs",
   });
 }
