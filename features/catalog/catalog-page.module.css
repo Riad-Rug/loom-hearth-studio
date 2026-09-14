@@ -875,7 +875,12 @@
 }
 
 .catalogEssay {
+  /* The measure is much narrower than the wide container it sits in, so without
+     auto inline margins the column hugs the left edge under a full-width
+     product grid. Text stays left-aligned: this is a multi-paragraph read, and
+     centred prose is harder to track line to line. */
   max-width: 44rem;
+  margin-inline: auto;
 }
 
 .catalogEssay h2 {
