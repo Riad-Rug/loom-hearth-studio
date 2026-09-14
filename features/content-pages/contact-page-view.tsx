@@ -10,7 +10,11 @@ import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
 import styles from "./content-pages.module.css";
 
-type InquiryType = "product-inquiry" | "trade-request" | "order-question";
+type InquiryType =
+  | "product-inquiry"
+  | "trade-request"
+  | "order-question"
+  | "international-shipping";
 
 type ContactSubmissionState = {
   tone: "success" | "error";
@@ -54,6 +58,7 @@ const inquiryOptions: Array<{ value: InquiryType; label: string }> = [
   { value: "product-inquiry", label: "Product" },
   { value: "trade-request", label: "Trade / project" },
   { value: "order-question", label: "Order help" },
+  { value: "international-shipping", label: "Shipping outside the US" },
 ];
 
 const messagePlaceholders: Record<InquiryType, string> = {
@@ -62,6 +67,8 @@ const messagePlaceholders: Record<InquiryType, string> = {
   "trade-request":
     "Tell us about the project - rooms, sizes, timeline, and whether you'd like trade pricing.",
   "order-question": "Share your order number, what happened, and what you need next.",
+  "international-shipping":
+    "Tell us the country and the piece; we quote shipping before any payment is taken.",
 };
 
 export function ContactPageView({
@@ -200,7 +207,7 @@ export function ContactPageView({
                   </div>
                 <div className={styles.contactRecommendationGrid}>
                   {recommendedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product.id} product={product} titleAs="p" />
                   ))}
                 </div>
               </section>
@@ -485,7 +492,9 @@ function ValidatedField({
 }
 
 function sanitizeInquiryType(value: string | undefined): InquiryType {
-  return value === "trade-request" || value === "order-question"
+  return value === "trade-request" ||
+    value === "order-question" ||
+    value === "international-shipping"
     ? value
     : "product-inquiry";
 }
@@ -497,6 +506,10 @@ function getFormTitle(inquiryType: InquiryType) {
 
   if (inquiryType === "order-question") {
     return "Request order help";
+  }
+
+  if (inquiryType === "international-shipping") {
+    return "Ask about shipping outside the US";
   }
 
   return "Send a message";

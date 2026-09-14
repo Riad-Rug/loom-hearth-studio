@@ -351,6 +351,13 @@ export function CatalogPageView({
               <p className={styles.shopHeaderTrustNote}>
                 Each piece is individually made and won&apos;t be restocked.
               </p>
+              <p className={styles.shopHeaderTrustNote}>
+                We ship to the US. Outside the US?{" "}
+                <Link href={"/contact?inquiryType=international-shipping" as Route}>
+                  Send an inquiry
+                </Link>{" "}
+                and we confirm availability before payment.
+              </p>
               {catalogDescription.split("\n\n").map((paragraph, index) => (
                 <p className={styles.lede} key={index}>
                   {paragraph}

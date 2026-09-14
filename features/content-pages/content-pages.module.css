@@ -434,9 +434,11 @@
   border: 0;
 }
 
+/* Four inquiry types since international-shipping was added; a 2x2 grid avoids
+   orphaning the fourth option on its own row. */
 .contactSegmentGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem;
 }
 

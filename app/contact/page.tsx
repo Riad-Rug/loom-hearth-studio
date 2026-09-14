@@ -11,9 +11,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "static_page",
     entityKey: "contact",
-    title: "Contact Loom & Hearth Studio",
+    title: "Contact Loom & Hearth: Rug Inquiries & Trade",
     description:
-      "Get in touch with Loom & Hearth Studio about handmade Moroccan rugs, trade projects, and order help.",
+      "Ask about a piece, shipping outside the US, or a trade project. Personal reply within 24 hours, usually with photos or video.",
     path: "/contact",
   });
 }
@@ -71,6 +71,14 @@ function buildDefaultMessage(searchParams: Awaited<ContactPageProps["searchParam
   }
 
   const productName = sanitizeContactField(searchParams?.productName, 120);
+  const inquiryType = sanitizeContactField(searchParams?.inquiryType, 40);
+
+  if (inquiryType === "international-shipping") {
+    return productName
+      ? `Hello, I am outside the US. Could you confirm shipping and cost for ${productName} to my country?`
+      : "Hello, I am outside the US. Could you confirm whether you can ship to my country, and the cost?";
+  }
+
   if (!productName) {
     return undefined;
   }

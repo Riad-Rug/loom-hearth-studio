@@ -1199,10 +1199,24 @@ function extractProductDimensions(title: string) {
 }
 
 function formatRugDimensionsShort(product: Extract<Product, { type: "rug" }>) {
-  return [
+  const imperialLabel = [
     formatFeetAndInchesShort(product.dimensionsCm.length),
     formatFeetAndInchesShort(product.dimensionsCm.width),
   ].join(dimensionSeparator);
+  const metricLabel = formatCentimetersShort(product.dimensionsCm);
+
+  return metricLabel ? `${imperialLabel} (${metricLabel})` : imperialLabel;
+}
+
+function formatCentimetersShort(dimensionsCm: { length: number; width: number } | undefined) {
+  const length = dimensionsCm?.length;
+  const width = dimensionsCm?.width;
+
+  if (!length || !width) {
+    return undefined;
+  }
+
+  return `${Math.round(length)}${dimensionSeparator}${Math.round(width)} cm`;
 }
 
 function formatFeetAndInchesShort(valueCm: number) {
