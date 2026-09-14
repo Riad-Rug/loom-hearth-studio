@@ -9,6 +9,8 @@ import { Section } from "@/components/layout/section";
 import { CatalogFilterControls } from "@/features/catalog/catalog-filter-controls";
 import {
   catalogCategories,
+  catalogIntros,
+  type CatalogIntroTier,
   catalogLanding,
   genericSizeFilterOptions,
   rugSizeFilterOptions,
@@ -207,16 +209,38 @@ export function CatalogPageView({
   const displayedProductCountLabel = `${filteredProducts.length} ${
     filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
-  // The generic /shop view, as opposed to a category route or a rug-style
-  // collection. It is the one view with no editorial description of its own, so
-  // it carries the studio's own three-tier intro copy instead of `heroCopy`.
-  const isLandingView = !category && !hasExactCategoryLink;
   const internationalInquiryHref = "/contact?inquiryType=international-shipping" as Route;
   /**
-   * Shipping scope, shortened as the column narrows. Written per tier for the
-   * same reason as the landing intro above. The phone tier is a bare statement
-   * with no link, as specified by the studio; if mobile shoppers need the
-   * inquiry route, that is the line to change.
+   * Which tiered header copy this view uses, if any (see `catalogIntros`). The
+   * generic /shop landing is keyed "shop"; a category route is keyed by its
+   * category. A rug-style collection is deliberately excluded even though its
+   * `category` is set, because its own description is what the page is for.
+   * Anything without an entry falls back to the default header below.
+   */
+  const isLandingView = !category && !hasExactCategoryLink;
+  const introKey = isLandingView ? "shop" : collection ? null : category ?? null;
+  const intro = introKey ? catalogIntros[introKey] ?? null : null;
+
+  const renderIntroTier = (tier: CatalogIntroTier, tierClassName: string, tierKey: string) => (
+    <>
+      {tier.paragraphs.map((paragraph, index) => (
+        <p className={`${styles.lede} ${tierClassName}`} key={`${tierKey}-${index}`}>
+          {paragraph}
+        </p>
+      ))}
+      <p className={`${styles.shopHeaderTrustNote} ${tierClassName}`}>
+        {tier.closing.before}
+        {tier.closing.link ? (
+          <Link href={internationalInquiryHref}>{tier.closing.link}</Link>
+        ) : null}
+        {tier.closing.after}
+      </p>
+    </>
+  );
+
+  /**
+   * Default header for every view without tiered copy: the restock note, the
+   * shipping scope, then the route's editorial description.
    */
   const shippingScopeNote = (
     <>
@@ -369,33 +393,11 @@ export function CatalogPageView({
                   {displayedProductCountLabel}
                 </p>
               </div>
-              {isLandingView ? (
+              {intro ? (
                 <>
-                  {catalogLanding.intro.desktop.map((paragraph, index) => (
-                    <p
-                      className={`${styles.lede} ${styles.desktopCopy}`}
-                      key={`intro-desktop-${index}`}
-                    >
-                      {paragraph}
-                    </p>
-                  ))}
-                  {catalogLanding.intro.tablet.map((paragraph, index) => (
-                    <p
-                      className={`${styles.lede} ${styles.tabletCopy}`}
-                      key={`intro-tablet-${index}`}
-                    >
-                      {paragraph}
-                    </p>
-                  ))}
-                  {catalogLanding.intro.phone.map((paragraph, index) => (
-                    <p
-                      className={`${styles.lede} ${styles.phoneCopy}`}
-                      key={`intro-phone-${index}`}
-                    >
-                      {paragraph}
-                    </p>
-                  ))}
-                  {shippingScopeNote}
+                  {renderIntroTier(intro.desktop, styles.desktopCopy, "intro-desktop")}
+                  {renderIntroTier(intro.tablet, styles.tabletCopy, "intro-tablet")}
+                  {renderIntroTier(intro.phone, styles.phoneCopy, "intro-phone")}
                 </>
               ) : (
                 <>

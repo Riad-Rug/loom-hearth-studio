@@ -5,32 +5,108 @@ export const catalogLanding = {
   title: "The Full Collection",
   description:
     "Handcrafted Moroccan rugs, poufs, pillows, and decor \u2014 sourced directly from Marrakech. Every rug is ONE OF A KIND. When a piece sells, it does not return.",
-  /**
-   * The /shop header intro, written once per viewport tier rather than
-   * truncated: the desktop column has room for a second sentence about age and
-   * selection, the tablet column fits the first sentence alone, and the phone
-   * column gets a shorter rewrite of it. Only the matching tier is displayed
-   * (.desktopCopy / .tabletCopy / .phoneCopy in catalog-page.module.css), the
-   * same display-toggle pattern home-page.module.css already uses.
-   */
-  intro: {
-    desktop: [
-      "Handmade Moroccan rugs, pillows, poufs, vintage pieces and artisanal decor, sourced and selected across Morocco.",
-      "Some pieces are old, some are newly made — each one is chosen for its materials, craftsmanship and character.",
-    ],
-    tablet: [
-      "Handmade Moroccan rugs, pillows, poufs, vintage pieces and artisanal decor, sourced and selected across Morocco.",
-    ],
-    phone: [
-      "Moroccan rugs, pillows, poufs, vintage pieces and handmade decor, sourced across Morocco.",
-    ],
-  },
   bullets: [
     "Hand-knotted rugs, rug-made poufs, cactus silk pillows, and handcrafted decor",
     "Every rug is ONE OF A KIND \u2014 sold pieces are not restocked",
     "Filter by category or sort by price and arrival date",
   ],
 } as const;
+
+export type CatalogIntroTier = {
+  paragraphs: readonly string[];
+  /**
+   * The line that closes the header. When `link` is set it is rendered as the
+   * international-shipping inquiry link, between `before` and `after`; without
+   * it the line is plain text and the tier carries no link at all.
+   */
+  closing: {
+    before: string;
+    link?: string;
+    after?: string;
+  };
+};
+
+export type CatalogIntro = {
+  desktop: CatalogIntroTier;
+  tablet: CatalogIntroTier;
+  phone: CatalogIntroTier;
+};
+
+/**
+ * Shop header copy, authored once per viewport tier rather than truncated by
+ * CSS: a desktop column has room for a sentence a phone column does not, and
+ * the shorter tiers are rewrites rather than clipped versions of the long one.
+ * Only the tier matching the viewport is displayed (.desktopCopy / .tabletCopy
+ * / .phoneCopy in catalog-page.module.css), the same display-toggle pattern
+ * home-page.module.css uses for its founder and step copy.
+ *
+ * Keyed by "shop" for the /shop landing and by ProductCategory for a category
+ * route. A route with no entry here keeps the default header instead: the
+ * restock note, the shipping-scope note, then its own editorial description
+ * from `catalogCategories`. Rug-style collections always keep the default,
+ * because their own description is the point of the page.
+ */
+export const catalogIntros: Partial<Record<"shop" | ProductCategory, CatalogIntro>> = {
+  shop: {
+    desktop: {
+      paragraphs: [
+        "Handmade Moroccan rugs, pillows, poufs, vintage pieces and artisanal decor, sourced and selected across Morocco.",
+        "Some pieces are old, some are newly made — each one is chosen for its materials, craftsmanship and character.",
+      ],
+      closing: {
+        before: "Shipping to the US. Outside the US? ",
+        link: "Send an inquiry",
+        after: " and we'll confirm shipping before you order.",
+      },
+    },
+    tablet: {
+      paragraphs: [
+        "Handmade Moroccan rugs, pillows, poufs, vintage pieces and artisanal decor, sourced and selected across Morocco.",
+      ],
+      closing: {
+        before: "Shipping to the US. Outside the US? ",
+        link: "Send an inquiry",
+        after: ".",
+      },
+    },
+    phone: {
+      paragraphs: [
+        "Moroccan rugs, pillows, poufs, vintage pieces and handmade decor, sourced across Morocco.",
+      ],
+      closing: { before: "Shipping to the US." },
+    },
+  },
+  rugs: {
+    desktop: {
+      paragraphs: [
+        "Handmade Moroccan rugs selected for their wool, weave, condition and character.",
+        "Explore Beni Ourain, Azilal, Boujad, Beni M'Guild, Zemmour, Taznakht, Glaoua, Boucherouite and other weaving traditions from across Morocco.",
+      ],
+      closing: {
+        before: "Outside the US? ",
+        link: "Send an inquiry",
+        after: " and we'll confirm shipping before you order.",
+      },
+    },
+    tablet: {
+      paragraphs: [
+        "Handmade Moroccan rugs selected for their wool, weave, condition and character.",
+        "Beni Ourain, Azilal, Boujad, Zemmour, Taznakht and other weaving traditions from across Morocco.",
+      ],
+      closing: {
+        before: "Outside the US? ",
+        link: "Send an inquiry",
+        after: ".",
+      },
+    },
+    phone: {
+      paragraphs: [
+        "Handmade rugs selected across Morocco for their wool, weave, condition and character.",
+      ],
+      closing: { before: "Shop the collection below." },
+    },
+  },
+};
 
 export const catalogCategories = [
   {
