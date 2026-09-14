@@ -75,6 +75,18 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           // domain record the view model already carries; the storefront
           // category cannot answer this on its own.
           ageClass: product.cartProduct.ageClass,
+          // Attributes the page already shows: wool/cotton content, the
+          // imperial size label from the spec table, and the measured
+          // centimetre footprint. Colour is only sent when this rug recorded
+          // its own palette — `createProductPalette` falls back to a hard-coded
+          // default palette otherwise, which would be fabricated colour data.
+          material: product.materialLabel,
+          sizeLabel: product.dimensionsLabel,
+          dimensionsCm: product.cartProduct.dimensionsCm,
+          colorLabels:
+            product.cartProduct.palette.length > 0
+              ? product.palette.map((swatch) => swatch.label)
+              : undefined,
           imageUrls: product.gallery.map((image) => image.src),
           availability: product.status === "sold" ? "outOfStock" : "inStock",
           isOneOfOne: true,

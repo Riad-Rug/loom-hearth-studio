@@ -255,6 +255,22 @@ export function productSchema(input: {
   imageUrls: string[];
   availability?: "inStock" | "outOfStock";
   isOneOfOne?: boolean;
+  /** Comma-joined materials as the PDP prints them (view model `materialLabel`). */
+  material?: string;
+  /** Human-readable size, e.g. the rug view model's `dimensionsLabel`. */
+  sizeLabel?: string;
+  /**
+   * Machine-readable footprint. Only rugs are guaranteed to carry it; multi-unit
+   * pieces record it when the studio measured one.
+   */
+  dimensionsCm?: { length: number; width: number };
+  /**
+   * Named palette colours recorded for the piece, not hex values. The palette
+   * is not rendered anywhere on the storefront, so only pass it for a piece
+   * that recorded one of its own; unnamed hexes arrive as "Accent N"
+   * placeholders and are dropped below rather than published as colours.
+   */
+  colorLabels?: string[];
 }) {
   const url = absoluteUrl(input.path);
   const availability =
@@ -304,6 +320,35 @@ export function productSchema(input: {
     .toISOString()
     .slice(0, 10);
 
+  /**
+   * Attribute fields the page already shows but schema never carried. Every one
+   * of them is omitted rather than emitted empty: a `"material": ""` is a
+   * structured-data error, while a missing key is simply a piece we did not
+   * record. `color` is one string because schema.org's color is single-valued;
+   * the labels are joined in the order they were recorded.
+   *
+   * `Accent N` is what the palette builder emits for a hex it has no name for,
+   * so those entries are filtered out: they describe nothing a shopper or a
+   * crawler could use, and a `"color": "Accent 1, Accent 2"` is noise Google
+   * would read as a real colour.
+   */
+  const material = input.material?.trim();
+  const sizeLabel = input.sizeLabel?.trim();
+  const color = (input.colorLabels ?? [])
+    .map((label) => label.trim())
+    .filter((label) => label.length > 0 && !/^Accent \d+$/u.test(label))
+    .join(", ");
+  /**
+   * Rugs are flat pieces laid on a floor, so the recorded length is the
+   * front-to-back dimension schema.org calls `depth`, not `height`. A zero or
+   * missing measurement drops both keys together — half a footprint is worse
+   * than none.
+   */
+  const dimensionsCm =
+    input.dimensionsCm && input.dimensionsCm.length > 0 && input.dimensionsCm.width > 0
+      ? input.dimensionsCm
+      : undefined;
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -323,6 +368,23 @@ export function productSchema(input: {
     category: input.category,
     url,
     itemCondition,
+    ...(material ? { material } : {}),
+    ...(color ? { color } : {}),
+    ...(sizeLabel ? { size: sizeLabel } : {}),
+    ...(dimensionsCm
+      ? {
+          width: {
+            "@type": "QuantitativeValue",
+            value: dimensionsCm.width,
+            unitCode: "CMT",
+          },
+          depth: {
+            "@type": "QuantitativeValue",
+            value: dimensionsCm.length,
+            unitCode: "CMT",
+          },
+        }
+      : {}),
     additionalProperty: [
       {
         "@type": "PropertyValue",

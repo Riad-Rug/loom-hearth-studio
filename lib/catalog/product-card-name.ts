@@ -91,6 +91,17 @@ function removeProductDimensions(title: string) {
     .trim();
 }
 
+/**
+ * True when the name already states a size — `6'5" × 4'2"`, `150 × 105 cm`,
+ * `24 in`. Defined in terms of `removeProductDimensions` so callers that only
+ * need the reading (the meta description, which drops its own size label
+ * instead of rewriting the name) share one set of patterns with the card-title
+ * stripper rather than keeping a second copy that drifts.
+ */
+export function productNameHasDimensions(name: string) {
+  return removeProductDimensions(name) !== normalizeDimensionSeparators(name).replace(/\s+/gu, " ").trim();
+}
+
 function limitProductTitle(title: string) {
   const normalizedTitle = title.replace(/\s+/gu, " ").trim();
 

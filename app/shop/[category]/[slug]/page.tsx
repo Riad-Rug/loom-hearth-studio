@@ -59,6 +59,22 @@ export default async function CategoryProductPage({
           // category cannot answer this (a pillow cover cut from vintage
           // Battania is still a new cover).
           ageClass: product.cartProduct.ageClass,
+          // Attributes the page already shows. The size label only exists on
+          // rugs (a pouf's size lives in its variants), while the centimetre
+          // footprint comes off the domain record so both product types can
+          // supply it when it was measured.
+          material: product.materialLabel,
+          sizeLabel: product.type === "rug" ? product.dimensionsLabel : undefined,
+          dimensionsCm: product.cartProduct.dimensionsCm,
+          // Colour is only sent when the piece carries its own recorded palette.
+          // `createProductPalette` substitutes a hard-coded default palette for
+          // every multi-unit piece and for any rug that recorded none, so
+          // passing the view model's palette unconditionally would claim the
+          // same five colours for most of the catalog.
+          colorLabels:
+            product.type === "rug" && product.cartProduct.palette.length > 0
+              ? product.palette.map((swatch) => swatch.label)
+              : undefined,
           imageUrls: product.gallery.map((image) => image.src),
           availability:
             product.status === "sold" ||
