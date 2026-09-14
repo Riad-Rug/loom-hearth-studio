@@ -298,11 +298,21 @@
   gap: 0.8rem;
 }
 
-.productTitleRow h3 {
+.productTitleRow h3,
+.productTitleRow .productTitle {
   font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 500;
   letter-spacing: 0;
+}
+
+/* The pager renders the product name as a <p> rather than a heading. These are
+   the heading defaults globals.css gave the old <h3> for free, repeated here so
+   the card renders identically. */
+.productTitleRow .productTitle {
+  margin: 0;
+  line-height: 1.2;
+  overflow: clip;
 }
 
 .productBadge {

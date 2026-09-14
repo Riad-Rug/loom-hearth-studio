@@ -259,7 +259,17 @@ export function ProductDetailPageView({
 
             <section className={PANEL_CARD} aria-label="Shipping and returns">
               <ul className="grid gap-[0.6rem] m-0 pl-[1.1rem] text-[var(--color-ink)] marker:text-[var(--color-green)]">
-                <li>Tracked shipping from Casablanca.</li>
+                <li>
+                  Tracked shipping from Casablanca to the US. Outside the US?{" "}
+                  <Link
+                    className="underline underline-offset-2 text-[var(--color-green)]"
+                    href={
+                      `/contact?inquiryType=international-shipping&productName=${encodeURIComponent(product.name)}` as Route
+                    }
+                  >
+                    Send an inquiry first.
+                  </Link>
+                </li>
                 <li>Approval before payment capture.</li>
                 <li>Condition is shown in photos, not softened in copy.</li>
                 <li>Questions handled directly before dispatch.</li>
@@ -329,6 +339,7 @@ export function ProductDetailPageView({
                   key={item.id}
                   product={item}
                   sizes={recommendationRailCardSizes}
+                  titleAs="p"
                 />
               ))}
             </div>
@@ -352,6 +363,7 @@ export function ProductDetailPageView({
                   key={item.id}
                   product={item}
                   sizes={recommendationRailCardSizes}
+                  titleAs="p"
                 />
               ))}
             </div>

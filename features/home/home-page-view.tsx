@@ -177,73 +177,6 @@ export function HomePageView({
         <span className={styles.mobileCopy}>— Riad</span>
       </section>
 
-      <section className={styles.inventorySection}>
-        <div className={styles.sectionHeader}>
-          <div>
-            <p className={styles.eyebrow}>Inventory</p>
-            <h2>In stock right now</h2>
-          </div>
-          <p>Every piece is the only one. When it sells, it&apos;s gone.</p>
-        </div>
-
-        <div className={styles.filterChips} aria-label="Browse inventory by category">
-          {inventoryChips.map((chip) =>
-            isUnavailableHref(chip.href) ? (
-              <span
-                key={chip.href}
-                aria-disabled="true"
-                className={`${styles.filterChip} ${styles.disabledEntry}`}
-              >
-                {chip.label}
-              </span>
-            ) : (
-              <Link key={chip.href} className={styles.filterChip} href={chip.href as Route}>
-                {chip.label}
-              </Link>
-            ),
-          )}
-        </div>
-
-        {inventoryProducts.length === 0 ? (
-          <p className={styles.inventoryEmptyState}>
-            Nothing here right now — new pieces land most weeks. Join the list below to see them
-            first.
-          </p>
-        ) : null}
-
-        <InventoryProductPager products={inventoryProducts} />
-      </section>
-
-      <section className={styles.howItWorksSection}>
-        <div className={styles.sectionHeader}>
-          <div>
-            <p className={styles.eyebrow}>How buying works</p>
-            <h2>See it. Approve it. Then pay.</h2>
-          </div>
-          <div className={styles.sectionHeaderCopy}>
-            <p className={styles.desktopCopy}>{howItWorksSideDesktop}</p>
-            <p className={styles.mobileCopy}>{howItWorksSideMobile}</p>
-          </div>
-        </div>
-
-        <div className={styles.stepsGrid}>
-          {howItWorksSteps.map((step) => (
-            <article key={step.number} className={styles.stepCard}>
-              <span className={styles.stepNumber}>
-                {step.number} — <span className={styles.stepTag}>{step.tag}</span>
-              </span>
-              <h3>{step.title}</h3>
-              <p className={styles.desktopCopy}>{step.bodyDesktop}</p>
-              <p className={styles.mobileCopy}>{step.bodyMobile}</p>
-            </article>
-          ))}
-        </div>
-
-        <p className={styles.howItWorksClosing}>
-          You are never charged for a piece you haven&apos;t approved.
-        </p>
-      </section>
-
       <section className={styles.categoriesSection}>
         <div className={styles.sectionHeader}>
           <div>
@@ -327,6 +260,73 @@ export function HomePageView({
             </div>
           </nav>
         ) : null}
+      </section>
+
+      <section className={styles.howItWorksSection}>
+        <div className={styles.sectionHeader}>
+          <div>
+            <p className={styles.eyebrow}>How buying works</p>
+            <h2>See it. Approve it. Then pay.</h2>
+          </div>
+          <div className={styles.sectionHeaderCopy}>
+            <p className={styles.desktopCopy}>{howItWorksSideDesktop}</p>
+            <p className={styles.mobileCopy}>{howItWorksSideMobile}</p>
+          </div>
+        </div>
+
+        <div className={styles.stepsGrid}>
+          {howItWorksSteps.map((step) => (
+            <article key={step.number} className={styles.stepCard}>
+              <span className={styles.stepNumber}>
+                {step.number} — <span className={styles.stepTag}>{step.tag}</span>
+              </span>
+              <h3>{step.title}</h3>
+              <p className={styles.desktopCopy}>{step.bodyDesktop}</p>
+              <p className={styles.mobileCopy}>{step.bodyMobile}</p>
+            </article>
+          ))}
+        </div>
+
+        <p className={styles.howItWorksClosing}>
+          You are never charged for a piece you haven&apos;t approved.
+        </p>
+      </section>
+
+      <section className={styles.inventorySection}>
+        <div className={styles.sectionHeader}>
+          <div>
+            <p className={styles.eyebrow}>Inventory</p>
+            <h2>In stock right now</h2>
+          </div>
+          <p>Every piece is the only one. When it sells, it&apos;s gone.</p>
+        </div>
+
+        <div className={styles.filterChips} aria-label="Browse inventory by category">
+          {inventoryChips.map((chip) =>
+            isUnavailableHref(chip.href) ? (
+              <span
+                key={chip.href}
+                aria-disabled="true"
+                className={`${styles.filterChip} ${styles.disabledEntry}`}
+              >
+                {chip.label}
+              </span>
+            ) : (
+              <Link key={chip.href} className={styles.filterChip} href={chip.href as Route}>
+                {chip.label}
+              </Link>
+            ),
+          )}
+        </div>
+
+        {inventoryProducts.length === 0 ? (
+          <p className={styles.inventoryEmptyState}>
+            Nothing here right now — new pieces land most weeks. Join the list below to see them
+            first.
+          </p>
+        ) : null}
+
+        <InventoryProductPager products={inventoryProducts} />
       </section>
 
       <section className={styles.storySection}>

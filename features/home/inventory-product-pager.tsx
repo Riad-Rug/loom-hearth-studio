@@ -100,7 +100,12 @@ export function InventoryProductPager({ products, pageSize = 8 }: InventoryProdu
             aria-label={`Page ${pageIndex + 1} of ${pages.length}`}
           >
             {page.map((product) => (
-              <Link key={product.id} className={styles.productCard} href={product.href as Route}>
+              <Link
+                key={product.id}
+                aria-label={product.displayName}
+                className={styles.productCard}
+                href={product.href as Route}
+              >
                 <div className={styles.productImageWrap}>
                   <LiveProductCardImage
                     primaryImage={product.primaryImage}
@@ -110,7 +115,7 @@ export function InventoryProductPager({ products, pageSize = 8 }: InventoryProdu
                 </div>
                 <div className={styles.productMeta}>
                   <div className={styles.productTitleRow}>
-                    <h3>{product.displayName}</h3>
+                    <p className={styles.productTitle}>{product.displayName}</p>
                     {product.status === "sold" ? (
                       <span className={styles.productBadge}>SOLD</span>
                     ) : null}

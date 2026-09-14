@@ -39,9 +39,21 @@ type ProductCardProps = {
   product: CatalogProductCardViewModel;
   /** Defaults to the shop-grid geometry; rails pass their own measured value. */
   sizes?: string;
+  /**
+   * The shop grid renders these cards under its own H1, so the product name is a
+   * real H3 subsection there. PDP rails are secondary content whose names are not
+   * sections of the page, so they pass "p" and keep the same visual treatment via
+   * `.productTitle` (the CSS rule is shared with the `h3` selector).
+   */
+  titleAs?: "h3" | "p";
 };
 
-export function ProductCard({ product, sizes = catalogCardSizes }: ProductCardProps) {
+export function ProductCard({
+  product,
+  sizes = catalogCardSizes,
+  titleAs = "h3",
+}: ProductCardProps) {
+  const Title = titleAs;
   const [imageFailed, setImageFailed] = useState(false);
   const [primaryImageLoaded, setPrimaryImageLoaded] = useState(false);
   const [secondaryImageFailed, setSecondaryImageFailed] = useState(false);
@@ -68,7 +80,11 @@ export function ProductCard({ product, sizes = catalogCardSizes }: ProductCardPr
   };
 
   return (
-    <Link className={styles.productCard} href={product.href as Route}>
+    <Link
+      aria-label={product.displayName}
+      className={styles.productCard}
+      href={product.href as Route}
+    >
       <div className={styles.productMedia}>
         {showImage ? (
           <>
@@ -111,7 +127,7 @@ export function ProductCard({ product, sizes = catalogCardSizes }: ProductCardPr
       </div>
       <div className={styles.productContent}>
         <div className={styles.productTitleRow}>
-          <h3>{product.displayName}</h3>
+          <Title className={styles.productTitle}>{product.displayName}</Title>
           {product.status === "sold" ? (
             <span className={styles.productMonoBadge}>SOLD</span>
           ) : null}

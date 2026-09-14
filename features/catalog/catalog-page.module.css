@@ -46,6 +46,20 @@
   line-height: 1.4;
 }
 
+/* The global `a { color: inherit; text-decoration: none; }` rule would hide the
+   international-shipping link inside the sentence. Match the inline-link
+   vocabulary used by .filterClearButton so it reads as the link it is. */
+.shopHeaderTrustNote a {
+  color: var(--color-green);
+  text-decoration: underline;
+  text-underline-offset: 0.15rem;
+}
+
+.shopHeaderTrustNote a:hover,
+.shopHeaderTrustNote a:focus-visible {
+  text-decoration-thickness: 2px;
+}
+
 /* Two-column products layout: filters live beside the grid, not above it. The
    sidebar tracks a fixed measure so the chip rows wrap predictably; the grid
    track is minmax(0, 1fr) so wide cards can never push the column past the
@@ -685,7 +699,11 @@
   font-weight: 400;
 }
 
-.productContent h3 {
+/* `.productTitle` is the same rule for the rail cards, which render the product
+   name as a <p> instead of an <h3>; the two selectors must stay together so the
+   card looks identical whichever element is used. */
+.productContent h3,
+.productContent .productTitle {
   margin: 0;
   font-family: var(--font-body), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: var(--product-card-title-size, 1rem);
@@ -778,7 +796,8 @@
     gap: var(--space-5) var(--space-4);
   }
 
-  .productContent h3 {
+  .productContent h3,
+  .productContent .productTitle {
     font-size: 0.81rem;
     line-height: 1.22;
   }
