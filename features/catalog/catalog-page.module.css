@@ -865,6 +865,12 @@
    section drops its top padding so it reads as a continuation of the grid
    above rather than a separate band. */
 .catalogEssaySection {
+  /* .page is a grid whose children carry explicit `order` values, and the two
+     sections this one sits between (.productsSection, .categoryTradeSection)
+     are both order: 2. Without this line the default order: 0 wins and the
+     section renders ABOVE the products, whatever the DOM order says. Matching
+     their order hands placement back to document order. */
+  order: 2;
   padding-top: 0;
 }
 
