@@ -886,3 +886,36 @@
 .catalogEssay p:last-child {
   margin-bottom: 0;
 }
+
+/* Clamping the second paragraph rather than capping the whole block's height
+   puts the cut in the same place at every width: one full paragraph, then two
+   lines. A max-height would show most of the opening paragraph on a desktop
+   column and half of it on a phone. */
+.catalogEssayClamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Text button, borrowing the inline-link vocabulary of .shopHeaderTrustNote a
+   so the control reads as prose rather than as a form control. No display rule
+   anywhere in this block: the paragraphs it reveals are toggled with [hidden],
+   which a display declaration would silently defeat. */
+.catalogEssayToggle {
+  margin-top: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-green);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15rem;
+  cursor: pointer;
+}
+
+.catalogEssayToggle:hover,
+.catalogEssayToggle:focus-visible {
+  text-decoration-thickness: 2px;
+}

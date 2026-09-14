@@ -102,6 +102,7 @@ export function CatalogPageView({
     parseSortOption(searchParams.get("sort")),
   );
   const [hideSold, setHideSold] = useState(() => searchParams.get("availability") === "available");
+  const [isEssayExpanded, setIsEssayExpanded] = useState(false);
   const categoryMeta =
     category ? catalogCategories.find((item) => item.key === category) ?? null : null;
   const heroTitle = collection?.title ?? (categoryMeta ? categoryMeta.title : catalogLanding.title);
@@ -222,6 +223,7 @@ export function CatalogPageView({
   const introKey = isLandingView ? "shop" : collection ? null : category ?? null;
   const intro = introKey ? catalogIntros[introKey] ?? null : null;
   const belowGridEssay = introKey ? catalogBelowGridEssays[introKey] ?? null : null;
+  const belowGridEssayParagraphs = belowGridEssay ? heroCopy.split("\n\n") : [];
 
   const renderIntroTier = (tier: CatalogIntroTier, tierClassName: string, tierKey: string) => (
     <>
@@ -452,11 +454,37 @@ export function CatalogPageView({
 
       {belowGridEssay ? (
         <Section className={styles.catalogEssaySection} width="wide">
+          {/* Collapsed to the opening paragraph and a two-line taste of the
+              second. The remaining paragraphs stay in the markup and are
+              toggled with [hidden] rather than dropped, so the page still
+              carries the full text for a reader who never clicks and for a
+              crawler that never can. */}
           <div className={styles.catalogEssay}>
             <h2>{belowGridEssay.heading}</h2>
-            {heroCopy.split("\n\n").map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
+            {belowGridEssayParagraphs[0] ? <p>{belowGridEssayParagraphs[0]}</p> : null}
+            {belowGridEssayParagraphs[1] ? (
+              <p className={isEssayExpanded ? undefined : styles.catalogEssayClamp}>
+                {belowGridEssayParagraphs[1]}
+              </p>
+            ) : null}
+            {belowGridEssayParagraphs.length > 2 ? (
+              <>
+                <div hidden={!isEssayExpanded} id="catalog-essay-rest">
+                  {belowGridEssayParagraphs.slice(2).map((paragraph, index) => (
+                    <p key={index}>{paragraph}</p>
+                  ))}
+                </div>
+                <button
+                  aria-controls="catalog-essay-rest"
+                  aria-expanded={isEssayExpanded}
+                  className={styles.catalogEssayToggle}
+                  onClick={() => setIsEssayExpanded((value) => !value)}
+                  type="button"
+                >
+                  {isEssayExpanded ? "Read less" : "Read more"}
+                </button>
+              </>
+            ) : null}
           </div>
         </Section>
       ) : null}
