@@ -35,7 +35,7 @@ const contentSecurityPolicy = [
   // googleads.g.doubleclick.net + googleadservices.com were previously listed
   // here for the Google Ads viewthroughconversion script; both were removed with
   // the Google Ads tag itself.
-  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.clarity.ms https://connect.facebook.net https://s.pinimg.com https://js.stripe.com`,
+  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.clarity.ms https://connect.facebook.net https://s.pinimg.com https://js.stripe.com https://*.clarity.ms https://static.cloudflareinsights.com`,
   // 'unsafe-inline' is genuinely required, verified empirically against a
   // PRODUCTION build: removing it produced 89 violations across the homepage,
   // a product page and the checkout payment step — both style-src-attr (inline
@@ -50,14 +50,14 @@ const contentSecurityPolicy = [
   // www.google.com is KEPT: it is not an ad-serving host, and GA4's own
   // consent-mode/conversion-measurement beacon (/ccm/collect) targets it
   // independently of Google Ads whenever Google Signals is on for the property.
-  `img-src 'self' data: blob: ${imageHostOrigins.join(" ")} https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.facebook.com https://ct.pinterest.com https://s.pinimg.com https://c.clarity.ms`,
+  `img-src 'self' data: blob: ${imageHostOrigins.join(" ")} https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.facebook.com https://ct.pinterest.com https://s.pinimg.com https://c.clarity.ms https://*.clarity.ms https://c.bing.com`,
   "font-src 'self' data:",
   // Of the three gtag.js beacons observed under report-only, /g/collect is GA4
   // (google-analytics.com) and /ccm/collect is GA4 consent-mode measurement
   // (www.google.com) — both kept. /rmkt/collect is Google Ads remarketing, so
   // ad.doubleclick.net, googleads.g.doubleclick.net and www.googleadservices.com
   // were removed along with the Ads tag.
-  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.clarity.ms https://c.clarity.ms https://connect.facebook.net https://www.facebook.com https://ct.pinterest.com https://s.pinimg.com https://api.stripe.com https://m.stripe.com https://m.stripe.network https://js.stripe.com https://www.google.com",
+  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.clarity.ms https://c.clarity.ms https://connect.facebook.net https://www.facebook.com https://ct.pinterest.com https://s.pinimg.com https://api.stripe.com https://m.stripe.com https://m.stripe.network https://js.stripe.com https://www.google.com https://*.clarity.ms",
   // js.stripe.com hosts the PaymentElement iframes; hooks.stripe.com hosts 3DS
   // challenge frames. 'self' covers the same-origin admin /blog-preview iframe.
   // ct.pinterest.com was added after observing the Pinterest tag inject its own
