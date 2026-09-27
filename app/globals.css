@@ -992,6 +992,19 @@ h6 {
   display: none;
 }
 
+/* "allow them" in the opt-out notice: a real button, styled as a text link so
+   the marketing opt-in stays available without a third bar button. */
+.cookie-banner__inline-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-ink);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
 /*
  * Mobile: edge to edge, the text on its own row above the two buttons, and the
  * shorter disclosure copy. At 390px this leaves the bar around 9.5rem tall,

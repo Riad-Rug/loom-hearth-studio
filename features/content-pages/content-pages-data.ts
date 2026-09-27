@@ -587,7 +587,7 @@ We aim to respond within 5 business days.`,
     bodyFormat: "markdown",
     body: String.raw`**Loom and Hearth Studio LLC**
 Effective date: March 29, 2026
-Last updated: March 29, 2026
+Last updated: September 27, 2026
 
 ---
 
@@ -615,7 +615,7 @@ We collect only what is necessary to operate this store and communicate with you
 | Session token | Keeping you logged in during your visit | Legitimate interest (security) |
 | Hashed login identifier (a one-way SHA-256 hash derived from your email address, IP address, and the login surface — the raw IP and raw email are never stored in this record) | Preventing automated login abuse and brute-force attacks | Legitimate interest (security) |
 
-We may run consent-based analytics and advertising tags, including Google Analytics, Google Ads, Meta Pixel, and Pinterest tag. These optional tags stay off unless you accept optional tracking. We do not use session recording tools unless this policy is updated first.
+We may run analytics tools (Google Analytics and Microsoft Clarity) and advertising tags (Meta Pixel and Pinterest tag). Microsoft Clarity records how pages are used — clicks, scrolling and mouse movement — so we can find and fix problems with the site. Whether these tools run depends on where you are browsing from and on the choices you make; see section 3.
 
 ---
 
@@ -632,7 +632,24 @@ We may run consent-based analytics and advertising tags, including Google Analyt
 
 Your shopping cart and temporary checkout state are saved in your browser's local storage, not in cookies. This data remains on your device unless and until you proceed with an order after direct confirmation with us.
 
-Analytics and marketing cookies stay off unless you accept optional tracking in the cookie banner. If accepted, Google Analytics, Google Ads, Meta Pixel, and Pinterest tag may set third-party cookies or similar identifiers for measurement, attribution, and advertising audience functions.
+### Analytics cookies — depends on your region
+
+To decide which rule applies, our site looks up the country of your connection from the country code our hosting and network providers attach to each request. We do not store that country code.
+
+- **European Union, European Economic Area (Iceland, Liechtenstein, Norway), United Kingdom and Switzerland — opt-in.** Google Analytics and Microsoft Clarity stay off unless you choose Accept in the cookie banner. If we cannot tell where you are browsing from, we apply this rule.
+- **Everywhere else, including the United States, Canada and Australia — opt-out.** Google Analytics and Microsoft Clarity run by default, and a notice at the bottom of the page lets you opt out. Opting out switches them off and we remember your choice.
+
+**Global Privacy Control.** If your browser sends a Global Privacy Control (GPC) signal, we treat it as an opt-out of analytics wherever you are, unless you later choose to accept analytics yourself.
+
+When they run, Google Analytics and Microsoft Clarity may set cookies or similar identifiers to measure visits and see how the site is used.
+
+### Marketing cookies — opt-in everywhere
+
+Meta Pixel and Pinterest tag stay off in every region unless you choose to allow them. If allowed, they may set third-party cookies or similar identifiers for attribution and advertising audience functions.
+
+### Changing your choice
+
+Your choice is stored in the ${"`"}loom_hearth_cookie_consent${"`"} cookie for 180 days. To change it, clear this site's cookies in your browser and the banner or notice will appear again.
 
 ---
 
@@ -648,7 +665,9 @@ We share your data with the following third parties only to the extent necessary
 
 **Shipping carriers (DHL Express, FedEx International, Aramex)** — order fulfilment. When your order is dispatched, we share your full name, shipping address, and where required by the carrier and provided during order handling, your phone number with the carrier responsible for delivering your order. These carriers process your data solely to complete delivery.
 
-No other third-party service currently receives your personal data. If we add a tool that requires sharing your data — for example an email marketing platform or analytics service — we will update this policy before activating that tool.
+**Google Analytics and Microsoft Clarity** — site analytics. When analytics is on for you (see section 3), usage data such as pages viewed, device and browser details, approximate location derived from your IP address, and — for Clarity — clicks, scrolling and mouse movement is sent to Google and Microsoft. Their privacy policies are available at policies.google.com/privacy and privacy.microsoft.com.
+
+No other third-party service currently receives your personal data. If we add a tool that requires sharing your data — for example an email marketing platform — we will update this policy before activating that tool.
 
 ---
 

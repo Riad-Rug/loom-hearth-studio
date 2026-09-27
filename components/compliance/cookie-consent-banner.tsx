@@ -14,10 +14,49 @@ import { useCookieConsent } from "@/components/compliance/cookie-consent-provide
  * defect rather than a design choice.
  */
 export function CookieConsentBanner() {
-  const { consent, hasResolved, acceptAll, declineAll } = useCookieConsent();
+  const { consent, mode, hasResolved, acceptAll, declineAll, keepDefaults } = useCookieConsent();
 
   if (!hasResolved || consent) {
     return null;
+  }
+
+  /*
+   * Opt-out regions (outside the EU/EEA, UK and CH): analytics is already on,
+   * so this is a notice rather than a question. "Opt out" and "OK" get the same
+   * treatment, and marketing tags still need an explicit yes via the inline
+   * link.
+   */
+  if (mode === "opt-out") {
+    return (
+      <aside className="cookie-banner" role="region" aria-label="Cookie notice">
+        <div className="cookie-banner__inner">
+          <div className="cookie-banner__text">
+            <p className="cookie-banner__title">We use analytics cookies to improve this site.</p>
+            <p className="cookie-banner__copy">
+              <span className="cookie-banner__copy-full">
+                Google Analytics and Microsoft Clarity help us see how the site is used. You can opt
+                out at any time. Marketing cookies stay off unless you{" "}
+              </span>
+              <span className="cookie-banner__copy-short">
+                Analytics helps us improve the site. Marketing cookies stay off unless you{" "}
+              </span>
+              <button className="cookie-banner__inline-button" type="button" onClick={acceptAll}>
+                allow them
+              </button>
+              .
+            </p>
+          </div>
+          <div className="cookie-banner__actions">
+            <button className="cookie-banner__button" type="button" onClick={declineAll}>
+              Opt out
+            </button>
+            <button className="cookie-banner__button" type="button" onClick={keepDefaults}>
+              OK
+            </button>
+          </div>
+        </div>
+      </aside>
+    );
   }
 
   return (
