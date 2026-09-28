@@ -82,6 +82,7 @@ export default async function CategoryProductPage({
               ? "outOfStock"
               : "inStock",
           isOneOfOne: product.category === "vintage",
+          createdAt: product.cartProduct.createdAt,
         })}
       />
       <JsonLd

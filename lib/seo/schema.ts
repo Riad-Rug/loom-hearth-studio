@@ -271,8 +271,11 @@ export function productSchema(input: {
    * placeholders and are dropped below rather than published as colours.
    */
   colorLabels?: string[];
+  /** ISO 8601 creation timestamp of the record; becomes the Offer's validFrom. */
+  createdAt?: string;
 }) {
   const url = absoluteUrl(input.path);
+  const validFrom = toSchemaDate(input.createdAt);
   const availability =
     input.availability === "outOfStock"
       ? "https://schema.org/OutOfStock"
@@ -356,12 +359,11 @@ export function productSchema(input: {
     name: input.name,
     description: input.description,
     image: input.imageUrls,
-    // Reference the canonical Organization node (organizationSchema, rendered
-    // globally from app/layout.tsx) by @id instead of re-embedding a flat copy
-    // of the same entity on every product. @id resolution is a literal string
-    // match and works across separate JSON-LD blocks in one document, so this
-    // must stay byte-identical to organizationSchema()'s own @id.
-    brand: { "@id": `${absoluteUrl("/")}#organization` },
+    // An inline Brand rather than an @id reference to the Organization node:
+    // Search Console's merchant-listing report does not resolve the reference
+    // and flags brand as missing its name. seller below keeps the @id, since
+    // the seller really is that Organization.
+    brand: { "@type": "Brand", name: "Loom & Hearth Studio" },
     sku: input.id,
     mpn: input.id,
     productID: input.id,
@@ -405,6 +407,7 @@ export function productSchema(input: {
       "@type": "Offer",
       priceCurrency: "USD",
       price: priceValue,
+      ...(validFrom ? { validFrom } : {}),
       priceValidUntil,
       availability,
       url,
@@ -415,6 +418,8 @@ export function productSchema(input: {
         applicableCountry: ["US"],
         returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
         merchantReturnDays: 14,
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
       },
       shippingDetails: ["US"].map((country) => ({
         "@type": "OfferShippingDetails",

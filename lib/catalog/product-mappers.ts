@@ -49,6 +49,7 @@ export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): 
     seoDescription: record.seoDescription,
     homepageFeatured: record.homepageFeatured,
     homepageRank: record.homepageRank,
+    createdAt: record.createdAt.toISOString(),
   };
 
   if (record.type === "rug") {

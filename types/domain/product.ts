@@ -56,6 +56,8 @@ export type ProductBase = SeoFields & {
   weightKg?: number;
   homepageFeatured: boolean;
   homepageRank: number | null;
+  /** ISO 8601 timestamp the record was created; feeds the Offer's validFrom. */
+  createdAt?: string;
 };
 
 export type RugProduct = ProductBase & {

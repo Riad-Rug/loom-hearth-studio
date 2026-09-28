@@ -90,6 +90,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           imageUrls: product.gallery.map((image) => image.src),
           availability: product.status === "sold" ? "outOfStock" : "inStock",
           isOneOfOne: true,
+          createdAt: product.cartProduct.createdAt,
         })}
       />
       <JsonLd
