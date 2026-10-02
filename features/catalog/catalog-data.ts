@@ -166,6 +166,38 @@ export const catalogIntros: Partial<Record<"shop" | ProductCategory, CatalogIntr
       closing: { before: "Shop the collection below." },
     },
   },
+  pillows: {
+    desktop: {
+      paragraphs: [
+        "Our pillow covers are made from handmade textiles, including Bettania, handira, flatweave rugs and pile rugs. The collection also includes sabra, often called cactus silk.",
+        "One textile can give us enough material for several covers. Sometimes we make poufs from the same rug or Bettania too, so you may find pillow covers and poufs that go together.",
+        "Covers only; filling is not included.",
+      ],
+      closing: {
+        before: "Shipping to the US. Outside the US? ",
+        link: "Send an inquiry",
+        after: " to confirm shipping before you order.",
+      },
+    },
+    tablet: {
+      paragraphs: [
+        "Our pillow covers are made from handmade textiles, including Bettania, handira, flatweave rugs and pile rugs, plus sabra (cactus silk).",
+        "One textile can give us enough material for several covers, so you may find pillow covers and poufs that go together.",
+        "Covers only; filling is not included.",
+      ],
+      closing: {
+        before: "Shipping to the US. Outside the US? ",
+        link: "Send an inquiry",
+        after: ".",
+      },
+    },
+    phone: {
+      paragraphs: [
+        "Pillow covers made from handmade textiles — Bettania, handira, flatweave and pile rugs, plus sabra (cactus silk). Covers only; filling not included.",
+      ],
+      closing: { before: "Shop the collection below." },
+    },
+  },
 };
 
 /**
