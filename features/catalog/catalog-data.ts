@@ -136,6 +136,36 @@ export const catalogIntros: Partial<Record<"shop" | ProductCategory, CatalogIntr
       closing: { before: "Shop the collection below." },
     },
   },
+  poufs: {
+    desktop: {
+      paragraphs: [
+        "Our poufs are made from handmade textiles, including Bettania, handira, flatweave rugs and pile rugs. Each pouf is cut and sewn to bring the textile's colors, patterns and texture into a different form.",
+        "A large rug may give us enough material for two poufs. More often, we make a pouf and pillows from the same rug or Bettania, so you may find pieces in the collection that go together.",
+      ],
+      closing: {
+        before: "Shipping to the US. Outside the US? ",
+        link: "Send an inquiry",
+        after: " to confirm shipping before you order.",
+      },
+    },
+    tablet: {
+      paragraphs: [
+        "Our poufs are made from handmade textiles, including Bettania, handira, flatweave rugs and pile rugs.",
+        "A large rug may give us enough material for two poufs, so you may find a pouf and pillows in the collection that go together.",
+      ],
+      closing: {
+        before: "Shipping to the US. Outside the US? ",
+        link: "Send an inquiry",
+        after: ".",
+      },
+    },
+    phone: {
+      paragraphs: [
+        "Poufs made from handmade textiles — Bettania, handira, flatweave and pile rugs — cut and sewn into a new shape.",
+      ],
+      closing: { before: "Shop the collection below." },
+    },
+  },
 };
 
 /**
@@ -183,7 +213,7 @@ export const catalogCategories = [
   {
     key: "poufs",
     label: "Poufs",
-    title: "Poufs",
+    title: "Moroccan Poufs",
     href: "/shop/poufs",
     description:
       "Poufs live at the edge of two crafts: my mom's needlework, and whatever rug or leather the piece began as. Rug-material poufs aren't woven as poufs from the start \u2014 they're built from wool with the same construction as the rugs in this collection, hand-spun irregularity and all, then cut, matched for pattern, and seamed into a new shape by hand. What you're looking at is the same fibre and weave logic as a rug, just made to sit under you instead of under your feet.\n\nLeather poufs follow a different logic \u2014 full-grain hide, hand-stitched, meant to age and darken with handling rather than stay pristine. Both kinds are matched and sewn by my mom before they're photographed, which means no two are identical even when they're cut from the same source material. That's not a flaw in the process. It's what hand-matching patterns from a real, used piece of textile actually looks like.",
