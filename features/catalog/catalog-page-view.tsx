@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+import { renderInline } from "@/components/content/markdown-body";
 import { Section } from "@/components/layout/section";
 import { CatalogFilterControls } from "@/features/catalog/catalog-filter-controls";
 import {
@@ -461,17 +462,17 @@ export function CatalogPageView({
               crawler that never can. */}
           <div className={styles.catalogEssay}>
             <h2>{belowGridEssay.heading}</h2>
-            {belowGridEssayParagraphs[0] ? <p>{belowGridEssayParagraphs[0]}</p> : null}
+            {belowGridEssayParagraphs[0] ? <p>{renderInline(belowGridEssayParagraphs[0])}</p> : null}
             {belowGridEssayParagraphs[1] ? (
               <p className={isEssayExpanded ? undefined : styles.catalogEssayClamp}>
-                {belowGridEssayParagraphs[1]}
+                {renderInline(belowGridEssayParagraphs[1])}
               </p>
             ) : null}
             {belowGridEssayParagraphs.length > 2 ? (
               <>
                 <div hidden={!isEssayExpanded} id="catalog-essay-rest">
                   {belowGridEssayParagraphs.slice(2).map((paragraph, index) => (
-                    <p key={index}>{paragraph}</p>
+                    <p key={index}>{renderInline(paragraph)}</p>
                   ))}
                 </div>
                 <button

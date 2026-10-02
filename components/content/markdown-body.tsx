@@ -33,7 +33,7 @@ function stripTrailingPunctuation(token: string) {
   };
 }
 
-function renderInline(text: string) {
+export function renderInline(text: string) {
   const pattern =
     /(\*\*[^*]+\*\*|\[[^\]]+\]\([^\)]+\)|`[^`]+`|(?:https?:\/\/)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s)]+)?|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/gi;
   const matches = Array.from(text.matchAll(pattern));

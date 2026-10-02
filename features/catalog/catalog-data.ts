@@ -106,6 +106,36 @@ export const catalogIntros: Partial<Record<"shop" | ProductCategory, CatalogIntr
       closing: { before: "Shop the collection below." },
     },
   },
+  vintage: {
+    desktop: {
+      paragraphs: [
+        "Vintage Moroccan rugs selected for their wool, weave, condition and character.",
+        "Each vintage Moroccan rug is carefully checked for wear, repairs and structural condition before it is listed.",
+      ],
+      closing: {
+        before: "Outside the US? ",
+        link: "Send an inquiry",
+        after: " and we'll confirm shipping before you order. Shop the collection below.",
+      },
+    },
+    tablet: {
+      paragraphs: [
+        "Vintage Moroccan rugs selected for their wool, weave, condition and character.",
+        "Each vintage Moroccan rug is checked carefully before it is listed.",
+      ],
+      closing: {
+        before: "Outside the US? ",
+        link: "Send an inquiry",
+        after: ". Shop the collection below.",
+      },
+    },
+    phone: {
+      paragraphs: [
+        "Vintage Moroccan rugs selected for their condition, craftsmanship and character.",
+      ],
+      closing: { before: "Shop the collection below." },
+    },
+  },
 };
 
 /**
@@ -120,6 +150,7 @@ export const catalogBelowGridEssays: Partial<
   Record<"shop" | ProductCategory, { heading: string }>
 > = {
   rugs: { heading: "About Moroccan rugs" },
+  vintage: { heading: "About vintage Moroccan rugs" },
 };
 
 export const catalogCategories = [
@@ -142,7 +173,7 @@ export const catalogCategories = [
     title: "Vintage Rugs",
     href: "/shop/vintage",
     description:
-      "\u201cVintage\u201d gets used loosely in this market, so here's what it means on this site. In the trade, vintage generally means roughly 20 to 80 years old, with real patina and wear \u2014 not a fixed legal definition, just a working convention I hold myself to. \u201cAntique\u201d is a higher bar, 100 years plus by standard trade usage, and I don't reach for that word unless I have real reason to believe it.\n\nAge alone doesn't get a rug into this collection. I check the wool first \u2014 springy and resilient means it's still doing its job; flat and lifeless is a problem no amount of patina fixes. I check the selvedges for fraying, the pile for bald patches worn to the foundation, the back for loose or irregular knot rows. A rug that lies flat with no waves or buckling has held its structure. One that doesn't, hasn't \u2014 no matter how good the story behind it is.\n\nTonal variation in the field colour \u2014 abrash, from batch-to-batch differences in hand-dyed wool \u2014 isn't a flaw here. It's a sign the dye was mixed by hand, not machine-matched, and it's one of the things that tells an old piece from a new one. Repairs happen to old rugs, and when one has been repaired, I say so and where. A well-done repair at the edge isn't a dealbreaker. An undisclosed one is the kind of thing that ends a relationship with a buyer, so I don't do it.\n\nEvery piece here passed that check. What didn't, isn't listed.",
+      "\u201cVintage\u201d gets used loosely in this market, so here's what it means on this site.\n\nFor me, identifying a vintage Moroccan rug starts with its colors, texture and signs of wear, but also the quality of the weaving and how well it has held up over the years. Handling rugs every day, I often find that older pieces feel denser and more solid than the newer, lighter rugs made for the tourist market. Some also still have their original grading labels attached to the back, providing another detail I look at when assessing the piece and its history.\n\nI check the edges for fraying, look for areas where the pile has worn through, and inspect the knots on the back. I also check how the rug lies on the floor, looking for waves or buckling.\n\nYou may notice variations in color across a rug. I see these as part of its character.\n\nSome rugs have had repairs over the years. When that's the case, I point them out in the listing. A repair doesn't put me off a rug, as long as it's been done well.\n\nHave a question about a rug? [Get in touch](https://www.loomandhearthstudio.com/contact) and I'll be happy to tell you more about it.",
     bullets: [
       "Assessed for wool quality, knot consistency, and structural integrity before listing",
       "Condition and any repairs disclosed honestly, not softened in copy",
