@@ -6,9 +6,14 @@
   gap: var(--space-7);
 }
 
+/* One measure for the whole header block. The lede paragraphs used to stop
+   short of the shipping note below them, which left a ragged right edge in the
+   middle of the copy; capping the block instead of each paragraph keeps every
+   line ending on the same axis. 52rem is the widest this reads comfortably
+   against the 66.5rem product column beside it. */
 .shopHeaderMain {
   min-width: 0;
-  max-width: 48rem;
+  max-width: 52rem;
 }
 
 .shopHeaderTitleRow {
@@ -416,9 +421,10 @@
   text-transform: uppercase;
 }
 
+/* No measure of its own: .shopHeaderMain sets it for every paragraph in the
+   header so they share one right edge. */
 .lede {
   margin: var(--space-4) 0 0;
-  max-width: 38rem;
   color: var(--color-text-body);
   font-size: 1rem;
   line-height: 1.7;
