@@ -57,7 +57,10 @@ const contentSecurityPolicy = [
   // (www.google.com) — both kept. /rmkt/collect is Google Ads remarketing, so
   // ad.doubleclick.net, googleads.g.doubleclick.net and www.googleadservices.com
   // were removed along with the Ads tag.
-  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.clarity.ms https://c.clarity.ms https://connect.facebook.net https://www.facebook.com https://ct.pinterest.com https://s.pinimg.com https://api.stripe.com https://m.stripe.com https://m.stripe.network https://js.stripe.com https://www.google.com https://*.clarity.ms",
+  // api.cloudinary.com: the admin's signed image uploads POST the file straight
+  // from the browser to the uploadUrl returned by
+  // app/api/admin/cloudinary/upload-signature/route.ts.
+  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.clarity.ms https://c.clarity.ms https://connect.facebook.net https://www.facebook.com https://ct.pinterest.com https://s.pinimg.com https://api.stripe.com https://m.stripe.com https://m.stripe.network https://js.stripe.com https://www.google.com https://*.clarity.ms https://api.cloudinary.com",
   // js.stripe.com hosts the PaymentElement iframes; hooks.stripe.com hosts 3DS
   // challenge frames. 'self' covers the same-origin admin /blog-preview iframe.
   // ct.pinterest.com was added after observing the Pinterest tag inject its own
