@@ -77,17 +77,21 @@ function createCondensedRugTitle(input: ProductCardNameInput, title: string) {
 
 function removeProductDimensions(title: string) {
   return title
+    // Feet-and-inches first: the inch pattern below would otherwise match the
+    // `6" × 6` inside `8'6" × 6'5"` and leave `8' '5"` behind.
+    .replace(/\b\d{1,2}'\s*\d{0,2}"?\s*(?:[x×-]\s*)?\d{1,2}'\s*\d{0,2}"?(?=\s|$)/gu, " ")
     .replace(
-      /\b\d{1,3}(?:\.\d+)?["”]?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?["”]?\b/giu,
+      /\b\d{1,3}(?:\.\d+)?["”]?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?(?:["”]|\b)/giu,
       " ",
     )
-    .replace(/\b\d{1,2}'\s*\d{0,2}"?\s*(?:[x×-]\s*)?\d{1,2}'\s*\d{0,2}"?(?=\s|$)/gu, " ")
     .replace(
       /\b\d{1,3}(?:\.\d+)?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)?\b/giu,
       " ",
     )
     .replace(/\b\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)\b/giu, " ")
     .replace(/\s+/gu, " ")
+    // A removed " — size — " segment leaves two dashes side by side; keep one.
+    .replace(/([—–])(?:\s*[—–])+/gu, "$1")
     .trim();
 }
 
@@ -129,7 +133,7 @@ function removeDanglingTitleEnding(title: string) {
 }
 
 function removeTrailingTitlePunctuation(title: string) {
-  return title.replace(/[,\-–:;]+$/u, "").trim();
+  return title.replace(/[\s,\-–—:;]+$/u, "").trim();
 }
 
 export function getPrimaryColorFromTitle(title: string) {

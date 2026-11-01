@@ -32,14 +32,9 @@ import type {
 } from "@/lib/catalog/contracts";
 import {
   dimensionSeparator,
-  getDisplayProductName,
-  getPrimaryColorFromTitle,
   getProductCardName,
-  getRugConstructionLabel,
-  getRugFeatureLabel,
   humanizeProductToken,
   normalizeDimensionSeparators,
-  removeConstructionFromColor,
 } from "@/lib/catalog/product-card-name";
 import { normalizeSlug, productCategoryOptions } from "@/lib/catalog/product-validation";
 import {
@@ -494,7 +489,10 @@ function createProductDetailPageViewModel(
     subtitle: createProductSubtitle(product),
     category: product.category,
     status: product.status,
-    description: createProductDescriptionLead(product),
+    description: createProductDescription(product),
+    sourcingNote: normalizeDimensionSeparators(product.sourcingNote?.trim() ?? ""),
+    verificationNotes: createNoteLines(product.verificationNotes),
+    shippingNotes: createNoteLines(product.shippingNotes),
     merchandisingNote: normalizeDimensionSeparators(getProductMerchandisingNote(product)),
     descriptionSections: createProductDescriptionSections(product),
     seoTitle: product.seoTitle,
@@ -591,24 +589,16 @@ function createProductSpecifications(product: Product): ProductSpecificationView
     specs.push({ label: "Region", value: product.attributionRegion.trim() });
   }
 
-  if (product.attributionConfidence?.trim()) {
-    specs.push({ label: "Attribution", value: product.attributionConfidence.trim() });
+  const attributionLabel = getDisplayableAttributionLabel(product);
+  if (attributionLabel) {
+    specs.push({ label: "Attribution", value: attributionLabel });
   }
 
   return specs;
 }
 
 function createProductSupportPanels(product: Product): ProductSupportPanelViewModel[] {
-  const region = product.attributionRegion?.trim() || product.origin;
-  const confidence = product.attributionConfidence?.trim();
-  const tradition =
-    product.type === "rug"
-      ? createRugTraditionLabel(product)
-      : `${getCategoryLabel(product.category)} sourced in Morocco`;
-  const provenanceItems = [
-    confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`,
-    `Tradition: ${tradition}`,
-  ];
+  const provenanceItems = createProvenanceLines(product);
 
   const verificationItems =
     product.verificationNotes?.filter(Boolean).length
@@ -877,36 +867,20 @@ function createProductDetailSections(product: Product) {
   return createProductDescriptionSections(product);
 }
 
-function createProductDescriptionLead(product: Product) {
-  if (product.type === "rug") {
-    return createRugHeroDescription(product);
-  }
-
-  return getFirstSentence(product.description) || `${getDisplayProductName(product.name)} from Morocco.`;
+/**
+ * The full admin description, line endings normalized so the view can split
+ * paragraphs on blank lines. Nothing is appended or summarized.
+ */
+function createProductDescription(product: Product) {
+  return normalizeDimensionSeparators(product.description.replace(/\r\n?/gu, "\n").trim());
 }
 
-function createRugHeroDescription(product: Extract<Product, { type: "rug" }>) {
-  const titleAndDescription = `${product.name} ${product.description}`;
-  const construction = getRugConstructionLabel(product, product.name)
-    .replace(/\s+Rug$/u, "")
-    .toLowerCase();
-  const color = removeConstructionFromColor(getPrimaryColorFromTitle(product.name)).toLowerCase();
-  const ground = color ? `${color} ground` : "wool ground";
-
-  if (/pile\s+motifs?/iu.test(titleAndDescription)) {
-    return normalizeDimensionSeparators(
-      `A ONE OF A KIND Moroccan ${construction} with 40+ individually hand-knotted pile motifs raised above the surface, each motif sitting as a small three-dimensional object on a warm ${ground}. The field reads quiet from across the room and detailed up close.`,
-    ).replace(/\s+/gu, " ");
-  }
-
-  const firstSentence = getFirstSentence(product.description);
-  const material = product.materials.join(", ").toLowerCase();
-  const feature = getRugFeatureLabel(product.name).toLowerCase().replace(/^with\s+/u, "");
-  const featureText = feature ? ` with ${feature}` : "";
-
-  return normalizeDimensionSeparators(
-    `${firstSentence || `A ONE OF A KIND Moroccan ${construction}${featureText} in ${material}.`} Selected for texture, scale, and exact-piece character, with final color confirmed by video before payment is captured.`,
-  ).replace(/\s+/gu, " ");
+/** One entry per non-empty line, whether stored as array items or newlines inside one. */
+function createNoteLines(notes: string[] | undefined) {
+  return (notes ?? [])
+    .flatMap((note) => note.split(/\r?\n/u))
+    .map((line) => normalizeDimensionSeparators(line.trim()))
+    .filter(Boolean);
 }
 
 function createProductDescriptionSections(product: Product): ProductDetailSectionViewModel[] {
@@ -956,31 +930,72 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
 }
 
 function createRugConstructionDescription(product: Extract<Product, { type: "rug" }>) {
-  const construction = getRugConstructionLabel(product, product.name).toLowerCase();
-  const feature = getRugFeatureLabel(product.name).toLowerCase();
   const dimensions = formatRugDimensions(product);
   const weight = formatRugWeight(product);
 
   return normalizeDimensionSeparators(
-    `Handwoven as a ${construction}${feature ? ` ${feature}` : ""}. Dimensions: ${dimensions}. Weight: ${weight}.`,
+    `${getRugConstructionPhrase(product.rugStyle)}. Dimensions: ${dimensions}. Weight: ${weight}.`,
   );
 }
 
 function createProvenanceDescription(product: Product) {
   const provenance = normalizeDimensionSeparators(product.provenanceNote?.trim() || "");
+
+  return [provenance, ...createProvenanceLines(product)].filter(Boolean).join("\n");
+}
+
+/**
+ * "Region: …" and, when there is a real weaving tradition, "Tradition: …".
+ * The provenance label (Verified / Attributed / Not Stated) is never appended
+ * to the region, and the tradition never comes from age or the vintage category.
+ */
+function createProvenanceLines(product: Product) {
   const region = product.attributionRegion?.trim() || product.origin;
-  const confidence = product.attributionConfidence?.trim();
   const tradition =
     product.type === "rug"
-      ? createRugTraditionLabel(product)
-      : `${getCategoryLabel(product.category)} sourced in Morocco`;
-  const parts = [
-    provenance,
-    confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`,
-    `Tradition: ${tradition}`,
-  ].filter(Boolean);
+      ? getRugTraditionLabel(product.rugStyle)
+      : product.category === "vintage"
+        ? undefined
+        : `${getCategoryLabel(product.category)} sourced in Morocco`;
 
-  return parts.join("\n");
+  return [`Region: ${region}`, tradition ? `Tradition: ${tradition}` : undefined].filter(
+    (line): line is string => Boolean(line),
+  );
+}
+
+/** The provenance label, or undefined when it is empty or "Not Stated" (kept in data, never shown). */
+function getDisplayableAttributionLabel(product: Product) {
+  const label = product.attributionConfidence?.trim();
+
+  return label && label.toLowerCase() !== "not stated" ? label : undefined;
+}
+
+/** The stored rug style when it names a real tradition; undefined for Unclassified or missing. */
+function getRugTraditionLabel(rugStyle: string | undefined) {
+  const style = rugStyle?.trim();
+
+  return style && style.toLowerCase() !== "unclassified" ? style : undefined;
+}
+
+// Construction wording per rug style (productRugStyleOptions). Styles whose
+// technique is not uniform across the tradition only claim "Handwoven".
+const rugConstructionPhraseByStyle: Record<string, string> = {
+  "flatweave (hanbel)": "Handwoven flatweave (hanbel)",
+  azilal: "Hand-knotted pile (Azilal)",
+  "beni ourain": "Hand-knotted pile (Beni Ourain)",
+  "beni m'guild": "Hand-knotted pile (Beni M'Guild)",
+  boujad: "Hand-knotted pile (Boujad)",
+  "mixed technique": "Handwoven mixed technique (flatweave and knotted pile)",
+};
+
+function getRugConstructionPhrase(rugStyle: string | undefined) {
+  const style = getRugTraditionLabel(rugStyle);
+
+  if (!style) {
+    return "Handwoven";
+  }
+
+  return rugConstructionPhraseByStyle[style.toLowerCase()] ?? `Handwoven (${style})`;
 }
 
 function createConditionDescription(product: Product) {
@@ -1063,17 +1078,6 @@ function createRugPlacementNote(product: Extract<Product, { type: "rug" }>) {
   }
 
   return "Size can anchor a seating area, bedroom, or dining zone; confirm exact placement against your room measurements before payment is captured.";
-}
-
-function createRugTraditionLabel(product: Extract<Product, { type: "rug" }>) {
-  const construction = getRugConstructionLabel(product, product.name).replace(/\s+Rug$/u, "");
-  const feature = getRugFeatureLabel(product.name).replace(/^with\s+/iu, "");
-
-  return feature ? `${construction} with ${feature}` : construction;
-}
-
-function getFirstSentence(value: string) {
-  return normalizeDimensionSeparators(value.trim().split(/(?<=[.!?])\s+/u)[0] ?? "").trim();
 }
 
 function createProductGallery(product: Product) {
@@ -1186,7 +1190,9 @@ function extractProductDimensions(title: string) {
   const normalizedTitle = normalizeDimensionSeparators(title);
   const titleDimensions =
     normalizedTitle.match(
-      /\b\d{1,3}(?:\.\d+)?["”]?\s*[×x]\s*\d{1,3}(?:\.\d+)?["”]?\b/gu,
+      // The closing inch mark sits before a non-word character, so a trailing
+      // `["”]?\b` would backtrack and drop it; take the mark or a boundary.
+      /\b\d{1,3}(?:\.\d+)?["”]?\s*[×x]\s*\d{1,3}(?:\.\d+)?(?:["”]|\b)/gu,
     )?.[0] ??
     normalizedTitle.match(
       /\b\d{1,2}'\d{0,2}"\s*[×x]\s*\d{1,2}'\d{0,2}"\b/gu,

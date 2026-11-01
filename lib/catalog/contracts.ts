@@ -85,7 +85,12 @@ type ProductDetailPageViewModelBase = {
   subtitle: string;
   category: ProductCategory;
   status: Product["status"];
+  /** Full admin description; paragraphs separated by blank lines. */
   description: string;
+  /** Signed sourcing note; empty string when not recorded. */
+  sourcingNote: string;
+  verificationNotes: string[];
+  shippingNotes: string[];
   merchandisingNote: string;
   descriptionSections: ProductDetailSectionViewModel[];
   seoTitle: string;

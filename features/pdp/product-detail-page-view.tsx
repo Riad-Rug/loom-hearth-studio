@@ -306,9 +306,13 @@ export function ProductDetailPageView({
           {product.description || product.detailSections.length > 0 ? (
             <div className="grid gap-[var(--space-5)] max-w-[34rem]">
               {product.description ? (
-                <section aria-label="Description">
+                <section aria-label="Description" className="grid gap-[var(--space-3)]">
                   <p className={PANEL_EYEBROW}>Description</p>
-                  <p className="leading-[1.65]">{product.description}</p>
+                  {splitParagraphs(product.description).map((paragraph, index) => (
+                    <p key={index} className="leading-[1.65] whitespace-pre-line">
+                      {paragraph}
+                    </p>
+                  ))}
                 </section>
               ) : null}
 
@@ -318,6 +322,16 @@ export function ProductDetailPageView({
                   <p className="text-[var(--color-ink)] leading-[1.65]">{section.body}</p>
                 </section>
               ))}
+
+              {product.sourcingNote ? <SourcingNote note={product.sourcingNote} /> : null}
+
+              {product.verificationNotes.length ? (
+                <NoteList title="Verification" items={product.verificationNotes} />
+              ) : null}
+
+              {product.shippingNotes.length ? (
+                <NoteList title="Shipping" items={product.shippingNotes} />
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -666,7 +680,54 @@ function extractConditionNote(product: ProductDetailPageViewModel) {
     return undefined;
   }
 
-  return `${conditionSection.split(/\n|(?<=[.!?])\s/u)[0]} Photo shown in the condition view.`;
+  const firstSentence = conditionSection.split(/\n|(?<=[.!?])\s/u)[0];
+  const hasConditionPhoto = product.gallery.some((item) => conditionPhotoRoles.has(item.role));
+
+  return hasConditionPhoto ? `${firstSentence} Photo shown in the condition view.` : firstSentence;
+}
+
+const conditionPhotoRoles = new Set(["edge", "back", "detail"]);
+
+function splitParagraphs(text: string) {
+  return text
+    .split(/\n\s*\n/u)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+}
+
+// A closing "— Riad"-style sign-off: a dash followed by one to three capitalized words.
+const signaturePattern = /\s*[—–]\s*([A-Z][\p{L}'’.-]*(?:\s+[A-Z][\p{L}'’.-]*){0,2})\s*$/u;
+
+function SourcingNote({ note }: { note: string }) {
+  const signature = note.match(signaturePattern);
+  const body = signature ? note.slice(0, signature.index).trim() : note;
+
+  return (
+    <section>
+      <h3 className={PANEL_EYEBROW}>Sourcing note</h3>
+      <figure className="m-0 grid gap-[var(--space-2)] border-l-2 border-[color:var(--color-border)] pl-[var(--space-3)]">
+        <blockquote className="m-0 italic leading-[1.65] text-[var(--color-ink)] whitespace-pre-line">
+          {body}
+        </blockquote>
+        {signature ? (
+          <figcaption className="text-[var(--color-text-subtle)]">— {signature[1].trim()}</figcaption>
+        ) : null}
+      </figure>
+    </section>
+  );
+}
+
+function NoteList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <section>
+      <h3 className={PANEL_EYEBROW}>{title}</h3>
+      <ul className="m-0 grid gap-[0.4rem] pl-[1.1rem] list-disc leading-[1.65] text-[var(--color-ink)]">
+        {items.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 /**
