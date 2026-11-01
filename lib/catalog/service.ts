@@ -1,5 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 
+import { getStandardShippingLines, isConfigOwnedShippingNote } from "@/config/shipping";
 import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
 import {
   rugStyleNavLinks,
@@ -27,7 +28,6 @@ import type {
   ProductDetailSectionViewModel,
   ProductLinkViewModel,
   ProductSpecificationViewModel,
-  ProductSupportPanelViewModel,
   RugProductDetailPageViewModel,
 } from "@/lib/catalog/contracts";
 import {
@@ -492,7 +492,7 @@ function createProductDetailPageViewModel(
     description: createProductDescription(product),
     sourcingNote: normalizeDimensionSeparators(product.sourcingNote?.trim() ?? ""),
     verificationNotes: createNoteLines(product.verificationNotes),
-    shippingNotes: createNoteLines(product.shippingNotes),
+    shippingNotes: createShippingLines(product),
     merchandisingNote: normalizeDimensionSeparators(getProductMerchandisingNote(product)),
     descriptionSections: createProductDescriptionSections(product),
     seoTitle: product.seoTitle,
@@ -506,7 +506,6 @@ function createProductDetailPageViewModel(
     originLabel: product.origin,
     techniqueLabel: undefined,
     specifications: createProductSpecifications(product),
-    supportPanels: createProductSupportPanels(product),
     detailSections: createProductDetailSections(product),
     similarRugs,
     crossSellRecommendations,
@@ -595,84 +594,6 @@ function createProductSpecifications(product: Product): ProductSpecificationView
   }
 
   return specs;
-}
-
-function createProductSupportPanels(product: Product): ProductSupportPanelViewModel[] {
-  const provenanceItems = createProvenanceLines(product);
-
-  const verificationItems =
-    product.verificationNotes?.filter(Boolean).length
-      ? product.verificationNotes.filter(Boolean).map(normalizeDimensionSeparators)
-      : product.type === "rug"
-        ? [
-            "We film the exact rug in natural, warm, and cool light.",
-            "You review and approve the video before payment is captured.",
-          ]
-        : [
-            "Availability and destination are reviewed before payment is captured.",
-            "Additional details can be requested through the inquiry flow.",
-          ];
-
-  const shippingItems =
-    product.shippingNotes?.filter(Boolean).length
-      ? product.shippingNotes.filter(Boolean).map(normalizeDimensionSeparators)
-      : [
-          "Ships from our Marrakech atelier via tracked international carrier.",
-          "Typical dispatch window is 24 to 48 hours.",
-          "Duties are included for US delivery.",
-        ];
-
-  const panels: ProductSupportPanelViewModel[] = [
-    {
-      id: "provenance",
-      eyebrow: "Provenance",
-      title: product.type === "rug" ? "Product attribution and origin" : "Collection origin and sourcing",
-      body:
-        product.provenanceNote?.trim() ||
-        "Woven in the High Atlas using locally spun wool. We source directly from weavers and cooperatives we have met in person in Morocco. Origin is recorded per piece; this rug is documented as High Atlas tradition.",
-      items: provenanceItems,
-    },
-    {
-      id: "verification",
-      eyebrow: "Verification",
-      title: product.type === "rug" ? "How this piece is confirmed before shipment" : "How availability is confirmed before shipment",
-      body:
-        product.type === "rug"
-          ? "Before we charge you, we film the exact rug in natural, warm, and cool light, and send the video for your approval. If the piece is not what you expected, you walk away. Nothing is captured until you say yes."
-          : "For multi-unit pieces, availability, destination, and delivery conditions are reviewed before payment is captured.",
-      items: verificationItems,
-    },
-    {
-      id: "shipping",
-      eyebrow: "Shipping",
-      title: "Shipping and delivery notes",
-      body:
-        "Ships from our Marrakech atelier via tracked international carrier, typically arriving 7 to 14 business days after dispatch. Duties are included for US delivery - no surprise charges at delivery.",
-      items: shippingItems,
-    },
-  ];
-
-  if (product.conditionNote?.trim()) {
-    panels.push({
-      id: "condition",
-      eyebrow: "Condition",
-      title: "Condition notes",
-      body: normalizeDimensionSeparators(product.conditionNote.trim()),
-      items: [],
-    });
-  }
-
-  if (product.sourcingNote?.trim()) {
-    panels.push({
-      id: "sourcing",
-      eyebrow: "Sourcing note",
-      title: "How this piece entered the stockroom",
-      body: normalizeDimensionSeparators(product.sourcingNote.trim()),
-      items: [],
-    });
-  }
-
-  return panels;
 }
 
 function getPrimaryImage(product: Product) {
@@ -941,26 +862,22 @@ function createRugConstructionDescription(product: Extract<Product, { type: "rug
 function createProvenanceDescription(product: Product) {
   const provenance = normalizeDimensionSeparators(product.provenanceNote?.trim() || "");
 
-  return [provenance, ...createProvenanceLines(product)].filter(Boolean).join("\n");
+  // The provenance label (Verified / Attributed / Not Stated) is never
+  // appended to the region.
+  const region = product.attributionRegion?.trim() || product.origin;
+
+  return [provenance, `Region: ${region}`].filter(Boolean).join("\n");
 }
 
 /**
- * "Region: …" and, when there is a real weaving tradition, "Tradition: …".
- * The provenance label (Verified / Attributed / Not Stated) is never appended
- * to the region, and the tradition never comes from age or the vintage category.
+ * Standard lines from config/shipping.ts, then the product's own notes minus
+ * any line restating a config-owned term (price, country, insurance, dispatch).
  */
-function createProvenanceLines(product: Product) {
-  const region = product.attributionRegion?.trim() || product.origin;
-  const tradition =
-    product.type === "rug"
-      ? getRugTraditionLabel(product.rugStyle)
-      : product.category === "vintage"
-        ? undefined
-        : `${getCategoryLabel(product.category)} sourced in Morocco`;
-
-  return [`Region: ${region}`, tradition ? `Tradition: ${tradition}` : undefined].filter(
-    (line): line is string => Boolean(line),
-  );
+function createShippingLines(product: Product) {
+  return [
+    ...getStandardShippingLines(),
+    ...createNoteLines(product.shippingNotes).filter((line) => !isConfigOwnedShippingNote(line)),
+  ];
 }
 
 /** The provenance label, or undefined when it is empty or "Not Stated" (kept in data, never shown). */
@@ -970,8 +887,8 @@ function getDisplayableAttributionLabel(product: Product) {
   return label && label.toLowerCase() !== "not stated" ? label : undefined;
 }
 
-/** The stored rug style when it names a real tradition; undefined for Unclassified or missing. */
-function getRugTraditionLabel(rugStyle: string | undefined) {
+/** The stored rug style; undefined for Unclassified or missing. */
+function getRugStyleLabel(rugStyle: string | undefined) {
   const style = rugStyle?.trim();
 
   return style && style.toLowerCase() !== "unclassified" ? style : undefined;
@@ -989,7 +906,7 @@ const rugConstructionPhraseByStyle: Record<string, string> = {
 };
 
 function getRugConstructionPhrase(rugStyle: string | undefined) {
-  const style = getRugTraditionLabel(rugStyle);
+  const style = getRugStyleLabel(rugStyle);
 
   if (!style) {
     return "Handwoven";

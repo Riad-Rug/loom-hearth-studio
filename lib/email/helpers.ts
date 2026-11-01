@@ -5,7 +5,7 @@ import type {
   PostmarkEmailPayload,
 } from "@/lib/email/contracts";
 import type { OrderCreationRequest } from "@/lib/order";
-import { freeShippingThresholdUsd } from "@/lib/order/shipping";
+import { FLAT_SHIPPING_USD, FREE_SHIPPING_THRESHOLD_USD, SHIPS_TO_LABEL } from "@/config/shipping";
 import type { Order } from "@/types/domain";
 
 export function createOrderConfirmationEmailBoundary(): OrderConfirmationEmailBoundary {
@@ -138,7 +138,7 @@ function createLaunchOrderConfirmationMessage(input: {
       `<p><strong>Items (${input.itemCount})</strong></p>`,
       `<ul>${itemListHtml}</ul>`,
       `<p><strong>Shipping address</strong><br />${escapeHtml(input.shippingAddressLabel).replace(/\n/g, "<br />")}</p>`,
-      `<p>Shipping to the United States is free on orders of $${freeShippingThresholdUsd} or more; orders under $${freeShippingThresholdUsd} ship for a flat $50, included in your total above. Inquiries from other countries are reviewed case by case before payment is captured.</p>`,
+      `<p>Shipping to ${SHIPS_TO_LABEL} is free on orders of $${FREE_SHIPPING_THRESHOLD_USD} or more; orders under $${FREE_SHIPPING_THRESHOLD_USD} ship for a flat $${FLAT_SHIPPING_USD}, included in your total above. Inquiries from other countries are reviewed case by case before payment is captured.</p>`,
       "<p>If you need help with this order, reply to this email and we will assist you.</p>",
       "<p>Thank you,<br />Loom & Hearth Studio</p>",
     ].join(""),
@@ -160,7 +160,7 @@ function createLaunchOrderConfirmationMessage(input: {
       "Shipping address",
       input.shippingAddressLabel,
       "",
-      `Shipping to the United States is free on orders of $${freeShippingThresholdUsd} or more; orders under $${freeShippingThresholdUsd} ship for a flat $50, included in your total above. Inquiries from other countries are reviewed case by case before payment is captured.`,
+      `Shipping to ${SHIPS_TO_LABEL} is free on orders of $${FREE_SHIPPING_THRESHOLD_USD} or more; orders under $${FREE_SHIPPING_THRESHOLD_USD} ship for a flat $${FLAT_SHIPPING_USD}, included in your total above. Inquiries from other countries are reviewed case by case before payment is captured.`,
       "If you need help with this order, reply to this email and we will assist you.",
       "",
       "Thank you,",

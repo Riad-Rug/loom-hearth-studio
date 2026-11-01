@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/seo/json-ld";
+import { FREE_SHIPPING_THRESHOLD_USD } from "@/config/shipping";
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
 import { listCatalogProductCards } from "@/lib/catalog/service";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
@@ -12,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     entityKey: "poufs",
     title: "Moroccan Leather & Wool Poufs",
     description:
-      "Handmade Moroccan poufs in leather and wool, sourced in Marrakech. See your exact pouf before payment; free US shipping over $210.",
+      `Handmade Moroccan poufs in leather and wool, sourced in Marrakech. See your exact pouf before payment; free US shipping over $${FREE_SHIPPING_THRESHOLD_USD}.`,
     path: "/shop/poufs",
   });
 }

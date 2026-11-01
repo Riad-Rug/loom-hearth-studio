@@ -3,6 +3,7 @@ import { publicBusinessDetails } from "@/config/public-business-details";
 import { siteConfig } from "@/config/site";
 import { DEFAULT_BLOG_AUTHOR } from "@/features/blog/blog-author-data";
 import { aboutHero } from "@/features/content-pages/content-pages-data";
+import { DELIVERY_DAYS, DISPATCH_DAYS, SHIPS_TO } from "@/config/shipping";
 import { calculateShippingUsd } from "@/lib/order/shipping";
 
 /**
@@ -421,7 +422,7 @@ export function productSchema(input: {
         returnMethod: "https://schema.org/ReturnByMail",
         returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
       },
-      shippingDetails: ["US"].map((country) => ({
+      shippingDetails: SHIPS_TO.map((country) => ({
         "@type": "OfferShippingDetails",
         shippingDestination: {
           "@type": "DefinedRegion",
@@ -442,22 +443,20 @@ export function productSchema(input: {
           value: calculateShippingUsd(Number(priceValue)),
           currency: "USD",
         },
-        // Figures come from the shipping policy page (the authoritative copy in
-        // features/content-pages/content-pages-data.ts): verification completes
-        // in 24-48 hours (1-2 days handling), then 7-14 business days in transit
-        // to the US.
+        // Handling and transit days come from config/shipping.ts, the same
+        // values the product page and policy pages state.
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
           handlingTime: {
             "@type": "QuantitativeValue",
-            minValue: 1,
-            maxValue: 2,
+            minValue: DISPATCH_DAYS.min,
+            maxValue: DISPATCH_DAYS.max,
             unitCode: "DAY",
           },
           transitTime: {
             "@type": "QuantitativeValue",
-            minValue: 7,
-            maxValue: 14,
+            minValue: DELIVERY_DAYS.min,
+            maxValue: DELIVERY_DAYS.max,
             unitCode: "DAY",
           },
         },

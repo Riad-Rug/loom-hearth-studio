@@ -15,7 +15,7 @@ import { PaymentStep } from "@/features/checkout/steps/payment-step";
 import { ReviewStep } from "@/features/checkout/steps/review-step";
 import { ConfirmationStep } from "@/features/checkout/steps/confirmation-step";
 import { getStripeBrowserClient } from "@/lib/stripe/browser-client";
-import { freeShippingThresholdUsd } from "@/lib/order/shipping";
+import { FREE_SHIPPING_THRESHOLD_USD } from "@/config/shipping";
 
 import styles from "./checkout-page.module.css";
 
@@ -175,8 +175,8 @@ export function CheckoutPageView() {
               </div>
               <div className={styles.freeShippingLine}>
                 {items.length > 0 && shippingUsd === 0
-                  ? `Free shipping — order over $${freeShippingThresholdUsd}`
-                  : `Free shipping on orders of $${freeShippingThresholdUsd} or more`}
+                  ? `Free shipping — order over $${FREE_SHIPPING_THRESHOLD_USD}`
+                  : `Free shipping on orders of $${FREE_SHIPPING_THRESHOLD_USD} or more`}
               </div>
               <form className={styles.promoForm} onSubmit={handlePromoSubmit}>
                 <label className={styles.promoLabel} htmlFor="checkout-promo-code">

@@ -1,4 +1,6 @@
-export const supportedCheckoutCountries = ["US"] as const;
+import { SHIPS_TO } from "@/config/shipping";
+
+export const supportedCheckoutCountries = SHIPS_TO;
 
 export type SupportedCheckoutCountry = (typeof supportedCheckoutCountries)[number];
 

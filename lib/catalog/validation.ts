@@ -6,7 +6,8 @@ import type {
   LaunchCheckoutValidationResult,
 } from "@/lib/catalog/contracts";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
-import { calculateShippingUsd, flatShippingUsd, freeShippingThresholdUsd } from "@/lib/order/shipping";
+import { FLAT_SHIPPING_USD, FREE_SHIPPING_THRESHOLD_USD } from "@/config/shipping";
+import { calculateShippingUsd } from "@/lib/order/shipping";
 import type {
   StripeCheckoutOrderSnapshot,
   StripeCheckoutSessionRequest,
@@ -167,7 +168,7 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
   if (input.request.shippingUsd !== validatedShippingUsd) {
     issues.push({
       code: "invalid-shipping",
-      message: `Checkout shipping must be $${validatedShippingUsd.toFixed(2)} for this order (free at $${freeShippingThresholdUsd}+, otherwise $${flatShippingUsd} flat).`,
+      message: `Checkout shipping must be $${validatedShippingUsd.toFixed(2)} for this order (free at $${FREE_SHIPPING_THRESHOLD_USD}+, otherwise $${FLAT_SHIPPING_USD} flat).`,
     });
   }
 

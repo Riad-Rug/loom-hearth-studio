@@ -122,14 +122,15 @@ function limitProductTitle(title: string) {
 }
 
 function removeDanglingTitleEnding(title: string) {
-  const danglingWords = new Set(["and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"]);
-  const words = removeTrailingTitlePunctuation(title).trim().split(/\s+/u);
+  const danglingWords = new Set(["&", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"]);
+  let words = removeTrailingTitlePunctuation(title).trim().split(/\s+/u);
 
   while (words.length > 1 && danglingWords.has(words[words.length - 1].toLowerCase())) {
     words.pop();
+    words = removeTrailingTitlePunctuation(words.join(" ")).split(/\s+/u);
   }
 
-  return removeTrailingTitlePunctuation(words.join(" "));
+  return words.join(" ");
 }
 
 function removeTrailingTitlePunctuation(title: string) {

@@ -1,5 +1,6 @@
 import type { FaqItem, PolicyPage, Testimonial } from "@/types/domain";
 import { publicBusinessDetails } from "@/config/public-business-details";
+import { DELIVERY_DAYS, FLAT_SHIPPING_USD, FREE_SHIPPING_THRESHOLD_USD } from "@/config/shipping";
 
 type AboutSection = {
   eyebrow: string;
@@ -232,7 +233,7 @@ We currently ship to the **United States**. If you are outside the United States
 
 ## 3. Shipping cost
 
-Shipping to the United States is **free on orders of $210 or more**. Orders under $210 ship for a **flat $50**. The shipping amount is shown at checkout before payment. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
+Shipping to the United States is **free on orders of $${FREE_SHIPPING_THRESHOLD_USD} or more**. Orders under $${FREE_SHIPPING_THRESHOLD_USD} ship for a **flat $${FLAT_SHIPPING_USD}**. The shipping amount is shown at checkout before payment. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
 
 ---
 
@@ -262,7 +263,7 @@ All delivery time estimates below are measured from the **date of dispatch**, no
 
 | Destination | Estimated delivery after dispatch |
 |---|---|
-| United States | 7 to 14 business days |
+| United States | ${DELIVERY_DAYS.min} to ${DELIVERY_DAYS.max} business days |
 | Other countries | Inquiry only. Shipping availability is reviewed case by case before payment is captured |
 
 These are estimates, not guarantees. International shipments from Morocco pass through customs clearance, which can add time outside our control. Carrier delays, public holidays, and weather events can also affect timelines. We will always provide you with a tracking number so you can monitor your shipment in real time.
@@ -840,7 +841,7 @@ If we cancel your order, we will notify you promptly by email and release any pa
 
 ### 4.1 Prices
 
-All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $210 or more; orders under $210 ship for a flat $50, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
+All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $${FREE_SHIPPING_THRESHOLD_USD} or more; orders under $${FREE_SHIPPING_THRESHOLD_USD} ship for a flat $${FLAT_SHIPPING_USD}, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
 
 We reserve the right to correct pricing errors on the site at any time. If an error is identified after you have placed an order, we will contact you to confirm whether you wish to proceed at the correct price, or cancel for a full release of any held funds.
 
@@ -890,7 +891,7 @@ We ship using DHL Express, FedEx International, or Aramex, selected based on des
 
 ### 6.3 Estimated delivery times
 
-- United States: 7 to 14 business days from dispatch
+- United States: ${DELIVERY_DAYS.min} to ${DELIVERY_DAYS.max} business days from dispatch
 - Other countries: inquiry only, with shipping availability reviewed case by case before payment is captured
 
 These are estimates, not guarantees. Customs clearance, carrier delays, and circumstances outside our control may extend delivery times. We will provide you with a tracking number when your order is dispatched so you can monitor progress.

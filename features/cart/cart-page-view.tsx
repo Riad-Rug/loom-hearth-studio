@@ -9,7 +9,7 @@ import {
   getCartItemQuantityRule,
   useCart,
 } from "@/features/cart/cart-provider";
-import { freeShippingThresholdUsd } from "@/lib/order/shipping";
+import { FREE_SHIPPING_THRESHOLD_USD } from "@/config/shipping";
 
 import styles from "./cart-page.module.css";
 
@@ -29,7 +29,7 @@ export function CartPageView() {
             <p className={styles.lede}>
               {isEmpty
                 ? "Your cart is empty. Add a piece and it will appear here."
-                : `${itemCountLabel} ready for checkout. Free shipping on orders of $${freeShippingThresholdUsd} or more.`}
+                : `${itemCountLabel} ready for checkout. Free shipping on orders of $${FREE_SHIPPING_THRESHOLD_USD} or more.`}
             </p>
           </div>
           <div className={styles.headerActions}>
@@ -138,8 +138,8 @@ export function CartPageView() {
               </div>
               <div className={styles.freeShippingLine}>
                 {shippingUsd === 0
-                  ? `Free shipping — order over $${freeShippingThresholdUsd}`
-                  : `Free shipping on orders of $${freeShippingThresholdUsd} or more`}
+                  ? `Free shipping — order over $${FREE_SHIPPING_THRESHOLD_USD}`
+                  : `Free shipping on orders of $${FREE_SHIPPING_THRESHOLD_USD} or more`}
               </div>
               <div className={styles.summaryTotal}>
                 <span>Total</span>

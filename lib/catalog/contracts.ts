@@ -69,14 +69,6 @@ export type ProductSpecificationViewModel = {
   value: string;
 };
 
-export type ProductSupportPanelViewModel = {
-  id: string;
-  eyebrow: string;
-  title: string;
-  body: string;
-  items: string[];
-};
-
 type ProductDetailPageViewModelBase = {
   id: string;
   catalogNumber: string;
@@ -119,7 +111,6 @@ type ProductDetailPageViewModelBase = {
   originLabel: string;
   techniqueLabel?: string;
   specifications: ProductSpecificationViewModel[];
-  supportPanels: ProductSupportPanelViewModel[];
   detailSections: ProductDetailSectionViewModel[];
   similarRugs: CatalogProductCardViewModel[];
   crossSellRecommendations: CatalogProductCardViewModel[];

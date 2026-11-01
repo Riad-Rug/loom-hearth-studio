@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { DELIVERY_DAYS, formatDayRange } from "@/config/shipping";
 import { useCheckout } from "@/features/checkout/checkout-provider";
 import { AddressFields } from "@/features/checkout/steps/address-fields";
 import { AddToOrder } from "@/features/checkout/steps/add-to-order";
@@ -85,7 +86,7 @@ export function ShippingStep() {
             <p>
               {billing.city}, {billing.state} {billing.postalCode}
             </p>
-            <p className={styles.summaryNote}>Estimated delivery: 7–14 business days after your order ships.</p>
+            <p className={styles.summaryNote}>Estimated delivery: {formatDayRange(DELIVERY_DAYS)} business days after your order ships.</p>
           </div>
           <AddToOrder />
           <div className={styles.stepActions}>

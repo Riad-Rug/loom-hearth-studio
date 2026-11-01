@@ -1,5 +1,5 @@
 import { allRugsNavLink, rugStyleNavLinks } from "@/features/catalog/rug-style-collections";
-import { freeShippingThresholdUsd } from "@/lib/order/shipping";
+import { FREE_SHIPPING_THRESHOLD_USD } from "@/config/shipping";
 
 const productionSiteUrl = "https://www.loomandhearthstudio.com";
 const previewHostnames = new Set(["loom-hearth-studio.vercel.app"]);
@@ -59,8 +59,8 @@ export const siteConfig = {
   tagline:
     "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
   announcementDesktop:
-    `SEE YOUR EXACT PIECE IN DAYLIGHT PHOTOS BEFORE YOU PAY · FREE SHIPPING OVER $${freeShippingThresholdUsd} · SHIPPING TO THE US · SHIPS FROM CASABLANCA`,
-  announcementMobile: `APPROVE YOUR PIECE BEFORE YOU PAY · FREE SHIPPING OVER $${freeShippingThresholdUsd} · SHIPPING TO THE US`,
+    `SEE YOUR EXACT PIECE IN DAYLIGHT PHOTOS BEFORE YOU PAY · FREE SHIPPING OVER $${FREE_SHIPPING_THRESHOLD_USD} · SHIPPING TO THE US · SHIPS FROM CASABLANCA`,
+  announcementMobile: `APPROVE YOUR PIECE BEFORE YOU PAY · FREE SHIPPING OVER $${FREE_SHIPPING_THRESHOLD_USD} · SHIPPING TO THE US`,
   primaryNav: [
     {
       label: "Collection",

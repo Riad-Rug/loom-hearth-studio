@@ -680,13 +680,8 @@ function extractConditionNote(product: ProductDetailPageViewModel) {
     return undefined;
   }
 
-  const firstSentence = conditionSection.split(/\n|(?<=[.!?])\s/u)[0];
-  const hasConditionPhoto = product.gallery.some((item) => conditionPhotoRoles.has(item.role));
-
-  return hasConditionPhoto ? `${firstSentence} Photo shown in the condition view.` : firstSentence;
+  return conditionSection.split(/\n|(?<=[.!?])\s/u)[0];
 }
-
-const conditionPhotoRoles = new Set(["edge", "back", "detail"]);
 
 function splitParagraphs(text: string) {
   return text
