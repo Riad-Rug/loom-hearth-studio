@@ -351,8 +351,7 @@ export function ProductDetailPageView({
                 </li>
                 <li>{storePromiseCopy.duties}</li>
                 <li>
-                  Returns accepted within 14 days of delivery. Return shipping is paid by you unless the piece was
-                  materially misdescribed.{" "}
+                  {storePromiseCopy.returns}{" "}
                   <Link className="underline underline-offset-2 text-[var(--color-green)]" href="/returns-policy">
                     Read the returns policy
                   </Link>
