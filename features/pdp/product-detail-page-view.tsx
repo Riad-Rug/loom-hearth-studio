@@ -23,6 +23,7 @@ import { Section } from "@/components/layout/section";
 import { useCart } from "@/features/cart/cart-provider";
 import { ProductCard, recommendationRailCardSizes } from "@/features/catalog/product-card";
 import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
+import { parseProductTitle } from "@/features/pdp/product-title";
 import { trackViewItem } from "@/lib/analytics/gtag";
 import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
@@ -78,6 +79,7 @@ export function ProductDetailPageView({
   const reserveProduct = useReserveProduct(product);
   const purchaseState = getPurchaseState(product);
   const shippingCopy = getShippingCopy(product.priceUsd);
+  const contentsNote = getContentsNote(product);
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -246,6 +248,9 @@ export function ProductDetailPageView({
               </p>
               {purchaseState === "available" ? (
                 <p className={PURCHASE_MICROCOPY}>{shippingCopy.full}</p>
+              ) : null}
+              {contentsNote ? (
+                <p className="text-[var(--color-ink)] font-medium">{contentsNote.value}</p>
               ) : null}
             </div>
 
@@ -623,18 +628,54 @@ function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalle
   }));
 }
 
+function getContentsNote(product: ProductDetailPageViewModel): { label: string; value: string } | null {
+  if (product.type !== "multiUnit") {
+    return null;
+  }
+
+  switch (product.category) {
+    case "poufs":
+      return { label: "Ships as", value: "Flat and unstuffed. You fill it at home." };
+    case "pillows":
+      return product.cartProduct.insertIncluded
+        ? { label: "Includes", value: "Cover and insert." }
+        : { label: "Includes", value: "Cover only. No insert." };
+    default:
+      return null;
+  }
+}
+
+/**
+ * Poufs have no height field in the admin form, so their height lives only in
+ * the title ("24\" × 24\" × 14\""). A recorded heightCm always wins.
+ */
+function formatMultiUnitSize(product: MultiUnitProductDetailPageViewModel) {
+  const { heightCm } = product.cartProduct;
+  const titleHeight =
+    product.category === "poufs" ? parseProductTitle(product.name).height?.replace(/["”]/gu, "″") : undefined;
+  const height = heightCm ? `${heightCm} cm (${Math.round(heightCm / 2.54)}″)` : titleHeight;
+  const footprint = product.dimensionsCm ? formatMultiUnitDimensions(product.dimensionsCm) : undefined;
+
+  if (!height) {
+    return footprint;
+  }
+
+  return footprint ? `${footprint}, ${height} high` : `${height} high`;
+}
+
 function buildSpecificationRows(product: ProductDetailPageViewModel, rugStyleHasStock: boolean) {
   const rows: { label: string; value: string; href?: Route }[] = [];
 
   const sizeValue =
-    product.type === "rug"
-      ? product.dimensionsLabel
-      : product.dimensionsCm
-        ? formatMultiUnitDimensions(product.dimensionsCm)
-        : undefined;
+    product.type === "rug" ? product.dimensionsLabel : formatMultiUnitSize(product);
 
   if (sizeValue) {
     rows.push({ label: "Size", value: sizeValue });
+  }
+
+  const contentsNote = getContentsNote(product);
+  if (contentsNote) {
+    rows.push(contentsNote);
   }
 
   rows.push(
