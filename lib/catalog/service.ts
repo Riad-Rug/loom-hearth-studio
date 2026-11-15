@@ -1,7 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 
 import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
-import { parseProductTitle } from "@/features/pdp/product-title";
 import {
   rugStyleNavLinks,
   type RugStyleNavLink,
@@ -38,6 +37,7 @@ import {
   getRugFeatureLabel,
   humanizeProductToken,
   normalizeDimensionSeparators,
+  parseProductTitle,
   removeConstructionFromColor,
 } from "@/lib/catalog/product-card-name";
 import { normalizeSlug, productCategoryOptions } from "@/lib/catalog/product-validation";
