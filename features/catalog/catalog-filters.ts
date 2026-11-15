@@ -70,15 +70,19 @@ export function matchesCategoryFilter(
   return selectedCategories.includes(product.category);
 }
 
+// "Available now" keeps only pieces a shopper can buy: a sold piece is gone and
+// a reserved one is held by an order while its buyer reviews photos. The card
+// carries a status rather than a full product, so this compares statuses instead
+// of calling getProductAvailability.
 export function matchesAvailability(
   product: CatalogProductCardViewModel,
-  hideSold: boolean,
+  availableOnly: boolean,
 ): boolean {
-  if (!hideSold) {
+  if (!availableOnly) {
     return true;
   }
 
-  return product.status !== "sold";
+  return product.status !== "sold" && product.status !== "reserved";
 }
 
 /**
@@ -91,9 +95,9 @@ export function matchesAvailability(
  */
 export function countsTowardCategoryAvailability(
   product: CatalogProductCardViewModel,
-  hideSold: boolean,
+  availableOnly: boolean,
 ): boolean {
-  return matchesAvailability(product, hideSold) && !product.isOutOfStock;
+  return matchesAvailability(product, availableOnly) && !product.isOutOfStock;
 }
 
 function listedAtMs(product: CatalogProductCardViewModel): number {
