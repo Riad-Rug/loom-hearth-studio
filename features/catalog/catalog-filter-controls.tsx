@@ -4,7 +4,7 @@ import { useEffect, useId, useState } from "react";
 
 import {
   catalogCategoryFilterOptions,
-  catalogPriceFilterOptions,
+  catalogPriceBands,
   catalogSortOptions,
   type CatalogPriceFilter,
   type CatalogSizeFilter,
@@ -164,7 +164,7 @@ export function CatalogFilterControls({
             Price
           </span>
           <div className={styles.filterCheckList}>
-            {catalogPriceFilterOptions.map((option) => {
+            {catalogPriceBands.map((option) => {
               const isChecked = selectedPrices.includes(option.value);
 
               return (

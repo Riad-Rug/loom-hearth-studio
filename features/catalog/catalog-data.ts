@@ -293,7 +293,9 @@ export const catalogCategories = [
 // "newest" is the default and requires no client-side reordering: the catalog
 // repository already lists products by `updatedAt desc` (see
 // PrismaProductRepository.listAll/listByCategory), so "newest" just means
-// "leave the server's order alone."
+// "leave the server's order alone." That is last edit, not date listed; the card
+// view model carries no createdAt to sort on. During a search the default sort
+// means best match first.
 export const catalogSortOptions = [
   { value: "newest", label: "Newest" },
   { value: "price-asc", label: "Price: low to high" },
@@ -303,14 +305,24 @@ export const catalogSortOptions = [
 export type CatalogSortOption = (typeof catalogSortOptions)[number]["value"];
 
 // Multi-select, like category: no selection means "every price", so there's no
-// "Any" option to check.
-export const catalogPriceFilterOptions = [
-  { value: "under-300", label: "Under $300" },
-  { value: "300-600", label: "$300–600" },
-  { value: "600-plus", label: "$600+" },
-] as const;
+// "Any" option to check. One table feeds the filter logic and the controls. A band
+// covers min <= price < max (no max means open-ended), so a $250 piece sits in
+// "$250-400". Cut to the stock: most of the catalog sits under $300 and nothing
+// sits above $600, so the old Under $300 / $300-600 / $600+ split said little.
+export const catalogPriceBands = [
+  { value: "under-100", label: "Under $100", min: 0, max: 100 },
+  { value: "100-250", label: "$100\u2013250", min: 100, max: 250 },
+  { value: "250-400", label: "$250\u2013400", min: 250, max: 400 },
+  { value: "400-plus", label: "$400 and over", min: 400, max: null },
+] as const satisfies ReadonlyArray<{
+  value: string;
+  label: string;
+  min: number;
+  max: number | null;
+}>;
 
-export type CatalogPriceFilter = (typeof catalogPriceFilterOptions)[number]["value"];
+export type CatalogPriceBand = (typeof catalogPriceBands)[number];
+export type CatalogPriceFilter = CatalogPriceBand["value"];
 
 // Category filter options for the shop sidebar. Ordered the way the shop reads
 // left to right in the header's Collection menu rather than by catalogCategories

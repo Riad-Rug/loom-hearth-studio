@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/seo/json-ld";
+import { catalogCategoryFilterOptions } from "@/features/catalog/catalog-data";
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
-import { listCatalogProductCards } from "@/lib/catalog/service";
+import {
+  listCatalogProductCards,
+  listRugStyleNavLinks,
+  listUnavailableCategoryHrefs,
+} from "@/lib/catalog/service";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
@@ -35,7 +40,19 @@ function hasSearchQuery(value: string | string[] | undefined) {
 }
 
 export default async function ShopPage() {
-  const products = await listCatalogProductCards();
+  const [products, styleNavLinks, unavailableCategoryHrefs] = await Promise.all([
+    listCatalogProductCards(),
+    listRugStyleNavLinks(),
+    listUnavailableCategoryHrefs(),
+  ]);
+  // Where a search with no results can send the shopper: only pages with stock
+  // behind them, the same live check the header and /shop/rugs use.
+  const searchFallbackLinks = {
+    categories: catalogCategoryFilterOptions.filter(
+      (option) => !unavailableCategoryHrefs.includes(option.href),
+    ),
+    styles: styleNavLinks.filter((link) => link.available),
+  };
 
   return (
     <>
@@ -56,7 +73,7 @@ export default async function ShopPage() {
           }),
         ]}
       />
-      <CatalogPageView products={products} />
+      <CatalogPageView products={products} searchFallbackLinks={searchFallbackLinks} />
     </>
   );
 }
