@@ -14,8 +14,8 @@ import type { Route } from "next";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 
 import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
@@ -54,9 +54,7 @@ type ProductDetailPageViewProps = {
   rugStyleHasStock?: boolean;
 };
 
-type DisplayGalleryItem = ProductDetailPageViewModel["gallery"][number] & {
-  tone?: "neutral" | "condition";
-};
+type GalleryItem = ProductDetailPageViewModel["gallery"][number];
 
 type PurchaseState = "available" | "sold" | "outOfStock";
 
@@ -66,12 +64,13 @@ const PRIMARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-
 const SECONDARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-transparent text-[var(--color-green)] font-medium disabled:cursor-default disabled:opacity-60";
 const PURCHASE_MICROCOPY = "text-[var(--color-text-muted)] text-[0.92rem]";
 const APPROVAL_MICROCOPY = "Card authorized at checkout, charged only after your approval.";
+const LIGHTBOX_CONTROL = "px-[1rem] py-[0.6rem] border border-[color:var(--color-bg)] rounded-full bg-transparent text-[var(--color-bg)] text-[0.85rem] cursor-pointer";
 
 export function ProductDetailPageView({
   product,
   rugStyleHasStock = true,
 }: ProductDetailPageViewProps) {
-  const gallery = useMemo(() => createDisplayGallery(product), [product]);
+  const gallery = product.gallery;
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [preferredHistoryCategory, setPreferredHistoryCategory] = useState<ProductCategory | null>(null);
   const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
@@ -138,6 +137,27 @@ export function ProductDetailPageView({
   const activeImage = gallery[activeImageIndex] ?? gallery[0] ?? null;
   const activeImageBroken = activeImage ? failedImageIds.has(activeImage.id) : false;
   const activeImageAlt = activeImage?.altText || product.name;
+  const viewableImageIndexes = gallery.flatMap((item, index) =>
+    item.src && !failedImageIds.has(item.id) ? [index] : [],
+  );
+  const activeViewablePosition = viewableImageIndexes.indexOf(activeImageIndex);
+
+  function showAdjacentImage(step: 1 | -1) {
+    if (viewableImageIndexes.length < 2) {
+      return;
+    }
+
+    const nextPosition =
+      (activeViewablePosition + step + viewableImageIndexes.length) % viewableImageIndexes.length;
+    setActiveImageIndex(viewableImageIndexes[nextPosition]);
+  }
+
+  function handleLightboxKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      event.preventDefault();
+      showAdjacentImage(event.key === "ArrowLeft" ? -1 : 1);
+    }
+  }
   const displayedRecommendations = getDisplayedRecommendations(
     product.similarRugs,
     preferredHistoryCategory,
@@ -180,7 +200,7 @@ export function ProductDetailPageView({
                     >
                       {item.src && !failedImageIds.has(item.id) ? (
                         <NextImage
-                          alt={item.altText ? `${item.altText} — ${item.label}` : `${product.name} — ${item.label}`}
+                          alt={item.altText || product.name}
                           className="block object-cover object-center"
                           fill
                           loading="lazy"
@@ -190,11 +210,10 @@ export function ProductDetailPageView({
                         />
                       ) : (
                         <PlaceholderMedia
-                          alt={`${product.name} — ${item.label}`}
+                          alt={`${product.name}, ${item.label}`}
                           aspectRatio="1 / 1"
                           label={item.label}
                           sizes="5rem"
-                          tone={item.tone === "condition" ? "condition" : "neutral"}
                         />
                       )}
                     </Tab>
@@ -425,23 +444,49 @@ export function ProductDetailPageView({
           className="relative z-[1000]"
           open={isLightboxOpen}
           onClose={() => setIsLightboxOpen(false)}
+          onKeyDown={handleLightboxKeyDown}
         >
           <DialogBackdrop className="fixed inset-0 bg-[rgba(20,20,20,0.9)]" />
           <div className="fixed inset-0 flex items-center justify-center p-[var(--space-5)]">
             <button
               aria-label="Close zoomed image"
-              className="absolute top-[var(--space-4)] right-[var(--space-4)] px-[1rem] py-[0.6rem] border border-[color:var(--color-bg)] rounded-full bg-transparent text-[var(--color-bg)] text-[0.85rem]"
+              className={`absolute top-[var(--space-4)] right-[var(--space-4)] ${LIGHTBOX_CONTROL}`}
               type="button"
               onClick={() => setIsLightboxOpen(false)}
             >
               Close
             </button>
-            <DialogPanel>
+            {/* Headless UI closes the dialog on clicks outside the panel, so the
+                previous and next controls live inside it. */}
+            <DialogPanel className="grid justify-items-center gap-[var(--space-3)]">
               <img
                 alt={activeImageAlt}
-                className="block w-auto h-auto max-w-[92vw] max-h-[85vh] object-contain"
+                className="block w-auto h-auto max-w-[92vw] max-h-[78vh] object-contain"
                 src={activeImage.src}
               />
+              {viewableImageIndexes.length > 1 ? (
+                <div className="flex items-center gap-[var(--space-3)] text-[var(--color-bg)]">
+                  <button
+                    aria-label="Previous image"
+                    className={LIGHTBOX_CONTROL}
+                    type="button"
+                    onClick={() => showAdjacentImage(-1)}
+                  >
+                    Previous
+                  </button>
+                  <p aria-live="polite" className="m-0 text-[var(--color-bg)] text-[0.85rem] tabular-nums">
+                    {activeViewablePosition + 1} of {viewableImageIndexes.length}
+                  </p>
+                  <button
+                    aria-label="Next image"
+                    className={LIGHTBOX_CONTROL}
+                    type="button"
+                    onClick={() => showAdjacentImage(1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              ) : null}
             </DialogPanel>
           </div>
         </Dialog>
@@ -462,7 +507,7 @@ function ProductHeroImage({
   onImageError,
   onOpenLightbox,
 }: {
-  item: DisplayGalleryItem;
+  item: GalleryItem;
   productName: string;
   isBroken: boolean;
   isPointerFine: boolean;
@@ -494,7 +539,6 @@ function ProductHeroImage({
         label="Photo pending"
         priority={priority}
         sizes="(max-width: 700px) 100vw, (max-width: 1100px) 90vw, 52vw"
-        tone={item.tone === "condition" ? "condition" : "neutral"}
       />
     );
   }
@@ -588,7 +632,7 @@ function ProductHeroImage({
       onPointerMove={handlePointerMove}
     >
       <button
-        aria-label={`View ${item.altText || productName} full size`}
+        aria-label={`Enlarge photo: ${item.altText || productName}`}
         className="block w-full h-full p-0 border-0 cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-green)] focus-visible:ring-offset-2"
         type="button"
         onClick={onOpenLightbox}
@@ -629,16 +673,6 @@ function ProductHeroImage({
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
-}
-
-function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalleryItem[] {
-  const allImages = product.gallery;
-
-  return allImages.map((item, index) => ({
-    ...item,
-    label: index === allImages.length - 1 ? "Condition" : item.label,
-    tone: index === allImages.length - 1 ? ("condition" as const) : ("neutral" as const),
-  }));
 }
 
 function getContentsNote(product: ProductDetailPageViewModel): { label: string; value: string } | null {
@@ -734,7 +768,7 @@ function extractConditionNote(product: ProductDetailPageViewModel) {
     return undefined;
   }
 
-  return `${conditionSection.split(/\n|(?<=[.!?])\s/u)[0]} Photo shown in the condition view.`;
+  return conditionSection.split(/\n|(?<=[.!?])\s/u)[0];
 }
 
 /**
