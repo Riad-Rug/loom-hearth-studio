@@ -65,6 +65,7 @@ const PANEL_EYEBROW = "text-[var(--color-green)] text-[0.72rem] font-semibold tr
 const PRIMARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium";
 const SECONDARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-transparent text-[var(--color-green)] font-medium disabled:cursor-default disabled:opacity-60";
 const PURCHASE_MICROCOPY = "text-[var(--color-text-muted)] text-[0.92rem]";
+const APPROVAL_MICROCOPY = "Card authorized at checkout, charged only after your approval.";
 
 export function ProductDetailPageView({
   product,
@@ -76,7 +77,7 @@ export function ProductDetailPageView({
   const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isPointerFine, setIsPointerFine] = useState(false);
-  const reserveProduct = useReserveProduct(product);
+  const { reserve: reserveProduct } = usePurchaseActions(product);
   const purchaseState = getPurchaseState(product);
   const shippingCopy = getShippingCopy(product.priceUsd);
   const contentsNote = getContentsNote(product);
@@ -890,16 +891,14 @@ function RugPurchaseShell({
 }: {
   product: Extract<ProductDetailPageViewModel, { type: "rug" }>;
 }) {
-  const reserve = useReserveProduct(product);
+  const { reserve } = usePurchaseActions(product);
 
   return (
     <div className={PANEL_CARD}>
       <button className={`${PRIMARY_ACTION} cursor-pointer`} type="button" onClick={reserve}>
         Reserve this piece — {product.priceUsdLabel}
       </button>
-      <p className={PURCHASE_MICROCOPY}>
-        Card authorized now, charged only after your approval.
-      </p>
+      <p className={PURCHASE_MICROCOPY}>{APPROVAL_MICROCOPY}</p>
     </div>
   );
 }
@@ -992,26 +991,64 @@ function MultiUnitPurchaseShell({
 }: {
   product: MultiUnitProductDetailPageViewModel;
 }) {
-  const reserve = useReserveProduct(product);
+  const { quantityInCart, reserve, addToCart } = usePurchaseActions(product);
+  const { inventory } = product.cartProduct;
+  const isAllInCart = quantityInCart >= inventory;
 
   return (
     <div className={PANEL_CARD}>
-      <button className={`${PRIMARY_ACTION} cursor-pointer`} type="button" onClick={reserve}>
-        Reserve this piece — {product.priceUsdLabel}
-      </button>
+      <div className="grid grid-cols-2 gap-[var(--space-2)] max-[700px]:grid-cols-1">
+        <button className={`${PRIMARY_ACTION} cursor-pointer`} type="button" onClick={reserve}>
+          Reserve this piece
+        </button>
+        <button
+          className={`${SECONDARY_ACTION} cursor-pointer`}
+          disabled={isAllInCart}
+          type="button"
+          onClick={addToCart}
+        >
+          Add to cart
+        </button>
+      </div>
+      <p className={PURCHASE_MICROCOPY} role="status">
+        {quantityInCart > 0 ? (
+          <>
+            {isAllInCart ? `All ${inventory} available are in your cart.` : `${quantityInCart} in your cart.`}{" "}
+            <Link className="underline underline-offset-2 text-[var(--color-green)]" href="/cart">
+              View cart
+            </Link>
+          </>
+        ) : null}
+      </p>
       <p className={PURCHASE_MICROCOPY}>
-        Availability is confirmed before any charge is captured.
+        {product.inventoryState === "lowStock" ? `${product.inventoryMessage} ` : ""}
+        {APPROVAL_MICROCOPY}
       </p>
     </div>
   );
 }
 
-function useReserveProduct(product: ProductDetailPageViewModel) {
-  const { addProduct } = useCart();
+function usePurchaseActions(product: ProductDetailPageViewModel) {
+  const { addProduct, items } = useCart();
   const router = useRouter();
+  const quantityInCart = items
+    .filter((item) => item.productId === product.id)
+    .reduce((total, item) => total + item.quantity, 0);
 
-  return () => {
-    addProduct({ product: product.cartProduct, quantity: 1 });
-    router.push("/checkout");
+  return {
+    quantityInCart,
+    // Reserve is "buy this now": with Add to cart beside it, adding again
+    // would leave a shopper who clicked both with two of the piece.
+    reserve() {
+      if (quantityInCart === 0) {
+        addProduct({ product: product.cartProduct, quantity: 1 });
+      }
+      router.push("/checkout");
+    },
+    addToCart() {
+      addProduct({ product: product.cartProduct, quantity: 1 });
+      // The mini cart in features/cart/cart-drawer.tsx opens on this event.
+      window.dispatchEvent(new Event("loom-hearth:open-cart"));
+    },
   };
 }
