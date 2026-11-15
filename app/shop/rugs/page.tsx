@@ -3,17 +3,21 @@ import type { Metadata } from "next";
 import { JsonLd } from "@/components/seo/json-ld";
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
 import { listCatalogProductCards, listRugStyleNavLinks } from "@/lib/catalog/service";
+import { categoryOgImage } from "@/lib/seo/category-og-image";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const products = await listCatalogProductCards({ category: "rugs" });
+
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "rugs",
     title: "Moroccan Rugs: Beni Ourain, Azilal, Kilim & More",
     description:
-      "Hand-knotted and flatweave Moroccan rugs by style and size. Every rug is the exact piece photographed; approve fresh photos before you pay.",
+      "Hand-knotted and flatweave Moroccan rugs by style and size. Every rug is the exact piece photographed; approve photos and video before you pay.",
     path: "/shop/rugs",
+    ...categoryOgImage(products),
   });
 }
 

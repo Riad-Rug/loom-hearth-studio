@@ -124,7 +124,7 @@ export async function generateMetadata({
   if (!product) {
     return buildMetadata({
       title: "Shop",
-      description: "Browse Moroccan rugs, poufs, pillows, and decor sourced in Marrakech and prepared for review-first buying.",
+      description: "Browse Moroccan rugs, poufs, pillows, and decor sourced in Morocco and prepared for review-first buying.",
       path: "/shop",
     });
   }

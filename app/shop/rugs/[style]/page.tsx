@@ -9,6 +9,7 @@ import {
 } from "@/features/catalog/rug-style-collections";
 import { listRugStyleNavLinks, listRugStyleProductCards } from "@/lib/catalog/service";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
+import { categoryOgImage } from "@/lib/seo/category-og-image";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
@@ -28,7 +29,7 @@ export async function generateMetadata({
     return buildMetadata({
       title: "Rugs",
       description:
-        "Browse handcrafted Moroccan rugs sourced in Marrakech and prepared for review-first buying.",
+        "Browse handcrafted Moroccan rugs sourced in Morocco and prepared for review-first buying.",
       path: "/shop/rugs",
     });
   }
@@ -59,6 +60,7 @@ export async function generateMetadata({
     description: collection.description,
     path: `/shop/rugs/${style}`,
     noIndex: !hasPurchasableProducts,
+    ...categoryOgImage(products),
   });
 }
 

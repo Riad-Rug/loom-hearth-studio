@@ -132,7 +132,7 @@ export async function generateMetadata({
   if (!product) {
     return buildMetadata({
       title: "Rugs",
-      description: "Browse handcrafted Moroccan rugs sourced in Marrakech and prepared for review-first buying.",
+      description: "Browse handcrafted Moroccan rugs sourced in Morocco and prepared for review-first buying.",
       path: "/shop/rugs",
     });
   }
