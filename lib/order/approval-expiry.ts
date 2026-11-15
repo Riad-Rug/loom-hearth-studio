@@ -3,7 +3,11 @@ import "server-only";
 import type Stripe from "stripe";
 
 import { createOrderRepository, type OrderRepository } from "@/lib/db/repositories/order-repository";
-import { resolveApprovalDeadline, resolveHoldExpiry } from "@/lib/order/approval-deadline";
+import {
+  resolveApprovalDeadline,
+  resolveAutoCancelMoment,
+  resolveHoldExpiry,
+} from "@/lib/order/approval-deadline";
 import { applyStripePaymentIntentTransition } from "@/lib/order/service";
 import { createStripeClient } from "@/lib/stripe/client";
 import { readHoldExpiry, releasePaymentIntentHold } from "@/lib/stripe/payment-intent-hold";
@@ -22,7 +26,8 @@ export type ApprovalExpiryRunResult = {
 };
 
 // Stripe's own state wins: a captured or already-released hold just catches
-// the order up. Otherwise the hold is released once the buyer's deadline passes.
+// the order up. Otherwise the hold is released a capture margin after the
+// buyer's deadline.
 export function decideAwaitingApprovalAction(input: {
   deadline: Date;
   paymentIntentStatus: Stripe.PaymentIntent.Status;
@@ -32,7 +37,7 @@ export function decideAwaitingApprovalAction(input: {
   if (input.paymentIntentStatus === "canceled") return "record-released";
   if (input.paymentIntentStatus !== "requires_capture") return "wait";
 
-  return input.now.getTime() >= input.deadline.getTime() ? "release-hold" : "wait";
+  return input.now.getTime() >= resolveAutoCancelMoment(input.deadline).getTime() ? "release-hold" : "wait";
 }
 
 export async function expireUnapprovedOrders(
@@ -42,7 +47,6 @@ export async function expireUnapprovedOrders(
   const repository = input.repository ?? createOrderRepository();
   const stripe = input.stripe ?? createStripeClient();
   const orders = await repository.listAwaitingApproval();
-  const holdFacts = await repository.listHoldFacts(orders.map((order) => order.id));
   const result: ApprovalExpiryRunResult = {
     checked: orders.length,
     expired: [],
@@ -54,13 +58,7 @@ export async function expireUnapprovedOrders(
 
   for (const order of orders) {
     try {
-      const outcome = await settleAwaitingApprovalOrder({
-        order,
-        storedHoldExpiresAt: holdFacts.get(order.id)?.holdExpiresAt ?? null,
-        now,
-        repository,
-        stripe,
-      });
+      const outcome = await settleAwaitingApprovalOrder({ order, now, repository, stripe });
 
       if (outcome === "expired") result.expired.push(order.orderNumber);
       else if (outcome === "reconciled") result.reconciled.push(order.orderNumber);
@@ -80,7 +78,6 @@ export async function expireUnapprovedOrders(
 
 async function settleAwaitingApprovalOrder(input: {
   order: Order;
-  storedHoldExpiresAt: string | null;
   now: Date;
   repository: OrderRepository;
   stripe: Stripe;
@@ -94,11 +91,18 @@ async function settleAwaitingApprovalOrder(input: {
   const paymentIntent = await input.stripe.paymentIntents.retrieve(paymentIntentId, {
     expand: ["latest_charge"],
   });
+  const stripeHoldExpiresAt = readHoldExpiry(paymentIntent);
+
+  // Orders placed before the expiry was stored get it filled in while Stripe can still supply it.
+  if (stripeHoldExpiresAt && !input.order.holdExpiresAt) {
+    await input.repository.recordHoldExpiry(input.order.id, stripeHoldExpiresAt);
+  }
+
   const deadline = resolveApprovalDeadline({
     photosSentAt: input.order.photosSentAt,
     holdExpiresAt: resolveHoldExpiry({
       placedAt: input.order.placedAt,
-      holdExpiresAt: readHoldExpiry(paymentIntent) ?? input.storedHoldExpiresAt,
+      holdExpiresAt: stripeHoldExpiresAt ?? input.order.holdExpiresAt,
     }),
   });
   const action = decideAwaitingApprovalAction({

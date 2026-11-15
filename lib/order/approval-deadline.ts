@@ -30,3 +30,10 @@ export function resolveApprovalDeadline(input: { photosSentAt?: string | null; h
 
   return new Date(Math.min(lastCaptureMoment, decisionWindowEnd));
 }
+
+// The buyer is shown the deadline; the hold is released one capture margin
+// later, so an approval that arrives at the last minute can still be captured.
+// The deadline is never later than the hold expiry less that margin.
+export function resolveAutoCancelMoment(deadline: Date): Date {
+  return new Date(deadline.getTime() + captureMarginHours * hourMs);
+}

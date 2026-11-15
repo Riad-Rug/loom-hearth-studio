@@ -118,7 +118,7 @@ function createAccountOrderHistoryItem(
     // show "Cancelled" and the pre-auth/approval-window copy at the same time.
     reservationPanel:
       order.status === "pending" && order.paymentStatus === "authorized"
-        ? createReservationPanel(order.placedAt, order.photosSentAt)
+        ? createReservationPanel(order.placedAt, order.photosSentAt, order.holdExpiresAt)
         : null,
     stageTimeline: createStageTimeline(order.status, order.photosSentAt),
     tracking: createOrderTrackingView(order),
@@ -229,9 +229,10 @@ const oneDayMs = 24 * 60 * 60 * 1000;
 function createReservationPanel(
   placedAt: string,
   photosSentAt: string | undefined,
+  storedHoldExpiresAt: string | undefined,
 ): AccountOrderReservationPanel {
   const placedDate = new Date(placedAt);
-  const holdExpiresAt = resolveHoldExpiry({ placedAt });
+  const holdExpiresAt = resolveHoldExpiry({ placedAt, holdExpiresAt: storedHoldExpiresAt });
 
   if (photosSentAt) {
     const photosSentDate = new Date(photosSentAt);

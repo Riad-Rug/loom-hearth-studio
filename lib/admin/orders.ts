@@ -1,9 +1,9 @@
 import { db } from "@/lib/db/client";
-import { createOrderRepository, type OrderHoldFacts } from "@/lib/db/repositories/order-repository";
+import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import type { FulfillmentOrchestrationResult } from "@/lib/fulfillment/contracts";
 import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
 import { resolveApprovalDeadline, resolveHoldExpiry } from "@/lib/order/approval-deadline";
-import { InventoryUnavailableError } from "@/lib/order/inventory-hold";
+import { InventoryUnavailableError, type InventoryHold } from "@/lib/order/inventory-hold";
 import { applyStripePaymentIntentTransition } from "@/lib/order/service";
 import { storePromise } from "@/lib/order/store-promise";
 import { formatOrderStatusLabel } from "@/lib/orders/customer-status-label";
@@ -206,7 +206,7 @@ export async function getAdminOrdersModuleData(): Promise<AdminOrdersModuleData>
   const paidRevenue = paidOrders.reduce((sum, order) => sum + order.totalUsd, 0);
   const averageOrderValue = paidOrders.length > 0 ? paidRevenue / paidOrders.length : 0;
   const historyByOrderId = await getFulfillmentHistoryByOrderId(orders.map((order) => order.id));
-  const holdFactsByOrderId = await createOrderRepository().listHoldFacts(orders.map((order) => order.id));
+  const inventoryHoldByOrderId = await createOrderRepository().listInventoryHolds(orders.map((order) => order.id));
 
   const costedOrders = orders.filter((order) => computeOrderCostBreakdown(order).hasCostData);
   const totalEstimatedProfit = costedOrders.reduce(
@@ -262,7 +262,7 @@ export async function getAdminOrdersModuleData(): Promise<AdminOrdersModuleData>
       createAdminOrderManagementItem(
         order,
         historyByOrderId.get(order.id) ?? [],
-        holdFactsByOrderId.get(order.id),
+        inventoryHoldByOrderId.get(order.id) ?? null,
       ),
     ),
   };
@@ -353,6 +353,23 @@ export async function updateAdminOrderStatus(
     };
   }
 
+  // A cancelled order whose card hold was released has no payment left to
+  // capture and no piece reserved, so reopening it would only fake a live order.
+  if (
+    (order.status === "cancelled" || order.status === "refunded") &&
+    order.paymentStatus === "failed" &&
+    input.status !== "cancelled" &&
+    input.status !== "refunded"
+  ) {
+    return {
+      status: "invalid-request",
+      order: null,
+      fulfillmentResult: null,
+      message:
+        "This order's card hold was released, so it can't be reopened or charged. Ask the buyer to place a new order.",
+    };
+  }
+
   // Ending an order whose card is only authorized releases that hold at Stripe
   // first, so the piece never goes back on sale while the buyer's money is held.
   const endsAuthorizedOrder =
@@ -392,7 +409,10 @@ export async function updateAdminOrderStatus(
     }
   }
 
-  const paymentStatusForStatus = endsAuthorizedOrder && input.status === "cancelled"
+  // Nothing was captured, so "refunded" on an authorized order is a cancel: the
+  // same state Stripe's payment_intent.canceled webhook then confirms.
+  const nextStatus = endsAuthorizedOrder ? "cancelled" : input.status;
+  const paymentStatusForStatus = endsAuthorizedOrder
     ? "failed"
     : resolvePaymentStatusForOrderStatus(input.status);
   let updatedOrder: Order;
@@ -400,10 +420,10 @@ export async function updateAdminOrderStatus(
   try {
     updatedOrder = paymentStatusForStatus
       ? await repository.updatePaymentTransition(input.orderId, {
-          status: input.status,
+          status: nextStatus,
           paymentStatus: paymentStatusForStatus,
         })
-      : await repository.updateStatus(input.orderId, input.status);
+      : await repository.updateStatus(input.orderId, nextStatus);
   } catch (error) {
     if (!(error instanceof InventoryUnavailableError)) {
       throw error;
@@ -482,10 +502,9 @@ export async function markAdminOrderPhotosSent(
   }
 
   const updatedOrder = await repository.markPhotosSent(input.orderId);
-  const holdFacts = (await repository.listHoldFacts([input.orderId])).get(input.orderId);
   const deadline = resolveApprovalDeadline({
     photosSentAt: updatedOrder.photosSentAt,
-    holdExpiresAt: resolveHoldExpiry({ placedAt: updatedOrder.placedAt, holdExpiresAt: holdFacts?.holdExpiresAt }),
+    holdExpiresAt: resolveHoldExpiry(updatedOrder),
   });
   const fullWindowEnd =
     new Date(updatedOrder.photosSentAt!).getTime() + storePromise.decisionWindowDays * 24 * 60 * 60 * 1000;
@@ -494,9 +513,11 @@ export async function markAdminOrderPhotosSent(
     status: "updated",
     order: updatedOrder,
     message:
-      deadline.getTime() < fullWindowEnd
-        ? `Photos marked as sent. The card hold lapses soon, so the buyer must approve by ${formatHistoryTimestamp(deadline)}, sooner than the usual ${storePromise.decisionWindowDays} days.`
-        : "Photos marked as sent.",
+      deadline.getTime() <= Date.now()
+        ? `Photos marked as sent, but the card hold lapses too soon for the buyer to approve in time: the deadline was ${formatHistoryTimestamp(deadline)}. The order cancels itself when the hold lapses unless the payment is captured first.`
+        : deadline.getTime() < fullWindowEnd
+          ? `Photos marked as sent. The card hold lapses soon, so the buyer must approve by ${formatHistoryTimestamp(deadline)}, sooner than the usual ${storePromise.decisionWindowDays} days.`
+          : "Photos marked as sent.",
   };
 }
 
@@ -665,9 +686,9 @@ function createAdminOrderShippingAddress(address: Order["shippingAddress"]): Adm
 function createAdminOrderManagementItem(
   order: Order,
   history: AdminOrderFulfillmentHistoryEntry[],
-  holdFacts: OrderHoldFacts | undefined,
+  inventoryHold: InventoryHold | null,
 ): AdminOrderManagementItem {
-  const inventoryConflict = holdFacts?.inventoryHold === "conflict";
+  const inventoryConflict = inventoryHold === "conflict";
 
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const costBreakdown = computeOrderCostBreakdown(order);

@@ -23,11 +23,6 @@ import type { ProductVariant as DomainProductVariant } from "@/types/domain/prod
 // already happened at Stripe, such as a captured payment.
 export type UnavailableStockPolicy = "refuse" | "record-conflict";
 
-export type OrderHoldFacts = {
-  inventoryHold: InventoryHold | null;
-  holdExpiresAt: string | null;
-};
-
 export interface OrderRepository {
   create(input: OrderPersistenceRequest, options?: { onUnavailable?: UnavailableStockPolicy }): Promise<Order>;
   getById(orderId: string): Promise<Order | null>;
@@ -36,8 +31,9 @@ export interface OrderRepository {
   getByCustomerEmail(customerEmail: string): Promise<Order[]>;
   listAll(): Promise<Order[]>;
   listAwaitingApproval(): Promise<Order[]>;
-  // Stock and card-hold facts the domain Order does not carry.
-  listHoldFacts(orderIds: string[]): Promise<Map<string, OrderHoldFacts>>;
+  listInventoryHolds(orderIds: string[]): Promise<Map<string, InventoryHold | null>>;
+  // Fills in Stripe's hold expiry for an order created before it was recorded.
+  recordHoldExpiry(orderId: string, holdExpiresAt: string): Promise<void>;
   updateStatus(
     orderId: string,
     status: Order["status"],
@@ -215,18 +211,20 @@ export class PrismaOrderRepository implements OrderRepository {
     return orders.map(mapOrderRecordToDomainOrder);
   }
 
-  async listHoldFacts(orderIds: string[]) {
+  async listInventoryHolds(orderIds: string[]) {
     const orders = await this.context.client.orderRecord.findMany({
       where: { id: { in: orderIds } },
-      select: { id: true, inventoryHold: true, holdExpiresAt: true },
+      select: { id: true, inventoryHold: true },
     });
 
-    return new Map(
-      orders.map((order) => [
-        order.id,
-        { inventoryHold: order.inventoryHold, holdExpiresAt: order.holdExpiresAt?.toISOString() ?? null },
-      ] as const),
-    );
+    return new Map(orders.map((order) => [order.id, order.inventoryHold] as const));
+  }
+
+  async recordHoldExpiry(orderId: string, holdExpiresAt: string) {
+    await this.context.client.orderRecord.updateMany({
+      where: { id: orderId, holdExpiresAt: null },
+      data: { holdExpiresAt: new Date(holdExpiresAt) },
+    });
   }
 
   async updateStatus(
@@ -530,6 +528,7 @@ function mapOrderRecordToDomainOrder(order: OrderRecordWithLineItems): Order {
     currency: order.currency as Order["currency"],
     placedAt: order.placedAt.toISOString(),
     stripePaymentIntentId: order.paymentIntentId ?? undefined,
+    holdExpiresAt: order.holdExpiresAt?.toISOString() ?? undefined,
     photosSentAt: order.photosSentAt?.toISOString() ?? undefined,
     trackingNumber: order.trackingNumber ?? undefined,
     carrier: order.carrier ?? undefined,
