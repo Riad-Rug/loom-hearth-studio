@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -7,97 +9,104 @@ import { useCheckout } from "@/features/checkout/checkout-provider";
 import { AddressFields } from "@/features/checkout/steps/address-fields";
 import { AddToOrder } from "@/features/checkout/steps/add-to-order";
 import { addressSchema, emptyAddressFormValues, type AddressFormValues } from "@/lib/checkout/address-schema";
+import { storePromiseCopy } from "@/lib/order/store-promise";
 
 import styles from "@/features/checkout/checkout-page.module.css";
 
 export function ShippingStep() {
-  const { billing, shippingAddressMode, setShippingAddressMode, shippingAddressDraft, submitShipping, goToStep } =
-    useCheckout();
-  const form = useForm<AddressFormValues>({
+  const { addresses, submitAddresses, items } = useCheckout();
+  const shippingForm = useForm<AddressFormValues>({
     resolver: zodResolver(addressSchema),
-    defaultValues: shippingAddressDraft.fullName ? shippingAddressDraft : emptyAddressFormValues,
+    defaultValues: addresses?.shipping ?? emptyAddressFormValues,
     mode: "onBlur",
   });
+  const billingForm = useForm<AddressFormValues>({
+    resolver: zodResolver(addressSchema),
+    defaultValues: addresses?.billing ?? emptyAddressFormValues,
+    mode: "onBlur",
+  });
+  const [billingSameAsShipping, setBillingSameAsShipping] = useState(
+    addresses ? addresses.billing === null : true,
+  );
 
-  function handleSameAsBilling() {
-    setShippingAddressMode("same-as-billing");
-  }
+  const handleSubmit = shippingForm.handleSubmit(async (shipping) => {
+    if (billingSameAsShipping) {
+      submitAddresses({ shipping, billing: null });
+      return;
+    }
 
-  function handleDifferentAddress() {
-    setShippingAddressMode("different");
-  }
-
-  function onSubmit(values: AddressFormValues) {
-    submitShipping(values);
-  }
+    // The billing form hides the contact fields, but addressSchema and the
+    // server both require an email on every address, so carry it over.
+    billingForm.setValue("email", shipping.email);
+    billingForm.setValue("phone", shipping.phone ?? "");
+    await billingForm.handleSubmit((billing) => submitAddresses({ shipping, billing }))();
+  });
 
   return (
     <div className={styles.panelStack}>
       <div className={styles.panelHeader}>
-        <h2>Shipping</h2>
+        <h2>Contact & shipping</h2>
       </div>
+      <form className={styles.panelStack} onSubmit={handleSubmit}>
+        <AddressFields form={shippingForm} idPrefix="shipping" />
+        <p className={styles.summaryNote}>
+          Estimated delivery: {storePromiseCopy.deliveryWindow} after your order ships.
+        </p>
 
-      <div className={styles.toggleGroup} role="radiogroup" aria-label="Shipping address">
-        <button
-          className={`${styles.toggleOption} ${shippingAddressMode === "same-as-billing" ? styles.toggleOptionActive : ""}`}
-          type="button"
-          role="radio"
-          aria-checked={shippingAddressMode === "same-as-billing"}
-          onClick={handleSameAsBilling}
-        >
-          <strong>Ship to the same address</strong>
-          <span>{billing.address1 ? `${billing.address1}, ${billing.city}` : "Same as billing"}</span>
-        </button>
-        <button
-          className={`${styles.toggleOption} ${shippingAddressMode === "different" ? styles.toggleOptionActive : ""}`}
-          type="button"
-          role="radio"
-          aria-checked={shippingAddressMode === "different"}
-          onClick={handleDifferentAddress}
-        >
-          <strong>Use a different address</strong>
-          <span>Gift, second home, or a different recipient</span>
-        </button>
-      </div>
+        <fieldset className={styles.toggleFieldset}>
+          <legend className={styles.toggleLegend}>Billing address</legend>
+          <div className={styles.toggleGroup}>
+            <label
+              className={`${styles.toggleOption} ${billingSameAsShipping ? styles.toggleOptionActive : ""}`}
+            >
+              <input
+                checked={billingSameAsShipping}
+                name="billing-address"
+                type="radio"
+                onChange={() => setBillingSameAsShipping(true)}
+              />
+              <span className={styles.toggleText}>
+                <strong>Same as shipping address</strong>
+              </span>
+            </label>
+            <label
+              className={`${styles.toggleOption} ${billingSameAsShipping ? "" : styles.toggleOptionActive}`}
+            >
+              <input
+                checked={!billingSameAsShipping}
+                name="billing-address"
+                type="radio"
+                onChange={() => setBillingSameAsShipping(false)}
+              />
+              <span className={styles.toggleText}>
+                <strong>Use a different billing address</strong>
+                <span>The address on your card statement</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
 
-      {shippingAddressMode === "different" ? (
-        <form className={styles.panelStack} onSubmit={form.handleSubmit(onSubmit)}>
-          <AddressFields form={form} idPrefix="shipping" includeContactFields={false} />
-          <AddToOrder />
-          <div className={styles.stepActions}>
-            <button className={styles.secondaryAction} type="button" onClick={() => goToStep("billing")}>
-              Back
-            </button>
-            <button className={styles.primaryAction} type="submit">
-              Continue to payment
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className={styles.panelStack}>
-          <div className={styles.reviewCard}>
-            <h3>Shipping to</h3>
-            <p>{billing.fullName}</p>
-            <p>
-              {billing.address1}
-              {billing.address2 ? `, ${billing.address2}` : ""}
-            </p>
-            <p>
-              {billing.city}, {billing.state} {billing.postalCode}
-            </p>
-            <p className={styles.summaryNote}>Estimated delivery: 7–14 business days after your order ships.</p>
-          </div>
-          <AddToOrder />
-          <div className={styles.stepActions}>
-            <button className={styles.secondaryAction} type="button" onClick={() => goToStep("billing")}>
-              Back
-            </button>
-            <button className={styles.primaryAction} type="button" onClick={() => submitShipping(null)}>
-              Continue to payment
-            </button>
-          </div>
+        {billingSameAsShipping ? null : (
+          <AddressFields form={billingForm} idPrefix="billing" includeContactFields={false} />
+        )}
+
+        <AddToOrder />
+
+        <button className={styles.primaryAction} disabled={items.length === 0} type="submit">
+          Continue to payment
+        </button>
+
+        <div className={styles.reviewCard}>
+          <h3>Need help before you continue?</h3>
+          <p>
+            If you are checking out a one-of-a-kind rug and want guidance before payment, contact
+            the studio and we will review the piece with you directly.
+          </p>
+          <Link className={styles.secondaryAction} href="/contact">
+            Contact the Studio
+          </Link>
         </div>
-      )}
+      </form>
     </div>
   );
 }

@@ -10,7 +10,7 @@ import styles from "@/features/checkout/checkout-page.module.css";
 export function PaymentStep() {
   const stripe = useStripe();
   const elements = useElements();
-  const { paymentIntent, goToStep, retryPaymentIntent } = useCheckout();
+  const { paymentIntent, goToStep, retryPaymentIntent, submitPaymentDetails } = useCheckout();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,7 +31,7 @@ export function PaymentStep() {
       return;
     }
 
-    goToStep("review");
+    submitPaymentDetails();
   }
 
   return (

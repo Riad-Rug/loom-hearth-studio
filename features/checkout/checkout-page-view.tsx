@@ -10,7 +10,6 @@ import { getCartItemLabel } from "@/features/cart/cart-items";
 import { formatUsd, useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
 import { useCheckout } from "@/features/checkout/checkout-provider";
-import { BillingStep } from "@/features/checkout/steps/billing-step";
 import { ShippingStep } from "@/features/checkout/steps/shipping-step";
 import { PaymentStep } from "@/features/checkout/steps/payment-step";
 import { ReviewStep } from "@/features/checkout/steps/review-step";
@@ -34,7 +33,7 @@ export function CheckoutPageView() {
   } = useCart();
   const [promoDraft, setPromoDraft] = useState(promoCode ?? "");
   const [promoFeedback, setPromoFeedback] = useState<string | null>(null);
-  const { step, paymentIntent, cartRecoveryMessage } = useCheckout();
+  const { step, paymentIntent, cartRecoveryMessage, hasHydrated } = useCheckout();
 
   useEffect(() => {
     setPromoDraft(promoCode ?? "");
@@ -128,7 +127,15 @@ export function CheckoutPageView() {
         ) : null}
 
         <div className={styles.contentGrid}>
-          <div className={styles.mainCard}>{renderStep(step, paymentIntent.clientSecret)}</div>
+          <div className={styles.mainCard}>
+            {hasHydrated ? (
+              renderStep(step, paymentIntent.clientSecret)
+            ) : (
+              <div className={styles.reviewCard}>
+                <p>Loading checkout…</p>
+              </div>
+            )}
+          </div>
           <aside className={styles.summaryCard}>
             <div className={styles.summaryHeader}>
               <p className={styles.eyebrow}>Order summary</p>
@@ -232,14 +239,6 @@ export function CheckoutPageView() {
 }
 
 function renderStep(step: CheckoutStepKey, clientSecret: string | null) {
-  if (step === "billing") {
-    return (
-      <div key="billing" className={styles.stepPanel}>
-        <BillingStep />
-      </div>
-    );
-  }
-
   if (step === "shipping") {
     return (
       <div key="shipping" className={styles.stepPanel}>
