@@ -2,22 +2,49 @@
 
 import type { Route } from "next";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 
 import {
-  formatUsd,
+  getCartItemAvailabilityNote,
   getCartItemLabel,
-  getCartItemQuantityRule,
-  useCart,
-} from "@/features/cart/cart-provider";
+  toCommerceItems,
+} from "@/features/cart/cart-items";
+import { formatUsd, useCart } from "@/features/cart/cart-provider";
+import { trackCommerceEvent } from "@/lib/analytics/commerce-tracking";
 import { freeShippingThresholdUsd } from "@/lib/order/shipping";
 
 import styles from "./cart-page.module.css";
 
 export function CartPageView() {
-  const { itemCount, items, removeItem, shippingUsd, subtotalUsd, totalUsd, updateQuantity } =
-    useCart();
+  const {
+    discountUsd,
+    itemCount,
+    items,
+    promoCode,
+    removeItem,
+    shippingUsd,
+    subtotalUsd,
+    totalUsd,
+    updateQuantity,
+  } = useCart();
   const isEmpty = items.length === 0;
   const itemCountLabel = `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
+  const hasTrackedViewCart = useRef(false);
+
+  // The cart hydrates from localStorage after the first render, so wait for items.
+  useEffect(() => {
+    if (hasTrackedViewCart.current || items.length === 0) {
+      return;
+    }
+
+    hasTrackedViewCart.current = true;
+    trackCommerceEvent({
+      name: "view_cart",
+      items: toCommerceItems(items),
+      coupon: promoCode ?? undefined,
+      discountUsd,
+    });
+  }, [discountUsd, items, promoCode]);
 
   return (
     <div className={styles.page}>
@@ -105,7 +132,9 @@ export function CartPageView() {
                         </div>
                       )}
                       <div className={styles.itemActions}>
-                        <p className={styles.quantityRule}>{getCartItemQuantityRule(item)}</p>
+                        {getCartItemAvailabilityNote(item) ? (
+                          <p className={styles.quantityRule}>{getCartItemAvailabilityNote(item)}</p>
+                        ) : null}
                         <button
                           className={styles.removeButton}
                           type="button"

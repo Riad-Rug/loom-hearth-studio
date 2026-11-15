@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import { Elements } from "@stripe/react-stripe-js";
 
 import { checkoutSteps, checkoutSummary } from "@/features/checkout/checkout-data";
-import { formatUsd, getCartItemLabel, useCart } from "@/features/cart/cart-provider";
+import { getCartItemLabel } from "@/features/cart/cart-items";
+import { formatUsd, useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
 import { useCheckout } from "@/features/checkout/checkout-provider";
 import { BillingStep } from "@/features/checkout/steps/billing-step";

@@ -9,29 +9,19 @@ import {
   type ReactNode,
 } from "react";
 
-import { getCategoryLabel, getProductRoutePath } from "@/lib/catalog/helpers";
+import {
+  addProductToCart,
+  getAddedCartLine,
+  parseStoredCartItem,
+  setCartItemQuantity,
+  toCommerceItem,
+  type AddCartProductInput,
+  type CartStoreItem,
+} from "@/features/cart/cart-items";
+import { trackCommerceEvent } from "@/lib/analytics/commerce-tracking";
 import { calculateShippingUsd } from "@/lib/order/shipping";
-import type { Product } from "@/types/domain";
 
 const CART_STORAGE_KEY = "loom-hearth-studio.cart";
-
-export type CartStoreItem = {
-  id: string;
-  href: string;
-  productId: string;
-  productType: Product["type"];
-  productCategory: Product["category"];
-  name: string;
-  priceUsd: number;
-  quantity: number;
-  variantName?: string;
-};
-
-type AddCartProductInput = {
-  product: Product;
-  quantity: number;
-  variantName?: string;
-};
 
 type AppliedPromo = {
   code: string;
@@ -78,14 +68,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const parsedValue = JSON.parse(storedValue) as unknown;
 
       if (Array.isArray(parsedValue)) {
-        setItems(parsedValue.filter(isCartStoreItem));
+        setItems(parsedValue.filter(parseStoredCartItem));
         return;
       }
 
       if (parsedValue && typeof parsedValue === "object") {
         const candidate = parsedValue as Partial<StoredCartState>;
         if (Array.isArray(candidate.items)) {
-          setItems(candidate.items.filter(isCartStoreItem));
+          setItems(candidate.items.filter(parseStoredCartItem));
         }
         if (candidate.promo && isAppliedPromo(candidate.promo)) {
           setAppliedPromo(candidate.promo);
@@ -153,29 +143,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
       shippingUsd,
       totalUsd: roundCurrency(subtotalUsd - discountUsd + shippingUsd),
       addProduct(input) {
+        const addedLine = getAddedCartLine(items, input);
+
         setItems((currentItems) => addProductToCart(currentItems, input));
+
+        if (addedLine) {
+          trackCommerceEvent({
+            name: "add_to_cart",
+            items: [toCommerceItem({ ...addedLine.item, quantity: addedLine.quantity })],
+          });
+        }
       },
       removeItem(id) {
         setItems((currentItems) => currentItems.filter((item) => item.id !== id));
       },
       updateQuantity(id, quantity) {
-        setItems((currentItems) =>
-          currentItems.flatMap((item) => {
-            if (item.id !== id) {
-              return [item];
-            }
-
-            if (item.productType === "rug") {
-              return [{ ...item, quantity: 1 }];
-            }
-
-            if (quantity < 1) {
-              return [];
-            }
-
-            return [{ ...item, quantity }];
-          }),
-        );
+        setItems((currentItems) => setCartItemQuantity(currentItems, id, quantity));
       },
       async applyPromoCode(code) {
         const result = await validatePromo(code, items);
@@ -222,64 +205,6 @@ export function formatUsd(amount: number) {
   }).format(amount);
 }
 
-export function getCartItemLabel(item: CartStoreItem) {
-  return getCategoryLabel(item.productCategory);
-}
-
-export function getCartItemQuantityRule(item: CartStoreItem) {
-  return item.productType === "rug" ? "Locked to 1" : "Quantity controls allowed";
-}
-
-function addProductToCart(
-  currentItems: CartStoreItem[],
-  input: AddCartProductInput,
-): CartStoreItem[] {
-  const nextItem = createCartStoreItem(input);
-  const existingItemIndex = currentItems.findIndex((item) => item.id === nextItem.id);
-
-  if (existingItemIndex === -1) {
-    return [...currentItems, nextItem];
-  }
-
-  return currentItems.map((item, index) => {
-    if (index !== existingItemIndex) {
-      return item;
-    }
-
-    if (item.productType === "rug") {
-      return { ...item, quantity: 1 };
-    }
-
-    return {
-      ...item,
-      quantity: item.quantity + nextItem.quantity,
-    };
-  });
-}
-
-function createCartStoreItem({
-  product,
-  quantity,
-  variantName,
-}: AddCartProductInput): CartStoreItem {
-  const normalizedQuantity = product.type === "rug" ? 1 : Math.max(1, quantity);
-
-  return {
-    id:
-      product.type === "multiUnit" && variantName
-        ? `${product.id}::${variantName}`
-        : product.id,
-    href: getProductRoutePath(product),
-    productId: product.id,
-    productType: product.type,
-    productCategory: product.category,
-    name: product.name,
-    priceUsd: product.priceUsd,
-    quantity: normalizedQuantity,
-    variantName,
-  };
-}
-
 async function validatePromo(code: string, items: CartStoreItem[]) {
   const subtotalUsd = roundCurrency(
     items.reduce((runningTotal, item) => runningTotal + item.priceUsd * item.quantity, 0),
@@ -322,30 +247,6 @@ async function validatePromo(code: string, items: CartStoreItem[]) {
     discountUsd: data.discountUsd,
     message: data.message,
   };
-}
-
-function isCartStoreItem(value: unknown): value is CartStoreItem {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const candidate = value as Partial<CartStoreItem>;
-
-  return (
-    typeof candidate.id === "string" &&
-    typeof candidate.href === "string" &&
-    typeof candidate.productId === "string" &&
-    (candidate.productType === "rug" || candidate.productType === "multiUnit") &&
-    (candidate.productCategory === "rugs" ||
-      candidate.productCategory === "vintage" ||
-      candidate.productCategory === "decor" ||
-      candidate.productCategory === "pillows" ||
-      candidate.productCategory === "poufs") &&
-    typeof candidate.name === "string" &&
-    typeof candidate.priceUsd === "number" &&
-    typeof candidate.quantity === "number" &&
-    (candidate.variantName === undefined || typeof candidate.variantName === "string")
-  );
 }
 
 function isAppliedPromo(value: unknown): value is AppliedPromo {

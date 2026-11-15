@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 
-import type { CartStoreItem } from "@/features/cart/cart-provider";
+import type { CartStoreItem } from "@/features/cart/cart-items";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
 import { trackBeginCheckout } from "@/lib/analytics/gtag";

@@ -4,7 +4,8 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { formatUsd, getCartItemLabel, useCart } from "@/features/cart/cart-provider";
+import { getCartItemLabel } from "@/features/cart/cart-items";
+import { formatUsd, useCart } from "@/features/cart/cart-provider";
 
 import styles from "./cart-drawer.module.css";
 
