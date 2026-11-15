@@ -3,13 +3,11 @@ import "server-only";
 import type Stripe from "stripe";
 
 import { createOrderRepository, type OrderRepository } from "@/lib/db/repositories/order-repository";
+import { resolveApprovalDeadline, resolveHoldExpiry } from "@/lib/order/approval-deadline";
 import { applyStripePaymentIntentTransition } from "@/lib/order/service";
-import { storePromise } from "@/lib/order/store-promise";
 import { createStripeClient } from "@/lib/stripe/client";
-import { releasePaymentIntentHold } from "@/lib/stripe/payment-intent-hold";
+import { readHoldExpiry, releasePaymentIntentHold } from "@/lib/stripe/payment-intent-hold";
 import type { Order } from "@/types/domain";
-
-const dayMs = 24 * 60 * 60 * 1000;
 
 export type AwaitingApprovalAction = "release-hold" | "record-captured" | "record-released" | "wait";
 
@@ -18,26 +16,23 @@ export type ApprovalExpiryRunResult = {
   expired: string[];
   reconciled: string[];
   waiting: number;
+  // Orders with no PaymentIntent (the legacy hosted Checkout path) have no hold to manage.
+  skipped: string[];
   failed: Array<{ orderNumber: string; reason: string }>;
 };
 
-// The decision window opens when the photos are sent, the same clock as the
-// "approve by" date on the buyer's account page. Until photos are sent the buyer
-// has not had their window, so the order waits; Stripe expiring the card hold
-// still closes it, and this run catches that up if the webhook was missed.
+// Stripe's own state wins: a captured or already-released hold just catches
+// the order up. Otherwise the hold is released once the buyer's deadline passes.
 export function decideAwaitingApprovalAction(input: {
-  photosSentAt: string | undefined;
+  deadline: Date;
   paymentIntentStatus: Stripe.PaymentIntent.Status;
   now: Date;
 }): AwaitingApprovalAction {
   if (input.paymentIntentStatus === "succeeded") return "record-captured";
   if (input.paymentIntentStatus === "canceled") return "record-released";
-  if (input.paymentIntentStatus !== "requires_capture" || !input.photosSentAt) return "wait";
+  if (input.paymentIntentStatus !== "requires_capture") return "wait";
 
-  const decisionDeadline =
-    new Date(input.photosSentAt).getTime() + storePromise.decisionWindowDays * dayMs;
-
-  return input.now.getTime() >= decisionDeadline ? "release-hold" : "wait";
+  return input.now.getTime() >= input.deadline.getTime() ? "release-hold" : "wait";
 }
 
 export async function expireUnapprovedOrders(
@@ -47,21 +42,30 @@ export async function expireUnapprovedOrders(
   const repository = input.repository ?? createOrderRepository();
   const stripe = input.stripe ?? createStripeClient();
   const orders = await repository.listAwaitingApproval();
+  const holdFacts = await repository.listHoldFacts(orders.map((order) => order.id));
   const result: ApprovalExpiryRunResult = {
     checked: orders.length,
     expired: [],
     reconciled: [],
     waiting: 0,
+    skipped: [],
     failed: [],
   };
 
   for (const order of orders) {
     try {
-      const outcome = await settleAwaitingApprovalOrder({ order, now, repository, stripe });
+      const outcome = await settleAwaitingApprovalOrder({
+        order,
+        storedHoldExpiresAt: holdFacts.get(order.id)?.holdExpiresAt ?? null,
+        now,
+        repository,
+        stripe,
+      });
 
       if (outcome === "expired") result.expired.push(order.orderNumber);
       else if (outcome === "reconciled") result.reconciled.push(order.orderNumber);
       else if (outcome === "waiting") result.waiting += 1;
+      else if (outcome === "skipped") result.skipped.push(order.orderNumber);
       else result.failed.push({ orderNumber: order.orderNumber, reason: outcome.failed });
     } catch (error) {
       result.failed.push({
@@ -76,19 +80,29 @@ export async function expireUnapprovedOrders(
 
 async function settleAwaitingApprovalOrder(input: {
   order: Order;
+  storedHoldExpiresAt: string | null;
   now: Date;
   repository: OrderRepository;
   stripe: Stripe;
-}): Promise<"expired" | "reconciled" | "waiting" | { failed: string }> {
+}): Promise<"expired" | "reconciled" | "waiting" | "skipped" | { failed: string }> {
   const paymentIntentId = input.order.stripePaymentIntentId;
 
   if (!paymentIntentId) {
-    return { failed: "Order has no Stripe PaymentIntent to check." };
+    return "skipped";
   }
 
-  const paymentIntent = await input.stripe.paymentIntents.retrieve(paymentIntentId);
-  const action = decideAwaitingApprovalAction({
+  const paymentIntent = await input.stripe.paymentIntents.retrieve(paymentIntentId, {
+    expand: ["latest_charge"],
+  });
+  const deadline = resolveApprovalDeadline({
     photosSentAt: input.order.photosSentAt,
+    holdExpiresAt: resolveHoldExpiry({
+      placedAt: input.order.placedAt,
+      holdExpiresAt: readHoldExpiry(paymentIntent) ?? input.storedHoldExpiresAt,
+    }),
+  });
+  const action = decideAwaitingApprovalAction({
+    deadline,
     paymentIntentStatus: paymentIntent.status,
     now: input.now,
   });

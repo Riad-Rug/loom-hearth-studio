@@ -14,6 +14,7 @@ import { getProductRoutePath } from "@/lib/catalog/helpers";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import { createProductRepository } from "@/lib/db/repositories/product-repository";
+import { resolveApprovalDeadline, resolveHoldExpiry } from "@/lib/order/approval-deadline";
 import { resolveCarrierTrackingHref } from "@/lib/orders/carrier-tracking";
 import { formatOrderStatusLabel } from "@/lib/orders/customer-status-label";
 import type { Order } from "@/types/domain";
@@ -224,17 +225,17 @@ function createOrderTotals(order: Order): AccountOrderTotalsView {
 }
 
 const oneDayMs = 24 * 60 * 60 * 1000;
-const approvalWindowDays = 5;
 
 function createReservationPanel(
   placedAt: string,
   photosSentAt: string | undefined,
 ): AccountOrderReservationPanel {
   const placedDate = new Date(placedAt);
+  const holdExpiresAt = resolveHoldExpiry({ placedAt });
 
   if (photosSentAt) {
     const photosSentDate = new Date(photosSentAt);
-    const approveByDate = new Date(photosSentDate.getTime() + approvalWindowDays * oneDayMs);
+    const approveByDate = resolveApprovalDeadline({ photosSentAt, holdExpiresAt });
 
     return {
       title: "What happens next",
@@ -247,9 +248,10 @@ function createReservationPanel(
   }
 
   const photosExpectedByDate = new Date(placedDate.getTime() + oneDayMs);
-  const approvalWindowClosesByDate = new Date(
-    photosExpectedByDate.getTime() + approvalWindowDays * oneDayMs,
-  );
+  const approvalWindowClosesByDate = resolveApprovalDeadline({
+    photosSentAt: photosExpectedByDate.toISOString(),
+    holdExpiresAt,
+  });
 
   return {
     title: "What happens next",
