@@ -27,7 +27,7 @@ async function listInStock(association: BlogProductAssociation) {
       : await listCatalogProductCards({ category: association.category });
 
   return products
-    .filter((product) => product.status === "active" && !product.isOutOfStock)
+    .filter((product) => product.availability === "available")
     .slice(0, railSize);
 }
 

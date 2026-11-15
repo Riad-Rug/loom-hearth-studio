@@ -1,3 +1,4 @@
+import type { ProductAvailability } from "@/lib/catalog/availability";
 import { absoluteUrl } from "@/lib/seo/metadata";
 import { publicBusinessDetails } from "@/config/public-business-details";
 import { siteConfig } from "@/config/site";
@@ -240,6 +241,16 @@ const CONTEMPORARY_CONDITION_PATTERN = /contemporary|newly\s+made/i;
  */
 const PRICE_VALIDITY_DAYS = 90;
 
+// A reserved piece cannot be bought now and may come back, which is what
+// OutOfStock says. schema.org's own Reserved fits better, but Google's merchant
+// listing docs do not list it among the values they accept.
+const schemaOrgAvailability: Record<ProductAvailability, string> = {
+  available: "https://schema.org/InStock",
+  reserved: "https://schema.org/OutOfStock",
+  sold: "https://schema.org/OutOfStock",
+  outOfStock: "https://schema.org/OutOfStock",
+};
+
 /** Same shape the admin form enforces (lib/catalog/product-validation.ts). */
 const CATALOG_NUMBER_PATTERN = /^LH-[A-Z]-\d{4}$/;
 
@@ -263,7 +274,7 @@ export function productSchema(input: {
    */
   ageClass?: string;
   imageUrls: string[];
-  availability?: "inStock" | "outOfStock";
+  availability: ProductAvailability;
   isOneOfOne?: boolean;
   /** Comma-joined materials as the PDP prints them (view model `materialLabel`). */
   material?: string;
@@ -290,10 +301,7 @@ export function productSchema(input: {
       ? input.catalogNumber.trim()
       : input.id;
   const validFrom = toSchemaDate(input.createdAt);
-  const availability =
-    input.availability === "outOfStock"
-      ? "https://schema.org/OutOfStock"
-      : "https://schema.org/InStock";
+  const availability = schemaOrgAvailability[input.availability];
 
   // priceUsdLabel is Intl currency output ("$1,250.00"), so the currency symbol
   // and any thousands separators both have to come off before schema.org — or
