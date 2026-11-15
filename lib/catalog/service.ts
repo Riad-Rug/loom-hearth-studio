@@ -423,6 +423,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     isOutOfStock: product.type === "multiUnit" && getInventoryState(product) === "outOfStock",
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
+    createdAt: product.createdAt,
     description: normalizeDimensionSeparators(product.description),
     routePattern: getProductRoutePattern(product),
     badge: getProductBadgeLabel(product),
