@@ -16,13 +16,29 @@ export async function POST(request: Request) {
     paymentIntentId: body.paymentIntentId,
   });
 
+  // Another order holds a unit. "unavailable": nothing was saved and cardHold says
+  // whether the buyer's hold was released. "oversold": the payment had already
+  // been captured, so orderNumber names the order the studio will refund.
+  if (result.status === "unavailable" || result.status === "oversold") {
+    return NextResponse.json(
+      {
+        status: result.status,
+        order: null,
+        orderNumber: result.persistedOrder?.orderNumber ?? null,
+        cardHold: result.authorizationRelease ?? "unresolved",
+        unavailableItems: (result.persistenceRequest?.items ?? [])
+          .filter((item) => result.unavailableProductIds?.includes(item.productId))
+          .map((item) => ({ productId: item.productId, name: item.name })),
+        message: result.message,
+      },
+      { status: 409 },
+    );
+  }
+
   if (result.status !== "created" && result.status !== "already-persisted") {
     return NextResponse.json(
       { status: result.status, order: null, message: result.message },
-      {
-        status:
-          result.status === "unavailable" ? 409 : result.status === "configuration-error" ? 503 : 502,
-      },
+      { status: result.status === "configuration-error" ? 503 : 502 },
     );
   }
 

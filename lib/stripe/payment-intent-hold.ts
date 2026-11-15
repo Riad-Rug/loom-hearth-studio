@@ -35,3 +35,13 @@ export async function releasePaymentIntentHold(
     return "unresolved";
   }
 }
+
+// ISO time Stripe refunds the uncaptured card hold, from a PaymentIntent
+// retrieved with `expand: ["latest_charge"]`.
+export function readHoldExpiry(paymentIntent: Stripe.PaymentIntent): string | null {
+  const charge = paymentIntent.latest_charge;
+  const captureBefore =
+    charge && typeof charge === "object" ? charge.payment_method_details?.card?.capture_before : undefined;
+
+  return captureBefore ? new Date(captureBefore * 1000).toISOString() : null;
+}
