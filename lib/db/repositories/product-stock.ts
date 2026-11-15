@@ -16,6 +16,7 @@ type LockedProductRow = {
   inventory: number | null;
   variants: Prisma.JsonValue | null;
   soldAt: Date | null;
+  updatedAt: Date;
 };
 
 // Locks every product the lines touch, in id order so two orders that share
@@ -30,13 +31,14 @@ export async function moveStockForLines(
   const productIds = [...new Set(lines.map((line) => line.productId))].sort();
   const rows = productIds.length
     ? await tx.$queryRaw<LockedProductRow[]>`
-        SELECT "id", "type", "status", "inventory", "variants", "soldAt"
+        SELECT "id", "type", "status", "inventory", "variants", "soldAt", "updatedAt"
         FROM "CatalogProduct"
         WHERE "id" IN (${Prisma.join(productIds)})
         ORDER BY "id"
         FOR UPDATE`
     : [];
   const result = moveStock(rows.map(toProductStock), lines, movement, now);
+  const updatedAtById = new Map(rows.map((row) => [row.id, row.updatedAt] as const));
 
   if (result.status === "moved") {
     for (const { id, variants, ...update } of result.updates) {
@@ -45,6 +47,9 @@ export async function moveStockForLines(
         data: {
           ...update,
           ...(variants && { variants: variants as unknown as Prisma.InputJsonValue }),
+          // The shop's default "newest" sort is updatedAt; an order moving stock
+          // must not push the piece to the top of the grid.
+          updatedAt: updatedAtById.get(id),
         },
       });
     }
