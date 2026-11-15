@@ -119,5 +119,5 @@ export async function POST(request: Request) {
 // An order that lost the race for its last unit must not leave the buyer's card
 // held. A non-2xx response makes Stripe redeliver the event, which retries the release.
 function holdStillNeedsRelease(result: PersistConfirmedOrderResult) {
-  return result.status === "unavailable" && result.authorizationRelease !== "released";
+  return result.status === "unavailable" && result.authorizationRelease === "unresolved";
 }
