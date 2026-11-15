@@ -26,6 +26,8 @@ import { getRugStyleCollection } from "@/features/catalog/rug-style-collections"
 import { trackViewItem } from "@/lib/analytics/gtag";
 import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
+import { calculateShippingUsd } from "@/lib/order/shipping";
+import { storePromise } from "@/lib/order/store-promise";
 import {
   getTopRecommendationHistoryCategory,
   recordCategoryInterest,
@@ -75,6 +77,7 @@ export function ProductDetailPageView({
   const [isPointerFine, setIsPointerFine] = useState(false);
   const reserveProduct = useReserveProduct(product);
   const purchaseState = getPurchaseState(product);
+  const shippingCopy = getShippingCopy(product.priceUsd);
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -237,9 +240,14 @@ export function ProductDetailPageView({
             </div>
 
             <h1 className="text-[clamp(2.35rem,4vw,3.5rem)]">{product.name}</h1>
-            <p className="text-[var(--color-green)] text-[clamp(1.8rem,3vw,2.3rem)] leading-[1.26]">
-              {product.priceUsdLabel}
-            </p>
+            <div className="grid gap-[0.35rem]">
+              <p className="text-[var(--color-green)] text-[clamp(1.8rem,3vw,2.3rem)] leading-[1.26]">
+                {product.priceUsdLabel}
+              </p>
+              {purchaseState === "available" ? (
+                <p className={PURCHASE_MICROCOPY}>{shippingCopy.full}</p>
+              ) : null}
+            </div>
 
             {purchaseState !== "available" ? (
               <UnavailablePurchaseShell product={product} state={purchaseState} />
@@ -376,8 +384,13 @@ export function ProductDetailPageView({
         <div
           className="pdp-sticky-buy hidden max-[700px]:fixed max-[700px]:inset-x-0 max-[700px]:bottom-0 max-[700px]:z-40 max-[700px]:flex max-[700px]:items-center max-[700px]:justify-between max-[700px]:gap-[var(--space-3)] max-[700px]:px-[var(--space-4)] max-[700px]:py-[var(--space-3)] max-[700px]:pb-[calc(var(--space-3)_+_env(safe-area-inset-bottom))] max-[700px]:border-t max-[700px]:border-[color:var(--color-border)] max-[700px]:bg-[var(--color-bg)] max-[700px]:shadow-[0_-4px_12px_rgba(20,20,20,0.12)]"
         >
-          <span className="text-[var(--color-green)] text-[1.1rem] font-semibold whitespace-nowrap">
-            {product.priceUsdLabel}
+          <span className="grid">
+            <span className="text-[var(--color-green)] text-[1.1rem] font-semibold whitespace-nowrap">
+              {product.priceUsdLabel}
+            </span>
+            <span className="text-[var(--color-text-muted)] text-[0.78rem] whitespace-nowrap">
+              {shippingCopy.short}
+            </span>
           </span>
           <button
             className="inline-flex items-center justify-center min-h-[3rem] px-[1.2rem] py-[0.7rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium whitespace-nowrap cursor-pointer"
@@ -859,6 +872,19 @@ function getPurchaseState(product: ProductDetailPageViewModel): PurchaseState {
   }
 
   return "available";
+}
+
+function getShippingCopy(priceUsd: number) {
+  const shippingUsd = calculateShippingUsd(priceUsd);
+
+  if (shippingUsd === 0) {
+    return { short: "Free shipping", full: `Free shipping to ${storePromise.shipsToLabel}.` };
+  }
+
+  return {
+    short: `+ $${shippingUsd} shipping`,
+    full: `+ $${shippingUsd} shipping to ${storePromise.shipsToLabel}. Free on orders of $${storePromise.freeShippingThresholdUsd} or more.`,
+  };
 }
 
 function getStatusPillLabel(product: ProductDetailPageViewModel, purchaseState: PurchaseState) {
