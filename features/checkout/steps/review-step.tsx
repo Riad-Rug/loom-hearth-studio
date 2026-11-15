@@ -7,6 +7,7 @@ import Link from "next/link";
 
 import { formatUsd } from "@/features/cart/cart-provider";
 import { useCheckout } from "@/features/checkout/checkout-provider";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 
 import styles from "@/features/checkout/checkout-page.module.css";
 
@@ -181,6 +182,7 @@ export function ReviewStep() {
         <p>
           <strong>Total: {formatUsd(totalUsd)}</strong>
         </p>
+        <p className={styles.summaryNote}>{storePromiseCopy.duties}</p>
       </div>
 
       {localError ? (
@@ -199,7 +201,7 @@ export function ReviewStep() {
       ) : null}
 
       <p className={styles.promiseLine}>
-        Card authorized now, charged only after you approve pre-shipment photos and videos.
+        Card authorized now, charged only after you approve pre-shipment {storePromise.approvalMedia}.
       </p>
 
       <div className={styles.stepActions}>
