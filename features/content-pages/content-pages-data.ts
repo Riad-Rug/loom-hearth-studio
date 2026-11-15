@@ -7,6 +7,7 @@ const approvalMedia = storePromise.approvalMedia;
 const turnaround = storePromiseCopy.approvalTurnaround;
 const turnaroundHours = `${storePromise.approvalTurnaroundHours.min} to ${storePromise.approvalTurnaroundHours.max} hours`;
 const decisionDays = storePromise.decisionWindowDays;
+const returnWindowDays = storePromise.returnWindowDays;
 const deliveryWindow = storePromiseCopy.deliveryWindow;
 const shipsFrom = `${storePromise.shipsFromCity}, ${storePromise.shipsFromCountry}`;
 const freeShippingUsd = storePromise.freeShippingThresholdUsd;
@@ -182,7 +183,7 @@ export const faqItems: FaqItem[] = [
     group: "Returns",
     question: "What is your return policy?",
     answer:
-      "14 days from confirmed delivery, provided the piece is unwashed, unaltered, free of pet hair embedded in the pile, and free of strong odours. The buyer covers return shipping in all cases, except where an item was materially misdescribed in the listing. Refunds are processed within 5 business days of confirmed return receipt.",
+      `${returnWindowDays} days from confirmed delivery, provided the piece is unwashed, unaltered, free of pet hair embedded in the pile, and free of strong odours. The buyer covers return shipping in all cases, except where an item was materially misdescribed in the listing. Refunds are processed within 5 business days of confirmed return receipt.`,
     sortOrder: 16,
   },
   {
@@ -403,11 +404,11 @@ If something is still not right after delivery, this policy explains exactly wha
 
 ## 2. Return window
 
-You have **14 days from the date of confirmed delivery** to request a return.
+You have **${returnWindowDays} days from the date of confirmed delivery** to request a return.
 
 The delivery date is determined by the tracking record from the carrier. If you have not received a delivery confirmation but believe your item has arrived, contact us at hello@loomandhearthstudio.com and we will verify with the carrier.
 
-Requests received after 14 days from confirmed delivery will not be accepted, except where required by applicable consumer protection law in your country.
+Requests received after ${returnWindowDays} days from confirmed delivery will not be accepted, except where required by applicable consumer protection law in your country.
 
 ---
 
@@ -462,7 +463,7 @@ If you believe your item was materially misdescribed, contact us before returnin
 
 ## 6. How to request a return
 
-**Step 1.** Email hello@loomandhearthstudio.com within 14 days of confirmed delivery. Use the subject line "Return Request  Order [your order number]."
+**Step 1.** Email hello@loomandhearthstudio.com within ${returnWindowDays} days of confirmed delivery. Use the subject line "Return Request  Order [your order number]."
 
 **Step 2.** Include the following in your email:
 - Your order number
@@ -552,7 +553,7 @@ We offer pre-shipment verification on every order. Before payment is captured an
 
 Accepting this offer is the most effective way to ensure you are completely happy with your purchase before it leaves Morocco. If after reviewing the photos and video you have any concerns  about colour, scale, texture, or anything else  tell us before confirming. That is the right moment to raise it.
 
-If you accepted the pre-shipment verification and confirmed you were happy with the item, and subsequently return it for reasons visible in the verification photos and video, that will be taken into account when assessing your return. This does not remove your right to return within 14 days  but it is relevant to whether a return shipping cost exemption applies.
+If you accepted the pre-shipment verification and confirmed you were happy with the item, and subsequently return it for reasons visible in the verification photos and video, that will be taken into account when assessing your return. This does not remove your right to return within ${returnWindowDays} days  but it is relevant to whether a return shipping cost exemption applies.
 
 ---
 
@@ -853,7 +854,7 @@ If we cancel your order, we will notify you promptly by email and release any pa
 
 ### 4.1 Prices
 
-All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $${freeShippingUsd} or more; orders under $${freeShippingUsd} ship for a flat $${flatShippingUsd}, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
+All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $${freeShippingUsd} or more; orders under $${freeShippingUsd} ship for a flat $${flatShippingUsd}, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping. ${dutiesSentence}
 
 We reserve the right to correct pricing errors on the site at any time. If an error is identified after you have placed an order, we will contact you to confirm whether you wish to proceed at the correct price, or cancel for a full release of any held funds.
 
@@ -926,7 +927,7 @@ ${dutiesSentence} Prices at checkout do not include them. If you have questions 
 
 Our full Return and Refund Policy is published at [loomandhearthstudio.com/returns-policy](https://www.loomandhearthstudio.com/returns-policy). That page governs all returns and takes precedence over any summary here.
 
-In brief: we accept returns within 14 days of confirmed delivery for items in original, unaltered condition. Return shipping is at the buyer's cost except where an item was materially misdescribed in its listing. Refunds are issued within 5 business days of confirmed return receipt.
+In brief: we accept returns within ${returnWindowDays} days of confirmed delivery for items in original, unaltered condition. Return shipping is at the buyer's cost except where an item was materially misdescribed in its listing. Refunds are issued within 5 business days of confirmed return receipt.
 
 ---
 

@@ -4,5 +4,4 @@ export const publicBusinessDetails = {
   email: "hello@loomandhearthstudio.com",
   whatsappLabel: "+212 607 731 641",
   whatsappUrl: "https://wa.me/212607731641",
-  complaintsLine: "Complaints are handled by email only at hello@loomandhearthstudio.com.",
 } as const;

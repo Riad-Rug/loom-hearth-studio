@@ -1,5 +1,6 @@
 import type { ProductDetailPageViewModel } from "@/lib/catalog/contracts";
 import { productNameHasDimensions } from "@/lib/catalog/product-card-name";
+import { storePromise } from "@/lib/order/store-promise";
 import type { ProductCategory } from "@/types/domain";
 
 /**
@@ -64,7 +65,7 @@ export function buildProductMetaDescription(product: ProductDetailPageViewModel)
   // Long product names can still overrun the budget, so the generated sentence
   // is held to the same limit as the admin field rather than shipped whole.
   return truncateAtWordBoundary(
-    `${product.name}: one-of-a-kind Moroccan ${productLabel}${dimensions}, ${product.priceUsdLabel} USD. Exact-piece photos before payment, ships from Morocco to the US, 14-day returns.`,
+    `${product.name}: one-of-a-kind Moroccan ${productLabel}${dimensions}, ${product.priceUsdLabel} USD. Exact-piece photos before payment, ships from Morocco to the US, ${storePromise.returnWindowDays}-day returns.`,
     metaDescriptionMaxLength,
   );
 }

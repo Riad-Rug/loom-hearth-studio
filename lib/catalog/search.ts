@@ -74,7 +74,21 @@ const categoryAliases: Record<ProductCategory, string> = {
   decor: "decor antique",
 };
 
-const phraseJoins: readonly (readonly [RegExp, string])[] = [[/flat\s+weave/gu, "flatweave"]];
+// A size written as 16″ × 16″, 16 x 16, 5' x 8' or 16x16 becomes one token ("16x16")
+// on both the query and the indexed text. Apostrophes are already gone by this
+// point; inch marks and unit words around the "x" are dropped.
+// The lookahead also accepts the end of the text so "16 x" typed so far still
+// prefix-matches "16x16".
+const sizeUnit = String.raw`(?:ft|feet|foot|inch|inches|in)\b`;
+const sizeMark = String.raw`(?:\s*(?:["\u2033\u201d\u2032]+|${sizeUnit}))?`;
+const sizeTrailingUnit = new RegExp(String.raw`((?:\d+(?:\.\d+)?x)+\d+(?:\.\d+)?)\s*${sizeUnit}`, "gu");
+const sizeJoin = new RegExp(String.raw`(\d+(?:\.\d+)?)${sizeMark}\s*(?:[x\u00d7]|by)\s*(?=\d|$)`, "gu");
+
+const phraseJoins: readonly (readonly [RegExp, string])[] = [
+  [/flat\s+weave/gu, "flatweave"],
+  [sizeJoin, "$1x"],
+  [sizeTrailingUnit, "$1"],
+];
 
 // Weights say where a hit counts for most. A word in the title or category beats
 // the same word in a paragraph of description.

@@ -13,6 +13,8 @@ export const storePromise = {
   flatShippingUsd,
   freeShippingThresholdUsd,
   duties: "buyer-pays" as DutiesPosition,
+  returnWindowDays: 14,
+  returnShippingPaidBy: "buyer",
 } as const;
 
 export const storePromiseCopy = {
@@ -25,4 +27,5 @@ export const storePromiseCopy = {
     storePromise.duties === "included"
       ? "Import duties are included for US delivery."
       : "Import duties and taxes, if charged by US customs, are paid by the buyer on delivery.",
+  returns: `Returns accepted within ${storePromise.returnWindowDays} days of confirmed delivery. Return shipping is paid by the ${storePromise.returnShippingPaidBy}, except where a piece was materially misdescribed in its listing.`,
 } as const;

@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
-import type { NewsletterSignupActionState } from "@/lib/newsletter/actions-shared";
+import {
+  newsletterSignupSources,
+  type NewsletterSignupActionState,
+  type NewsletterSignupSource,
+} from "@/lib/newsletter/actions-shared";
 import { subscribeToNewsletter } from "@/lib/newsletter/service";
 
 export async function submitNewsletterSignupAction(
@@ -38,10 +42,6 @@ function readString(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function normalizeSource(value: string) {
-  if (value === "exit-intent") {
-    return value;
-  }
-
-  return "homepage";
+function normalizeSource(value: string): NewsletterSignupSource {
+  return newsletterSignupSources.find((source) => source === value) ?? "homepage";
 }

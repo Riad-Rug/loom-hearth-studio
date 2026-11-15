@@ -351,8 +351,7 @@ export function ProductDetailPageView({
                 </li>
                 <li>{storePromiseCopy.duties}</li>
                 <li>
-                  Returns accepted within 14 days of delivery. Return shipping is paid by you unless the piece was
-                  materially misdescribed.{" "}
+                  {storePromiseCopy.returns}{" "}
                   <Link className="underline underline-offset-2 text-[var(--color-green)]" href="/returns-policy">
                     Read the returns policy
                   </Link>
@@ -1100,6 +1099,7 @@ function UnavailablePurchaseShell({
       <div className="grid gap-[var(--space-2)]">
         <p className="font-medium text-[var(--color-ink)]">Get an email when new pieces arrive</p>
         <NewsletterSignupIntentForm
+          source="sold-piece"
           ctaLabel="Notify me"
           inputLabel="Email address"
           inputPlaceholder="Your email address"
@@ -1172,18 +1172,26 @@ function usePurchaseActions(product: ProductDetailPageViewModel) {
     .filter((item) => item.productId === product.id)
     .reduce((total, item) => total + item.quantity, 0);
 
+  const image = product.gallery[0];
+  const cartInput = {
+    product: product.cartProduct,
+    quantity: 1,
+    imageUrl: image?.thumbSrc,
+    imageAlt: image?.altText,
+  };
+
   return {
     quantityInCart,
     // Reserve is "buy this now": with Add to cart beside it, adding again
     // would leave a shopper who clicked both with two of the piece.
     reserve() {
       if (quantityInCart === 0) {
-        addProduct({ product: product.cartProduct, quantity: 1 });
+        addProduct(cartInput);
       }
       router.push("/checkout");
     },
     addToCart() {
-      addProduct({ product: product.cartProduct, quantity: 1 });
+      addProduct(cartInput);
       // The mini cart in features/cart/cart-drawer.tsx opens on this event.
       window.dispatchEvent(new Event("loom-hearth:open-cart"));
     },
