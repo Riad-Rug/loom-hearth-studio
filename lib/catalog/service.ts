@@ -9,7 +9,6 @@ import {
   formatProductPriceUsd,
   formatRugDimensions,
   formatRugWeight,
-  getCategoryLabel,
   getCategoryRoutePath,
   getInventoryState,
   getProductBadgeLabel,
@@ -24,8 +23,6 @@ import type {
   ProductDetailPageViewModel,
   ProductDetailSectionViewModel,
   ProductLinkViewModel,
-  ProductSpecificationViewModel,
-  ProductSupportPanelViewModel,
   RugProductDetailPageViewModel,
 } from "@/lib/catalog/contracts";
 import {
@@ -47,7 +44,7 @@ import {
 } from "@/lib/catalog/random-selection";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
-import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
+import { storePromise } from "@/lib/order/store-promise";
 import type { CloudinaryAssetRole, MediaAsset, Product, ProductCategory, RugProduct } from "@/types/domain";
 
 const defaultRugPalette = ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"] as const;
@@ -507,8 +504,8 @@ function createProductDetailPageViewModel(
     materialLabel: product.materials.join(", "),
     originLabel: product.origin,
     techniqueLabel: undefined,
-    specifications: createProductSpecifications(product),
-    supportPanels: createProductSupportPanels(product),
+    specifications: [],
+    supportPanels: [],
     detailSections: createProductDetailSections(product),
     similarRugs,
     crossSellRecommendations,
@@ -546,132 +543,6 @@ function createProductDetailPageViewModel(
     notifyMeLabel: product.notifyMeEnabled ? "Notify me when available" : undefined,
     cartProduct: product,
   };
-}
-
-function createProductSpecifications(product: Product): ProductSpecificationViewModel[] {
-  const specs: ProductSpecificationViewModel[] = [
-    { label: "Material", value: product.materials.join(", ") },
-    { label: "Origin", value: product.origin },
-  ];
-
-  if (product.type === "rug") {
-    specs.push(
-      { label: "Technique", value: "Handwoven" },
-      { label: "Dimensions", value: formatRugDimensions(product) },
-      { label: "Weight", value: formatRugWeight(product) },
-      { label: "Piece type", value: "ONE OF A KIND rug" },
-    );
-  } else {
-    if (product.dimensionsCm) {
-      specs.push({
-        label: "Dimensions",
-        value: `${product.dimensionsCm.length} × ${product.dimensionsCm.width} cm`,
-      });
-    }
-
-    if (product.weightKg) {
-      specs.push({ label: "Weight", value: `${product.weightKg.toFixed(1)} kg` });
-    }
-
-    specs.push(
-      { label: "Availability", value: createInventoryStateLabel(product) },
-      { label: "Ordering", value: "Project and destination reviewed before payment capture" },
-    );
-  }
-
-  if (product.ageClass?.trim()) {
-    specs.push({
-      label: "Age",
-      value: product.ageBasis?.trim()
-        ? `${product.ageClass.trim()} — ${product.ageBasis.trim()}`
-        : product.ageClass.trim(),
-    });
-  }
-
-  if (product.attributionRegion?.trim()) {
-    specs.push({ label: "Region", value: product.attributionRegion.trim() });
-  }
-
-  if (product.attributionConfidence?.trim()) {
-    specs.push({ label: "Attribution", value: product.attributionConfidence.trim() });
-  }
-
-  return specs;
-}
-
-function createProductSupportPanels(product: Product): ProductSupportPanelViewModel[] {
-  const region = product.attributionRegion?.trim() || product.origin;
-  const confidence = product.attributionConfidence?.trim();
-  const tradition =
-    product.type === "rug"
-      ? createRugTraditionLabel(product)
-      : `${getCategoryLabel(product.category)} sourced in Morocco`;
-  const provenanceItems = [
-    confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`,
-    `Tradition: ${tradition}`,
-  ];
-
-  const approvalLine = `We send ${storePromise.approvalMedia} of the exact ${product.type === "rug" ? "rug" : "piece"} ${storePromiseCopy.approvalTurnaround} of your order.`;
-  const shipsFromLine = `${storePromiseCopy.shipsFrom} to ${storePromise.shipsToLabel}.`;
-  const deliveryLine = `Delivery usually takes ${storePromiseCopy.deliveryWindow} after dispatch.`;
-
-  const verificationItems =
-    product.verificationNotes?.filter(Boolean).length
-      ? product.verificationNotes.filter(Boolean).map(normalizeDimensionSeparators)
-      : [approvalLine, "Your card is charged only after you approve."];
-
-  const shippingItems =
-    product.shippingNotes?.filter(Boolean).length
-      ? product.shippingNotes.filter(Boolean).map(normalizeDimensionSeparators)
-      : [shipsFromLine, deliveryLine, storePromiseCopy.duties];
-
-  const panels: ProductSupportPanelViewModel[] = [
-    {
-      id: "provenance",
-      eyebrow: "Provenance",
-      title: product.type === "rug" ? "Product attribution and origin" : "Collection origin and sourcing",
-      body:
-        product.provenanceNote?.trim() ||
-        "Woven in the High Atlas using locally spun wool. We source directly from weavers and cooperatives we have met in person in Morocco. Origin is recorded per piece; this rug is documented as High Atlas tradition.",
-      items: provenanceItems,
-    },
-    {
-      id: "verification",
-      eyebrow: "Verification",
-      title: product.type === "rug" ? "How this piece is confirmed before shipment" : "How availability is confirmed before shipment",
-      body: `${approvalLine} If it is not what you expected, you walk away. Nothing is charged until you approve.`,
-      items: verificationItems,
-    },
-    {
-      id: "shipping",
-      eyebrow: "Shipping",
-      title: "Shipping and delivery notes",
-      body: `${shipsFromLine} ${deliveryLine} ${storePromiseCopy.duties}`,
-      items: shippingItems,
-    },
-  ];
-
-  if (product.conditionNote?.trim()) {
-    panels.push({
-      id: "condition",
-      eyebrow: "Condition",
-      title: "Condition notes",
-      body: normalizeDimensionSeparators(product.conditionNote.trim()),
-      items: [],
-    });
-  }
-
-  if (product.sourcingNote?.trim()) {
-    panels.push({
-      id: "sourcing",
-      eyebrow: "Sourcing note",
-      title: "How this piece entered the stockroom",
-      body: normalizeDimensionSeparators(product.sourcingNote.trim()),
-      items: [],
-    });
-  }
-
-  return panels;
 }
 
 function getPrimaryImage(product: Product) {
@@ -894,7 +765,7 @@ function createRugHeroDescription(product: Extract<Product, { type: "rug" }>) {
   const featureText = feature ? ` with ${feature}` : "";
 
   return normalizeDimensionSeparators(
-    `${firstSentence || `A ONE OF A KIND Moroccan ${construction}${featureText} in ${material}.`} Selected for texture, scale, and exact-piece character, with final color confirmed by video before payment is captured.`,
+    `${firstSentence || `A ONE OF A KIND Moroccan ${construction}${featureText} in ${material}.`} Selected for texture, scale, and exact-piece character, with final color confirmed in ${storePromise.approvalMedia} before you are charged.`,
   ).replace(/\s+/gu, " ");
 }
 
@@ -1150,20 +1021,6 @@ function formatFeetAndInchesShort(valueCm: number) {
   const inches = totalInches % 12;
 
   return `${feet}'${inches}"`;
-}
-
-function createInventoryStateLabel(product: Extract<Product, { type: "multiUnit" }>) {
-  const inventoryState = getInventoryState(product);
-
-  if (inventoryState === "lowStock") {
-    return "Low stock";
-  }
-
-  if (inventoryState === "outOfStock") {
-    return "Out of stock";
-  }
-
-  return "In stock";
 }
 
 function createInventoryMessage(product: Extract<Product, { type: "multiUnit" }>) {
