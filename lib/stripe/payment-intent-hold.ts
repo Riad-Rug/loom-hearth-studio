@@ -9,17 +9,24 @@ export type PaymentIntentHoldRelease = "released" | "captured" | "unresolved";
 // instead of turning it into the order the buyer was told failed.
 const declinedMetadataKey = "checkout_declined";
 
-export async function declinePaymentIntent(stripe: Stripe, paymentIntentId: string): Promise<PaymentIntentHoldRelease> {
+export function markPaymentIntentDeclined(stripe: Stripe, paymentIntentId: string) {
+  return writeDeclinedMetadata(stripe, paymentIntentId, "unavailable", "STRIPE_DECLINE_NOT_RECORDED");
+}
+
+// Stripe removes a metadata key sent as an empty string.
+export function clearPaymentIntentDecline(stripe: Stripe, paymentIntentId: string) {
+  return writeDeclinedMetadata(stripe, paymentIntentId, "", "STRIPE_DECLINE_NOT_CLEARED");
+}
+
+async function writeDeclinedMetadata(stripe: Stripe, paymentIntentId: string, value: string, failureLabel: string) {
   try {
-    await stripe.paymentIntents.update(paymentIntentId, { metadata: { [declinedMetadataKey]: "unavailable" } });
+    await stripe.paymentIntents.update(paymentIntentId, { metadata: { [declinedMetadataKey]: value } });
   } catch (error) {
-    console.error("STRIPE_DECLINE_NOT_RECORDED", {
+    console.error(failureLabel, {
       paymentIntentId,
       error: error instanceof Error ? error.message : String(error),
     });
   }
-
-  return releasePaymentIntentHold(stripe, paymentIntentId);
 }
 
 export function isDeclinedPaymentIntent(paymentIntent: Pick<Stripe.PaymentIntent, "metadata">) {

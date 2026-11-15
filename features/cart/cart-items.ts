@@ -166,6 +166,8 @@ export function parseStoredCartItem(value: unknown): value is CartStoreItem {
     typeof candidate.name === "string" &&
     typeof candidate.priceUsd === "number" &&
     typeof candidate.quantity === "number" &&
+    Number.isInteger(candidate.quantity) &&
+    candidate.quantity >= 1 &&
     isOptionalString(candidate.variantName) &&
     isOptionalString(candidate.imageUrl) &&
     isOptionalString(candidate.imageAlt) &&

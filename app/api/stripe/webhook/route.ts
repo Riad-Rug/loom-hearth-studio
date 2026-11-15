@@ -39,7 +39,8 @@ export async function POST(request: Request) {
     }
 
     // Outside the try so a persistence failure surfaces as a 500 and Stripe
-    // retries the event, instead of falling through to a 200 "ignored".
+    // retries the event, instead of falling through to a 200 "ignored". So does
+    // a Stripe outage ("api-error"), which a later delivery can get past.
     if (event?.type === "payment_intent.amount_capturable_updated") {
       const paymentIntentId = (event.data.object as { id: string }).id;
       const result = await persistConfirmedStripePaymentIntentOrder({ paymentIntentId });
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
           eventId: event.id,
           message: result.message,
         },
-        { status: holdStillNeedsRelease(result) ? 500 : 200 },
+        { status: result.status === "api-error" || holdStillNeedsRelease(result) ? 500 : 200 },
       );
     }
   }
