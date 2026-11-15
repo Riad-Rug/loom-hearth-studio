@@ -1,6 +1,7 @@
 import { unstable_noStore as noStore } from "next/cache";
 
 import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
+import { parseProductTitle } from "@/features/pdp/product-title";
 import {
   rugStyleNavLinks,
   type RugStyleNavLink,
@@ -47,7 +48,7 @@ import {
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
 import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
-import type { MediaAsset, Product, ProductCategory, RugProduct } from "@/types/domain";
+import type { CloudinaryAssetRole, MediaAsset, Product, ProductCategory, RugProduct } from "@/types/domain";
 
 const defaultRugPalette = ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"] as const;
 const paletteLabelsByHex = new Map([
@@ -1023,7 +1024,9 @@ function createProductGallery(product: Product) {
     .slice()
     .sort((left, right) => left.sortOrder - right.sortOrder);
 
-  return images.map((image, index) => createGalleryItem(image, index));
+  const productName = parseProductTitle(getDisplayProductName(product.name)).name;
+
+  return images.map((image, index) => createGalleryItem(image, index, images.length, productName));
 }
 
 function createProductPalette(product: Product) {
@@ -1040,10 +1043,16 @@ function createProductPalette(product: Product) {
   });
 }
 
-function createGalleryItem(image: MediaAsset, index: number) {
+function createGalleryItem(image: MediaAsset, index: number, total: number, productName: string) {
+  const roleCopy = galleryRoleCopy[image.role] ?? {
+    label: `Photo ${index + 1}`,
+    view: `photo ${index + 1} of ${total}`,
+  };
+  const storedAltText = image.altText.trim();
+
   return {
     id: image.id,
-    label: createGalleryLabel(image, index),
+    label: roleCopy.label,
     src: buildCloudinaryUrl(image.publicId, {
       transformation: { w: 1600, q: "auto", f: "auto" },
     }),
@@ -1056,42 +1065,31 @@ function createGalleryItem(image: MediaAsset, index: number) {
     width: image.width,
     height: image.height,
     publicId: image.publicId,
-    altText: image.altText,
+    altText:
+      storedAltText && !adminDefaultAltTextPattern.test(storedAltText)
+        ? storedAltText
+        : `${productName}, ${roleCopy.view}`,
     role: image.role,
   };
 }
 
-function createGalleryLabel(image: MediaAsset, index: number) {
-  if (image.role === "hero") {
-    return "Full product view";
-  }
+// The admin form fills an empty alt with "{product name} image {n}" (see
+// createDefaultImageAltText), which tells a screen reader nothing.
+const adminDefaultAltTextPattern = /\bimage \d+$/iu;
 
-  if (image.role === "styled") {
-    return "Styled in room";
-  }
-
-  if (image.role === "detail") {
-    return "Detail view";
-  }
-
-  if (image.role === "edge") {
-    return "Edge detail";
-  }
-
-  if (image.role === "back") {
-    return "Reverse side";
-  }
-
-  if (image.role === "scale") {
-    return "Scale reference";
-  }
-
-  if (image.role === "motif") {
-    return "Motif detail";
-  }
-
-  return `Gallery image ${String(index + 1).padStart(2, "0")}`;
-}
+const galleryRoleCopy: Record<CloudinaryAssetRole, { label: string; view: string } | null> = {
+  hero: { label: "Full product view", view: "full view" },
+  styled: { label: "Styled in room", view: "styled in a room" },
+  detail: { label: "Detail view", view: "close-up detail" },
+  edge: { label: "Edge detail", view: "edge detail" },
+  back: { label: "Reverse side", view: "reverse side" },
+  scale: { label: "Scale reference", view: "shown for scale" },
+  motif: { label: "Motif detail", view: "motif close-up" },
+  gallery: null,
+  thumbnail: null,
+  featured: null,
+  og: null,
+};
 
 function createDisplayProductTitle(product: Product) {
   return createProductCardDisplayName(product);
