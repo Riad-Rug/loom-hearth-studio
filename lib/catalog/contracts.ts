@@ -37,6 +37,13 @@ export type CatalogProductCardViewModel = {
   isOutOfStock: boolean;
   priceUsd: number;
   priceUsdLabel: string;
+  /** ISO time the listing was created, for a "Newest" sort. */
+  createdAt?: string;
+  /** Same shape as the product page palette, for a colour filter and search. */
+  palette?: Array<{
+    hex: string;
+    label: string;
+  }>;
   description: string;
   merchandisingNote: string;
   routePattern: string;
