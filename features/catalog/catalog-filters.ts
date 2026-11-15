@@ -4,11 +4,13 @@
 // catalog-page-view.tsx.
 import {
   catalogCategoryFilterOptions,
+  catalogSortOptions,
   catalogPriceBands,
   genericSizeFilterOptions,
   type CatalogPriceFilter,
   type CatalogSizeFilter,
   type CatalogSortOption,
+  defaultCatalogSortOption,
 } from "@/features/catalog/catalog-data";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import type { ProductCategory } from "@/types/domain";
@@ -68,15 +70,19 @@ export function matchesCategoryFilter(
   return selectedCategories.includes(product.category);
 }
 
+// "Available now" keeps only pieces a shopper can buy: a sold piece is gone and
+// a reserved one is held by an order while its buyer reviews photos. The card
+// carries a status rather than a full product, so this compares statuses instead
+// of calling getProductAvailability.
 export function matchesAvailability(
   product: CatalogProductCardViewModel,
-  hideSold: boolean,
+  availableOnly: boolean,
 ): boolean {
-  if (!hideSold) {
+  if (!availableOnly) {
     return true;
   }
 
-  return product.status !== "sold";
+  return product.status !== "sold" && product.status !== "reserved";
 }
 
 /**
@@ -89,9 +95,15 @@ export function matchesAvailability(
  */
 export function countsTowardCategoryAvailability(
   product: CatalogProductCardViewModel,
-  hideSold: boolean,
+  availableOnly: boolean,
 ): boolean {
-  return matchesAvailability(product, hideSold) && !product.isOutOfStock;
+  return matchesAvailability(product, availableOnly) && !product.isOutOfStock;
+}
+
+function listedAtMs(product: CatalogProductCardViewModel): number {
+  const parsed = product.createdAt ? Date.parse(product.createdAt) : Number.NaN;
+
+  return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
 }
 
 export function sortCatalogProducts(
@@ -104,14 +116,22 @@ export function sortCatalogProducts(
     case "price-desc":
       return [...products].sort((left, right) => right.priceUsd - left.priceUsd);
     case "newest":
+      // Array.sort is stable, so pieces listed at the same moment (a bulk import
+      // shares one createdAt) and pieces with no date keep the incoming order.
+      return [...products].sort((left, right) => {
+        const leftMs = listedAtMs(left);
+        const rightMs = listedAtMs(right);
+
+        return rightMs > leftMs ? 1 : rightMs < leftMs ? -1 : 0;
+      });
+    case "featured":
     default:
-      // Already in `updatedAt desc` order from the repository — no reorder needed.
       return products;
   }
 }
 
 export function parseSortOption(value: string | null): CatalogSortOption {
-  return value === "price-asc" || value === "price-desc" ? value : "newest";
+  return catalogSortOptions.find((option) => option.value === value)?.value ?? defaultCatalogSortOption;
 }
 
 /**

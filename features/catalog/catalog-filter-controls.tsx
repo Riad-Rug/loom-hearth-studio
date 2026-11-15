@@ -49,8 +49,8 @@ type CatalogFilterControlsProps = {
   showSizeFilter: boolean;
   sortOption: CatalogSortOption;
   onSortOptionChange: (value: CatalogSortOption) => void;
-  hideSold: boolean;
-  onHideSoldChange: (value: boolean) => void;
+  availableOnly: boolean;
+  onAvailableOnlyChange: (value: boolean) => void;
   activeFilterCount: number;
   onClearAll: () => void;
 };
@@ -68,8 +68,8 @@ export function CatalogFilterControls({
   showSizeFilter,
   sortOption,
   onSortOptionChange,
-  hideSold,
-  onHideSoldChange,
+  availableOnly,
+  onAvailableOnlyChange,
   activeFilterCount,
   onClearAll,
 }: CatalogFilterControlsProps) {
@@ -247,13 +247,13 @@ export function CatalogFilterControls({
         </div>
 
         <button
-          aria-pressed={hideSold}
+          aria-pressed={availableOnly}
           className={styles.filterChip}
-          data-active={hideSold ? "true" : undefined}
+          data-active={availableOnly ? "true" : undefined}
           type="button"
-          onClick={() => onHideSoldChange(!hideSold)}
+          onClick={() => onAvailableOnlyChange(!availableOnly)}
         >
-          Hide sold pieces
+          Available now
         </button>
 
         {hasActiveFilters ? (

@@ -19,6 +19,7 @@ import {
   type CatalogPriceFilter,
   type CatalogSizeFilter,
   type CatalogSortOption,
+  defaultCatalogSortOption,
 } from "@/features/catalog/catalog-data";
 import {
   countsTowardCategoryAvailability,
@@ -112,7 +113,7 @@ export function CatalogPageView({
   const [sortOption, setSortOption] = useState<CatalogSortOption>(() =>
     parseSortOption(searchParams.get("sort")),
   );
-  const [hideSold, setHideSold] = useState(() => searchParams.get("availability") === "available");
+  const [availableOnly, setAvailableOnly] = useState(() => searchParams.get("availability") === "available");
   const [isEssayExpanded, setIsEssayExpanded] = useState(false);
   const categoryMeta =
     category ? catalogCategories.find((item) => item.key === category) ?? null : null;
@@ -154,7 +155,7 @@ export function CatalogPageView({
   const showSizeFilter = visibleSizeFilterOptions.length > 1;
   const trimmedQuery = searchQuery.trim();
   // Search results arrive best match first. That order stands for the default
-  // sort; an explicit price sort reorders them.
+  // sort; an explicit newest or price sort reorders them.
   const searchedProducts = useMemo(
     () => (trimmedQuery ? searchCatalogProducts(products, trimmedQuery) : products),
     [products, trimmedQuery],
@@ -177,13 +178,13 @@ export function CatalogPageView({
         return false;
       }
 
-      if (!matchesAvailability(product, hideSold)) {
+      if (!matchesAvailability(product, availableOnly)) {
         return false;
       }
 
       return true;
     });
-  }, [activeCategories, hideSold, selectedPrices, selectedSizes, sortedProducts]);
+  }, [activeCategories, availableOnly, selectedPrices, selectedSizes, sortedProducts]);
   // How many products each category would contribute under the OTHER active
   // filters (price/size/search/availability), ignoring category selection
   // itself — so an option a shopper hasn't picked yet can be greyed out when
@@ -208,7 +209,7 @@ export function CatalogPageView({
       // Stricter than the grid's own availability filter: an out-of-stock
       // multi-unit piece still renders in the grid, but it must not keep its
       // category's checkbox tickable when nothing there can be bought.
-      if (!countsTowardCategoryAvailability(product, hideSold)) {
+      if (!countsTowardCategoryAvailability(product, availableOnly)) {
         continue;
       }
 
@@ -216,7 +217,7 @@ export function CatalogPageView({
     }
 
     return counts;
-  }, [hideSold, isCategoryFilterEnabled, searchedProducts, selectedPrices, selectedSizes]);
+  }, [availableOnly, isCategoryFilterEnabled, searchedProducts, selectedPrices, selectedSizes]);
   const displayedProductCountLabel = `${filteredProducts.length} ${
     filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
@@ -277,10 +278,10 @@ export function CatalogPageView({
     activeCategories.length > 0,
     selectedPrices.length > 0,
     selectedSizes.length > 0,
-    sortOption !== "newest",
-    hideSold,
+    sortOption !== defaultCatalogSortOption,
+    availableOnly,
   ].filter(Boolean).length;
-  const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${activeSizeKey}|${sortOption}|${hideSold}`;
+  const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${activeSizeKey}|${sortOption}|${availableOnly}`;
 
   // Reflect the filters into the address bar without a Next.js navigation: a real
   // navigation here (router.replace/push) re-runs the server component and refetches the
@@ -292,8 +293,8 @@ export function CatalogPageView({
       updateQueryParam(nextParams, "category", activeCategoryKey);
       updateQueryParam(nextParams, "price", activePriceKey);
       updateQueryParam(nextParams, "size", activeSizeKey);
-      updateQueryParam(nextParams, "sort", sortOption === "newest" ? "" : sortOption);
-      updateQueryParam(nextParams, "availability", hideSold ? "available" : "");
+      updateQueryParam(nextParams, "sort", sortOption === defaultCatalogSortOption ? "" : sortOption);
+      updateQueryParam(nextParams, "availability", availableOnly ? "available" : "");
 
       const nextQuery = nextParams.toString();
       const nextHref = nextQuery ? `${pathname}?${nextQuery}` : pathname;
@@ -305,7 +306,7 @@ export function CatalogPageView({
     }, 280);
 
     return () => window.clearTimeout(timer);
-  }, [activeCategoryKey, activePriceKey, activeSizeKey, hideSold, pathname, searchQuery, sortOption]);
+  }, [activeCategoryKey, activePriceKey, activeSizeKey, availableOnly, pathname, searchQuery, sortOption]);
 
   // Adopt filters that changed outside this component: the header's persistent search
   // bar (same-tab; it dispatches SHOP_QUERY_SYNC_EVENT after patching the address bar)
@@ -323,7 +324,7 @@ export function CatalogPageView({
       const nextSizes = parseSizeFilter(params.get("size"));
       const nextSizeKey = serializeSizeFilter(nextSizes);
       const nextSort = parseSortOption(params.get("sort"));
-      const nextHideSold = params.get("availability") === "available";
+      const nextAvailableOnly = params.get("availability") === "available";
 
       setSearchQuery((current) => (current === nextQuery ? current : nextQuery));
       // Compared by serialized value: a fresh array with the same keys must not
@@ -338,7 +339,7 @@ export function CatalogPageView({
         serializeSizeFilter(current) === nextSizeKey ? current : nextSizes,
       );
       setSortOption((current) => (current === nextSort ? current : nextSort));
-      setHideSold((current) => (current === nextHideSold ? current : nextHideSold));
+      setAvailableOnly((current) => (current === nextAvailableOnly ? current : nextAvailableOnly));
     }
 
     window.addEventListener("popstate", syncFromLocation);
@@ -367,8 +368,8 @@ export function CatalogPageView({
     setSelectedCategories([]);
     setSelectedPrices([]);
     setSelectedSizes([]);
-    setSortOption("newest");
-    setHideSold(false);
+    setSortOption(defaultCatalogSortOption);
+    setAvailableOnly(false);
   };
 
   return (
@@ -382,10 +383,10 @@ export function CatalogPageView({
               activeFilterCount={activeFilterCount}
               categoryAvailability={categoryAvailability}
               categoryMode={isCategoryFilterEnabled ? "select" : "navigate"}
-              hideSold={hideSold}
+              availableOnly={availableOnly}
               onCategoryToggle={handleCategoryToggle}
               onClearAll={clearAllFilters}
-              onHideSoldChange={setHideSold}
+              onAvailableOnlyChange={setAvailableOnly}
               onPriceToggle={handlePriceToggle}
               onSizeToggle={handleSizeToggle}
               onSortOptionChange={setSortOption}

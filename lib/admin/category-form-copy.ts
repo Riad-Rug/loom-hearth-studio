@@ -178,6 +178,7 @@ const poufCategoryFormCopy: CategoryFormCopy = {
     faceFabricSource: "Face fabric source",
     uniquenessTier: "How unique is this pouf",
     sourceCoverCount: "Covers cut from that rug",
+    heightCm: "Height (cm)",
   },
   placeholders: {
     ...baselineCategoryFormCopy.placeholders,
@@ -201,6 +202,7 @@ const poufCategoryFormCopy: CategoryFormCopy = {
     faceFabricSource: "What the face panels were cut from. Required to publish.",
     uniquenessTier: "Say plainly whether this design can be made again. Required to publish.",
     sourceCoverCount: "How many covers exist from that one rug, including this one.",
+    heightCm: "Finished height standing up. The product page shows it next to length and width.",
   },
   fieldDefaults: {
     origin: "Made in Morocco — family-made",
@@ -209,7 +211,7 @@ const poufCategoryFormCopy: CategoryFormCopy = {
   },
   requiredAtPublish: ["dimensionsCm", "weightKg", "faceFabricSource", "uniquenessTier"],
   conditionalRequiredAtPublish: [],
-  extraFields: ["faceFabricSource", "uniquenessTier"],
+  extraFields: ["faceFabricSource", "uniquenessTier", "heightCm"],
   publishErrors: {
     provenanceNote: "Explain how this pouf was made before publishing.",
     sourcingNote: "Add a first-person making note before publishing.",

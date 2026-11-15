@@ -254,7 +254,7 @@ export async function listRandomInventoryProductCards(input?: {
 
 // Lean view model for checkout's "add to order" cross-sell — deliberately
 // not CatalogProductCardViewModel (which carries PDP-only fields like
-// merchandisingNote/routePattern/badge/description). cartProduct is the full
+// routePattern/badge/description). cartProduct is the full
 // server-validated Product so the client can call useCart().addProduct(...)
 // directly without ever re-deriving or trusting a client-supplied price,
 // mirroring how PDP's cartProduct field already works
@@ -423,8 +423,8 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     isOutOfStock: product.type === "multiUnit" && getInventoryState(product) === "outOfStock",
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
+    createdAt: product.createdAt,
     description: normalizeDimensionSeparators(product.description),
-    merchandisingNote: "",
     routePattern: getProductRoutePattern(product),
     badge: getProductBadgeLabel(product),
     primaryImage: primaryImage
@@ -492,7 +492,6 @@ function createProductDetailPageViewModel(
     category: product.category,
     status: product.status,
     description: createProductDescriptionLead(product),
-    merchandisingNote: "",
     descriptionSections: createProductDescriptionSections(product),
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
@@ -504,8 +503,6 @@ function createProductDetailPageViewModel(
     materialLabel: product.materials.join(", "),
     originLabel: product.origin,
     techniqueLabel: undefined,
-    specifications: [],
-    supportPanels: [],
     detailSections: createProductDetailSections(product),
     similarRugs,
     crossSellRecommendations,

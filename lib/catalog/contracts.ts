@@ -45,7 +45,6 @@ export type CatalogProductCardViewModel = {
     label: string;
   }>;
   description: string;
-  merchandisingNote: string;
   routePattern: string;
   badge: string;
   primaryImage?: {
@@ -71,19 +70,6 @@ export type ProductDetailSectionViewModel = {
   body: string;
 };
 
-export type ProductSpecificationViewModel = {
-  label: string;
-  value: string;
-};
-
-export type ProductSupportPanelViewModel = {
-  id: string;
-  eyebrow: string;
-  title: string;
-  body: string;
-  items: string[];
-};
-
 type ProductDetailPageViewModelBase = {
   id: string;
   catalogNumber: string;
@@ -93,7 +79,6 @@ type ProductDetailPageViewModelBase = {
   category: ProductCategory;
   status: Product["status"];
   description: string;
-  merchandisingNote: string;
   descriptionSections: ProductDetailSectionViewModel[];
   seoTitle: string;
   seoDescription: string;
@@ -120,8 +105,6 @@ type ProductDetailPageViewModelBase = {
   materialLabel: string;
   originLabel: string;
   techniqueLabel?: string;
-  specifications: ProductSpecificationViewModel[];
-  supportPanels: ProductSupportPanelViewModel[];
   detailSections: ProductDetailSectionViewModel[];
   similarRugs: CatalogProductCardViewModel[];
   crossSellRecommendations: CatalogProductCardViewModel[];
