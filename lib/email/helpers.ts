@@ -5,8 +5,14 @@ import type {
   PostmarkEmailPayload,
 } from "@/lib/email/contracts";
 import type { OrderCreationRequest } from "@/lib/order";
-import { freeShippingThresholdUsd } from "@/lib/order/shipping";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import type { Order } from "@/types/domain";
+
+const usShippingSentence = `Shipping to the United States is free on orders of $${storePromise.freeShippingThresholdUsd} or more; orders under $${storePromise.freeShippingThresholdUsd} ship for a flat $${storePromise.flatShippingUsd}, included in your total above. Inquiries from other countries are reviewed case by case before payment is captured.`;
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
 
 export function createOrderConfirmationEmailBoundary(): OrderConfirmationEmailBoundary {
   return {
@@ -129,16 +135,16 @@ function createLaunchOrderConfirmationMessage(input: {
     html: [
       `<p>Hi ${escapeHtml(input.customerName)},</p>`,
       "<p>Thank you for your order with Loom & Hearth Studio. We have received your order, and your payment method has been authorised at checkout, but payment has not been captured yet.</p>",
-      `<p>Within 24 to 48 hours of ${escapeHtml(input.placedAtLabel.replace("Order received ", ""))}, you will receive an email with photos and videos of the actual piece for review.</p>`,
-      "<p>If you confirm the piece, we will capture payment and ship your order.</p>",
-      "<p>If you decline after the verification, the authorisation will be released in full and no charge will be collected.</p>",
+      `<p>${capitalize(storePromiseCopy.approvalTurnaround)} of ${escapeHtml(input.placedAtLabel.replace("Order received ", ""))}, you will receive an email with ${storePromise.approvalMedia} of the actual piece for review. You then have ${storePromiseCopy.decisionWindow} to decide.</p>`,
+      "<p>If you approve the piece, we will capture payment and ship your order.</p>",
+      `<p>If you decline, or we do not hear from you within ${storePromiseCopy.decisionWindow}, the authorisation will be released in full and no charge will be collected.</p>`,
       `<p><strong>Order number:</strong> ${escapeHtml(input.orderNumber)}<br />`,
       `<strong>${escapeHtml(input.placedAtLabel)}</strong><br />`,
       `<strong>Total:</strong> ${escapeHtml(totalLabel)} ${escapeHtml(input.currency)}</p>`,
       `<p><strong>Items (${input.itemCount})</strong></p>`,
       `<ul>${itemListHtml}</ul>`,
       `<p><strong>Shipping address</strong><br />${escapeHtml(input.shippingAddressLabel).replace(/\n/g, "<br />")}</p>`,
-      `<p>Shipping to the United States is free on orders of $${freeShippingThresholdUsd} or more; orders under $${freeShippingThresholdUsd} ship for a flat $50, included in your total above. Inquiries from other countries are reviewed case by case before payment is captured.</p>`,
+      `<p>${usShippingSentence}</p>`,
       "<p>If you need help with this order, reply to this email and we will assist you.</p>",
       "<p>Thank you,<br />Loom & Hearth Studio</p>",
     ].join(""),
@@ -146,9 +152,9 @@ function createLaunchOrderConfirmationMessage(input: {
       `Hi ${input.customerName},`,
       "",
       "Thank you for your order with Loom & Hearth Studio. We have received your order, and your payment method has been authorised at checkout, but payment has not been captured yet.",
-      `Within 24 to 48 hours of ${input.placedAtLabel.replace("Order received ", "")}, you will receive an email with photos and videos of the actual piece for review.`,
-      "If you confirm the piece, we will capture payment and ship your order.",
-      "If you decline after the verification, the authorisation will be released in full and no charge will be collected.",
+      `${capitalize(storePromiseCopy.approvalTurnaround)} of ${input.placedAtLabel.replace("Order received ", "")}, you will receive an email with ${storePromise.approvalMedia} of the actual piece for review. You then have ${storePromiseCopy.decisionWindow} to decide.`,
+      "If you approve the piece, we will capture payment and ship your order.",
+      `If you decline, or we do not hear from you within ${storePromiseCopy.decisionWindow}, the authorisation will be released in full and no charge will be collected.`,
       "",
       `Order number: ${input.orderNumber}`,
       input.placedAtLabel,
@@ -160,7 +166,7 @@ function createLaunchOrderConfirmationMessage(input: {
       "Shipping address",
       input.shippingAddressLabel,
       "",
-      `Shipping to the United States is free on orders of $${freeShippingThresholdUsd} or more; orders under $${freeShippingThresholdUsd} ship for a flat $50, included in your total above. Inquiries from other countries are reviewed case by case before payment is captured.`,
+      `${usShippingSentence}`,
       "If you need help with this order, reply to this email and we will assist you.",
       "",
       "Thank you,",

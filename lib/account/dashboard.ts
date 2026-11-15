@@ -14,6 +14,7 @@ import { getProductRoutePath } from "@/lib/catalog/helpers";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import { createProductRepository } from "@/lib/db/repositories/product-repository";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import { resolveCarrierTrackingHref } from "@/lib/orders/carrier-tracking";
 import { formatOrderStatusLabel } from "@/lib/orders/customer-status-label";
 import type { Order } from "@/types/domain";
@@ -223,8 +224,9 @@ function createOrderTotals(order: Order): AccountOrderTotalsView {
   };
 }
 
-const oneDayMs = 24 * 60 * 60 * 1000;
-const approvalWindowDays = 5;
+const oneHourMs = 60 * 60 * 1000;
+const oneDayMs = 24 * oneHourMs;
+const approvalWindowDays = storePromise.decisionWindowDays;
 
 function createReservationPanel(
   placedAt: string,
@@ -240,13 +242,15 @@ function createReservationPanel(
       title: "What happens next",
       lines: [
         "Your card is only pre-authorized — a temporary hold, like a hotel deposit. Nothing has been charged.",
-        `Photos sent ${formatOrderDateTimeLabel(photosSentDate)} — you have until ${formatOrderDateTimeLabel(approveByDate)} to approve. You will not be charged before then.`,
+        `Photos and video sent ${formatOrderDateTimeLabel(photosSentDate)} — you have until ${formatOrderDateTimeLabel(approveByDate)} to approve. You will not be charged before then.`,
         "Only once you approve is your card charged and the piece shipped — say no, or don't respond, and the hold releases automatically with nothing charged.",
       ],
     };
   }
 
-  const photosExpectedByDate = new Date(placedDate.getTime() + oneDayMs);
+  const photosExpectedByDate = new Date(
+    placedDate.getTime() + storePromise.approvalTurnaroundHours.max * oneHourMs,
+  );
   const approvalWindowClosesByDate = new Date(
     photosExpectedByDate.getTime() + approvalWindowDays * oneDayMs,
   );
@@ -255,8 +259,8 @@ function createReservationPanel(
     title: "What happens next",
     lines: [
       "Your card is only pre-authorized — a temporary hold, like a hotel deposit. Nothing has been charged.",
-      `We personally photograph this exact piece and email you the photos. Expected by ${formatOrderDateTimeLabel(photosExpectedByDate)}.`,
-      `You'll then have 5 days to approve. Only once you approve is your card charged and the piece shipped — say no, or don't respond, and the hold releases automatically with nothing charged (by around ${formatOrderDateTimeLabel(approvalWindowClosesByDate)}).`,
+      `We personally photograph this exact piece and email you ${storePromise.approvalMedia}. Expected by ${formatOrderDateTimeLabel(photosExpectedByDate)}.`,
+      `You'll then have ${storePromiseCopy.decisionWindow} to approve. Only once you approve is your card charged and the piece shipped — say no, or don't respond, and the hold releases automatically with nothing charged (by around ${formatOrderDateTimeLabel(approvalWindowClosesByDate)}).`,
     ],
   };
 }
