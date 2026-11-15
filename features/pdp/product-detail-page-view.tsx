@@ -28,7 +28,7 @@ import { trackViewItem } from "@/lib/analytics/gtag";
 import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { calculateShippingUsd } from "@/lib/order/shipping";
-import { storePromise } from "@/lib/order/store-promise";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import {
   getTopRecommendationHistoryCategory,
   recordCategoryInterest,
@@ -267,14 +267,17 @@ export function ProductDetailPageView({
             <section className={PANEL_CARD} aria-label="Verification promise">
               <p className={PANEL_EYEBROW}>Verification promise</p>
               <p>
-                We send daylight photos of the exact piece, including wear and condition, before the charge is captured.
+                We send {storePromise.approvalMedia} of the exact piece, including wear and condition,{" "}
+                {storePromiseCopy.approvalTurnaround} of your order. Your card is charged only after you approve.
               </p>
             </section>
 
             <section className={PANEL_CARD} aria-label="Shipping and returns">
+              <p className={PANEL_EYEBROW}>Shipping and returns</p>
               <ul className="grid gap-[0.6rem] m-0 pl-[1.1rem] text-[var(--color-ink)] marker:text-[var(--color-green)]">
                 <li>
-                  Tracked shipping from Casablanca to the US. Outside the US?{" "}
+                  {storePromiseCopy.shipsFrom} to {storePromise.shipsToLabel}. Delivery in{" "}
+                  {storePromiseCopy.deliveryWindow} after dispatch. Outside the US?{" "}
                   <Link
                     className="underline underline-offset-2 text-[var(--color-green)]"
                     href={
@@ -284,18 +287,16 @@ export function ProductDetailPageView({
                     Send an inquiry first.
                   </Link>
                 </li>
-                <li>Approval before payment capture.</li>
-                <li>Condition is shown in photos, not softened in copy.</li>
-                <li>Questions handled directly before dispatch.</li>
+                <li>{storePromiseCopy.duties}</li>
+                <li>
+                  Returns accepted within 14 days of delivery. Return shipping is paid by you unless the piece was
+                  misdescribed.{" "}
+                  <Link className="underline underline-offset-2 text-[var(--color-green)]" href="/returns-policy">
+                    Read the returns policy
+                  </Link>
+                </li>
               </ul>
             </section>
-
-            {product.merchandisingNote ? (
-              <section className={PANEL_CARD}>
-                <p className={PANEL_EYEBROW}>Availability</p>
-                <p>{product.merchandisingNote}</p>
-              </section>
-            ) : null}
           </div>
 
           <div className="grid gap-[var(--space-3)]">
