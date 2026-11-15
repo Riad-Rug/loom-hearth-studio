@@ -231,7 +231,13 @@ function sanitizeJsonValue<T>(value: T): T {
 }
 
 function mapStatus(status: string): Product["status"] {
-  if (status === "draft" || status === "active" || status === "sold" || status === "archived") {
+  if (
+    status === "draft" ||
+    status === "active" ||
+    status === "reserved" ||
+    status === "sold" ||
+    status === "archived"
+  ) {
     return status;
   }
 

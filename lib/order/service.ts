@@ -4,9 +4,12 @@ import { Prisma } from "@prisma/client";
 
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import type { OrderRepository } from "@/lib/db/repositories/order-repository";
-import { sendOrderConfirmationEmailFromCreatedOrder } from "@/lib/email/service";
+import { getPostmarkEmailConfig } from "@/lib/email/config";
+import { sendOrderConfirmationEmailFromCreatedOrder, sendTransactionalEmailMessage } from "@/lib/email/service";
 import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
 import { parseCheckoutOrderDraftSnapshotFromMetadata } from "@/lib/order/checkout-draft-validation";
+import { InventoryUnavailableError } from "@/lib/order/inventory-hold";
+import { createOversoldEmails } from "@/lib/order/oversold-notice";
 import type { OrderCreationRequest, OrderPersistenceRequest, PersistConfirmedOrderResult } from "@/lib/order/contracts";
 import { recordPromoRedemption } from "@/lib/promos/service";
 import {
@@ -15,6 +18,7 @@ import {
   createOrderPersistenceRequestFromOrderCreation,
 } from "@/lib/order/helpers";
 import { createStripeClient } from "@/lib/stripe/client";
+import { readHoldExpiry, releasePaymentIntentHold } from "@/lib/stripe/payment-intent-hold";
 import type {
   StripeCheckoutPaymentConfirmation,
   StripePaymentIntentWebhookEvent,
@@ -50,15 +54,13 @@ export async function persistConfirmedStripeCheckoutOrder(input: {
   );
 
   if (existingOrder) {
-    return {
-      status: "already-persisted",
+    return describeExistingOrder({
+      repository,
+      order: existingOrder,
       orderCreationRequest: orderCreationResult.request,
       persistenceRequest: null,
-      persistedOrder: existingOrder,
-      emailDeliveryResult: null,
-      fulfillmentResult: null,
       message: "Stripe Checkout session was already persisted as a launch order.",
-    };
+    });
   }
 
   const persistenceResult = createOrderPersistenceRequestFromOrderCreation(
@@ -81,7 +83,17 @@ export async function persistConfirmedStripeCheckoutOrder(input: {
   }
 
   try {
-    const persistedOrder = await repository.create(persistenceResult.request);
+    const creation = await createOrderTakingStock({
+      repository,
+      orderCreationRequest: orderCreationResult.request,
+      persistenceRequest: persistenceResult.request,
+    });
+
+    if (creation.status === "declined") {
+      return creation.result;
+    }
+
+    const persistedOrder = creation.order;
     if (persistedOrder.promoCode && persistedOrder.discountUsd > 0) {
       await recordPromoRedemption({
         promoCode: persistedOrder.promoCode,
@@ -127,15 +139,13 @@ export async function persistConfirmedStripeCheckoutOrder(input: {
       );
 
       if (duplicatedOrder) {
-        return {
-          status: "already-persisted",
+        return describeExistingOrder({
+          repository,
+          order: duplicatedOrder,
           orderCreationRequest: orderCreationResult.request,
           persistenceRequest: persistenceResult.request,
-          persistedOrder: duplicatedOrder,
-          emailDeliveryResult: null,
-          fulfillmentResult: null,
           message: "Stripe Checkout session was already persisted as a launch order.",
-        };
+        });
       }
     }
 
@@ -151,7 +161,7 @@ export type StripePaymentIntentTransitionResult = {
 };
 
 export async function applyStripePaymentIntentTransition(input: {
-  event: StripePaymentIntentWebhookEvent;
+  event: Pick<StripePaymentIntentWebhookEvent, "type" | "paymentIntentId">;
   repository?: OrderRepository;
 }): Promise<StripePaymentIntentTransitionResult> {
   const repository = input.repository ?? createOrderRepository();
@@ -167,19 +177,23 @@ export async function applyStripePaymentIntentTransition(input: {
   }
 
   if (input.event.type === "payment_intent.succeeded") {
-    if (order.paymentStatus === "paid") {
+    // A redelivered capture must not undo a refund recorded since.
+    if (order.paymentStatus === "paid" || order.paymentStatus === "refunded") {
       return {
         status: "ignored",
         order,
         fulfillmentResult: null,
-        message: "Order is already marked as paid.",
+        message: `Order is already marked as ${order.paymentStatus}.`,
       };
     }
 
-    const updatedOrder = await repository.updatePaymentTransition(order.id, {
-      status: "paid",
-      paymentStatus: "paid",
-    });
+    // A captured payment is recorded even when its piece now belongs to another
+    // order; the order's hold then reads "conflict" for the studio to settle.
+    const updatedOrder = await repository.updatePaymentTransition(
+      order.id,
+      { status: hasLeftTheStudio(order) ? order.status : "paid", paymentStatus: "paid" },
+      { onUnavailable: "record-conflict" },
+    );
     const fulfillmentResult = await orchestrateLaunchOrderFulfillment({
       trigger: "persisted-paid-order",
       order: updatedOrder,
@@ -204,17 +218,25 @@ export async function applyStripePaymentIntentTransition(input: {
     };
   }
 
-  const cancelledOrder = await repository.updatePaymentTransition(order.id, {
-    status: "cancelled",
-    paymentStatus: "failed",
-  });
+  // A piece that already shipped stays shipped; its lapsed payment is for the studio to chase.
+  const cancelledOrder = await repository.updatePaymentTransition(
+    order.id,
+    { status: hasLeftTheStudio(order) ? order.status : "cancelled", paymentStatus: "failed" },
+    { onUnavailable: "record-conflict" },
+  );
 
   return {
     status: "updated",
     order: cancelledOrder,
     fulfillmentResult: null,
-    message: "Payment hold released: order transitioned to cancelled.",
+    message: hasLeftTheStudio(order)
+      ? "Payment hold lapsed after the order shipped: payment marked failed, order left as shipped."
+      : "Payment hold released: order transitioned to cancelled.",
   };
+}
+
+function hasLeftTheStudio(order: Pick<Order, "status">) {
+  return order.status === "shipped" || order.status === "delivered";
 }
 
 // Called both synchronously (right after the customer confirms payment on
@@ -225,28 +247,30 @@ export async function applyStripePaymentIntentTransition(input: {
 export async function persistConfirmedStripePaymentIntentOrder(input: {
   paymentIntentId: string;
   repository?: OrderRepository;
+  stripe?: ReturnType<typeof createStripeClient>;
 }): Promise<PersistConfirmedOrderResult> {
   const repository = input.repository ?? createOrderRepository();
 
   const existingOrder = await repository.getByPaymentIntentId(input.paymentIntentId);
 
   if (existingOrder) {
-    return {
-      status: "already-persisted",
+    return describeExistingOrder({
+      repository,
+      order: existingOrder,
       orderCreationRequest: null,
       persistenceRequest: null,
-      persistedOrder: existingOrder,
-      emailDeliveryResult: null,
-      fulfillmentResult: null,
       message: "PaymentIntent was already persisted as an order.",
-    };
+    });
   }
 
+  let stripe;
   let paymentIntent;
 
   try {
-    const stripe = createStripeClient();
-    paymentIntent = await stripe.paymentIntents.retrieve(input.paymentIntentId);
+    stripe = input.stripe ?? createStripeClient();
+    paymentIntent = await stripe.paymentIntents.retrieve(input.paymentIntentId, {
+      expand: ["latest_charge"],
+    });
   } catch (error) {
     return {
       status: "configuration-error",
@@ -322,8 +346,8 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
     customerEmail: snapshot.billingAddress.email,
     billingAddress: snapshot.billingAddress,
     shippingAddress: snapshot.shippingAddress,
-    status: "pending",
-    paymentStatus: "authorized",
+    status: paymentIntent.status === "succeeded" ? "paid" : "pending",
+    paymentStatus: paymentIntent.status === "succeeded" ? "paid" : "authorized",
     items: snapshot.items,
     promoCode: snapshot.promoCode,
     discountUsd: snapshot.discountUsd,
@@ -333,11 +357,23 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
     totalUsd: snapshot.totalUsd,
     currency: "USD",
     placedAt: new Date().toISOString(),
+    holdExpiresAt: readHoldExpiry(paymentIntent) ?? undefined,
     metadata: orderCreationRequest.metadata,
   };
 
   try {
-    const persistedOrder = await repository.create(persistenceRequest);
+    const creation = await createOrderTakingStock({
+      repository,
+      orderCreationRequest,
+      persistenceRequest,
+      stripe,
+    });
+
+    if (creation.status === "declined") {
+      return creation.result;
+    }
+
+    const persistedOrder = creation.order;
 
     if (persistedOrder.promoCode && persistedOrder.discountUsd > 0) {
       await recordPromoRedemption({
@@ -353,15 +389,21 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
       orderCreationRequest,
     });
 
-    // Authorized (hold-then-capture) orders are not fulfilled until the
-    // payment is captured; fulfillment is triggered by payment_intent.succeeded.
+    // Authorized (hold-then-capture) orders are fulfilled when
+    // payment_intent.succeeded arrives. An order already captured when saved is
+    // queued now, because that event will find it paid and skip it.
+    const fulfillmentResult =
+      persistedOrder.paymentStatus === "paid"
+        ? await orchestrateLaunchOrderFulfillment({ trigger: "persisted-paid-order", order: persistedOrder })
+        : null;
+
     return {
       status: "created",
       orderCreationRequest,
       persistenceRequest,
       persistedOrder,
       emailDeliveryResult,
-      fulfillmentResult: null,
+      fulfillmentResult,
       message:
         emailDeliveryResult.status === "sent"
           ? "Confirmed PaymentIntent authorization persisted a launch order and triggered the confirmation email."
@@ -372,18 +414,149 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
       const duplicatedOrder = await repository.getByPaymentIntentId(input.paymentIntentId);
 
       if (duplicatedOrder) {
-        return {
-          status: "already-persisted",
+        return describeExistingOrder({
+          repository,
+          order: duplicatedOrder,
           orderCreationRequest,
           persistenceRequest,
-          persistedOrder: duplicatedOrder,
-          emailDeliveryResult: null,
-          fulfillmentResult: null,
           message: "PaymentIntent was already persisted as an order.",
-        };
+        });
       }
     }
 
     throw error;
+  }
+}
+
+// A saved order whose stock conflicted stays the oversold case however often the
+// checkout or the webhook asks again, so a retry never presents it as a success.
+async function describeExistingOrder(input: {
+  repository: OrderRepository;
+  order: Order;
+  orderCreationRequest: OrderCreationRequest | null;
+  persistenceRequest: OrderPersistenceRequest | null;
+  message: string;
+}): Promise<PersistConfirmedOrderResult> {
+  const inventoryHold = (await input.repository.listInventoryHolds([input.order.id])).get(input.order.id);
+  const base = {
+    orderCreationRequest: input.orderCreationRequest,
+    persistenceRequest: input.persistenceRequest,
+    persistedOrder: input.order,
+    emailDeliveryResult: null,
+    fulfillmentResult: null,
+  };
+
+  return inventoryHold === "conflict"
+    ? {
+        ...base,
+        status: "oversold",
+        authorizationRelease: "captured",
+        message: oversoldMessage("A piece in your order is", input.order.orderNumber),
+      }
+    : { ...base, status: "already-persisted", message: input.message };
+}
+
+function oversoldMessage(subject: string, orderNumber: string) {
+  return `${subject} no longer available: another buyer reserved it moments before your payment was taken. Your payment did go through, so we have recorded it as order ${orderNumber} and the studio will refund you in full.`;
+}
+
+// Creates the order and takes its stock. When another order got there first:
+// an uncaptured hold is released and nothing is saved, so the buyer is not left
+// with money reserved for a piece they cannot have; a payment already captured
+// is saved with a stock conflict instead, so that money always has an order the
+// studio sees and refunds.
+async function createOrderTakingStock(input: {
+  repository: OrderRepository;
+  orderCreationRequest: OrderCreationRequest;
+  persistenceRequest: OrderPersistenceRequest;
+  stripe?: ReturnType<typeof createStripeClient>;
+}): Promise<{ status: "created"; order: Order } | { status: "declined"; result: PersistConfirmedOrderResult }> {
+  const { persistenceRequest } = input;
+
+  try {
+    return { status: "created", order: await input.repository.create(persistenceRequest) };
+  } catch (error) {
+    if (!(error instanceof InventoryUnavailableError)) {
+      throw error;
+    }
+
+    const authorizationRelease =
+      persistenceRequest.paymentStatus === "paid"
+        ? "captured"
+        : persistenceRequest.paymentIntentId
+          ? await releasePaymentIntentHold(input.stripe ?? createStripeClient(), persistenceRequest.paymentIntentId)
+          : "unresolved";
+    const unavailableNames = persistenceRequest.items
+      .filter((item) => error.productIds.includes(item.productId))
+      .map((item) => item.name);
+    const subject = unavailableNames.length
+      ? `${unavailableNames.join(", ")} ${unavailableNames.length > 1 ? "are" : "is"}`
+      : "A piece in your order is";
+    const declined = {
+      orderCreationRequest: input.orderCreationRequest,
+      persistenceRequest,
+      emailDeliveryResult: null,
+      fulfillmentResult: null,
+      authorizationRelease,
+      unavailableProductIds: error.productIds,
+    };
+
+    if (authorizationRelease === "captured") {
+      const flaggedOrder = await input.repository.create(
+        { ...persistenceRequest, status: "paid", paymentStatus: "paid" },
+        { onUnavailable: "record-conflict" },
+      );
+
+      // The rival may have let the piece go in between, which makes this a normal sale.
+      if ((await input.repository.listInventoryHolds([flaggedOrder.id])).get(flaggedOrder.id) !== "conflict") {
+        return { status: "created", order: flaggedOrder };
+      }
+
+      // Sent once, here: retries find the saved order and never reach this branch.
+      for (const message of createOversoldEmails({
+        orderNumber: flaggedOrder.orderNumber,
+        buyerEmail: flaggedOrder.shippingAddress.email,
+        buyerName: flaggedOrder.shippingAddress.fullName,
+        studioEmail: process.env.STUDIO_NOTIFICATION_EMAIL || getPostmarkEmailConfig().fromEmail,
+        paymentIntentId: persistenceRequest.paymentIntentId,
+        pieceNames: unavailableNames,
+      })) {
+        const delivery = await sendTransactionalEmailMessage(message);
+
+        if (delivery.status !== "sent") {
+          console.error("OVERSOLD_EMAIL_NOT_SENT", { to: message.to, orderNumber: flaggedOrder.orderNumber, delivery });
+        }
+      }
+
+      return {
+        status: "declined",
+        result: {
+          ...declined,
+          status: "oversold",
+          persistedOrder: flaggedOrder,
+          message: oversoldMessage(subject, flaggedOrder.orderNumber),
+        },
+      };
+    }
+
+    if (authorizationRelease === "unresolved") {
+      console.error("UNAVAILABLE_ORDER_HOLD_NOT_RELEASED", {
+        paymentIntentId: persistenceRequest.paymentIntentId,
+        productIds: error.productIds,
+      });
+    }
+
+    return {
+      status: "declined",
+      result: {
+        ...declined,
+        status: "unavailable",
+        persistedOrder: null,
+        message:
+          authorizationRelease === "released"
+            ? `${subject} no longer available: another buyer reserved it moments before your order went through. The hold on your card has been released and you have not been charged.`
+            : `${subject} no longer available: another buyer reserved it moments before your order went through. You have not been charged. The hold on your card has not been released yet; it lapses on its own within 7 days, or contact the studio to release it sooner.`,
+      },
+    };
   }
 }

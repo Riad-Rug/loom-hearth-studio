@@ -4,6 +4,7 @@ import type { AdminProductFormValues } from "@/lib/admin/product-form-shared";
 import { getProductRoutePreview } from "@/lib/catalog/product-validation";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createRepositoryContext } from "@/lib/db";
+import type { ProductEditBase } from "@/lib/order/inventory-hold";
 import type { Product } from "@/types/domain";
 
 export type AdminProductListItem = {
@@ -37,6 +38,12 @@ export type AdminProductFormPageData = {
   product: AdminProductFormValues;
 };
 
+export type AdminProductEditPageData = AdminProductFormPageData & {
+  heldByOrderNumber: string | null;
+  // Status and stock as this page rendered them; the save action merges against them.
+  loaded: ProductEditBase;
+};
+
 export async function getAdminProductsPageData(): Promise<AdminProductsPageData> {
   const records = await createRepositoryContext().client.catalogProduct.findMany({
     orderBy: {
@@ -57,7 +64,7 @@ export async function getAdminProductsPageData(): Promise<AdminProductsPageData>
   };
 }
 
-export async function getAdminProductFormPageData(productId: string): Promise<AdminProductFormPageData | null> {
+export async function getAdminProductFormPageData(productId: string): Promise<AdminProductEditPageData | null> {
   const record = await createRepositoryContext().client.catalogProduct.findUnique({
     where: { id: productId },
   });
@@ -67,8 +74,16 @@ export async function getAdminProductFormPageData(productId: string): Promise<Ad
   }
 
   const product = mapCatalogProductRecordToDomainProduct(record);
+  const holdingOrder =
+    record.status === "reserved" && record.heldByOrderId
+      ? await createRepositoryContext().client.orderRecord.findUnique({
+          where: { id: record.heldByOrderId },
+          select: { orderNumber: true },
+        })
+      : null;
 
   return {
+    heldByOrderNumber: holdingOrder?.orderNumber ?? null,
     title: `Edit ${product.name}`,
     description:
       "Edit persisted product content, pricing, route fields, and publish visibility from the admin products boundary.",
@@ -77,6 +92,11 @@ export async function getAdminProductFormPageData(productId: string): Promise<Ad
         record.acquisitionCostMad === null ? "" : String(record.acquisitionCostMad),
       soldAt: record.soldAt ? formatDateInput(record.soldAt) : "",
     }),
+    loaded: {
+      status: record.status,
+      inventory: record.inventory,
+      variants: product.type === "multiUnit" ? product.variants : [],
+    },
   };
 }
 

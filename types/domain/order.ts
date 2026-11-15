@@ -48,6 +48,8 @@ export type Order = {
   currency: "USD";
   placedAt: string;
   stripePaymentIntentId?: string;
+  /** ISO time Stripe refunds the uncaptured card hold (the charge's capture_before). */
+  holdExpiresAt?: string;
   // TODO: Validate final refund operation flow and Stripe object mapping.
   refundedAt?: string;
 

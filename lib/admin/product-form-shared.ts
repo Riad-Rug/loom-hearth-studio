@@ -57,5 +57,9 @@ export type AdminProductFormValues = {
 };
 
 export const adminProductTypeOptions = productTypeOptions;
-export const adminProductStatusOptions = productStatusOptions;
+// Only an order sets "reserved", so the select never offers it; the form shows a
+// reserved piece's status read-only instead.
+export const adminProductStatusOptions = productStatusOptions.filter(
+  (option): option is Exclude<(typeof productStatusOptions)[number], "reserved"> => option !== "reserved",
+);
 export const adminProductCategoryOptions = productCategoryOptions;
