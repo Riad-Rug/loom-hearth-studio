@@ -1172,18 +1172,26 @@ function usePurchaseActions(product: ProductDetailPageViewModel) {
     .filter((item) => item.productId === product.id)
     .reduce((total, item) => total + item.quantity, 0);
 
+  const image = product.gallery[0];
+  const cartInput = {
+    product: product.cartProduct,
+    quantity: 1,
+    imageUrl: image?.thumbSrc,
+    imageAlt: image?.altText,
+  };
+
   return {
     quantityInCart,
     // Reserve is "buy this now": with Add to cart beside it, adding again
     // would leave a shopper who clicked both with two of the piece.
     reserve() {
       if (quantityInCart === 0) {
-        addProduct({ product: product.cartProduct, quantity: 1 });
+        addProduct(cartInput);
       }
       router.push("/checkout");
     },
     addToCart() {
-      addProduct({ product: product.cartProduct, quantity: 1 });
+      addProduct(cartInput);
       // The mini cart in features/cart/cart-drawer.tsx opens on this event.
       window.dispatchEvent(new Event("loom-hearth:open-cart"));
     },
