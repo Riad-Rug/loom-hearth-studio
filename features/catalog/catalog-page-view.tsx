@@ -25,7 +25,6 @@ import {
   matchesAvailability,
   matchesCategoryFilter,
   matchesPriceFilter,
-  matchesSearchQuery,
   matchesSizeFilter,
   parseCategoryFilter,
   parsePriceFilter,
@@ -42,6 +41,7 @@ import {
 import { CatalogHistoryRecorder } from "@/features/catalog/catalog-history-recorder";
 import { CatalogProductBrowser } from "@/features/catalog/catalog-product-browser";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
+import { searchCatalogProducts } from "@/lib/catalog/search";
 import type { ProductCategory } from "@/types/domain";
 
 import styles from "./catalog-page.module.css";
@@ -78,6 +78,15 @@ type CatalogPageViewProps = {
    * its siblings ("Other rug types"), and the two read wrong under one label.
    */
   styleNavLabel?: string;
+  /**
+   * Where to send a shopper whose search found nothing: the categories and rug
+   * styles that currently have stock, decided by the server like `styleLinks`.
+   * Without it the empty search state only offers to clear the search.
+   */
+  searchFallbackLinks?: {
+    categories: readonly { label: string; href: string }[];
+    styles: readonly { label: string; href: string }[];
+  };
 };
 
 export function CatalogPageView({
@@ -86,6 +95,7 @@ export function CatalogPageView({
   collection,
   styleLinks,
   styleNavLabel = "Shop by style",
+  searchFallbackLinks,
 }: CatalogPageViewProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -142,17 +152,19 @@ export function CatalogPageView({
   );
   // A single tier is not a choice — every piece in view is that tier.
   const showSizeFilter = visibleSizeFilterOptions.length > 1;
-  const sortedProducts = useMemo(
-    () => sortCatalogProducts(products, sortOption),
-    [products, sortOption],
+  const trimmedQuery = searchQuery.trim();
+  // Search results arrive best match first. That order stands for the default
+  // sort; an explicit price sort reorders them.
+  const searchedProducts = useMemo(
+    () => (trimmedQuery ? searchCatalogProducts(products, trimmedQuery) : products),
+    [products, trimmedQuery],
   );
-  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const sortedProducts = useMemo(
+    () => sortCatalogProducts(searchedProducts, sortOption),
+    [searchedProducts, sortOption],
+  );
   const filteredProducts = useMemo(() => {
     return sortedProducts.filter((product) => {
-      if (!matchesSearchQuery(product, normalizedQuery)) {
-        return false;
-      }
-
       if (!matchesCategoryFilter(product, activeCategories)) {
         return false;
       }
@@ -171,7 +183,7 @@ export function CatalogPageView({
 
       return true;
     });
-  }, [activeCategories, hideSold, normalizedQuery, selectedPrices, selectedSizes, sortedProducts]);
+  }, [activeCategories, hideSold, selectedPrices, selectedSizes, sortedProducts]);
   // How many products each category would contribute under the OTHER active
   // filters (price/size/search/availability), ignoring category selection
   // itself — so an option a shopper hasn't picked yet can be greyed out when
@@ -184,11 +196,7 @@ export function CatalogPageView({
 
     const counts: Partial<Record<ProductCategory, number>> = {};
 
-    for (const product of products) {
-      if (!matchesSearchQuery(product, normalizedQuery)) {
-        continue;
-      }
-
+    for (const product of searchedProducts) {
       if (!matchesPriceFilter(product, selectedPrices)) {
         continue;
       }
@@ -208,7 +216,7 @@ export function CatalogPageView({
     }
 
     return counts;
-  }, [hideSold, isCategoryFilterEnabled, normalizedQuery, products, selectedPrices, selectedSizes]);
+  }, [hideSold, isCategoryFilterEnabled, searchedProducts, selectedPrices, selectedSizes]);
   const displayedProductCountLabel = `${filteredProducts.length} ${
     filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
@@ -265,7 +273,7 @@ export function CatalogPageView({
   const activePriceKey = serializePriceFilter(selectedPrices);
   const activeSizeKey = serializeSizeFilter(selectedSizes);
   const activeFilterCount = [
-    Boolean(searchQuery.trim()),
+    Boolean(trimmedQuery),
     activeCategories.length > 0,
     selectedPrices.length > 0,
     selectedSizes.length > 0,
@@ -437,6 +445,44 @@ export function CatalogPageView({
 
             {filteredProducts.length ? (
               <CatalogProductBrowser products={filteredProducts} filterKey={filterKey} />
+            ) : trimmedQuery && !searchedProducts.length ? (
+              <div className={styles.emptyCatalogState}>
+                <p className={styles.eyebrow}>No matches</p>
+                <h2>Nothing found for &ldquo;{trimmedQuery}&rdquo;.</h2>
+                <p>
+                  Try fewer words or a different spelling, or browse what the studio has right
+                  now.
+                </p>
+                {searchFallbackLinks?.categories.length ? (
+                  <nav aria-label="Browse by category" className={styles.styleNav}>
+                    <span className={styles.filterGroupLabel}>Shop by category</span>
+                    <div className={styles.styleNavLinks}>
+                      {searchFallbackLinks.categories.map((link) => (
+                        <Link key={link.href} className={styles.filterChip} href={link.href as Route}>
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </nav>
+                ) : null}
+                {searchFallbackLinks?.styles.length ? (
+                  <nav aria-label="Browse by rug style" className={styles.styleNav}>
+                    <span className={styles.filterGroupLabel}>Shop rugs by style</span>
+                    <div className={styles.styleNavLinks}>
+                      {searchFallbackLinks.styles.map((link) => (
+                        <Link key={link.href} className={styles.filterChip} href={link.href as Route}>
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </nav>
+                ) : null}
+                <div className={styles.sidebarActions}>
+                  <button className={styles.primaryAction} type="button" onClick={clearAllFilters}>
+                    Clear search
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className={styles.emptyCatalogState}>
                 <p className={styles.eyebrow}>No matches</p>

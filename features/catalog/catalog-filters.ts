@@ -4,7 +4,7 @@
 // catalog-page-view.tsx.
 import {
   catalogCategoryFilterOptions,
-  catalogPriceFilterOptions,
+  catalogPriceBands,
   genericSizeFilterOptions,
   type CatalogPriceFilter,
   type CatalogSizeFilter,
@@ -17,16 +17,13 @@ function matchesPriceBucket(
   product: CatalogProductCardViewModel,
   bucket: CatalogPriceFilter,
 ): boolean {
-  switch (bucket) {
-    case "under-300":
-      return product.priceUsd < 300;
-    case "300-600":
-      return product.priceUsd >= 300 && product.priceUsd <= 600;
-    case "600-plus":
-      return product.priceUsd > 600;
-    default:
-      return true;
+  const band = catalogPriceBands.find((candidate) => candidate.value === bucket);
+
+  if (!band) {
+    return true;
   }
+
+  return product.priceUsd >= band.min && (band.max === null || product.priceUsd < band.max);
 }
 
 // Multi-select, same shape as category: no selection means "every price".
@@ -39,28 +36,6 @@ export function matchesPriceFilter(
   }
 
   return selectedPrices.some((bucket) => matchesPriceBucket(product, bucket));
-}
-
-export function matchesSearchQuery(
-  product: CatalogProductCardViewModel,
-  normalizedQuery: string,
-): boolean {
-  if (!normalizedQuery) {
-    return true;
-  }
-
-  const haystack = [
-    product.displayName,
-    product.dimensionsLabel,
-    product.subtitle,
-    product.description,
-    product.merchandisingNote,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return haystack.includes(normalizedQuery);
 }
 
 // Multi-select, same shape as category and price: no selection means "every
@@ -196,7 +171,7 @@ export function toggleCategoryFilter(
   return toggleMultiSelect(selectedCategories, category, categoryValues);
 }
 
-const priceValues = catalogPriceFilterOptions.map((option) => option.value);
+const priceValues = catalogPriceBands.map((band) => band.value);
 
 export function parsePriceFilter(value: string | null): CatalogPriceFilter[] {
   return parseMultiSelect(value, priceValues);
