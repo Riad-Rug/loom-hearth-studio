@@ -854,7 +854,7 @@ If we cancel your order, we will notify you promptly by email and release any pa
 
 ### 4.1 Prices
 
-All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $${freeShippingUsd} or more; orders under $${freeShippingUsd} ship for a flat $${flatShippingUsd}, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
+All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $${freeShippingUsd} or more; orders under $${freeShippingUsd} ship for a flat $${flatShippingUsd}, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping. ${dutiesSentence}
 
 We reserve the right to correct pricing errors on the site at any time. If an error is identified after you have placed an order, we will contact you to confirm whether you wish to proceed at the correct price, or cancel for a full release of any held funds.
 
