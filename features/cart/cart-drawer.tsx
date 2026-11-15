@@ -4,8 +4,10 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { getCartItemLabel } from "@/features/cart/cart-items";
+import { CartItemThumbnail } from "@/features/cart/cart-item-thumbnail";
+import { getCartItemDetails, getCartItemLabel } from "@/features/cart/cart-items";
 import { formatUsd, useCart } from "@/features/cart/cart-provider";
+import { FreeShippingProgress } from "@/features/cart/free-shipping-progress";
 
 import styles from "./cart-drawer.module.css";
 
@@ -16,7 +18,7 @@ export function CartDrawer() {
   const [isPointerFine, setIsPointerFine] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
   const shellRef = useRef<HTMLDivElement | null>(null);
-  const { itemCount, items, subtotalUsd, discountUsd, promoCode, totalUsd } = useCart();
+  const { itemCount, items, subtotalUsd, discountUsd, promoCode, shippingUsd, totalUsd } = useCart();
   const visibleItems = items.slice(0, PREVIEW_ITEM_LIMIT);
   const hiddenItemCount = Math.max(0, items.length - PREVIEW_ITEM_LIMIT);
   const itemCountLabel = `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
@@ -155,7 +157,7 @@ export function CartDrawer() {
             <div className={styles.header}>
               <div>
                 <p className={styles.eyebrow}>Cart</p>
-                <h2>Mini Cart</h2>
+                <h2>Your cart</h2>
                 <p className={styles.headerMeta}>{`${itemCountLabel} ready to review.`}</p>
               </div>
               <button
@@ -164,16 +166,21 @@ export function CartDrawer() {
                 type="button"
                 onClick={() => setIsOpen(false)}
               >
-                x
+                <svg aria-hidden="true" fill="none" height="16" viewBox="0 0 16 16" width="16">
+                  <path
+                    d="M4 4l8 8M12 4l-8 8"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="1.5"
+                  />
+                </svg>
               </button>
             </div>
 
             <div className={styles.itemList}>
               {visibleItems.map((item) => (
                 <article key={item.id} className={styles.itemRow}>
-                  <div className={styles.itemMedia}>
-                    <span>{getCartItemLabel(item)}</span>
-                  </div>
+                  <CartItemThumbnail item={item} className={styles.itemMedia} />
                   <div className={styles.itemContent}>
                     <div className={styles.itemTopline}>
                       <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
@@ -188,10 +195,7 @@ export function CartDrawer() {
                         {item.name}
                       </Link>
                     </h3>
-                    <p className={styles.itemMeta}>
-                      Qty {item.quantity}
-                      {item.variantName ? ` ? ${item.variantName}` : ""}
-                    </p>
+                    <p className={styles.itemMeta}>{getCartItemDetails(item)}</p>
                   </div>
                 </article>
               ))}
@@ -214,10 +218,15 @@ export function CartDrawer() {
                   <strong>-{formatUsd(discountUsd)}</strong>
                 </div>
               ) : null}
+              <div className={styles.summaryRow}>
+                <span>Shipping</span>
+                <strong>{shippingUsd === 0 ? "Free" : formatUsd(shippingUsd)}</strong>
+              </div>
               <div className={styles.summaryTotal}>
                 <span>Total</span>
                 <strong>{formatUsd(totalUsd)}</strong>
               </div>
+              <FreeShippingProgress />
               <div className={styles.actionGroup}>
                 <Link
                   className={styles.checkoutButton}
