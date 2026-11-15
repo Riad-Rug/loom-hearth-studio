@@ -92,7 +92,7 @@ export async function SiteFooter() {
             <p className="site-footer__eyebrow">Loom &amp; Hearth</p>
             <p className="site-footer__statement">Handmade Moroccan rugs, poufs, pillows and antiques.</p>
             <p className="site-footer__brand">
-              {`One of each, sold direct from ${storePromise.shipsFromCity}. Every piece is photographed individually, and you approve ${storePromise.approvalMedia} of it before payment is captured.`}
+              {content.footer.introBody}
             </p>
             <p className="site-footer__meta">{`Prices in USD · ${storePromiseCopy.shipping}.`}</p>
             {activeSocialChannels.length > 0 ? (
