@@ -71,8 +71,8 @@ export function matchesCategoryFilter(
 }
 
 // "Available now" keeps only pieces a shopper can buy: a sold piece is gone and
-// a reserved one is held by an order while its buyer reviews photos. An
-// out-of-stock multi-unit piece stays in the grid with its badge.
+// a reserved one is held by an order while its buyer reviews photos, and an
+// out-of-stock multi-unit piece has nothing left.
 export function matchesAvailability(
   product: CatalogProductCardViewModel,
   availableOnly: boolean,
@@ -81,16 +81,13 @@ export function matchesAvailability(
     return true;
   }
 
-  return product.availability !== "sold" && product.availability !== "reserved";
+  return product.availability === "available";
 }
 
 /**
  * Whether a product counts toward its category's filter-sidebar availability.
- * Stricter than matchesAvailability on purpose: an out-of-stock multi-unit piece
- * still belongs in the grid (it keeps its unavailable/notify-me treatment on the
- * card), but it must not make a category's checkbox look tickable when checking
- * it would surface nothing a shopper can buy. Rugs are quantity-1 pieces with no
- * inventory, so they keep the plain matchesAvailability behaviour.
+ * An out-of-stock multi-unit piece never counts, so a category's checkbox does
+ * not look tickable when ticking it would surface nothing a shopper can buy.
  */
 export function countsTowardCategoryAvailability(
   product: CatalogProductCardViewModel,
