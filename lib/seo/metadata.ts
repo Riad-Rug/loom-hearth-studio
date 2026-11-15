@@ -60,8 +60,8 @@ export function buildMetadata({
   ogDescription,
   ogImageUrl,
   ogImageAlt,
-  ogImageWidth = defaultOgImageWidth,
-  ogImageHeight = defaultOgImageHeight,
+  ogImageWidth,
+  ogImageHeight,
 }: BuildMetadataOptions): Metadata {
   const shouldIndex = !noIndex && !noIndexFollow;
   const shouldFollow = noIndexFollow || !noIndex;
@@ -83,8 +83,14 @@ export function buildMetadata({
       {
         url: resolvedOgImage,
         alt: ogImageAlt || siteConfig.name,
-        width: ogImageWidth,
-        height: ogImageHeight,
+        // The default image's size is known. A caller's own image with no size
+        // given gets none, since a wrong size is worse for scrapers than none.
+        ...(ogImageUrl
+          ? { width: ogImageWidth, height: ogImageHeight }
+          : {
+              width: ogImageWidth ?? defaultOgImageWidth,
+              height: ogImageHeight ?? defaultOgImageHeight,
+            }),
       },
     ],
   };

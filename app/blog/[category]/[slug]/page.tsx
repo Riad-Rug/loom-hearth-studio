@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
+import { BlogProductRail } from "@/features/blog/blog-product-rail";
 import { BlogPostPageView } from "@/features/blog/blog-post-page-view";
+import { BlogSignupBlock } from "@/features/blog/blog-signup-block";
 import { getDefaultBlogAuthor } from "@/lib/blog/author";
 import { getBlogPostByParams, getBlogPosts } from "@/lib/blog/posts";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
@@ -58,7 +60,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           ]),
         ]}
       />
-      <BlogPostPageView author={author} post={post} relatedPosts={relatedPosts} />
+      <BlogPostPageView
+        author={author}
+        post={post}
+        productRail={<BlogProductRail post={post} />}
+        relatedPosts={relatedPosts}
+        signup={<BlogSignupBlock />}
+      />
     </>
   );
 }
@@ -77,6 +85,8 @@ export async function generateMetadata({
     });
   }
 
+  const heroImage = post.images[0];
+
   return buildManagedMetadata({
     entityType: "blog_post",
     entityKey: post.id,
@@ -84,5 +94,6 @@ export async function generateMetadata({
     description: post.seoDescription || post.excerpt,
     path: `/blog/${post.categorySlug}/${post.slug}`,
     type: "article",
+    ...(heroImage?.src ? { ogImageUrl: heroImage.src, ogImageAlt: heroImage.alt || post.title } : {}),
   });
 }

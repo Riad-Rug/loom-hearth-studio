@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { renderMarkdownBody, renderPlainBody } from "@/components/content/markdown-body";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
@@ -26,9 +27,19 @@ type BlogPostPageViewProps = {
   author: BlogAuthor;
   /** Published posts to link from the "More from the journal" block. Must never include placeholder data. */
   relatedPosts?: RelatedBlogPostLink[];
+  /** In-stock products tied to the post. A slot so the admin preview, which has no catalog, skips it. */
+  productRail?: ReactNode;
+  /** Newsletter signup shown after the article. Also left out of the admin preview. */
+  signup?: ReactNode;
 };
 
-export function BlogPostPageView({ post, author, relatedPosts = [] }: BlogPostPageViewProps) {
+export function BlogPostPageView({
+  post,
+  author,
+  relatedPosts = [],
+  productRail,
+  signup,
+}: BlogPostPageViewProps) {
   const adjacentPosts = relatedPosts.filter((candidate) => candidate.id !== post.id).slice(0, 2);
 
   return (
@@ -74,6 +85,8 @@ export function BlogPostPageView({ post, author, relatedPosts = [] }: BlogPostPa
         <BlogAuthorBlock author={author} />
       </article>
 
+      {productRail}
+
       {adjacentPosts.length > 0 ? (
         <section className={styles.relatedSection}>
           <div className={styles.relatedHeader}>
@@ -94,6 +107,8 @@ export function BlogPostPageView({ post, author, relatedPosts = [] }: BlogPostPa
           </div>
         </section>
       ) : null}
+
+      {signup}
     </div>
   );
 }
