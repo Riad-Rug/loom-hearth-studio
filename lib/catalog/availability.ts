@@ -22,7 +22,7 @@ export const unavailableCopy: Record<UnavailableReason, { label: string; headlin
   reserved: {
     label: "Reserved",
     headline: "This piece is reserved.",
-    note: "Another buyer is reviewing its photos. If they don't buy it, it comes back on the site.",
+    note: "This piece is reserved for an order. If that order doesn't go ahead, it comes back on the site.",
   },
   sold: { label: "Sold", headline: "This piece has sold.", note: "It stays in the catalog as a record." },
   outOfStock: { label: "Out of stock", headline: "This piece is out of stock." },
