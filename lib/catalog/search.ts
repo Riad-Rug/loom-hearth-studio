@@ -103,7 +103,7 @@ const searchFields: readonly {
   { weight: 4, read: (product) => product.palette?.map((color) => color.label).join(" ") },
   { weight: 3, read: (product) => product.materialLabel },
   { weight: 3, read: (product) => product.description },
-  { weight: 2, read: (product) => `${product.badge} ${product.merchandisingNote}` },
+  { weight: 2, read: (product) => product.badge },
   { weight: 1, read: (product) => product.dimensionsLabel },
 ];
 
