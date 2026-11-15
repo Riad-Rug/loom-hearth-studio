@@ -436,9 +436,7 @@ export function ProductDetailPageView({
             <span className="text-[var(--color-green)] text-[1.1rem] font-semibold whitespace-nowrap">
               {product.priceUsdLabel}
             </span>
-            <span className="text-[var(--color-text-muted)] text-[0.78rem] whitespace-nowrap">
-              {shippingCopy.short}
-            </span>
+            <span className="text-[var(--color-text-muted)] text-[0.78rem]">{shippingCopy.short}</span>
           </span>
           <button
             className="inline-flex items-center justify-center min-h-[3rem] px-[1.2rem] py-[0.7rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium whitespace-nowrap cursor-pointer"
@@ -979,17 +977,19 @@ function getPurchaseState(product: ProductDetailPageViewModel): PurchaseState {
   return "available";
 }
 
+/**
+ * Checkout applies the free-shipping threshold to the cart subtotal after
+ * discounts, so the page can only say what the piece does at full price.
+ */
 function getShippingCopy(priceUsd: number) {
-  const shippingUsd = calculateShippingUsd(priceUsd);
-
-  if (shippingUsd === 0) {
-    return { short: "Free shipping", full: `Free shipping to ${storePromise.shipsToLabel}.` };
+  if (calculateShippingUsd(priceUsd) === 0) {
+    return {
+      short: "Qualifies for free shipping",
+      full: `At full price, this piece qualifies for free shipping to ${storePromise.shipsToLabel}.`,
+    };
   }
 
-  return {
-    short: `+ $${shippingUsd} shipping`,
-    full: `+ $${shippingUsd} shipping to ${storePromise.shipsToLabel}. Free on orders of $${storePromise.freeShippingThresholdUsd} or more.`,
-  };
+  return { short: storePromiseCopy.shipping, full: `${storePromiseCopy.shipping}.` };
 }
 
 function getStatusPillLabel(product: ProductDetailPageViewModel, purchaseState: PurchaseState) {
