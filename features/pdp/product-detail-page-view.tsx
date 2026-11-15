@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
+import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
 import { useCart } from "@/features/cart/cart-provider";
@@ -54,9 +55,12 @@ type DisplayGalleryItem = ProductDetailPageViewModel["gallery"][number] & {
   tone?: "neutral" | "condition";
 };
 
+type PurchaseState = "available" | "sold" | "outOfStock";
+
 const PANEL_CARD = "grid gap-[var(--space-3)] p-[var(--space-4)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)]";
 const PANEL_EYEBROW = "text-[var(--color-green)] text-[0.72rem] font-semibold tracking-[0.08em] uppercase";
 const PRIMARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium";
+const SECONDARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-transparent text-[var(--color-green)] font-medium disabled:cursor-default disabled:opacity-60";
 const PURCHASE_MICROCOPY = "text-[var(--color-text-muted)] text-[0.92rem]";
 
 export function ProductDetailPageView({
@@ -70,6 +74,7 @@ export function ProductDetailPageView({
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isPointerFine, setIsPointerFine] = useState(false);
   const reserveProduct = useReserveProduct(product);
+  const purchaseState = getPurchaseState(product);
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -224,11 +229,7 @@ export function ProductDetailPageView({
 
             <div className="flex flex-wrap gap-[0.6rem]">
               <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-green)] rounded-full text-[var(--color-green)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
-                {product.status === "sold"
-                  ? "SOLD"
-                  : product.type === "rug"
-                    ? "1 OF 1"
-                    : "1 AVAILABLE"}
+                {getStatusPillLabel(product, purchaseState)}
               </span>
               <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-border)] rounded-full text-[var(--color-text-subtle)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
                 {product.catalogNumber}
@@ -240,8 +241,8 @@ export function ProductDetailPageView({
               {product.priceUsdLabel}
             </p>
 
-            {product.status === "sold" ? (
-              <SoldPurchaseShell />
+            {purchaseState !== "available" ? (
+              <UnavailablePurchaseShell product={product} state={purchaseState} />
             ) : product.type === "rug" ? (
               <RugPurchaseShell product={product} />
             ) : (
@@ -371,7 +372,7 @@ export function ProductDetailPageView({
         </Section>
       ) : null}
 
-      {product.status !== "sold" ? (
+      {purchaseState === "available" ? (
         <div
           className="pdp-sticky-buy hidden max-[700px]:fixed max-[700px]:inset-x-0 max-[700px]:bottom-0 max-[700px]:z-40 max-[700px]:flex max-[700px]:items-center max-[700px]:justify-between max-[700px]:gap-[var(--space-3)] max-[700px]:px-[var(--space-4)] max-[700px]:py-[var(--space-3)] max-[700px]:pb-[calc(var(--space-3)_+_env(safe-area-inset-bottom))] max-[700px]:border-t max-[700px]:border-[color:var(--color-border)] max-[700px]:bg-[var(--color-bg)] max-[700px]:shadow-[0_-4px_12px_rgba(20,20,20,0.12)]"
         >
@@ -848,13 +849,72 @@ function RugPurchaseShell({
   );
 }
 
-function SoldPurchaseShell() {
+function getPurchaseState(product: ProductDetailPageViewModel): PurchaseState {
+  if (product.status !== "active") {
+    return "sold";
+  }
+
+  if (product.type === "multiUnit" && product.inventoryState === "outOfStock") {
+    return "outOfStock";
+  }
+
+  return "available";
+}
+
+function getStatusPillLabel(product: ProductDetailPageViewModel, purchaseState: PurchaseState) {
+  switch (purchaseState) {
+    case "sold":
+      return "SOLD";
+    case "outOfStock":
+      return "OUT OF STOCK";
+    case "available":
+      return product.type === "rug" ? "1 OF 1" : `${product.cartProduct.inventory} AVAILABLE`;
+  }
+}
+
+function UnavailablePurchaseShell({
+  product,
+  state,
+}: {
+  product: ProductDetailPageViewModel;
+  state: Exclude<PurchaseState, "available">;
+}) {
+  const similarInStock = product.similarRugs.slice(0, 3);
+
   return (
     <div className={PANEL_CARD}>
-      <strong>This piece is sold.</strong>
-      <p className={PURCHASE_MICROCOPY}>
-        It remains in the catalog as a record. Browse the collection for available pieces.
-      </p>
+      <strong>{state === "sold" ? "This piece has sold." : "This piece is out of stock."}</strong>
+      {state === "sold" ? (
+        <p className={PURCHASE_MICROCOPY}>It stays in the catalog as a record.</p>
+      ) : null}
+      <Link className={SECONDARY_ACTION} href={getProductCategoryHref(product)}>
+        Shop {getCategoryLabel(product.category)}
+      </Link>
+
+      {similarInStock.length ? (
+        <div className="grid gap-[var(--space-2)]">
+          <p className={PANEL_EYEBROW}>Available now</p>
+          <ul className="grid gap-[0.45rem] m-0 p-0 list-none">
+            {similarInStock.map((item) => (
+              <li key={item.id} className="flex flex-wrap justify-between gap-x-[var(--space-3)]">
+                <Link className="underline underline-offset-2 text-[var(--color-ink)]" href={item.href as Route}>
+                  {item.displayName}
+                </Link>
+                <span className="text-[var(--color-text-muted)]">{item.priceUsdLabel}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      <div className="grid gap-[var(--space-2)]">
+        <p className="font-medium text-[var(--color-ink)]">Get an email when new pieces arrive</p>
+        <NewsletterSignupIntentForm
+          ctaLabel="Notify me"
+          inputLabel="Email address"
+          inputPlaceholder="Your email address"
+        />
+      </div>
     </div>
   );
 }
