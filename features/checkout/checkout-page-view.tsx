@@ -235,6 +235,36 @@ export function CheckoutPageView() {
   );
 }
 
+// Shown while there is no client secret, so Elements and the steps inside it
+// cannot mount. A failed request also clears the secret, so the error and its
+// retry have to live here.
+function PaymentPreparation() {
+  const { paymentIntent, retryPaymentIntent, goToStep } = useCheckout();
+
+  if (paymentIntent.status !== "error") {
+    return (
+      <div className={styles.reviewCard}>
+        <p>Preparing secure payment…</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.reviewCardError}>
+      <h3>Payment unavailable</h3>
+      <p role="alert">{paymentIntent.message ?? "We could not prepare payment for this order."}</p>
+      <div className={styles.stepActions}>
+        <button className={styles.secondaryAction} type="button" onClick={() => goToStep("shipping")}>
+          Back
+        </button>
+        <button className={styles.primaryAction} type="button" onClick={retryPaymentIntent}>
+          Try again
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function renderStep(step: CheckoutStepKey, clientSecret: string | null) {
   if (step === "shipping") {
     return (
@@ -260,9 +290,7 @@ function renderStep(step: CheckoutStepKey, clientSecret: string | null) {
         <div className={styles.panelHeader}>
           <h2>Payment</h2>
         </div>
-        <div className={styles.reviewCard}>
-          <p>Preparing secure payment…</p>
-        </div>
+        <PaymentPreparation />
       </div>
     );
   }
