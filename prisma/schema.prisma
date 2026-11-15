@@ -43,6 +43,12 @@ enum PaymentStatus {
   refunded
 }
 
+enum InventoryHold {
+  held
+  sold
+  released
+}
+
 enum PromoType {
   percent
   fixed
@@ -150,6 +156,8 @@ model OrderRecord {
   stripeEventId     String
   stripeEventType   String
   placedAt          DateTime            @default(now())
+  // Null for orders placed before automatic reservation; their stock is managed by hand.
+  inventoryHold     InventoryHold?
 
   // Photo/fulfillment tracking
   photosSentAt      DateTime?
