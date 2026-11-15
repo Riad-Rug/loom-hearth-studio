@@ -5,7 +5,7 @@ export type DutiesPosition = "buyer-pays" | "included";
 export const storePromise = {
   approvalMedia: "photos and video",
   approvalTurnaroundHours: { min: 24, max: 48 },
-  decisionWindowDays: 5,
+  decisionWindowDays: 4,
   deliveryBusinessDays: { min: 7, max: 14 },
   shipsFromCity: "Casablanca",
   shipsFromCountry: "Morocco",
