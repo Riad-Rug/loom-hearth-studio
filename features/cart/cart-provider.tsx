@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -152,8 +153,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setReducedLineIds((current) => new Set([...current, ...limits.filter((limit) => limit.reduced).map((limit) => limit.id)]));
   }, [items, stockByLineId]);
 
+  const getItemAvailability = useCallback(
+    (item: CartStoreItem) => stockByLineId[item.id]?.availability ?? "available",
+    [stockByLineId],
+  );
+  // Only lines that can be bought count toward the totals, the discount and free shipping.
+  const buyableItems = useMemo(
+    () => items.filter((item) => getItemAvailability(item) === "available"),
+    [getItemAvailability, items],
+  );
+
   useEffect(() => {
-    if (!appliedPromo?.code || !items.length) {
+    if (!appliedPromo?.code || !buyableItems.length) {
       if (!items.length && appliedPromo) {
         setAppliedPromo(null);
       }
@@ -161,7 +172,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     let cancelled = false;
-    void validatePromo(appliedPromo.code, items).then((result) => {
+    void validatePromo(appliedPromo.code, buyableItems).then((result) => {
       if (cancelled) {
         return;
       }
@@ -181,15 +192,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [items, appliedPromo?.code]);
+  }, [items, buyableItems, appliedPromo?.code]);
 
   const value = useMemo<CartContextValue>(() => {
     const subtotalUsd = roundCurrency(
-      items.reduce((runningTotal, item) => runningTotal + item.priceUsd * item.quantity, 0),
+      buyableItems.reduce((runningTotal, item) => runningTotal + item.priceUsd * item.quantity, 0),
     );
     const discountUsd = Math.min(appliedPromo?.discountUsd ?? 0, subtotalUsd);
     const shippingUsd = calculateShippingUsd(subtotalUsd - discountUsd);
-    const getItemAvailability = (item: CartStoreItem) => stockByLineId[item.id]?.availability ?? "available";
 
     return {
       items,
@@ -226,7 +236,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setItems((currentItems) => limitCartItems(currentItems, limits));
       },
       async applyPromoCode(code) {
-        const result = await validatePromo(code, items);
+        const result = await validatePromo(code, buyableItems);
 
         if (result.status === "success") {
           setAppliedPromo({
@@ -248,7 +258,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setAppliedPromo(null);
       },
     };
-  }, [appliedPromo, items, reducedLineIds, stockByLineId]);
+  }, [appliedPromo, buyableItems, getItemAvailability, items, reducedLineIds]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

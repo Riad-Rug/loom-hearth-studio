@@ -181,10 +181,12 @@ export function getCartItemDetails(item: CartStoreItem) {
   return [`Qty ${item.quantity}`, item.variantName].filter(Boolean).join(" · ");
 }
 
+const notCountedNote = "Not included in your total.";
+
 export const unavailableLineNote: Record<UnavailableReason, string> = {
-  reserved: `${unavailableCopy.reserved.headline} ${unavailableCopy.reserved.note}`,
-  sold: unavailableCopy.sold.headline,
-  outOfStock: unavailableCopy.outOfStock.headline,
+  reserved: `${unavailableCopy.reserved.headline} ${unavailableCopy.reserved.note} ${notCountedNote}`,
+  sold: `${unavailableCopy.sold.headline} ${notCountedNote}`,
+  outOfStock: `${unavailableCopy.outOfStock.headline} ${notCountedNote}`,
 };
 
 export const unavailableCheckoutNote = "Some pieces can't be bought right now. Remove them from your cart to check out.";
