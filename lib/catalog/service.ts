@@ -520,6 +520,7 @@ function createProductDetailPageViewModel(
     return {
       ...baseViewModel,
       type: "rug",
+      techniqueLabel: "Handwoven",
       rugStyle: product.rugStyle,
       quantityLabel: "1",
       dimensionsLabel: formatRugDimensions(product),
@@ -897,36 +898,7 @@ function createRugHeroDescription(product: Extract<Product, { type: "rug" }>) {
 }
 
 function createProductDescriptionSections(product: Product): ProductDetailSectionViewModel[] {
-  if (product.type === "rug") {
-    return [
-      {
-        title: "Materials",
-        body: `${product.materials.join(", ")} from ${product.origin}.`,
-      },
-      {
-        title: "Construction",
-        body: createRugConstructionDescription(product),
-      },
-      {
-        title: "Condition",
-        body: createConditionDescription(product),
-      },
-      {
-        title: "Provenance",
-        body: createProvenanceDescription(product),
-      },
-      {
-        title: "Care",
-        body: createCareDescription(product),
-      },
-    ].filter((section) => section.body.trim().length > 0);
-  }
-
   return [
-    {
-      title: "Materials",
-      body: `${product.materials.join(", ")} from ${product.origin}.`,
-    },
     {
       title: "Condition",
       body: createConditionDescription(product),
@@ -942,32 +914,14 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
   ].filter((section) => section.body.trim().length > 0);
 }
 
-function createRugConstructionDescription(product: Extract<Product, { type: "rug" }>) {
-  const construction = getRugConstructionLabel(product, product.name).toLowerCase();
-  const feature = getRugFeatureLabel(product.name).toLowerCase();
-  const dimensions = formatRugDimensions(product);
-  const weight = formatRugWeight(product);
-
-  return normalizeDimensionSeparators(
-    `Handwoven as a ${construction}${feature ? ` ${feature}` : ""}. Dimensions: ${dimensions}. Weight: ${weight}.`,
-  );
-}
-
 function createProvenanceDescription(product: Product) {
   const provenance = normalizeDimensionSeparators(product.provenanceNote?.trim() || "");
-  const region = product.attributionRegion?.trim() || product.origin;
+  const region = product.attributionRegion?.trim();
   const confidence = product.attributionConfidence?.trim();
-  const tradition =
-    product.type === "rug"
-      ? createRugTraditionLabel(product)
-      : `${getCategoryLabel(product.category)} sourced in Morocco`;
-  const parts = [
-    provenance,
-    confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`,
-    `Tradition: ${tradition}`,
-  ].filter(Boolean);
+  const regionLine = region ? (confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`) : "";
+  const traditionLine = product.type === "rug" ? `Tradition: ${createRugTraditionLabel(product)}` : "";
 
-  return parts.join("\n");
+  return [provenance, regionLine, traditionLine].filter(Boolean).join("\n");
 }
 
 function createConditionDescription(product: Product) {
