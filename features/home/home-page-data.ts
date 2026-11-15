@@ -383,7 +383,7 @@ export function sanitizeHomePageContent(input: unknown): HomePageContent {
     footer: {
       ...readSectionSettings(source.footer, defaults.footer),
       introTitle: readString(source.footer, "introTitle", defaults.footer.introTitle),
-      introBody: readString(source.footer, "introBody", defaults.footer.introBody),
+      introBody: readString(source.footer, "introBody", defaults.footer.introBody) || defaults.footer.introBody,
       exploreHeading: readString(source.footer, "exploreHeading", defaults.footer.exploreHeading),
       exploreLinks: dedupeLinks(readLinkArray(source.footer, "exploreLinks", defaults.footer.exploreLinks)),
       supportHeading: readString(source.footer, "supportHeading", defaults.footer.supportHeading),
