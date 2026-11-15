@@ -4,7 +4,7 @@ import { inspect } from "node:util";
 import { mapCatalogProductRecordToDomainProduct, mapProductMutationInputToCreateInput, mapProductMutationInputToUpdateInput } from "@/lib/catalog/product-mappers";
 import type { ProductMutationInput } from "@/lib/catalog/product-validation";
 import { createRepositoryContext, type RepositoryContext } from "@/lib/db";
-import { mergeStockEdit, type StockLevels } from "@/lib/order/inventory-hold";
+import { mergeStatusEdit, mergeStockEdit, type ProductEditBase } from "@/lib/order/inventory-hold";
 import type { Product } from "@/types/domain";
 import type { ProductVariant } from "@/types/domain/product";
 
@@ -36,9 +36,9 @@ export type ProductStockState = {
 
 export type ProductUpdateResult = {
   product: Product;
-  // Counts an order changed while the admin's form was open and the admin also
-  // edited; the order's value was kept.
-  stockConflicts: string[];
+  // Values ("status", "stock") an order changed while the admin's form was open
+  // and the admin also edited; the order's value was kept.
+  conflicts: Array<"status" | "stock">;
 };
 
 export interface ProductRepository {
@@ -53,11 +53,11 @@ export interface ProductRepository {
   listForAdmin(): Promise<Product[]>;
   getById(id: string): Promise<Product | null>;
   create(input: ProductMutationInput): Promise<Product>;
-  // `loadedStock` is the stock the admin's form showed, so a save never undoes
-  // what an order moved meanwhile.
+  // `loaded` is what the admin's form showed, so a save never undoes what an
+  // order changed meanwhile.
   update(
     input: ProductMutationInput & { id: string },
-    options: { loadedStock: StockLevels },
+    options: { loaded: ProductEditBase },
   ): Promise<ProductUpdateResult>;
   getStockState(id: string): Promise<ProductStockState | null>;
   delete(id: string): Promise<void>;
@@ -223,7 +223,7 @@ export class PrismaProductRepository implements ProductRepository {
     }
   }
 
-  async update(input: ProductMutationInput & { id: string }, options: { loadedStock: StockLevels }) {
+  async update(input: ProductMutationInput & { id: string }, options: { loaded: ProductEditBase }) {
     return this.context.client.$transaction(async (tx) => {
       // The same row lock order stock moves take, so a save cannot interleave with one.
       const [existingProduct] = await tx.$queryRaw<
@@ -231,10 +231,11 @@ export class PrismaProductRepository implements ProductRepository {
           slug: string;
           previousSlugs: string[];
           status: string;
+          soldAt: Date | null;
           inventory: number | null;
           variants: Prisma.JsonValue | null;
         }>
-      >`SELECT "slug", "previousSlugs", "status", "inventory", "variants"
+      >`SELECT "slug", "previousSlugs", "status", "soldAt", "inventory", "variants"
         FROM "CatalogProduct" WHERE "id" = ${input.id} FOR UPDATE`;
       // When the slug changes, remember the old one so the old URL keeps resolving
       // (see getByPreviousSlug). Runs on every admin save, so nothing is done by hand.
@@ -247,23 +248,27 @@ export class PrismaProductRepository implements ProductRepository {
               existingProduct.slug,
             ]
           : undefined;
-      // Only an order reserves a piece or gives it back; product edits never write that status.
-      const status =
-        existingProduct && (existingProduct.status === "reserved" || input.status === "reserved")
-          ? (existingProduct.status as Product["status"])
-          : input.status;
+      const status = existingProduct
+        ? mergeStatusEdit({ loaded: options.loaded.status, submitted: input.status, current: existingProduct.status })
+        : { status: input.status, conflict: false };
       const stock =
         existingProduct && input.type === "multiUnit"
           ? mergeStockEdit({
-              loaded: options.loadedStock,
+              loaded: options.loaded,
               submitted: { inventory: input.inventory, variants: input.variants },
               current: { inventory: existingProduct.inventory, variants: parseVariants(existingProduct.variants) },
             })
           : null;
+      const kept = {
+        status: status.status as Product["status"],
+        // A status kept from the database keeps its sold date too.
+        soldAt:
+          status.status === input.status ? input.soldAt : existingProduct?.soldAt?.toISOString() ?? undefined,
+      };
       const nextInput: ProductMutationInput =
         stock && input.type === "multiUnit"
-          ? { ...input, status, inventory: stock.inventory, variants: stock.variants }
-          : { ...input, status };
+          ? { ...input, ...kept, inventory: stock.inventory, variants: stock.variants }
+          : { ...input, ...kept };
 
       const updatedProduct = await tx.catalogProduct.update({
         where: {
@@ -277,7 +282,10 @@ export class PrismaProductRepository implements ProductRepository {
 
       return {
         product: mapCatalogProductRecordToDomainProduct(updatedProduct),
-        stockConflicts: stock?.conflicts ?? [],
+        conflicts: [
+          ...(status.conflict ? (["status"] as const) : []),
+          ...(stock?.conflict ? (["stock"] as const) : []),
+        ],
       };
     });
   }

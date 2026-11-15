@@ -39,8 +39,12 @@ export type StockMovementResult =
 
 export type StockLevels = {
   inventory: number | null;
-  variants: ReadonlyArray<Pick<ProductVariant, "id" | "inventory">>;
+  variants: ReadonlyArray<ProductVariant>;
 };
+
+// What an admin product form showed when it loaded, so a save can tell the
+// admin's changes from what orders changed meanwhile.
+export type ProductEditBase = StockLevels & { status: string };
 
 export class InventoryUnavailableError extends Error {
   constructor(readonly productIds: string[]) {
@@ -79,9 +83,11 @@ export type HoldStep = { movement: StockMovement | null; next: InventoryHold };
 
 const stay = (hold: InventoryHold): HoldStep => ({ movement: null, next: hold });
 
-// Sold never moves on its own: putting a captured or shipped piece back on sale
-// is a deliberate admin product edit. A conflict holds nothing, so it only
-// settles when the order is released.
+// Stock never moves out of sold: putting a captured or shipped piece back on sale
+// is a deliberate admin product edit. When a sold order is cancelled or refunded
+// it stops owning the units without moving them, so a later re-Paid must take
+// the piece again and refunded covers stop counting as sold. A conflict holds
+// nothing, so it too only settles when the order is released.
 const holdSteps: Record<InventoryHold, Record<InventoryHoldTarget, HoldStep>> = {
   held: {
     held: stay("held"),
@@ -93,7 +99,7 @@ const holdSteps: Record<InventoryHold, Record<InventoryHoldTarget, HoldStep>> = 
     sold: { movement: "take-and-sell", next: "sold" },
     released: stay("released"),
   },
-  sold: { held: stay("sold"), sold: stay("sold"), released: stay("sold") },
+  sold: { held: stay("sold"), sold: stay("sold"), released: stay("released") },
   conflict: { held: stay("conflict"), sold: stay("conflict"), released: stay("released") },
 };
 
@@ -234,41 +240,59 @@ function moveUnits(product: ProductStock, line: StockLine, movement: StockMoveme
   };
 }
 
-// Three-way merge of an admin product save against stock that orders moved while
-// the form was open. `loaded` is what the form showed, `submitted` what the admin
-// saved, `current` what the database holds now. A count the admin left alone
-// keeps current; a count only the admin changed takes theirs; a count both
-// changed keeps current and is reported back.
+// Three-way merges of an admin product save against what orders changed while
+// the form was open: `loaded` is what the form showed, `submitted` what the
+// admin saved, `current` what the database holds now. A value the admin left
+// alone keeps current; a value only the admin changed takes theirs; a value both
+// changed keeps current and is reported.
+export function mergeStatusEdit(input: {
+  loaded: string;
+  submitted: string;
+  current: string;
+}): { status: string; conflict: boolean } {
+  // Only an order sets or clears "reserved".
+  if (input.current === "reserved" || input.submitted === "reserved") {
+    return { status: input.current, conflict: false };
+  }
+
+  if (input.current === input.loaded) return { status: input.submitted, conflict: false };
+  if (input.submitted === input.loaded) return { status: input.current, conflict: false };
+  return { status: input.current, conflict: true };
+}
+
+// Stock merges as one unit: the total and the variant counts move together, so
+// a partial merge could leave them disagreeing.
 export function mergeStockEdit(input: {
   loaded: StockLevels;
   submitted: { inventory: number; variants: ProductVariant[] };
   current: StockLevels;
-}): { inventory: number; variants: ProductVariant[]; conflicts: string[] } {
-  const conflicts: string[] = [];
-  const pick = (label: string, loaded: number | undefined, submitted: number, current: number | undefined) => {
-    if (loaded === undefined || current === undefined || current === loaded) return submitted;
-    if (submitted !== loaded) conflicts.push(label);
-    return current;
-  };
-  const loadedVariants = new Map(input.loaded.variants.map((variant) => [variant.id, variant.inventory]));
-  const currentVariants = new Map(input.current.variants.map((variant) => [variant.id, variant.inventory]));
+}): { inventory: number; variants: ProductVariant[]; conflict: boolean } {
+  if (sameStock(input.loaded, input.current)) {
+    return { inventory: input.submitted.inventory, variants: input.submitted.variants, conflict: false };
+  }
 
-  return {
-    inventory: pick(
-      "Inventory",
-      input.loaded.inventory ?? 0,
-      input.submitted.inventory,
-      input.current.inventory ?? 0,
-    ),
-    variants: input.submitted.variants.map((variant) => ({
-      ...variant,
-      inventory: pick(
-        `${variant.name} inventory`,
-        loadedVariants.get(variant.id),
-        variant.inventory,
-        currentVariants.get(variant.id),
-      ),
-    })),
-    conflicts,
-  };
+  const currentById = new Map(input.current.variants.map((variant) => [variant.id, variant.inventory]));
+
+  if (sameStock(input.loaded, input.submitted)) {
+    return {
+      inventory: input.current.inventory ?? 0,
+      variants: input.submitted.variants.map((variant) => ({
+        ...variant,
+        inventory: currentById.get(variant.id) ?? variant.inventory,
+      })),
+      conflict: false,
+    };
+  }
+
+  return { inventory: input.current.inventory ?? 0, variants: [...input.current.variants], conflict: true };
+}
+
+function sameStock(left: StockLevels, right: StockLevels) {
+  const rightById = new Map(right.variants.map((variant) => [variant.id, variant.inventory]));
+
+  return (
+    (left.inventory ?? 0) === (right.inventory ?? 0) &&
+    left.variants.length === right.variants.length &&
+    left.variants.every((variant) => rightById.get(variant.id) === variant.inventory)
+  );
 }

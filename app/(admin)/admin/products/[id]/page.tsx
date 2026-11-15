@@ -24,7 +24,7 @@ export default async function AdminProductDetailPage({
 
   return (
     <AdminProductForm
-      action={updateAdminProductAction.bind(null, resolvedParams.id, pageData.loadedStock)}
+      action={updateAdminProductAction.bind(null, resolvedParams.id, pageData.loaded)}
       description={pageData.description}
       mode="edit"
       product={pageData.product}
