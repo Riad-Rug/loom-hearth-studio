@@ -290,19 +290,21 @@ export const catalogCategories = [
   bullets: readonly string[];
 }>;
 
-// "newest" is the default and requires no client-side reordering: the catalog
+// "featured" is the default and needs no client-side reordering: the catalog
 // repository already lists products by `updatedAt desc` (see
-// PrismaProductRepository.listAll/listByCategory), so "newest" just means
-// "leave the server's order alone." That is last edit, not date listed; the card
-// view model carries no createdAt to sort on. During a search the default sort
-// means best match first.
+// PrismaProductRepository.listAll/listByCategory), and a search hands back best
+// match first. "newest" is the explicit sort by listing date (createdAt).
 export const catalogSortOptions = [
+  { value: "featured", label: "Featured" },
   { value: "newest", label: "Newest" },
   { value: "price-asc", label: "Price: low to high" },
   { value: "price-desc", label: "Price: high to low" },
 ] as const;
 
 export type CatalogSortOption = (typeof catalogSortOptions)[number]["value"];
+
+export const defaultCatalogSortOption = "featured" satisfies CatalogSortOption;
+
 
 // Multi-select, like category: no selection means "every price", so there's no
 // "Any" option to check. One table feeds the filter logic and the controls. A band

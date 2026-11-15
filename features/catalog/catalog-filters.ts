@@ -4,11 +4,13 @@
 // catalog-page-view.tsx.
 import {
   catalogCategoryFilterOptions,
+  catalogSortOptions,
   catalogPriceBands,
   genericSizeFilterOptions,
   type CatalogPriceFilter,
   type CatalogSizeFilter,
   type CatalogSortOption,
+  defaultCatalogSortOption,
 } from "@/features/catalog/catalog-data";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import type { ProductCategory } from "@/types/domain";
@@ -94,6 +96,12 @@ export function countsTowardCategoryAvailability(
   return matchesAvailability(product, hideSold) && !product.isOutOfStock;
 }
 
+function listedAtMs(product: CatalogProductCardViewModel): number {
+  const parsed = product.createdAt ? Date.parse(product.createdAt) : Number.NaN;
+
+  return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
+}
+
 export function sortCatalogProducts(
   products: CatalogProductCardViewModel[],
   sortOption: CatalogSortOption,
@@ -104,14 +112,22 @@ export function sortCatalogProducts(
     case "price-desc":
       return [...products].sort((left, right) => right.priceUsd - left.priceUsd);
     case "newest":
+      // Array.sort is stable, so pieces listed at the same moment (a bulk import
+      // shares one createdAt) and pieces with no date keep the incoming order.
+      return [...products].sort((left, right) => {
+        const leftMs = listedAtMs(left);
+        const rightMs = listedAtMs(right);
+
+        return rightMs > leftMs ? 1 : rightMs < leftMs ? -1 : 0;
+      });
+    case "featured":
     default:
-      // Already in `updatedAt desc` order from the repository — no reorder needed.
       return products;
   }
 }
 
 export function parseSortOption(value: string | null): CatalogSortOption {
-  return value === "price-asc" || value === "price-desc" ? value : "newest";
+  return catalogSortOptions.find((option) => option.value === value)?.value ?? defaultCatalogSortOption;
 }
 
 /**

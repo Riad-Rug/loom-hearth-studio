@@ -19,6 +19,7 @@ import {
   type CatalogPriceFilter,
   type CatalogSizeFilter,
   type CatalogSortOption,
+  defaultCatalogSortOption,
 } from "@/features/catalog/catalog-data";
 import {
   countsTowardCategoryAvailability,
@@ -154,7 +155,7 @@ export function CatalogPageView({
   const showSizeFilter = visibleSizeFilterOptions.length > 1;
   const trimmedQuery = searchQuery.trim();
   // Search results arrive best match first. That order stands for the default
-  // sort; an explicit price sort reorders them.
+  // sort; an explicit newest or price sort reorders them.
   const searchedProducts = useMemo(
     () => (trimmedQuery ? searchCatalogProducts(products, trimmedQuery) : products),
     [products, trimmedQuery],
@@ -277,7 +278,7 @@ export function CatalogPageView({
     activeCategories.length > 0,
     selectedPrices.length > 0,
     selectedSizes.length > 0,
-    sortOption !== "newest",
+    sortOption !== defaultCatalogSortOption,
     hideSold,
   ].filter(Boolean).length;
   const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${activeSizeKey}|${sortOption}|${hideSold}`;
@@ -292,7 +293,7 @@ export function CatalogPageView({
       updateQueryParam(nextParams, "category", activeCategoryKey);
       updateQueryParam(nextParams, "price", activePriceKey);
       updateQueryParam(nextParams, "size", activeSizeKey);
-      updateQueryParam(nextParams, "sort", sortOption === "newest" ? "" : sortOption);
+      updateQueryParam(nextParams, "sort", sortOption === defaultCatalogSortOption ? "" : sortOption);
       updateQueryParam(nextParams, "availability", hideSold ? "available" : "");
 
       const nextQuery = nextParams.toString();
@@ -367,7 +368,7 @@ export function CatalogPageView({
     setSelectedCategories([]);
     setSelectedPrices([]);
     setSelectedSizes([]);
-    setSortOption("newest");
+    setSortOption(defaultCatalogSortOption);
     setHideSold(false);
   };
 
