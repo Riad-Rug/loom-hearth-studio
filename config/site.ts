@@ -52,14 +52,14 @@ export function normalizePublicUrl(value: string, fallbackBase = siteConfig.site
 export const siteConfig = {
   name: "Loom & Hearth",
   description:
-    "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
+    `Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from ${storePromise.shipsFromCity}.`,
   siteUrl: normalizePublicSiteUrl(process.env.NEXT_PUBLIC_SITE_URL),
   locale: "en-US",
   currency: "USD",
   market: "US",
   ogImagePath: "/og/default-placeholder.jpg",
   tagline:
-    "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
+    `Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from ${storePromise.shipsFromCity}.`,
   announcementDesktop: `SEE YOUR EXACT PIECE IN ${promiseMedia} BEFORE YOU PAY · FREE SHIPPING ON ORDERS OF $${storePromise.freeShippingThresholdUsd} OR MORE · SHIPS FROM ${promiseOrigin}`,
   announcementMobile: `${promiseMedia} FIRST · FREE SHIPPING $${storePromise.freeShippingThresholdUsd}+`,
   primaryNav: [

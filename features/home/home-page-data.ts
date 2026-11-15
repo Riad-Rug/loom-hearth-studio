@@ -119,7 +119,6 @@ export type HomePageContent = {
   footer: HomePageSectionSettings & {
     introTitle: string;
     introBody: string;
-    introMeta: string;
     exploreHeading: string;
     exploreLinks: HomePageLink[];
     supportHeading: string;
@@ -298,8 +297,7 @@ const defaultHomePageContent: HomePageContent = {
         "Structured footer content covering primary navigation, support links, and collection shortcuts for the Loom & Hearth Studio storefront.",
     },
     introTitle: siteConfig.name,
-    introBody: "",
-    introMeta: `Prices in USD · ${storePromiseCopy.shipping}.`,
+    introBody: `One of each, sold direct from ${storePromise.shipsFromCity}. Every piece is photographed individually, and you approve ${storePromise.approvalMedia} of it before payment is captured.`,
     exploreHeading: "Explore",
     exploreLinks: [
       { href: "/shop", label: "Shop" },
@@ -385,8 +383,7 @@ export function sanitizeHomePageContent(input: unknown): HomePageContent {
     footer: {
       ...readSectionSettings(source.footer, defaults.footer),
       introTitle: readString(source.footer, "introTitle", defaults.footer.introTitle),
-      introBody: readString(source.footer, "introBody", defaults.footer.introBody),
-      introMeta: readString(source.footer, "introMeta", defaults.footer.introMeta),
+      introBody: readString(source.footer, "introBody", defaults.footer.introBody) || defaults.footer.introBody,
       exploreHeading: readString(source.footer, "exploreHeading", defaults.footer.exploreHeading),
       exploreLinks: dedupeLinks(readLinkArray(source.footer, "exploreLinks", defaults.footer.exploreLinks)),
       supportHeading: readString(source.footer, "supportHeading", defaults.footer.supportHeading),

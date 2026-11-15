@@ -39,3 +39,15 @@ export function resolveAutoCancelMoment(input: { deadline: Date; holdExpiresAt: 
     Math.min(input.deadline.getTime() + captureMarginHours * hourMs, input.holdExpiresAt.getTime()),
   );
 }
+
+// The promise must fit inside the card hold: photos at the latest turnaround,
+// then the full decision window, then the capture margin. If the facts stop
+// fitting, the buyer would be given less time than the site states.
+const worstCaseHoldDays =
+  storePromise.approvalTurnaroundHours.max / 24 + storePromise.decisionWindowDays + captureMarginHours / 24;
+
+if (worstCaseHoldDays > cardHoldValidityDays) {
+  throw new Error(
+    `store promise does not fit the card hold: ${worstCaseHoldDays} days needed, ${cardHoldValidityDays} available`,
+  );
+}

@@ -8,6 +8,7 @@ import {
   listRugStyleNavLinks,
   listUnavailableCategoryHrefs,
 } from "@/lib/catalog/service";
+import { storePromise } from "@/lib/order/store-promise";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
@@ -28,7 +29,7 @@ export async function generateMetadata({ searchParams }: ShopPageProps): Promise
     entityKey: "shop",
     title: "Shop Handmade Moroccan Rugs, Poufs & Pillows",
     description:
-      "One-of-a-kind Moroccan rugs, poufs, pillows and decor, photographed in daylight and approved by you before payment. Ships from Casablanca to the US.",
+      `One-of-a-kind Moroccan rugs, poufs, pillows and decor, photographed individually, with ${storePromise.approvalMedia} of the exact piece for you to approve before payment. Ships from ${storePromise.shipsFromCity} to ${storePromise.shipsToLabel}.`,
     path: "/shop",
     noIndexFollow: isSearchResults,
   });

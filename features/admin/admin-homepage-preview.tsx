@@ -77,7 +77,6 @@ export function HomepagePreview({ content, selectedSection, onSelect }: Homepage
           <div className={styles.homepagePreviewFooterIntro}>
             <PreviewChip label={content.footer.introTitle} onClick={() => onSelect("footer", "footer.introTitle")} />
             <PreviewBody label={content.footer.introBody} onClick={() => onSelect("footer", "footer.introBody")} />
-            <PreviewBody label={content.footer.introMeta} onClick={() => onSelect("footer", "footer.introMeta")} subtle />
           </div>
           <PreviewLinkGroup heading={content.footer.exploreHeading} items={content.footer.exploreLinks} onClick={() => onSelect("footer", "footer.exploreHeading")} />
           <PreviewLinkGroup heading={content.footer.supportHeading} items={content.footer.supportLinks} onClick={() => onSelect("footer", "footer.supportHeading")} />
