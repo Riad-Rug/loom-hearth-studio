@@ -286,7 +286,7 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
     });
   } catch (error) {
     return {
-      status: "configuration-error",
+      status: "api-error",
       orderCreationRequest: null,
       persistenceRequest: null,
       persistedOrder: null,
@@ -324,6 +324,13 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
   const snapshot = parseCheckoutOrderDraftSnapshotFromMetadata(paymentIntent.metadata);
 
   if (!snapshot) {
+    // Nothing retries this into an order, and the card stays held until the studio releases it.
+    console.error("ORDER_SNAPSHOT_UNREADABLE", {
+      paymentIntentId: input.paymentIntentId,
+      status: paymentIntent.status,
+      metadataKeys: Object.keys(paymentIntent.metadata ?? {}),
+    });
+
     return {
       status: "configuration-error",
       orderCreationRequest: null,

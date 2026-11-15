@@ -104,7 +104,8 @@ type PersistConfirmedOrderOutcome = {
 };
 
 export type PersistConfirmedOrderResult =
-  | (PersistConfirmedOrderOutcome & { status: "created" | "ignored" | "configuration-error" | "already-persisted" })
+  // "api-error": Stripe could not be reached, so asking again later can still succeed.
+  | (PersistConfirmedOrderOutcome & { status: "created" | "ignored" | "configuration-error" | "api-error" | "already-persisted" })
   // Another order holds a unit, nothing was saved, and the card hold was released if it could be.
   | (PersistConfirmedOrderOutcome & {
       status: "unavailable";
