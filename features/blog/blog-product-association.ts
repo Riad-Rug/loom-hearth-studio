@@ -8,7 +8,8 @@ import type { ProductCategory } from "@/types/domain";
 /**
  * Which part of the catalog a post is about. Posts carry no product field, so
  * the association is read from what the author already wrote: the shop links
- * inside the body first, then a rug style named in the slug or title, then the
+ * inside the body first (the last one, since a closing call to action points at
+ * what the post is really about), then a rug style named in the slug or title, then the
  * post's own blog category.
  */
 export type BlogProductAssociation =
@@ -26,12 +27,12 @@ const shopCategories: readonly ProductCategory[] = ["rugs", "poufs", "pillows", 
 const shopLinkPattern = /\]\(\s*(?:https?:\/\/[^/)\s]+)?\/shop\/([^)\s#?]+)/gu;
 
 export function deriveBlogProductAssociation(post: AssociationSource): BlogProductAssociation | null {
-  for (const match of post.body.matchAll(shopLinkPattern)) {
-    const fromLink = associationFromShopPath(match[1] ?? "");
+  const fromLinks = [...post.body.matchAll(shopLinkPattern)]
+    .map((match) => associationFromShopPath(match[1] ?? ""))
+    .filter((association) => association !== null);
 
-    if (fromLink) {
-      return fromLink;
-    }
+  if (fromLinks.length > 0) {
+    return fromLinks[fromLinks.length - 1] ?? null;
   }
 
   const words = slugify(`${post.slug} ${post.title}`);
