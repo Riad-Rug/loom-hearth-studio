@@ -5,8 +5,10 @@ import { useActionState, useEffect, useId, useRef, useState } from "react";
 
 import { contactData } from "@/features/content-pages/content-pages-data";
 import { ProductCard } from "@/features/catalog/product-card";
+import { supportReplyWindow } from "@/features/content-pages/support-reply";
 import { trackGenerateLead } from "@/lib/analytics/gtag";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
+import { storePromise } from "@/lib/order/store-promise";
 
 import styles from "./content-pages.module.css";
 
@@ -407,7 +409,7 @@ export function ContactPageView({
                 )}
               </button>
               <p className={styles.contactFieldHint}>
-                Required fields are marked in red. Personal reply within 24 hours.
+                Required fields are marked in red. Personal reply {supportReplyWindow}.
               </p>
             </div>
           </form>
@@ -444,7 +446,7 @@ function ContactSupportCard() {
         <h2>Prefer a direct message?</h2>
         <p className={styles.body}>
           Write to <a href={`mailto:${contactData.emailLabel}`}>{contactData.emailLabel}</a> and
-          we&apos;ll reply within 24 hours.
+          we&apos;ll reply {supportReplyWindow}.
         </p>
         <p className={styles.contactFieldHint}>Hours: {contactData.hoursLabel}</p>
       </div>
@@ -465,7 +467,7 @@ function ContactSupportCard() {
 function ContactBusinessLine() {
   return (
     <p className={styles.contactBusinessLine}>
-      {contactData.legalNameLabel} - Marrakech, Morocco - Wyoming, USA - Complaints by email
+      {contactData.legalNameLabel} · {storePromise.shipsFromCity}, {storePromise.shipsFromCountry} · Wyoming, USA. If something has gone wrong, please email us and a real person will reply.
     </p>
   );
 }
