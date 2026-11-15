@@ -112,9 +112,10 @@ export async function listUnavailableCategoryHrefs(
  * Rug-style slugs with at least one piece a shopper can buy right now, so the
  * /shop/rugs style nav and the sitemap can list exactly the styles that have
  * stock instead of hardcoding which ones do. Rows alone are not enough here
- * either: a style whose every rug is sold or reserved counts as empty. Live read on every render — rugs are one of a kind, so
- * a style drops out when its last piece sells and returns on its own the moment
- * new stock lands. One listByCategory("rugs") per call.
+ * either: a style whose every rug is sold or reserved counts as empty. Live read
+ * on every render — rugs are one of a kind, so a style drops out when its last
+ * piece sells and returns on its own the moment new stock lands. One
+ * listByCategory("rugs") per call.
  */
 export async function listAvailableRugStyleSlugs(
   repository: ProductRepository = createProductRepository(),

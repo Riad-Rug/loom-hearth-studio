@@ -117,8 +117,9 @@ type CheckoutContextValue = {
   setPlaceOrderState: (state: PlaceOrderState) => void;
   placedOrder: PlacedOrder | null;
   completeOrder: (order: PlacedOrder) => void;
-  // Another order took these pieces before this one went through, and nothing
-  // was charged: drop them and return to payment on a fresh PaymentIntent.
+  // Another order took these pieces first and this order was not saved, so the
+  // old PaymentIntent cannot be confirmed again: drop the pieces and start a new
+  // PaymentIntent for whatever is left.
   dropUnavailableItems: (input: { productIds: string[]; message: string }) => void;
 };
 
@@ -442,10 +443,12 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       goToStep("confirmation");
     },
     dropUnavailableItems({ productIds, message }) {
-      items.filter((item) => productIds.includes(item.productId)).forEach((item) => removeItem(item.id));
+      const unavailableItems = items.filter((item) => productIds.includes(item.productId));
+
+      unavailableItems.forEach((item) => removeItem(item.id));
       setPlaceOrderState(initialPlaceOrderState);
       setPaymentIntentRetryCount((count) => count + 1);
-      goToStep("payment");
+      goToStep(unavailableItems.length < items.length ? "payment" : "shipping");
       setCartRecoveryMessage(message);
     },
   };
