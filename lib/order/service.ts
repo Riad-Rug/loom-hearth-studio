@@ -497,7 +497,6 @@ async function createOrderTakingStock(input: {
       persistenceRequest,
       emailDeliveryResult: null,
       fulfillmentResult: null,
-      authorizationRelease,
       unavailableProductIds: error.productIds,
     };
 
@@ -533,6 +532,7 @@ async function createOrderTakingStock(input: {
         result: {
           ...declined,
           status: "oversold",
+          authorizationRelease,
           persistedOrder: flaggedOrder,
           message: oversoldMessage(subject, flaggedOrder.orderNumber),
         },
@@ -551,6 +551,7 @@ async function createOrderTakingStock(input: {
       result: {
         ...declined,
         status: "unavailable",
+        authorizationRelease,
         persistedOrder: null,
         message:
           authorizationRelease === "released"

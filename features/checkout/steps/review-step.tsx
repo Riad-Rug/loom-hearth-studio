@@ -108,7 +108,11 @@ export function ReviewStep() {
         case "unavailable":
           dropUnavailableItems({
             productIds: result.unavailableItems.map((item) => item.productId),
-            message: result.message,
+            // The studio needs the old payment to release a hold Stripe would not let go.
+            message:
+              result.cardHold === "unresolved"
+                ? `${result.message} Reference: ${paymentIntent.paymentIntentId}.`
+                : result.message,
           });
           return;
         case "oversold":

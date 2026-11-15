@@ -1,3 +1,5 @@
+type UnavailablePiece = { productId: string; name: string };
+
 // The body of POST /api/checkout/complete, shared by the route and the review step.
 export type CompleteOrderResponse =
   | {
@@ -12,14 +14,23 @@ export type CompleteOrderResponse =
       message: string;
     }
   | {
-      // Another order holds a unit. "unavailable": nothing was saved and cardHold
-      // says whether the buyer's hold was released. "oversold": the payment had
-      // already been captured, so orderNumber names the order the studio will refund.
-      status: "unavailable" | "oversold";
+      // Another order holds a unit and nothing was saved. "unresolved": the hold
+      // on the buyer's card could not be released yet.
+      status: "unavailable";
       order: null;
-      orderNumber: string | null;
-      cardHold: "released" | "captured" | "unresolved";
-      unavailableItems: Array<{ productId: string; name: string }>;
+      orderNumber: null;
+      cardHold: "released" | "unresolved";
+      unavailableItems: UnavailablePiece[];
+      message: string;
+    }
+  | {
+      // Another order holds a unit, but the payment had already been captured, so
+      // orderNumber names the order the studio will refund.
+      status: "oversold";
+      order: null;
+      orderNumber: string;
+      cardHold: "captured";
+      unavailableItems: UnavailablePiece[];
       message: string;
     }
   | {
