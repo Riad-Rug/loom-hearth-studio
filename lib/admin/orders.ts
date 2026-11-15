@@ -1,8 +1,14 @@
 import { db } from "@/lib/db/client";
-import { createOrderRepository } from "@/lib/db/repositories/order-repository";
+import { createOrderRepository, type OrderHoldFacts } from "@/lib/db/repositories/order-repository";
 import type { FulfillmentOrchestrationResult } from "@/lib/fulfillment/contracts";
 import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
+import { resolveApprovalDeadline, resolveHoldExpiry } from "@/lib/order/approval-deadline";
+import { InventoryUnavailableError } from "@/lib/order/inventory-hold";
+import { applyStripePaymentIntentTransition } from "@/lib/order/service";
+import { storePromise } from "@/lib/order/store-promise";
 import { formatOrderStatusLabel } from "@/lib/orders/customer-status-label";
+import { createStripeClient } from "@/lib/stripe/client";
+import { releasePaymentIntentHold } from "@/lib/stripe/payment-intent-hold";
 import type { Order } from "@/types/domain";
 
 import {
@@ -76,6 +82,9 @@ export type AdminOrderManagementItem = {
   statusLabel: string;
   paymentStatus: Order["paymentStatus"];
   paymentLabel: string;
+  // The order needed stock another order already held (a late capture, or a
+  // payment taken for a piece someone else reserved first). A person settles it.
+  inventoryConflict: boolean;
   // Stripe's PaymentIntent id for this order, when one exists — lets the
   // admin table link straight through to the real payment/capture/refund
   // state in the Stripe dashboard, since none of the "Paid"/"Refunded"
@@ -197,6 +206,7 @@ export async function getAdminOrdersModuleData(): Promise<AdminOrdersModuleData>
   const paidRevenue = paidOrders.reduce((sum, order) => sum + order.totalUsd, 0);
   const averageOrderValue = paidOrders.length > 0 ? paidRevenue / paidOrders.length : 0;
   const historyByOrderId = await getFulfillmentHistoryByOrderId(orders.map((order) => order.id));
+  const holdFactsByOrderId = await createOrderRepository().listHoldFacts(orders.map((order) => order.id));
 
   const costedOrders = orders.filter((order) => computeOrderCostBreakdown(order).hasCostData);
   const totalEstimatedProfit = costedOrders.reduce(
@@ -249,7 +259,11 @@ export async function getAdminOrdersModuleData(): Promise<AdminOrdersModuleData>
         ? `${formatInteger(orders.length)} order${orders.length === 1 ? "" : "s"} on file`
         : "No orders yet",
     items: orders.map((order) =>
-      createAdminOrderManagementItem(order, historyByOrderId.get(order.id) ?? []),
+      createAdminOrderManagementItem(
+        order,
+        historyByOrderId.get(order.id) ?? [],
+        holdFactsByOrderId.get(order.id),
+      ),
     ),
   };
 }
@@ -339,13 +353,73 @@ export async function updateAdminOrderStatus(
     };
   }
 
-  const paymentStatusForStatus = resolvePaymentStatusForOrderStatus(input.status);
-  const updatedOrder = paymentStatusForStatus
-    ? await repository.updatePaymentTransition(input.orderId, {
-        status: input.status,
-        paymentStatus: paymentStatusForStatus,
-      })
-    : await repository.updateStatus(input.orderId, input.status);
+  // Ending an order whose card is only authorized releases that hold at Stripe
+  // first, so the piece never goes back on sale while the buyer's money is held.
+  const endsAuthorizedOrder =
+    (input.status === "cancelled" || input.status === "refunded") &&
+    order.paymentStatus === "authorized" &&
+    Boolean(order.stripePaymentIntentId);
+
+  if (endsAuthorizedOrder) {
+    const release = await releasePaymentIntentHold(
+      createStripeClient(),
+      order.stripePaymentIntentId!,
+      "requested_by_customer",
+    );
+
+    if (release === "unresolved") {
+      return {
+        status: "invalid-request",
+        order: null,
+        fulfillmentResult: null,
+        message: "Stripe did not confirm the card hold was released, so nothing was changed. Try again.",
+      };
+    }
+
+    if (release === "captured") {
+      const captured = await applyStripePaymentIntentTransition({
+        event: { type: "payment_intent.succeeded", paymentIntentId: order.stripePaymentIntentId! },
+        repository,
+      });
+
+      return {
+        status: "invalid-request",
+        order: captured.order,
+        fulfillmentResult: captured.fulfillmentResult,
+        message:
+          "Stripe shows this payment as already captured, so the order is now marked Paid. Refund it in Stripe, then mark it Refunded.",
+      };
+    }
+  }
+
+  const paymentStatusForStatus = endsAuthorizedOrder && input.status === "cancelled"
+    ? "failed"
+    : resolvePaymentStatusForOrderStatus(input.status);
+  let updatedOrder: Order;
+
+  try {
+    updatedOrder = paymentStatusForStatus
+      ? await repository.updatePaymentTransition(input.orderId, {
+          status: input.status,
+          paymentStatus: paymentStatusForStatus,
+        })
+      : await repository.updateStatus(input.orderId, input.status);
+  } catch (error) {
+    if (!(error instanceof InventoryUnavailableError)) {
+      throw error;
+    }
+
+    const names = order.items
+      .filter((item) => error.productIds.includes(item.productId))
+      .map((item) => item.name);
+
+    return {
+      status: "invalid-request",
+      order: null,
+      fulfillmentResult: null,
+      message: `${names.join(", ") || "A piece in this order"} went back on sale after this order ended and is now held or sold by another order, so this change was refused.`,
+    };
+  }
   const fulfillmentResult = await orchestrateLaunchOrderFulfillment({
     trigger: "admin-status-update",
     order: updatedOrder,
@@ -408,11 +482,21 @@ export async function markAdminOrderPhotosSent(
   }
 
   const updatedOrder = await repository.markPhotosSent(input.orderId);
+  const holdFacts = (await repository.listHoldFacts([input.orderId])).get(input.orderId);
+  const deadline = resolveApprovalDeadline({
+    photosSentAt: updatedOrder.photosSentAt,
+    holdExpiresAt: resolveHoldExpiry({ placedAt: updatedOrder.placedAt, holdExpiresAt: holdFacts?.holdExpiresAt }),
+  });
+  const fullWindowEnd =
+    new Date(updatedOrder.photosSentAt!).getTime() + storePromise.decisionWindowDays * 24 * 60 * 60 * 1000;
 
   return {
     status: "updated",
     order: updatedOrder,
-    message: "Photos marked as sent.",
+    message:
+      deadline.getTime() < fullWindowEnd
+        ? `Photos marked as sent. The card hold lapses soon, so the buyer must approve by ${formatHistoryTimestamp(deadline)}, sooner than the usual ${storePromise.decisionWindowDays} days.`
+        : "Photos marked as sent.",
   };
 }
 
@@ -581,7 +665,10 @@ function createAdminOrderShippingAddress(address: Order["shippingAddress"]): Adm
 function createAdminOrderManagementItem(
   order: Order,
   history: AdminOrderFulfillmentHistoryEntry[],
+  holdFacts: OrderHoldFacts | undefined,
 ): AdminOrderManagementItem {
+  const inventoryConflict = holdFacts?.inventoryHold === "conflict";
+
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const costBreakdown = computeOrderCostBreakdown(order);
 
@@ -597,7 +684,10 @@ function createAdminOrderManagementItem(
     status: order.status,
     statusLabel: capitalizeLabel(order.status),
     paymentStatus: order.paymentStatus,
-    paymentLabel: capitalizeLabel(order.paymentStatus),
+    paymentLabel: inventoryConflict
+      ? `${capitalizeLabel(order.paymentStatus)}. Stock conflict: another order holds this piece; refund or resolve by hand.`
+      : capitalizeLabel(order.paymentStatus),
+    inventoryConflict,
     paymentIntentId: order.stripePaymentIntentId ?? null,
     totalUsd: order.totalUsd,
     totalPaidLabel: formatTotalPaidLabel(order),
