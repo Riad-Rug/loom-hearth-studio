@@ -342,7 +342,7 @@ function createAddToOrderCandidateViewModel(product: Product): AddToOrderCandida
     image: primaryImage
       ? {
           src: buildProductCardImageUrl(primaryImage.publicId),
-          altText: primaryImage.altText,
+          altText: createImageAltText(product, primaryImage),
         }
       : undefined,
     cartProduct: product,
@@ -434,14 +434,14 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
       ? {
           src: buildProductCardImageUrl(primaryImage.publicId),
           publicId: primaryImage.publicId,
-          altText: primaryImage.altText,
+          altText: createImageAltText(product, primaryImage),
         }
       : undefined,
     secondaryImage: secondaryImage
       ? {
           src: buildProductCardImageUrl(secondaryImage.publicId),
           publicId: secondaryImage.publicId,
-          altText: secondaryImage.altText,
+          altText: createImageAltText(product, secondaryImage),
         }
       : undefined,
   };
@@ -1024,9 +1024,7 @@ function createProductGallery(product: Product) {
     .slice()
     .sort((left, right) => left.sortOrder - right.sortOrder);
 
-  const productName = parseProductTitle(getDisplayProductName(product.name)).name;
-
-  return images.map((image, index) => createGalleryItem(image, index, images.length, productName));
+  return images.map((image, index) => createGalleryItem(product, image, index, images.length));
 }
 
 function createProductPalette(product: Product) {
@@ -1043,16 +1041,10 @@ function createProductPalette(product: Product) {
   });
 }
 
-function createGalleryItem(image: MediaAsset, index: number, total: number, productName: string) {
-  const roleCopy = galleryRoleCopy[image.role] ?? {
-    label: `Photo ${index + 1}`,
-    view: `photo ${index + 1} of ${total}`,
-  };
-  const storedAltText = image.altText.trim();
-
+function createGalleryItem(product: Product, image: MediaAsset, index: number, total: number) {
   return {
     id: image.id,
-    label: roleCopy.label,
+    label: galleryRoleCopy[image.role]?.label ?? `Photo ${index + 1}`,
     src: buildCloudinaryUrl(image.publicId, {
       transformation: { w: 1600, q: "auto", f: "auto" },
     }),
@@ -1065,12 +1057,22 @@ function createGalleryItem(image: MediaAsset, index: number, total: number, prod
     width: image.width,
     height: image.height,
     publicId: image.publicId,
-    altText:
-      storedAltText && !adminDefaultAltTextPattern.test(storedAltText)
-        ? storedAltText
-        : `${productName}, ${roleCopy.view}`,
+    altText: createImageAltText(product, image, `photo ${index + 1} of ${total}`),
     role: image.role,
   };
+}
+
+/** Alt text a person wrote, or the product name plus what the photo shows. */
+function createImageAltText(product: Product, image: MediaAsset, unnamedView = "photo") {
+  const storedAltText = image.altText.trim();
+
+  if (storedAltText && !adminDefaultAltTextPattern.test(storedAltText)) {
+    return storedAltText;
+  }
+
+  const productName = parseProductTitle(getDisplayProductName(product.name)).name;
+
+  return `${productName}, ${galleryRoleCopy[image.role]?.view ?? unnamedView}`;
 }
 
 // The admin form fills an empty alt with "{product name} image {n}" (see
