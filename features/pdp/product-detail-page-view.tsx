@@ -56,7 +56,18 @@ type ProductDetailPageViewProps = {
 
 type GalleryItem = ProductDetailPageViewModel["gallery"][number];
 
-type PurchaseState = "available" | "sold" | "outOfStock";
+type PurchaseState = "available" | "reserved" | "sold" | "outOfStock";
+type UnavailableState = Exclude<PurchaseState, "available">;
+
+const unavailableCopy: Record<UnavailableState, { pill: string; headline: string; note?: string }> = {
+  reserved: {
+    pill: "RESERVED",
+    headline: "This piece is reserved.",
+    note: "On hold for another buyer while they review photos. If they pass, it comes back on the site.",
+  },
+  sold: { pill: "SOLD", headline: "This piece has sold.", note: "It stays in the catalog as a record." },
+  outOfStock: { pill: "OUT OF STOCK", headline: "This piece is out of stock." },
+};
 
 const PANEL_CARD = "grid gap-[var(--space-3)] p-[var(--space-4)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)]";
 const PANEL_EYEBROW = "text-[var(--color-green)] text-[0.72rem] font-semibold tracking-[0.08em] uppercase";
@@ -949,8 +960,16 @@ function RugPurchaseShell({
 }
 
 function getPurchaseState(product: ProductDetailPageViewModel): PurchaseState {
-  if (product.status !== "active") {
+  if (product.status === "sold") {
     return "sold";
+  }
+
+  // The reservation branch adds status "reserved" (active -> reserved while
+  // an order awaits photo approval, then sold or back to active). Any status
+  // that is neither active nor sold lands here, so this keeps working when
+  // that value merges.
+  if (product.status !== "active") {
+    return "reserved";
   }
 
   if (product.type === "multiUnit" && product.inventoryState === "outOfStock") {
@@ -974,14 +993,11 @@ function getShippingCopy(priceUsd: number) {
 }
 
 function getStatusPillLabel(product: ProductDetailPageViewModel, purchaseState: PurchaseState) {
-  switch (purchaseState) {
-    case "sold":
-      return "SOLD";
-    case "outOfStock":
-      return "OUT OF STOCK";
-    case "available":
-      return product.type === "rug" ? "1 OF 1" : `${product.cartProduct.inventory} AVAILABLE`;
+  if (purchaseState !== "available") {
+    return unavailableCopy[purchaseState].pill;
   }
+
+  return product.type === "rug" ? "1 OF 1" : `${product.cartProduct.inventory} AVAILABLE`;
 }
 
 function UnavailablePurchaseShell({
@@ -989,16 +1005,15 @@ function UnavailablePurchaseShell({
   state,
 }: {
   product: ProductDetailPageViewModel;
-  state: Exclude<PurchaseState, "available">;
+  state: UnavailableState;
 }) {
   const similarInStock = product.similarRugs.slice(0, 3);
+  const copy = unavailableCopy[state];
 
   return (
     <div className={PANEL_CARD}>
-      <strong>{state === "sold" ? "This piece has sold." : "This piece is out of stock."}</strong>
-      {state === "sold" ? (
-        <p className={PURCHASE_MICROCOPY}>It stays in the catalog as a record.</p>
-      ) : null}
+      <strong>{copy.headline}</strong>
+      {copy.note ? <p className={PURCHASE_MICROCOPY}>{copy.note}</p> : null}
       <Link className={SECONDARY_ACTION} href={getProductCategoryHref(product)}>
         Shop {getCategoryLabel(product.category)}
       </Link>
