@@ -19,6 +19,7 @@ import {
   type CartStoreItem,
 } from "@/features/cart/cart-items";
 import { trackCommerceEvent } from "@/lib/analytics/commerce-tracking";
+import type { ProductAvailability } from "@/lib/catalog/availability";
 import { calculateShippingUsd } from "@/lib/order/shipping";
 
 const CART_STORAGE_KEY = "loom-hearth-studio.cart";
@@ -38,6 +39,10 @@ type CartContextValue = {
   promoMessage: string | null;
   shippingUsd: number;
   totalUsd: number;
+  // A line not checked against the catalog yet counts as available; checkout
+  // validates every line again before the card is authorized.
+  getItemAvailability: (item: CartStoreItem) => ProductAvailability;
+  hasUnavailableItems: boolean;
   addProduct: (input: AddCartProductInput) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -56,6 +61,10 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartStoreItem[]>([]);
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+  const [availabilityByProductId, setAvailabilityByProductId] = useState<
+    Partial<Record<string, ProductAvailability>>
+  >({});
+  const productIdsKey = [...new Set(items.map((item) => item.productId))].sort().join(" ");
 
   useEffect(() => {
     try {
@@ -96,6 +105,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [appliedPromo, items]);
 
   useEffect(() => {
+    if (!productIdsKey) {
+      return;
+    }
+
+    let cancelled = false;
+    void fetchProductAvailability(productIdsKey.split(" ")).then((availability) => {
+      if (!cancelled && availability) {
+        setAvailabilityByProductId(availability);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [productIdsKey]);
+
+  useEffect(() => {
     if (!appliedPromo?.code || !items.length) {
       if (!items.length && appliedPromo) {
         setAppliedPromo(null);
@@ -132,6 +158,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
     const discountUsd = Math.min(appliedPromo?.discountUsd ?? 0, subtotalUsd);
     const shippingUsd = calculateShippingUsd(subtotalUsd - discountUsd);
+    const getItemAvailability = (item: CartStoreItem) => availabilityByProductId[item.productId] ?? "available";
 
     return {
       items,
@@ -142,6 +169,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       promoMessage: appliedPromo?.message ?? null,
       shippingUsd,
       totalUsd: roundCurrency(subtotalUsd - discountUsd + shippingUsd),
+      getItemAvailability,
+      hasUnavailableItems: items.some((item) => getItemAvailability(item) !== "available"),
       addProduct(input) {
         const addedLine = getAddedCartLine(items, input);
 
@@ -183,7 +212,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setAppliedPromo(null);
       },
     };
-  }, [appliedPromo, items]);
+  }, [appliedPromo, availabilityByProductId, items]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
@@ -247,6 +276,24 @@ async function validatePromo(code: string, items: CartStoreItem[]) {
     discountUsd: data.discountUsd,
     message: data.message,
   };
+}
+
+async function fetchProductAvailability(productIds: string[]) {
+  try {
+    const response = await fetch("/api/cart/availability", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productIds }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return ((await response.json()) as { availability: Record<string, ProductAvailability> }).availability;
+  } catch {
+    return null;
+  }
 }
 
 function isAppliedPromo(value: unknown): value is AppliedPromo {

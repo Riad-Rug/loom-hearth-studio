@@ -322,8 +322,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
             setCartRecoveryMessage(
               staleItems.length > 1
-                ? "A few items in your order just sold — we've removed them from your order. Your total has been updated."
-                : "That item just sold — we've removed it from your order. Your total has been updated.",
+                ? "A few pieces in your order are no longer available, so we removed them. Your total has been updated."
+                : "A piece in your order is no longer available, so we removed it. Your total has been updated.",
             );
 
             // Don't touch paymentIntent here: it's already "creating" (set
