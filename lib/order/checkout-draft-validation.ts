@@ -56,7 +56,7 @@ export type CheckoutOrderDraftValidationIssue = {
   productId?: string;
   // Set on every issue about one cart line.
   lineItemId?: string;
-  // "insufficient-inventory": how many units of the line can still be ordered.
+  // "insufficient-inventory" and "invalid-rug-quantity": how many units of the line can still be ordered.
   availableQuantity?: number;
 };
 
@@ -151,6 +151,7 @@ export async function validateCheckoutOrderDraft(input: {
           message: `Rug ${product.id} must be ordered in a quantity of 1.`,
           productId: product.id,
           lineItemId: lineItem.id,
+          availableQuantity: product.fixedQuantity,
         });
         return [];
       }
