@@ -85,21 +85,47 @@ export type OrderPersistenceBoundary = {
   acceptedOrderStatuses: ReadonlyArray<Extract<OrderStatus, "paid" | "pending">>;
 };
 
-export type PersistConfirmedOrderResult = {
-  // "unavailable": another order holds a unit, nothing was saved, and the card
-  // hold was released if it could be. "oversold": the payment was already
-  // captured, so the order was saved with a stock conflict for a refund.
-  status: "created" | "ignored" | "configuration-error" | "already-persisted" | "unavailable" | "oversold";
+// A line of a declined order that another order left short. availableQuantity is
+// fewer than the line asked for; 0 means none can be had.
+export type UnavailableLine = {
+  lineId: string;
+  productId: string;
+  name: string;
+  availableQuantity: number;
+};
+
+type PersistConfirmedOrderOutcome = {
   orderCreationRequest: OrderCreationRequest | null;
   persistenceRequest: OrderPersistenceRequest | null;
   persistedOrder: Order | null;
   emailDeliveryResult: OrderConfirmationEmailSendResult | null;
   fulfillmentResult: FulfillmentOrchestrationResult | null;
-  // Set when status is "unavailable" or "oversold".
-  authorizationRelease?: PaymentIntentHoldRelease;
-  unavailableProductIds?: string[];
   message: string;
 };
+
+export type PersistConfirmedOrderResult =
+  | (PersistConfirmedOrderOutcome & { status: "created" | "ignored" | "configuration-error" | "already-persisted" })
+  // Another order holds a unit, nothing was saved, and the card hold was released if it could be.
+  | (PersistConfirmedOrderOutcome & {
+      status: "unavailable";
+      persistedOrder: null;
+      authorizationRelease: Exclude<PaymentIntentHoldRelease, "captured">;
+      unavailableLines: UnavailableLine[];
+    })
+  // The PaymentIntent was declined or cancelled without an order, yet nothing it
+  // asks for is short now: nothing was saved, and the buyer can place the order again.
+  | (PersistConfirmedOrderOutcome & {
+      status: "not-placed";
+      persistedOrder: null;
+      authorizationRelease: Exclude<PaymentIntentHoldRelease, "captured">;
+    })
+  // The payment was already captured, so the order was saved with a stock conflict for a refund.
+  | (PersistConfirmedOrderOutcome & {
+      status: "oversold";
+      persistedOrder: Order;
+      authorizationRelease: "captured";
+      unavailableLines?: UnavailableLine[];
+    });
 
 export const orderCreationTodo = {
   boundary:

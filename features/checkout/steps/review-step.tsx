@@ -37,7 +37,7 @@ export function ReviewStep() {
     placeOrderState,
     setPlaceOrderState,
     completeOrder,
-    dropUnavailableItems,
+    restartCheckout,
     goToStep,
   } = useCheckout();
 
@@ -106,9 +106,17 @@ export function ReviewStep() {
           completeOrder(result.order);
           return;
         case "unavailable":
-          dropUnavailableItems({
-            productIds: result.unavailableItems.map((item) => item.productId),
-            message: result.message,
+        case "not-placed":
+          restartCheckout({
+            limits:
+              result.status === "unavailable"
+                ? result.unavailableItems.map((item) => ({ id: item.lineId, availableQuantity: item.availableQuantity }))
+                : [],
+            // The studio needs the old payment to release a hold Stripe would not let go.
+            message:
+              result.cardHold === "unresolved"
+                ? `${result.message} Reference: ${paymentIntent.paymentIntentId}.`
+                : result.message,
           });
           return;
         case "oversold":

@@ -24,6 +24,7 @@ export function CartPageView() {
     discountUsd,
     getItemAvailability,
     hasUnavailableItems,
+    isQuantityReduced,
     itemCount,
     items,
     promoCode,
@@ -99,7 +100,7 @@ export function CartPageView() {
           <div className={styles.contentGrid}>
             <div className={styles.itemList}>
               {items.map((item) => {
-                const availabilityNote = getCartItemAvailabilityNote(item, getItemAvailability(item));
+                const availabilityNote = getCartItemAvailabilityNote(item, getItemAvailability(item), isQuantityReduced(item));
 
                 return (
                   <article key={item.id} className={styles.itemRow}>

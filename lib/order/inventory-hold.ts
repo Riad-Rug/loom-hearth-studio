@@ -1,7 +1,7 @@
 import type { InventoryHold } from "@prisma/client";
 
 import { trueOneOffUniquenessTier } from "@/lib/admin/category-form-copy";
-import type { Order } from "@/types/domain";
+import type { Order, Product } from "@/types/domain";
 import type { ProductVariant } from "@/types/domain/product";
 
 export type { InventoryHold };
@@ -57,6 +57,18 @@ export class InventoryUnavailableError extends Error {
 // order holding them, through "sold" too; everything else by unit count.
 export function isOneOfOne(product: { type: string; uniquenessTier?: string | null }) {
   return product.type === "rug" || product.uniquenessTier === trueOneOffUniquenessTier;
+}
+
+// How many units of a listed product (of one variant, when named) an order could
+// take right now, by the rules moveStock applies when it takes them.
+export function getPurchasableQuantity(product: Product, variantName?: string): number {
+  if (product.status !== "active") return 0;
+  if (product.type === "rug" || isOneOfOne(product)) return 1;
+  if (!variantName) return Math.max(0, product.inventory);
+
+  const variant = product.variants.find((candidate) => candidate.name === variantName);
+
+  return variant ? Math.max(0, Math.min(product.inventory, variant.inventory)) : 0;
 }
 
 export function resolveInventoryHold(

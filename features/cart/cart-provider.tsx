@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -12,10 +13,13 @@ import {
 import {
   addProductToCart,
   getAddedCartLine,
+  limitCartItems,
   parseStoredCartItem,
   setCartItemQuantity,
   toCommerceItem,
   type AddCartProductInput,
+  type CartLineLimit,
+  type CartLineStock,
   type CartStoreItem,
 } from "@/features/cart/cart-items";
 import { trackCommerceEvent } from "@/lib/analytics/commerce-tracking";
@@ -43,9 +47,12 @@ type CartContextValue = {
   // validates every line again before the card is authorized.
   getItemAvailability: (item: CartStoreItem) => ProductAvailability;
   hasUnavailableItems: boolean;
+  // The cart lowered this line to the units left since the shopper last set it.
+  isQuantityReduced: (item: CartStoreItem) => boolean;
   addProduct: (input: AddCartProductInput) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  limitItems: (limits: CartLineLimit[]) => void;
   applyPromoCode: (code: string) => Promise<{ status: "success" | "error"; message: string }>;
   removePromoCode: () => void;
   clearCart: () => void;
@@ -61,10 +68,14 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartStoreItem[]>([]);
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
-  const [availabilityByProductId, setAvailabilityByProductId] = useState<
-    Partial<Record<string, ProductAvailability>>
-  >({});
-  const productIdsKey = [...new Set(items.map((item) => item.productId))].sort().join(" ");
+  const [stockByLineId, setStockByLineId] = useState<Partial<Record<string, CartLineStock>>>({});
+  const [reducedLineIds, setReducedLineIds] = useState<ReadonlySet<string>>(new Set());
+  // Quantities are part of the key so a changed line is checked against fresh stock.
+  const stockRequestKey = JSON.stringify(
+    items
+      .map((item) => ({ id: item.id, productId: item.productId, variantName: item.variantName, quantity: item.quantity }))
+      .sort((left, right) => left.id.localeCompare(right.id)),
+  );
 
   useEffect(() => {
     try {
@@ -105,24 +116,55 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [appliedPromo, items]);
 
   useEffect(() => {
-    if (!productIdsKey) {
+    const lines = JSON.parse(stockRequestKey) as Array<{ id: string; productId: string; variantName?: string }>;
+
+    if (!lines.length) {
       return;
     }
 
     let cancelled = false;
-    void fetchProductAvailability(productIdsKey.split(" ")).then((availability) => {
-      if (!cancelled && availability) {
-        setAvailabilityByProductId(availability);
+    void fetchLineStock(lines.map(({ id, productId, variantName }) => ({ id, productId, variantName }))).then((stock) => {
+      if (!cancelled && stock) {
+        setStockByLineId(stock);
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [productIdsKey]);
+  }, [stockRequestKey]);
+
+  // Keeps each line's cap at the units the shop has left, and lowers a line the
+  // stock no longer covers instead of letting checkout refuse it.
+  useEffect(() => {
+    const limits = items.flatMap((item) => {
+      const availableQuantity = stockByLineId[item.id]?.availableQuantity;
+
+      return availableQuantity !== undefined && (item.availableQuantity !== availableQuantity || item.quantity > availableQuantity)
+        ? [{ id: item.id, availableQuantity, reduced: item.quantity > availableQuantity }]
+        : [];
+    });
+
+    if (!limits.length) {
+      return;
+    }
+
+    setItems((currentItems) => limitCartItems(currentItems, limits));
+    setReducedLineIds((current) => new Set([...current, ...limits.filter((limit) => limit.reduced).map((limit) => limit.id)]));
+  }, [items, stockByLineId]);
+
+  const getItemAvailability = useCallback(
+    (item: CartStoreItem) => stockByLineId[item.id]?.availability ?? "available",
+    [stockByLineId],
+  );
+  // Only lines that can be bought count toward the totals, the discount and free shipping.
+  const buyableItems = useMemo(
+    () => items.filter((item) => getItemAvailability(item) === "available"),
+    [getItemAvailability, items],
+  );
 
   useEffect(() => {
-    if (!appliedPromo?.code || !items.length) {
+    if (!appliedPromo?.code || !buyableItems.length) {
       if (!items.length && appliedPromo) {
         setAppliedPromo(null);
       }
@@ -130,7 +172,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     let cancelled = false;
-    void validatePromo(appliedPromo.code, items).then((result) => {
+    void validatePromo(appliedPromo.code, buyableItems).then((result) => {
       if (cancelled) {
         return;
       }
@@ -150,15 +192,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [items, appliedPromo?.code]);
+  }, [items, buyableItems, appliedPromo?.code]);
 
   const value = useMemo<CartContextValue>(() => {
     const subtotalUsd = roundCurrency(
-      items.reduce((runningTotal, item) => runningTotal + item.priceUsd * item.quantity, 0),
+      buyableItems.reduce((runningTotal, item) => runningTotal + item.priceUsd * item.quantity, 0),
     );
     const discountUsd = Math.min(appliedPromo?.discountUsd ?? 0, subtotalUsd);
     const shippingUsd = calculateShippingUsd(subtotalUsd - discountUsd);
-    const getItemAvailability = (item: CartStoreItem) => availabilityByProductId[item.productId] ?? "available";
 
     return {
       items,
@@ -171,6 +212,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       totalUsd: roundCurrency(subtotalUsd - discountUsd + shippingUsd),
       getItemAvailability,
       hasUnavailableItems: items.some((item) => getItemAvailability(item) !== "available"),
+      isQuantityReduced: (item) => reducedLineIds.has(item.id),
       addProduct(input) {
         const addedLine = getAddedCartLine(items, input);
 
@@ -188,9 +230,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       },
       updateQuantity(id, quantity) {
         setItems((currentItems) => setCartItemQuantity(currentItems, id, quantity));
+        setReducedLineIds((current) => new Set([...current].filter((lineId) => lineId !== id)));
+      },
+      limitItems(limits) {
+        setItems((currentItems) => limitCartItems(currentItems, limits));
       },
       async applyPromoCode(code) {
-        const result = await validatePromo(code, items);
+        const result = await validatePromo(code, buyableItems);
 
         if (result.status === "success") {
           setAppliedPromo({
@@ -212,7 +258,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setAppliedPromo(null);
       },
     };
-  }, [appliedPromo, availabilityByProductId, items]);
+  }, [appliedPromo, buyableItems, getItemAvailability, items, reducedLineIds]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
@@ -278,19 +324,19 @@ async function validatePromo(code: string, items: CartStoreItem[]) {
   };
 }
 
-async function fetchProductAvailability(productIds: string[]) {
+async function fetchLineStock(lines: Array<{ id: string; productId: string; variantName?: string }>) {
   try {
     const response = await fetch("/api/cart/availability", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productIds }),
+      body: JSON.stringify({ lines }),
     });
 
     if (!response.ok) {
       return null;
     }
 
-    return ((await response.json()) as { availability: Record<string, ProductAvailability> }).availability;
+    return ((await response.json()) as { lines: Record<string, CartLineStock> }).lines;
   } catch {
     return null;
   }
