@@ -117,6 +117,9 @@ type CheckoutContextValue = {
   setPlaceOrderState: (state: PlaceOrderState) => void;
   placedOrder: PlacedOrder | null;
   completeOrder: (order: PlacedOrder) => void;
+  // Another order took these pieces before this one went through, and nothing
+  // was charged: drop them and return to payment on a fresh PaymentIntent.
+  dropUnavailableItems: (input: { productIds: string[]; message: string }) => void;
 };
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
@@ -437,6 +440,13 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
       clearCart();
       goToStep("confirmation");
+    },
+    dropUnavailableItems({ productIds, message }) {
+      items.filter((item) => productIds.includes(item.productId)).forEach((item) => removeItem(item.id));
+      setPlaceOrderState(initialPlaceOrderState);
+      setPaymentIntentRetryCount((count) => count + 1);
+      goToStep("payment");
+      setCartRecoveryMessage(message);
     },
   };
 

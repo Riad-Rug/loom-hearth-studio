@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
+import type { CompleteOrderResponse } from "@/lib/checkout/complete-order-response";
 import { persistConfirmedStripePaymentIntentOrder } from "@/lib/order/service";
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<CompleteOrderResponse>> {
   const body = (await request.json()) as { paymentIntentId?: string };
 
   if (typeof body.paymentIntentId !== "string" || !body.paymentIntentId.startsWith("pi_")) {
@@ -16,9 +17,6 @@ export async function POST(request: Request) {
     paymentIntentId: body.paymentIntentId,
   });
 
-  // Another order holds a unit. "unavailable": nothing was saved and cardHold says
-  // whether the buyer's hold was released. "oversold": the payment had already
-  // been captured, so orderNumber names the order the studio will refund.
   if (result.status === "unavailable" || result.status === "oversold") {
     return NextResponse.json(
       {

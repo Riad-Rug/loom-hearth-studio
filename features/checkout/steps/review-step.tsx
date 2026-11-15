@@ -7,21 +7,19 @@ import Link from "next/link";
 
 import { formatUsd } from "@/features/cart/cart-provider";
 import { useCheckout } from "@/features/checkout/checkout-provider";
+import type { CompleteOrderResponse } from "@/lib/checkout/complete-order-response";
 import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 
 import styles from "@/features/checkout/checkout-page.module.css";
 
-type CompleteOrderResponse = {
-  status: string;
-  order: {
-    orderNumber: string;
-    totalUsd: number;
-    currency: "USD";
-    paymentIntentId: string;
-    items: Array<{ id: string; name: string; quantity: number; sku: string | null }>;
-  } | null;
-  message: string;
-};
+const finalizeFailedMessage =
+  "Your card was authorized, but we could not finalize your order. Contact the studio and reference your payment confirmation.";
+
+// "oversold": the payment went through and the server saved an order the studio
+// will refund, so the buyer gets that order number instead of a payment reference.
+type PlaceOrderProblem =
+  | { kind: "error"; message: string }
+  | { kind: "oversold"; orderNumber: string | null; message: string };
 
 export function ReviewStep() {
   const stripe = useStripe();
@@ -39,17 +37,23 @@ export function ReviewStep() {
     placeOrderState,
     setPlaceOrderState,
     completeOrder,
+    dropUnavailableItems,
     goToStep,
   } = useCheckout();
 
-  const [localError, setLocalError] = useState<string | null>(null);
+  const [problem, setProblem] = useState<PlaceOrderProblem | null>(null);
+
+  function fail(message: string) {
+    setPlaceOrderState({ status: "error", message: null });
+    setProblem({ kind: "error", message });
+  }
 
   async function handlePlaceOrder() {
     if (!stripe || !elements || !paymentIntent.clientSecret || !paymentIntent.paymentIntentId) {
       return;
     }
 
-    setLocalError(null);
+    setProblem(null);
     setPlaceOrderState({ status: "confirming", message: null });
 
     // stripe.confirmPayment() normally resolves with { error } rather than
@@ -68,8 +72,7 @@ export function ReviewStep() {
         redirect: "if_required",
       }));
     } catch (thrown) {
-      setPlaceOrderState({ status: "error", message: null });
-      setLocalError(
+      fail(
         thrown instanceof Error
           ? `Payment could not be authorized: ${thrown.message}`
           : "Payment could not be authorized. Check your card details and try again.",
@@ -78,14 +81,12 @@ export function ReviewStep() {
     }
 
     if (error) {
-      setPlaceOrderState({ status: "error", message: null });
-      setLocalError(error.message ?? "Payment could not be authorized. Check your card details and try again.");
+      fail(error.message ?? "Payment could not be authorized. Check your card details and try again.");
       return;
     }
 
     if (confirmedIntent?.status !== "requires_capture" && confirmedIntent?.status !== "succeeded") {
-      setPlaceOrderState({ status: "error", message: null });
-      setLocalError("Payment was not authorized. Please try again.");
+      fail("Payment was not authorized. Please try again.");
       return;
     }
 
@@ -99,21 +100,26 @@ export function ReviewStep() {
       });
       const result = (await response.json()) as CompleteOrderResponse;
 
-      if (!response.ok || !result.order) {
-        setPlaceOrderState({ status: "error", message: null });
-        setLocalError(
-          "Your card was authorized, but we could not finalize your order. Contact the studio and reference your payment confirmation.",
-        );
-        return;
+      switch (result.status) {
+        case "created":
+          setPlaceOrderState({ status: "idle", message: null });
+          completeOrder(result.order);
+          return;
+        case "unavailable":
+          dropUnavailableItems({
+            productIds: result.unavailableItems.map((item) => item.productId),
+            message: result.message,
+          });
+          return;
+        case "oversold":
+          setPlaceOrderState({ status: "error", message: null });
+          setProblem({ kind: "oversold", orderNumber: result.orderNumber, message: result.message });
+          return;
+        default:
+          fail(finalizeFailedMessage);
       }
-
-      setPlaceOrderState({ status: "idle", message: null });
-      completeOrder(result.order);
     } catch {
-      setPlaceOrderState({ status: "error", message: null });
-      setLocalError(
-        "Your card was authorized, but we could not finalize your order. Contact the studio and reference your payment confirmation.",
-      );
+      fail(finalizeFailedMessage);
     }
   }
 
@@ -185,10 +191,23 @@ export function ReviewStep() {
         <p className={styles.summaryNote}>{storePromiseCopy.duties}</p>
       </div>
 
-      {localError ? (
+      {problem?.kind === "oversold" ? (
+        <div className={styles.reviewCardError}>
+          <h3>A piece in your order was no longer available</h3>
+          {problem.orderNumber ? (
+            <p>
+              Order number: <strong>{problem.orderNumber}</strong>
+            </p>
+          ) : null}
+          <p role="alert">{problem.message}</p>
+          <Link className={styles.secondaryAction} href="/contact?inquiryType=order-question">
+            Contact the Studio
+          </Link>
+        </div>
+      ) : problem ? (
         <div className={styles.reviewCardError}>
           <h3>We couldn&apos;t finish placing your order</h3>
-          <p role="alert">{localError}</p>
+          <p role="alert">{problem.message}</p>
           {paymentIntent.paymentIntentId ? (
             <p className={styles.summaryNote}>
               Reference: {paymentIntent.paymentIntentId} — your card was authorized, not charged.
@@ -210,7 +229,9 @@ export function ReviewStep() {
         </button>
         <button
           className={styles.primaryAction}
-          disabled={!stripe || !elements || paymentIntent.status !== "ready" || isPlacing}
+          disabled={
+            !stripe || !elements || paymentIntent.status !== "ready" || isPlacing || problem?.kind === "oversold"
+          }
           type="button"
           onClick={() => {
             void handlePlaceOrder();
