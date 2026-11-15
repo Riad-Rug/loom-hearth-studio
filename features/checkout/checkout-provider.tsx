@@ -119,9 +119,9 @@ type CheckoutContextValue = {
   setPlaceOrderState: (state: PlaceOrderState) => void;
   placedOrder: PlacedOrder | null;
   completeOrder: (order: PlacedOrder) => void;
-  // Another order took stock first and this order was not saved, so the old
-  // PaymentIntent cannot be confirmed again: lower or drop the lines it left short
-  // and start a new PaymentIntent for whatever is left.
+  // The order was not saved and its PaymentIntent was declined, so it must never
+  // be confirmed or reused: lower or drop the lines another order left short and
+  // start a new PaymentIntent for whatever is left.
   restartCheckout: (input: { limits: CartLineLimit[]; message: string }) => void;
 };
 
@@ -431,6 +431,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     },
     restartCheckout({ limits, message }) {
       limitItems(limits);
+      paymentIntentIdRef.current = null;
       setPlaceOrderState(initialPlaceOrderState);
       setPaymentIntentRetryCount((count) => count + 1);
       goToStep(limitCartItems(items, limits).length > 0 ? "payment" : "shipping");

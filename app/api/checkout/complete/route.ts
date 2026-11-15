@@ -40,6 +40,13 @@ export async function POST(request: Request): Promise<NextResponse<CompleteOrder
     );
   }
 
+  if (result.status === "not-placed") {
+    return NextResponse.json(
+      { status: result.status, order: null, cardHold: result.authorizationRelease, message: result.message },
+      { status: 409 },
+    );
+  }
+
   if (result.status !== "created" && result.status !== "already-persisted") {
     return NextResponse.json(
       { status: result.status, order: null, message: result.message },

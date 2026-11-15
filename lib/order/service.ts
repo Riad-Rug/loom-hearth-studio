@@ -8,6 +8,7 @@ import { createProductRepository } from "@/lib/db/repositories/product-repositor
 import { getPostmarkEmailConfig } from "@/lib/email/config";
 import { sendOrderConfirmationEmailFromCreatedOrder, sendTransactionalEmailMessage } from "@/lib/email/service";
 import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
+import { cardHoldValidityDays } from "@/lib/order/approval-deadline";
 import { parseCheckoutOrderDraftSnapshotFromMetadata } from "@/lib/order/checkout-draft-validation";
 import { getPurchasableQuantity, InventoryUnavailableError } from "@/lib/order/inventory-hold";
 import { createOversoldEmails } from "@/lib/order/oversold-notice";
@@ -24,7 +25,12 @@ import {
   createOrderPersistenceRequestFromOrderCreation,
 } from "@/lib/order/helpers";
 import { createStripeClient } from "@/lib/stripe/client";
-import { readHoldExpiry, releasePaymentIntentHold } from "@/lib/stripe/payment-intent-hold";
+import {
+  declinePaymentIntent,
+  isDeclinedPaymentIntent,
+  readHoldExpiry,
+  releasePaymentIntentHold,
+} from "@/lib/stripe/payment-intent-hold";
 import type {
   StripeCheckoutPaymentConfirmation,
   StripePaymentIntentWebhookEvent,
@@ -373,6 +379,9 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
       orderCreationRequest,
       persistenceRequest,
       stripe,
+      // Once declined, a held payment only ever gets released; a captured one
+      // still becomes an order, so that money always has one.
+      declined: paymentIntent.status === "requires_capture" && isDeclinedPaymentIntent(paymentIntent),
     });
 
     if (creation.status === "declined") {
@@ -466,110 +475,122 @@ function oversoldMessage(subject: string, orderNumber: string) {
   return `${subject} no longer available: another buyer reserved it moments before your payment was taken. Your payment did go through, so we have recorded it as order ${orderNumber} and the studio will refund you in full.`;
 }
 
-// Creates the order and takes its stock. When another order got there first:
-// an uncaptured hold is released and nothing is saved, so the buyer is not left
-// with money reserved for a piece they cannot have; a payment already captured
-// is saved with a stock conflict instead, so that money always has an order the
-// studio sees and refunds.
+// Creates the order and takes its stock. When another order got there first, or
+// the PaymentIntent was already declined: an uncaptured hold is released and
+// nothing is saved, so the buyer is not left with money reserved for a piece they
+// cannot have; a payment already captured is saved with a stock conflict instead,
+// so that money always has an order the studio sees and refunds.
 async function createOrderTakingStock(input: {
   repository: OrderRepository;
   orderCreationRequest: OrderCreationRequest;
   persistenceRequest: OrderPersistenceRequest;
   stripe?: ReturnType<typeof createStripeClient>;
+  declined?: boolean;
 }): Promise<{ status: "created"; order: Order } | { status: "declined"; result: PersistConfirmedOrderResult }> {
   const { persistenceRequest } = input;
 
-  try {
-    return { status: "created", order: await input.repository.create(persistenceRequest) };
-  } catch (error) {
-    if (!(error instanceof InventoryUnavailableError)) {
-      throw error;
+  if (!input.declined) {
+    try {
+      return { status: "created", order: await input.repository.create(persistenceRequest) };
+    } catch (error) {
+      if (!(error instanceof InventoryUnavailableError)) {
+        throw error;
+      }
+    }
+  }
+
+  const authorizationRelease =
+    persistenceRequest.paymentStatus === "paid"
+      ? "captured"
+      : persistenceRequest.paymentIntentId
+        ? await (input.declined ? releasePaymentIntentHold : declinePaymentIntent)(
+            input.stripe ?? createStripeClient(),
+            persistenceRequest.paymentIntentId,
+          )
+        : "unresolved";
+  const unavailableLines = await findUnavailableLines(persistenceRequest.items);
+  const unavailableNames = unavailableLines.map((line) => line.name);
+  const subject = unavailableNames.length
+    ? `${unavailableNames.join(", ")} ${unavailableNames.length > 1 ? "are" : "is"}`
+    : "A piece in your order is";
+  const declined = {
+    orderCreationRequest: input.orderCreationRequest,
+    persistenceRequest,
+    emailDeliveryResult: null,
+    fulfillmentResult: null,
+  };
+
+  if (authorizationRelease === "captured") {
+    const flaggedOrder = await input.repository.create(
+      { ...persistenceRequest, status: "paid", paymentStatus: "paid" },
+      { onUnavailable: "record-conflict" },
+    );
+
+    // The rival may have let the piece go in between, which makes this a normal sale.
+    if ((await input.repository.listInventoryHolds([flaggedOrder.id])).get(flaggedOrder.id) !== "conflict") {
+      return { status: "created", order: flaggedOrder };
     }
 
-    const authorizationRelease =
-      persistenceRequest.paymentStatus === "paid"
-        ? "captured"
-        : persistenceRequest.paymentIntentId
-          ? await releasePaymentIntentHold(input.stripe ?? createStripeClient(), persistenceRequest.paymentIntentId)
-          : "unresolved";
-    const shortLines = await findUnavailableLines(persistenceRequest.items);
-    const unavailableLines = shortLines.length
-      ? shortLines
-      : persistenceRequest.items
-          .filter((item) => error.productIds.includes(item.productId))
-          .map((item) => ({ lineId: item.id, productId: item.productId, name: item.name, availableQuantity: 0 }));
-    const unavailableNames = unavailableLines.map((line) => line.name);
-    const subject = unavailableNames.length
-      ? `${unavailableNames.join(", ")} ${unavailableNames.length > 1 ? "are" : "is"}`
-      : "A piece in your order is";
-    const declined = {
-      orderCreationRequest: input.orderCreationRequest,
-      persistenceRequest,
-      emailDeliveryResult: null,
-      fulfillmentResult: null,
-      unavailableLines,
-    };
+    // Sent once, here: retries find the saved order and never reach this branch.
+    for (const message of createOversoldEmails({
+      orderNumber: flaggedOrder.orderNumber,
+      buyerEmail: flaggedOrder.shippingAddress.email,
+      buyerName: flaggedOrder.shippingAddress.fullName,
+      studioEmail: process.env.STUDIO_NOTIFICATION_EMAIL || getPostmarkEmailConfig().fromEmail,
+      paymentIntentId: persistenceRequest.paymentIntentId,
+      pieceNames: unavailableNames,
+    })) {
+      const delivery = await sendTransactionalEmailMessage(message);
 
-    if (authorizationRelease === "captured") {
-      const flaggedOrder = await input.repository.create(
-        { ...persistenceRequest, status: "paid", paymentStatus: "paid" },
-        { onUnavailable: "record-conflict" },
-      );
-
-      // The rival may have let the piece go in between, which makes this a normal sale.
-      if ((await input.repository.listInventoryHolds([flaggedOrder.id])).get(flaggedOrder.id) !== "conflict") {
-        return { status: "created", order: flaggedOrder };
+      if (delivery.status !== "sent") {
+        console.error("OVERSOLD_EMAIL_NOT_SENT", { to: message.to, orderNumber: flaggedOrder.orderNumber, delivery });
       }
-
-      // Sent once, here: retries find the saved order and never reach this branch.
-      for (const message of createOversoldEmails({
-        orderNumber: flaggedOrder.orderNumber,
-        buyerEmail: flaggedOrder.shippingAddress.email,
-        buyerName: flaggedOrder.shippingAddress.fullName,
-        studioEmail: process.env.STUDIO_NOTIFICATION_EMAIL || getPostmarkEmailConfig().fromEmail,
-        paymentIntentId: persistenceRequest.paymentIntentId,
-        pieceNames: unavailableNames,
-      })) {
-        const delivery = await sendTransactionalEmailMessage(message);
-
-        if (delivery.status !== "sent") {
-          console.error("OVERSOLD_EMAIL_NOT_SENT", { to: message.to, orderNumber: flaggedOrder.orderNumber, delivery });
-        }
-      }
-
-      return {
-        status: "declined",
-        result: {
-          ...declined,
-          status: "oversold",
-          authorizationRelease,
-          persistedOrder: flaggedOrder,
-          message: oversoldMessage(subject, flaggedOrder.orderNumber),
-        },
-      };
-    }
-
-    if (authorizationRelease === "unresolved") {
-      console.error("UNAVAILABLE_ORDER_HOLD_NOT_RELEASED", {
-        paymentIntentId: persistenceRequest.paymentIntentId,
-        productIds: error.productIds,
-      });
     }
 
     return {
       status: "declined",
       result: {
         ...declined,
-        status: "unavailable",
+        status: "oversold",
         authorizationRelease,
-        persistedOrder: null,
-        message: unavailableMessage(unavailableLines, authorizationRelease),
+        persistedOrder: flaggedOrder,
+        unavailableLines,
+        message: oversoldMessage(subject, flaggedOrder.orderNumber),
       },
     };
   }
+
+  if (authorizationRelease === "unresolved") {
+    console.error("UNAVAILABLE_ORDER_HOLD_NOT_RELEASED", {
+      paymentIntentId: persistenceRequest.paymentIntentId,
+      productIds: unavailableLines.map((line) => line.productId),
+    });
+  }
+
+  const holdSentence = describeHoldRelease(authorizationRelease, persistenceRequest.holdExpiresAt);
+
+  return {
+    status: "declined",
+    result: unavailableLines.length
+      ? {
+          ...declined,
+          status: "unavailable",
+          authorizationRelease,
+          persistedOrder: null,
+          unavailableLines,
+          message: `${describeUnavailableLines(unavailableLines)} ${holdSentence}`,
+        }
+      : {
+          ...declined,
+          status: "not-placed",
+          authorizationRelease,
+          persistedOrder: null,
+          message: `Your order was not placed. ${holdSentence} Place your order again.`,
+        },
+  };
 }
 
-function unavailableMessage(lines: UnavailableLine[], release: "released" | "unresolved") {
+function describeUnavailableLines(lines: UnavailableLine[]) {
   const gone = lines.filter((line) => line.availableQuantity === 0).map((line) => line.name);
 
   return [
@@ -579,12 +600,22 @@ function unavailableMessage(lines: UnavailableLine[], release: "released" | "unr
     ...lines
       .filter((line) => line.availableQuantity > 0)
       .map((line) => `${line.name}: only ${line.availableQuantity} left, so we changed your quantity.`),
-    release === "released"
-      ? "The hold on your card has been released and you have not been charged."
-      : "You have not been charged. The hold on your card has not been released yet; it lapses on its own within 7 days, or contact the studio to release it sooner.",
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+function describeHoldRelease(release: "released" | "unresolved", holdExpiresAt?: string) {
+  if (release === "released") {
+    return "The hold on your card has been released and you have not been charged.";
+  }
+
+  // The UTC date is never earlier than the buyer's own, so "by" holds anywhere.
+  const lapses = holdExpiresAt
+    ? `by ${new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(holdExpiresAt))}`
+    : `within ${cardHoldValidityDays} days`;
+
+  return `You have not been charged. The hold on your card has not been released yet; it lapses on its own ${lapses}, or contact the studio to release it sooner.`;
 }
 
 // The lines the listed stock can no longer fill, each with the units it could

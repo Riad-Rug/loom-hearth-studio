@@ -112,6 +112,13 @@ export type PersistConfirmedOrderResult =
       authorizationRelease: Exclude<PaymentIntentHoldRelease, "captured">;
       unavailableLines: UnavailableLine[];
     })
+  // The PaymentIntent was declined or cancelled without an order, yet nothing it
+  // asks for is short now: nothing was saved, and the buyer can place the order again.
+  | (PersistConfirmedOrderOutcome & {
+      status: "not-placed";
+      persistedOrder: null;
+      authorizationRelease: Exclude<PaymentIntentHoldRelease, "captured">;
+    })
   // The payment was already captured, so the order was saved with a stock conflict for a refund.
   | (PersistConfirmedOrderOutcome & {
       status: "oversold";

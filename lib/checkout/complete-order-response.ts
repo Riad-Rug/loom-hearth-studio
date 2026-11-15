@@ -35,6 +35,14 @@ export type CompleteOrderResponse =
       message: string;
     }
   | {
+      // The payment was declined or cancelled before an order existed, and nothing
+      // in it is short now: the buyer can place the same order again.
+      status: "not-placed";
+      order: null;
+      cardHold: "released" | "unresolved";
+      message: string;
+    }
+  | {
       status: "invalid-request" | "ignored" | "configuration-error" | "api-error";
       order: null;
       message: string;
