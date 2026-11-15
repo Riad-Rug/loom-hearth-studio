@@ -181,7 +181,9 @@
 }
 
 .itemMedia {
+  position: relative;
   display: flex;
+  overflow: hidden;
   min-height: 4.75rem;
   align-items: center;
   justify-content: center;
@@ -196,6 +198,14 @@
   color: var(--color-olive-thread);
   font-size: 0.7rem;
   line-height: 1.35;
+}
+
+.itemMedia img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .itemContent {

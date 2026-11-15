@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { formatUsd } from "@/features/cart/cart-provider";
 import { useCheckout } from "@/features/checkout/checkout-provider";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 
 import styles from "@/features/checkout/checkout-page.module.css";
 
@@ -60,9 +61,9 @@ export function ConfirmationStep() {
       <div className={styles.confirmationCard}>
         <strong>Your order is confirmed and your card has been authorized.</strong>
         <p>
-          Thank you for your trust. We&apos;ll be in touch within 24 to 48 hours with photos and
-          videos of your exact piece for your approval — your card is charged only after you approve,
-          and not before.
+          Thank you for your trust. We&apos;ll be in touch {storePromiseCopy.approvalTurnaround} with{" "}
+          {storePromise.approvalMedia} of your exact piece for your approval. Your card is charged
+          only after you approve, and not before.
         </p>
         <p className={styles.orderNumberLine}>
           Order number: <strong>{placedOrder.orderNumber}</strong>
@@ -81,7 +82,7 @@ export function ConfirmationStep() {
       </div>
 
       <div className={styles.reviewCard}>
-        <h3>Have a Request for Your Photos or Video?</h3>
+        <h3>Have a request for your {storePromise.approvalMedia}?</h3>
         <p>
           If you&apos;d like a specific angle, lighting condition, or anything else shown before you
           approve, tell us here — or leave it blank and submit.

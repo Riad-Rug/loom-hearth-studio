@@ -68,7 +68,12 @@ export function AddToOrder() {
   }
 
   function handleAdd(candidate: AddToOrderCandidateViewModel) {
-    addProduct({ product: candidate.cartProduct, quantity: 1 });
+    addProduct({
+      product: candidate.cartProduct,
+      quantity: 1,
+      imageUrl: candidate.image?.src,
+      imageAlt: candidate.image?.altText,
+    });
     setAddedProductIds((current) => [...current, candidate.id]);
   }
 

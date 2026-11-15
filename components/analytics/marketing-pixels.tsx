@@ -3,6 +3,7 @@
 import Script from "next/script";
 
 import { ConsentGate } from "@/components/compliance/cookie-consent-provider";
+import { useAnalyticsVendor } from "@/lib/analytics/commerce-tracking";
 
 type MarketingPixelsProps = {
   metaPixelId: string;
@@ -28,6 +29,7 @@ export function MarketingPixels({
 }
 
 function MetaPixel({ pixelId }: { pixelId: string }) {
+  useAnalyticsVendor("meta");
   return (
     <Script id="loom-hearth-meta-pixel" strategy="afterInteractive">
       {`!function(f,b,e,v,n,t,s)
@@ -45,6 +47,7 @@ fbq('track', 'PageView');`}
 }
 
 function PinterestTag({ tagId }: { tagId: string }) {
+  useAnalyticsVendor("pinterest");
   return (
     <Script id="loom-hearth-pinterest-tag" strategy="afterInteractive">
       {`!function(e){if(!window.pintrk){window.pintrk=function(){

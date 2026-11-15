@@ -7,6 +7,7 @@ import Link from "next/link";
 
 import { formatUsd } from "@/features/cart/cart-provider";
 import { useCheckout } from "@/features/checkout/checkout-provider";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 
 import styles from "@/features/checkout/checkout-page.module.css";
 
@@ -26,6 +27,7 @@ export function ReviewStep() {
   const stripe = useStripe();
   const elements = useElements();
   const {
+    addresses,
     resolvedBillingAddress,
     resolvedShippingAddress,
     items,
@@ -125,26 +127,7 @@ export function ReviewStep() {
 
       <div className={styles.reviewCard}>
         <div className={styles.reviewCardHeader}>
-          <h3>Billing Address</h3>
-          <button className={styles.editLink} type="button" onClick={() => goToStep("billing")}>
-            Edit
-          </button>
-        </div>
-        {resolvedBillingAddress ? (
-          <>
-            <p>{resolvedBillingAddress.fullName}</p>
-            <p>{resolvedBillingAddress.address1}{resolvedBillingAddress.address2 ? `, ${resolvedBillingAddress.address2}` : ""}</p>
-            <p>{resolvedBillingAddress.city}, {resolvedBillingAddress.state} {resolvedBillingAddress.postalCode}</p>
-            <p>{resolvedBillingAddress.email}</p>
-          </>
-        ) : (
-          <p>Complete billing details before reviewing your order.</p>
-        )}
-      </div>
-
-      <div className={styles.reviewCard}>
-        <div className={styles.reviewCardHeader}>
-          <h3>Shipping Address</h3>
+          <h3>Contact & shipping</h3>
           <button className={styles.editLink} type="button" onClick={() => goToStep("shipping")}>
             Edit
           </button>
@@ -154,9 +137,30 @@ export function ReviewStep() {
             <p>{resolvedShippingAddress.fullName}</p>
             <p>{resolvedShippingAddress.address1}{resolvedShippingAddress.address2 ? `, ${resolvedShippingAddress.address2}` : ""}</p>
             <p>{resolvedShippingAddress.city}, {resolvedShippingAddress.state} {resolvedShippingAddress.postalCode}</p>
+            <p>{resolvedShippingAddress.email}</p>
           </>
         ) : (
           <p>Complete shipping details before reviewing your order.</p>
+        )}
+      </div>
+
+      <div className={styles.reviewCard}>
+        <div className={styles.reviewCardHeader}>
+          <h3>Billing address</h3>
+          <button className={styles.editLink} type="button" onClick={() => goToStep("shipping")}>
+            Edit
+          </button>
+        </div>
+        {addresses?.billing === null ? (
+          <p>Same as shipping address</p>
+        ) : resolvedBillingAddress ? (
+          <>
+            <p>{resolvedBillingAddress.fullName}</p>
+            <p>{resolvedBillingAddress.address1}{resolvedBillingAddress.address2 ? `, ${resolvedBillingAddress.address2}` : ""}</p>
+            <p>{resolvedBillingAddress.city}, {resolvedBillingAddress.state} {resolvedBillingAddress.postalCode}</p>
+          </>
+        ) : (
+          <p>Complete billing details before reviewing your order.</p>
         )}
       </div>
 
@@ -178,6 +182,7 @@ export function ReviewStep() {
         <p>
           <strong>Total: {formatUsd(totalUsd)}</strong>
         </p>
+        <p className={styles.summaryNote}>{storePromiseCopy.duties}</p>
       </div>
 
       {localError ? (
@@ -196,7 +201,7 @@ export function ReviewStep() {
       ) : null}
 
       <p className={styles.promiseLine}>
-        Card authorized now, charged only after you approve pre-shipment photos and videos.
+        Card authorized now, charged only after you approve pre-shipment {storePromise.approvalMedia}.
       </p>
 
       <div className={styles.stepActions}>

@@ -6,16 +6,18 @@ import { useEffect, useState } from "react";
 import { Elements } from "@stripe/react-stripe-js";
 
 import { checkoutSteps, checkoutSummary } from "@/features/checkout/checkout-data";
-import { formatUsd, getCartItemLabel, useCart } from "@/features/cart/cart-provider";
+import { CartItemThumbnail } from "@/features/cart/cart-item-thumbnail";
+import { getCartItemDetails, getCartItemLabel } from "@/features/cart/cart-items";
+import { formatUsd, useCart } from "@/features/cart/cart-provider";
+import { FreeShippingProgress } from "@/features/cart/free-shipping-progress";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
 import { useCheckout } from "@/features/checkout/checkout-provider";
-import { BillingStep } from "@/features/checkout/steps/billing-step";
 import { ShippingStep } from "@/features/checkout/steps/shipping-step";
 import { PaymentStep } from "@/features/checkout/steps/payment-step";
 import { ReviewStep } from "@/features/checkout/steps/review-step";
 import { ConfirmationStep } from "@/features/checkout/steps/confirmation-step";
 import { getStripeBrowserClient } from "@/lib/stripe/browser-client";
-import { freeShippingThresholdUsd } from "@/lib/order/shipping";
+import { storePromiseCopy } from "@/lib/order/store-promise";
 
 import styles from "./checkout-page.module.css";
 
@@ -33,24 +35,22 @@ export function CheckoutPageView() {
   } = useCart();
   const [promoDraft, setPromoDraft] = useState(promoCode ?? "");
   const [promoFeedback, setPromoFeedback] = useState<string | null>(null);
-  const { step, paymentIntent, cartRecoveryMessage } = useCheckout();
+  const { step, paymentIntent, cartRecoveryMessage, hasHydrated } = useCheckout();
 
   useEffect(() => {
     setPromoDraft(promoCode ?? "");
   }, [promoCode]);
 
-  const lineItems = items.map((item) => ({
-    id: item.id,
-    name: item.name,
-    quantityLabel: `Qty ${item.quantity}`,
-    typeLabel: getCartItemLabel(item),
-    priceUsdLabel: formatUsd(item.priceUsd),
-  }));
+  const hasItems = items.length > 0;
   const summary = {
-    subtotalUsdLabel: items.length > 0 ? formatUsd(subtotalUsd) : checkoutSummary.subtotalUsdLabel,
-    shippingUsdLabel: items.length > 0 ? formatUsd(shippingUsd) : checkoutSummary.shippingUsdLabel,
+    subtotalUsdLabel: hasItems ? formatUsd(subtotalUsd) : checkoutSummary.subtotalUsdLabel,
+    shippingUsdLabel: !hasItems
+      ? checkoutSummary.shippingUsdLabel
+      : shippingUsd === 0
+        ? "Free"
+        : formatUsd(shippingUsd),
     taxUsdLabel: checkoutSummary.taxUsdLabel,
-    totalUsdLabel: items.length > 0 ? formatUsd(totalUsd) : checkoutSummary.totalUsdLabel,
+    totalUsdLabel: hasItems ? formatUsd(totalUsd) : checkoutSummary.totalUsdLabel,
     guestLabel: checkoutSummary.guestLabel,
     marketLabel: checkoutSummary.marketLabel,
     currencyLabel: checkoutSummary.currencyLabel,
@@ -127,24 +127,35 @@ export function CheckoutPageView() {
         ) : null}
 
         <div className={styles.contentGrid}>
-          <div className={styles.mainCard}>{renderStep(step, paymentIntent.clientSecret)}</div>
+          <div className={styles.mainCard}>
+            {hasHydrated ? (
+              renderStep(step, paymentIntent.clientSecret)
+            ) : (
+              <div className={styles.reviewCard}>
+                <p>Loading checkout…</p>
+              </div>
+            )}
+          </div>
           <aside className={styles.summaryCard}>
             <div className={styles.summaryHeader}>
               <p className={styles.eyebrow}>Order summary</p>
-              <h2>Checkout Summary</h2>
+              <h2>Your order</h2>
             </div>
 
             <div className={styles.itemList}>
-              {lineItems.length > 0 ? (
+              {hasItems ? (
                 <>
-                  {lineItems.map((item) => (
+                  {items.map((item) => (
                     <article key={item.id} className={styles.itemRow}>
-                      <div>
-                        <p className={styles.itemType}>{item.typeLabel}</p>
+                      {item.imageUrl ? (
+                        <CartItemThumbnail item={item} className={styles.itemThumb} />
+                      ) : null}
+                      <div className={styles.itemText}>
+                        <p className={styles.itemType}>{getCartItemLabel(item)}</p>
                         <h3>{item.name}</h3>
-                        <p className={styles.itemQty}>{item.quantityLabel}</p>
+                        <p className={styles.itemQty}>{getCartItemDetails(item)}</p>
                       </div>
-                      <strong>{item.priceUsdLabel}</strong>
+                      <strong>{formatUsd(item.priceUsd)}</strong>
                     </article>
                   ))}
                   {!isConfirmation ? (
@@ -155,8 +166,8 @@ export function CheckoutPageView() {
                 </>
               ) : (
                 <div className={styles.emptySummaryState}>
-                  <strong>Your Cart Is Empty.</strong>
-                  <p>Add a product to see a real checkout summary.</p>
+                  <strong>Your cart is empty.</strong>
+                  <p>Add a piece to your cart to check out.</p>
                   <Link className={styles.secondaryAction} href="/shop">
                     Continue shopping
                   </Link>
@@ -173,11 +184,7 @@ export function CheckoutPageView() {
                 <span>Shipping</span>
                 <strong>{summary.shippingUsdLabel}</strong>
               </div>
-              <div className={styles.freeShippingLine}>
-                {items.length > 0 && shippingUsd === 0
-                  ? `Free shipping — order over $${freeShippingThresholdUsd}`
-                  : `Free shipping on orders of $${freeShippingThresholdUsd} or more`}
-              </div>
+              {hasItems ? <FreeShippingProgress /> : null}
               <form className={styles.promoForm} onSubmit={handlePromoSubmit}>
                 <label className={styles.promoLabel} htmlFor="checkout-promo-code">
                   Promo Code
@@ -212,12 +219,10 @@ export function CheckoutPageView() {
                 </div>
               ) : null}
               <div className={styles.summaryRow}>
-                <span>Estimated tax</span>
+                <span>Tax</span>
                 <strong>{summary.taxUsdLabel}</strong>
               </div>
-              <p className={styles.summaryNote}>
-                Taxes and duties, if applicable, are confirmed before payment is captured.
-              </p>
+              <p className={styles.summaryNote}>{storePromiseCopy.duties}</p>
               <div className={styles.summaryTotal}>
                 <span>Total</span>
                 <strong>{summary.totalUsdLabel}</strong>
@@ -231,14 +236,6 @@ export function CheckoutPageView() {
 }
 
 function renderStep(step: CheckoutStepKey, clientSecret: string | null) {
-  if (step === "billing") {
-    return (
-      <div key="billing" className={styles.stepPanel}>
-        <BillingStep />
-      </div>
-    );
-  }
-
   if (step === "shipping") {
     return (
       <div key="shipping" className={styles.stepPanel}>

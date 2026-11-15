@@ -86,7 +86,9 @@
 }
 
 .itemMedia {
+  position: relative;
   display: flex;
+  overflow: hidden;
   min-height: 9rem;
   align-items: center;
   justify-content: center;
@@ -97,8 +99,15 @@
   text-align: center;
 }
 
+.itemMedia img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .itemMedia span,
-.freeShippingLine,
 .itemCategory,
 .itemVariant,
 .quantityRule,
@@ -204,6 +213,11 @@
   height: 2rem;
 }
 
+.quantityButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .removeButton {
   padding: 0.65rem 0.95rem;
   font-size: 0.6875rem;
@@ -279,6 +293,10 @@
     grid-template-columns: 1fr;
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .itemMedia {
+    width: 8rem;
   }
 
   .itemActions {

@@ -10,24 +10,30 @@ import {
   type ReactNode,
 } from "react";
 
-import type { CartStoreItem } from "@/features/cart/cart-provider";
+import { toCommerceItems, type CartStoreItem } from "@/features/cart/cart-items";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
-import { trackBeginCheckout } from "@/lib/analytics/gtag";
-import { emptyAddressFormValues, toOrderAddress, type AddressFormValues } from "@/lib/checkout/address-schema";
+import { trackCommerceEvent } from "@/lib/analytics/commerce-tracking";
+import { toOrderAddress, type AddressFormValues } from "@/lib/checkout/address-schema";
 import type { OrderAddress } from "@/types/domain";
 
-const CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout.v2";
-const CHECKOUT_STORAGE_VERSION = 2;
+const CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout.v3";
+const LEGACY_CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout.v2";
+const CHECKOUT_STORAGE_VERSION = 3;
 
-export type ShippingAddressMode = "same-as-billing" | "different";
+export type CheckoutAddresses = {
+  /** Carries the contact email and phone for the order. */
+  shipping: AddressFormValues;
+  /** null means the billing address is the shipping address. */
+  billing: AddressFormValues | null;
+};
 
 type StoredCheckoutState = {
   version: typeof CHECKOUT_STORAGE_VERSION;
-  billing: AddressFormValues | null;
-  shippingAddressMode: ShippingAddressMode;
-  shippingAddress: AddressFormValues | null;
+  addresses: CheckoutAddresses | null;
 };
+
+type FunnelStepEventName = "add_shipping_info" | "add_payment_info";
 
 type PaymentIntentState = {
   status: "idle" | "creating" | "ready" | "error";
@@ -67,8 +73,7 @@ type PaymentIntentValidationIssue = {
 };
 
 const stepPathMap: Record<CheckoutStepKey, string> = {
-  billing: "/checkout",
-  shipping: "/checkout/shipping",
+  shipping: "/checkout",
   payment: "/checkout/payment",
   review: "/checkout/review",
   confirmation: "/checkout/confirmation",
@@ -96,15 +101,12 @@ type CheckoutContextValue = {
   subtotalUsd: number;
   shippingUsd: number;
   totalUsd: number;
-  billing: AddressFormValues;
-  submitBilling: (values: AddressFormValues) => void;
-  shippingAddressMode: ShippingAddressMode;
-  setShippingAddressMode: (mode: ShippingAddressMode) => void;
-  shippingAddressDraft: AddressFormValues;
-  submitShipping: (values: AddressFormValues | null) => void;
+  hasHydrated: boolean;
+  addresses: CheckoutAddresses | null;
+  submitAddresses: (addresses: CheckoutAddresses) => void;
+  submitPaymentDetails: () => void;
   resolvedBillingAddress: OrderAddress | null;
   resolvedShippingAddress: OrderAddress | null;
-  canAccessShipping: boolean;
   canAccessPayment: boolean;
   canAccessReview: boolean;
   canAccessConfirmation: boolean;
@@ -121,12 +123,8 @@ const CheckoutContext = createContext<CheckoutContextValue | null>(null);
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
   const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd, clearCart, removeItem } = useCart();
-  const [step, setStep] = useState<CheckoutStepKey>("billing");
-  const [billing, setBilling] = useState<AddressFormValues>(emptyAddressFormValues);
-  const [shippingAddressMode, setShippingAddressMode] = useState<ShippingAddressMode>("same-as-billing");
-  const [shippingAddressDraft, setShippingAddressDraft] = useState<AddressFormValues>(emptyAddressFormValues);
-  const [billingSubmitted, setBillingSubmitted] = useState(false);
-  const [shippingSubmitted, setShippingSubmitted] = useState(false);
+  const [step, setStep] = useState<CheckoutStepKey>("shipping");
+  const [addresses, setAddresses] = useState<CheckoutAddresses | null>(null);
   const [paymentIntent, setPaymentIntent] = useState<PaymentIntentState>(initialPaymentIntentState);
   const [cartRecoveryMessage, setCartRecoveryMessage] = useState<string | null>(null);
   const [placeOrderState, setPlaceOrderState] = useState<PlaceOrderState>(initialPlaceOrderState);
@@ -135,27 +133,13 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [paymentIntentRetryCount, setPaymentIntentRetryCount] = useState(0);
   const paymentIntentIdRef = useRef<string | null>(null);
   const hasTrackedBeginCheckout = useRef(false);
+  const trackedFunnelSteps = useRef(new Set<FunnelStepEventName>());
 
   useEffect(() => {
     try {
       const storedValue = window.localStorage.getItem(CHECKOUT_STORAGE_KEY);
-      const parsedValue = storedValue ? (JSON.parse(storedValue) as Partial<StoredCheckoutState>) : null;
-
-      if (parsedValue?.version === CHECKOUT_STORAGE_VERSION) {
-        if (parsedValue.billing) {
-          setBilling(parsedValue.billing);
-          setBillingSubmitted(true);
-        }
-
-        if (parsedValue.shippingAddressMode) {
-          setShippingAddressMode(parsedValue.shippingAddressMode);
-        }
-
-        if (parsedValue.shippingAddress) {
-          setShippingAddressDraft(parsedValue.shippingAddress);
-          setShippingSubmitted(true);
-        }
-      }
+      setAddresses(parseStoredCheckoutAddresses(storedValue ? (JSON.parse(storedValue) as unknown) : null));
+      window.localStorage.removeItem(LEGACY_CHECKOUT_STORAGE_KEY);
     } catch {
       // Ignore malformed local checkout data and continue with a clean guest checkout state.
     }
@@ -171,13 +155,11 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
     const storedState: StoredCheckoutState = {
       version: CHECKOUT_STORAGE_VERSION,
-      billing: billingSubmitted ? billing : null,
-      shippingAddressMode,
-      shippingAddress: shippingSubmitted ? shippingAddressDraft : null,
+      addresses,
     };
 
     window.localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(storedState));
-  }, [billing, billingSubmitted, hasHydrated, shippingAddressDraft, shippingAddressMode, shippingSubmitted]);
+  }, [addresses, hasHydrated]);
 
   useEffect(() => {
     function handlePopState() {
@@ -189,20 +171,16 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const hasCartItems = items.length > 0;
-  const resolvedBillingAddress = useMemo<OrderAddress | null>(
-    () => (billingSubmitted ? toOrderAddress(billing) : null),
-    [billing, billingSubmitted],
+  const resolvedShippingAddress = useMemo<OrderAddress | null>(
+    () => (addresses ? toOrderAddress(addresses.shipping) : null),
+    [addresses],
   );
-  const resolvedShippingAddress = useMemo<OrderAddress | null>(() => {
-    if (shippingAddressMode === "same-as-billing") {
-      return resolvedBillingAddress;
-    }
+  const resolvedBillingAddress = useMemo<OrderAddress | null>(
+    () => (addresses ? toOrderAddress(addresses.billing ?? addresses.shipping) : null),
+    [addresses],
+  );
 
-    return shippingSubmitted ? toOrderAddress(shippingAddressDraft) : null;
-  }, [resolvedBillingAddress, shippingAddressDraft, shippingAddressMode, shippingSubmitted]);
-
-  const canAccessShipping = hasCartItems && Boolean(resolvedBillingAddress);
-  const canAccessPayment = canAccessShipping && Boolean(resolvedShippingAddress);
+  const canAccessPayment = hasCartItems && Boolean(addresses);
   // Deliberately Boolean(clientSecret) rather than status === "ready": a
   // mid-checkout reprice (e.g. the cart changing while on Review) cycles
   // status through "ready" -> "creating" -> "ready" but keeps clientSecret
@@ -222,7 +200,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     }
 
     // Once an order is placed, there's nothing left to edit — browser-back
-    // into Billing/Shipping/Payment/Review (which would otherwise still show
+    // into Shipping/Payment/Review (which would otherwise still show
     // an enabled "Place order" for an already-completed order) redirects
     // straight back to the receipt instead.
     if (placedOrder && step !== "confirmation") {
@@ -231,24 +209,33 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     }
 
     if (step === "confirmation" && !canAccessConfirmation) {
-      setStep(canAccessReview ? "review" : "billing");
+      setStep(canAccessReview ? "review" : "shipping");
       return;
     }
 
     if (step === "review" && !canAccessReview) {
-      setStep(canAccessPayment ? "payment" : "billing");
+      setStep(canAccessPayment ? "payment" : "shipping");
       return;
     }
 
     if (step === "payment" && !canAccessPayment) {
-      setStep(canAccessShipping ? "shipping" : "billing");
+      setStep("shipping");
+    }
+  }, [canAccessConfirmation, canAccessPayment, canAccessReview, hasHydrated, placedOrder, step]);
+
+  useEffect(() => {
+    if (!hasHydrated || hasTrackedBeginCheckout.current || !items.length || placedOrder) {
       return;
     }
 
-    if (step === "shipping" && !canAccessShipping) {
-      setStep("billing");
-    }
-  }, [canAccessConfirmation, canAccessPayment, canAccessReview, canAccessShipping, hasHydrated, placedOrder, step]);
+    hasTrackedBeginCheckout.current = true;
+    trackCommerceEvent({
+      name: "begin_checkout",
+      items: toCommerceItems(items),
+      coupon: promoCode ?? undefined,
+      discountUsd,
+    });
+  }, [discountUsd, hasHydrated, items, placedOrder, promoCode]);
 
   const draftSignature = useMemo(
     () =>
@@ -379,6 +366,29 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     window.history.pushState(null, "", stepPathMap[next]);
   }
 
+  function trackFunnelStepOnce(name: FunnelStepEventName) {
+    if (trackedFunnelSteps.current.has(name)) {
+      return;
+    }
+
+    trackedFunnelSteps.current.add(name);
+    const funnelEvent = {
+      items: toCommerceItems(items),
+      coupon: promoCode ?? undefined,
+      discountUsd,
+    };
+
+    trackCommerceEvent(
+      name === "add_shipping_info"
+        ? {
+            ...funnelEvent,
+            name,
+            shippingTier: shippingUsd === 0 ? "Free shipping" : "Flat rate shipping",
+          }
+        : { ...funnelEvent, name },
+    );
+  }
+
   const value: CheckoutContextValue = {
     step,
     goToStep,
@@ -388,53 +398,19 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     subtotalUsd,
     shippingUsd,
     totalUsd,
-    billing,
-    submitBilling(values) {
-      setBilling(values);
-      setBillingSubmitted(true);
-
-      if (!hasTrackedBeginCheckout.current) {
-        hasTrackedBeginCheckout.current = true;
-        trackBeginCheckout({
-          currency: "USD",
-          value: totalUsd,
-          items: items.map((item) => ({
-            item_id: item.productId,
-            item_name: item.name,
-            item_category: item.productCategory,
-            item_variant: item.variantName,
-            price: item.priceUsd,
-            quantity: item.quantity,
-          })),
-        });
-      }
-
-      goToStep("shipping");
-    },
-    shippingAddressMode,
-    setShippingAddressMode(mode) {
-      setShippingAddressMode(mode);
-
-      if (mode === "same-as-billing") {
-        setShippingSubmitted(false);
-      }
-    },
-    shippingAddressDraft,
-    submitShipping(values) {
-      if (shippingAddressMode === "different") {
-        if (!values) {
-          return;
-        }
-
-        setShippingAddressDraft(values);
-        setShippingSubmitted(true);
-      }
-
+    hasHydrated,
+    addresses,
+    submitAddresses(nextAddresses) {
+      setAddresses(nextAddresses);
+      trackFunnelStepOnce("add_shipping_info");
       goToStep("payment");
+    },
+    submitPaymentDetails() {
+      trackFunnelStepOnce("add_payment_info");
+      goToStep("review");
     },
     resolvedBillingAddress,
     resolvedShippingAddress,
-    canAccessShipping,
     canAccessPayment,
     canAccessReview,
     canAccessConfirmation,
@@ -447,6 +423,16 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     setPlaceOrderState,
     placedOrder,
     completeOrder(order) {
+      // Fired from this handler rather than an effect so a re-render or a
+      // reload of the confirmation page cannot send it again.
+      trackCommerceEvent({
+        name: "purchase",
+        transactionId: order.orderNumber,
+        items: toCommerceItems(items),
+        coupon: promoCode ?? undefined,
+        discountUsd,
+        shippingUsd,
+      });
       setPlacedOrder(order);
       window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
       clearCart();
@@ -468,10 +454,6 @@ export function useCheckout() {
 }
 
 function getStepFromPathname(pathname: string): CheckoutStepKey {
-  if (pathname === stepPathMap.shipping) {
-    return "shipping";
-  }
-
   if (pathname === stepPathMap.payment) {
     return "payment";
   }
@@ -484,7 +466,41 @@ function getStepFromPathname(pathname: string): CheckoutStepKey {
     return "confirmation";
   }
 
-  return "billing";
+  return "shipping";
+}
+
+function parseStoredCheckoutAddresses(value: unknown): CheckoutAddresses | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const candidate = value as Partial<StoredCheckoutState>;
+  const addresses = candidate.addresses as Partial<CheckoutAddresses> | null | undefined;
+
+  if (candidate.version !== CHECKOUT_STORAGE_VERSION || !addresses || !isAddressFormValues(addresses.shipping)) {
+    return null;
+  }
+
+  if (addresses.billing !== null && !isAddressFormValues(addresses.billing)) {
+    return null;
+  }
+
+  return { shipping: addresses.shipping, billing: addresses.billing };
+}
+
+function isAddressFormValues(value: unknown): value is AddressFormValues {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  const requiredFields = ["fullName", "email", "address1", "city", "state", "postalCode"];
+  const optionalFields = ["phone", "address2"];
+
+  return (
+    requiredFields.every((field) => typeof candidate[field] === "string") &&
+    optionalFields.every((field) => candidate[field] === undefined || typeof candidate[field] === "string")
+  );
 }
 
 type RequestPaymentIntentInput = {
