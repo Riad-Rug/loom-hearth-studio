@@ -72,7 +72,7 @@ const unavailableCopy: Record<UnavailableState, { pill: string; headline: string
 const PANEL_CARD = "grid gap-[var(--space-3)] p-[var(--space-4)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)]";
 const PANEL_EYEBROW = "text-[var(--color-green)] text-[0.72rem] font-semibold tracking-[0.08em] uppercase";
 const PRIMARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium";
-const SECONDARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-transparent text-[var(--color-green)] font-medium disabled:cursor-default disabled:opacity-60";
+const SECONDARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-transparent text-[var(--color-green)] font-medium";
 const PURCHASE_MICROCOPY = "text-[var(--color-text-muted)] text-[0.92rem]";
 const APPROVAL_MICROCOPY = "Card authorized at checkout, charged only after your approval.";
 const LIGHTBOX_CONTROL = "px-[1rem] py-[0.6rem] border border-[color:var(--color-bg)] rounded-full bg-transparent text-[var(--color-bg)] text-[0.85rem] cursor-pointer";
@@ -1072,8 +1072,19 @@ function MultiUnitPurchaseShell({
   product: MultiUnitProductDetailPageViewModel;
 }) {
   const { quantityInCart, reserve, addToCart } = usePurchaseActions(product);
+  const [hasAddedToCart, setHasAddedToCart] = useState(false);
   const { inventory } = product.cartProduct;
   const isAllInCart = quantityInCart >= inventory;
+  const cartStatus = isAllInCart ? `All ${inventory} available are in your cart.` : `${quantityInCart} in your cart.`;
+
+  function handleAddToCart() {
+    if (isAllInCart) {
+      return;
+    }
+
+    addToCart();
+    setHasAddedToCart(true);
+  }
 
   return (
     <div className={PANEL_CARD}>
@@ -1081,24 +1092,27 @@ function MultiUnitPurchaseShell({
         <button className={`${PRIMARY_ACTION} cursor-pointer`} type="button" onClick={reserve}>
           Reserve this piece
         </button>
+        {/* aria-disabled, not disabled: a native disabled button drops the
+            focus of the shopper who just pressed it to the page body. */}
         <button
-          className={`${SECONDARY_ACTION} cursor-pointer`}
-          disabled={isAllInCart}
+          aria-disabled={isAllInCart}
+          className={`${SECONDARY_ACTION} cursor-pointer aria-disabled:cursor-default aria-disabled:opacity-60`}
           type="button"
-          onClick={addToCart}
+          onClick={handleAddToCart}
         >
           Add to cart
         </button>
       </div>
-      <p className={PURCHASE_MICROCOPY} role="status">
-        {quantityInCart > 0 ? (
-          <>
-            {isAllInCart ? `All ${inventory} available are in your cart.` : `${quantityInCart} in your cart.`}{" "}
-            <Link className="underline underline-offset-2 text-[var(--color-green)]" href="/cart">
-              View cart
-            </Link>
-          </>
-        ) : null}
+      {quantityInCart > 0 ? (
+        <p className={PURCHASE_MICROCOPY}>
+          {cartStatus}{" "}
+          <Link className="underline underline-offset-2 text-[var(--color-green)]" href="/cart">
+            View cart
+          </Link>
+        </p>
+      ) : null}
+      <p className="sr-only" role="status">
+        {hasAddedToCart ? `Added to cart. ${cartStatus}` : ""}
       </p>
       <p className={PURCHASE_MICROCOPY}>
         {product.inventoryState === "lowStock" ? `${product.inventoryMessage} ` : ""}
