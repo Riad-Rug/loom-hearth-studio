@@ -26,8 +26,9 @@ import {
 } from "@/lib/order/helpers";
 import { createStripeClient } from "@/lib/stripe/client";
 import {
-  declinePaymentIntent,
+  clearPaymentIntentDecline,
   isDeclinedPaymentIntent,
+  markPaymentIntentDeclined,
   readHoldExpiry,
   releasePaymentIntentHold,
   type PaymentIntentHoldRelease,
@@ -102,7 +103,7 @@ export async function persistConfirmedStripeCheckoutOrder(input: {
       persistenceRequest: persistenceResult.request,
     });
 
-    if (creation.status === "declined") {
+    if (creation.status === "answered") {
       return creation.result;
     }
 
@@ -302,12 +303,23 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
   // A cancelled PaymentIntent, or a held one the checkout already declined, never
   // becomes an order: its hold is released (again) and the buyer is told what is
   // short now. A captured one still becomes an order, so that money always has one.
-  const declined =
-    paymentIntent.status === "canceled"
-      ? "released"
-      : paymentIntent.status === "requires_capture" && isDeclinedPaymentIntent(paymentIntent)
-        ? await releasePaymentIntentHold(stripe, input.paymentIntentId)
-        : undefined;
+  let declined: PaymentIntentHoldRelease | undefined = paymentIntent.status === "canceled" ? "released" : undefined;
+
+  if (paymentIntent.status === "requires_capture" && isDeclinedPaymentIntent(paymentIntent)) {
+    const outcome = await releaseDeclinedHold({ repository, stripe, paymentIntentId: input.paymentIntentId });
+
+    if ("savedOrder" in outcome) {
+      return describeExistingOrder({
+        repository,
+        order: outcome.savedOrder,
+        orderCreationRequest: null,
+        persistenceRequest: null,
+        message: "PaymentIntent was already persisted as an order.",
+      });
+    }
+
+    declined = outcome.release;
+  }
 
   if (!declined && paymentIntent.status !== "requires_capture" && paymentIntent.status !== "succeeded") {
     return {
@@ -400,7 +412,7 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
       declined,
     });
 
-    if (creation.status === "declined") {
+    if (creation.status === "answered") {
       return creation.result;
     }
 
@@ -496,14 +508,15 @@ function oversoldMessage(subject: string, orderNumber: string) {
 // an uncaptured hold is released and nothing is saved, so the buyer is not left
 // with money reserved for a piece they cannot have; a payment already captured
 // is saved with a stock conflict instead, so that money always has an order the
-// studio sees and refunds.
+// studio sees and refunds. "answered": no order was created here, and `result`
+// is the answer to give.
 async function createOrderTakingStock(input: {
   repository: OrderRepository;
   orderCreationRequest: OrderCreationRequest;
   persistenceRequest: OrderPersistenceRequest;
   stripe?: ReturnType<typeof createStripeClient>;
   declined?: PaymentIntentHoldRelease;
-}): Promise<{ status: "created"; order: Order } | { status: "declined"; result: PersistConfirmedOrderResult }> {
+}): Promise<{ status: "created"; order: Order } | { status: "answered"; result: PersistConfirmedOrderResult }> {
   const { persistenceRequest } = input;
 
   if (!input.declined) {
@@ -516,13 +529,39 @@ async function createOrderTakingStock(input: {
     }
   }
 
-  const authorizationRelease =
-    input.declined ??
-    (persistenceRequest.paymentStatus === "paid"
-      ? "captured"
-      : persistenceRequest.paymentIntentId
-        ? await declinePaymentIntent(input.stripe ?? createStripeClient(), persistenceRequest.paymentIntentId)
-        : "unresolved");
+  let authorizationRelease: PaymentIntentHoldRelease;
+
+  if (input.declined) {
+    authorizationRelease = input.declined;
+  } else if (persistenceRequest.paymentStatus === "paid") {
+    authorizationRelease = "captured";
+  } else if (persistenceRequest.paymentIntentId) {
+    const stripe = input.stripe ?? createStripeClient();
+    await markPaymentIntentDeclined(stripe, persistenceRequest.paymentIntentId);
+    const outcome = await releaseDeclinedHold({
+      repository: input.repository,
+      stripe,
+      paymentIntentId: persistenceRequest.paymentIntentId,
+    });
+
+    if ("savedOrder" in outcome) {
+      return {
+        status: "answered",
+        result: await describeExistingOrder({
+          repository: input.repository,
+          order: outcome.savedOrder,
+          orderCreationRequest: input.orderCreationRequest,
+          persistenceRequest,
+          message: "PaymentIntent was already persisted as an order.",
+        }),
+      };
+    }
+
+    authorizationRelease = outcome.release;
+  } else {
+    authorizationRelease = "unresolved";
+  }
+
   const unavailableLines = await findUnavailableLines(persistenceRequest.items);
   const unavailableNames = unavailableLines.map((line) => line.name);
   const subject = unavailableNames.length
@@ -563,7 +602,7 @@ async function createOrderTakingStock(input: {
     }
 
     return {
-      status: "declined",
+      status: "answered",
       result: {
         ...declined,
         status: "oversold",
@@ -585,7 +624,7 @@ async function createOrderTakingStock(input: {
   const holdSentence = describeHoldRelease(authorizationRelease, persistenceRequest.holdExpiresAt);
 
   return {
-    status: "declined",
+    status: "answered",
     result: unavailableLines.length
       ? {
           ...declined,
@@ -603,6 +642,25 @@ async function createOrderTakingStock(input: {
           message: `Your order was not placed. ${holdSentence} Place your order again.`,
         },
   };
+}
+
+// Releases the hold on a PaymentIntent the checkout declined. The browser and the
+// webhook can handle one PaymentIntent at once, and the other may have saved its
+// order since this one read the PaymentIntent: that order keeps its hold, and the
+// decline mark comes off so nothing later reads the PaymentIntent as declined.
+async function releaseDeclinedHold(input: {
+  repository: OrderRepository;
+  stripe: ReturnType<typeof createStripeClient>;
+  paymentIntentId: string;
+}): Promise<{ savedOrder: Order } | { release: PaymentIntentHoldRelease }> {
+  const savedOrder = await input.repository.getByPaymentIntentId(input.paymentIntentId);
+
+  if (savedOrder) {
+    await clearPaymentIntentDecline(input.stripe, input.paymentIntentId);
+    return { savedOrder };
+  }
+
+  return { release: await releasePaymentIntentHold(input.stripe, input.paymentIntentId) };
 }
 
 function describeUnavailableLines(lines: UnavailableLine[]) {
