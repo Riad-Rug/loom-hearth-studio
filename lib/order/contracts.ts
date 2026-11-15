@@ -2,6 +2,7 @@ import type { Order, OrderStatus, PaymentStatus } from "@/types/domain/order";
 
 import type { OrderConfirmationEmailSendResult } from "@/lib/email/contracts";
 import type { FulfillmentOrchestrationResult } from "@/lib/fulfillment/contracts";
+import type { PaymentIntentHoldRelease } from "@/lib/stripe/payment-intent-hold";
 import type {
   StripeCheckoutOrderSnapshot,
   StripeCheckoutPaymentConfirmation,
@@ -83,12 +84,14 @@ export type OrderPersistenceBoundary = {
 };
 
 export type PersistConfirmedOrderResult = {
-  status: "created" | "ignored" | "configuration-error" | "already-persisted";
+  status: "created" | "ignored" | "configuration-error" | "already-persisted" | "unavailable";
   orderCreationRequest: OrderCreationRequest | null;
   persistenceRequest: OrderPersistenceRequest | null;
   persistedOrder: Order | null;
   emailDeliveryResult: OrderConfirmationEmailSendResult | null;
   fulfillmentResult: FulfillmentOrchestrationResult | null;
+  // Set when status is "unavailable": what became of the buyer's card hold.
+  authorizationRelease?: PaymentIntentHoldRelease;
   message: string;
 };
 

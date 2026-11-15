@@ -19,7 +19,10 @@ export async function POST(request: Request) {
   if (result.status !== "created" && result.status !== "already-persisted") {
     return NextResponse.json(
       { status: result.status, order: null, message: result.message },
-      { status: result.status === "configuration-error" ? 503 : 502 },
+      {
+        status:
+          result.status === "unavailable" ? 409 : result.status === "configuration-error" ? 503 : 502,
+      },
     );
   }
 

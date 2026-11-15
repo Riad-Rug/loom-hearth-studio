@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 
+import type { PersistConfirmedOrderResult } from "@/lib/order/contracts";
 import {
   applyStripePaymentIntentTransition,
   persistConfirmedStripeCheckoutOrder,
@@ -28,26 +30,29 @@ export async function POST(request: Request) {
   const webhookSecret = getStripeServerConfig().webhookSecret;
 
   if (signatureHeader && webhookSecret) {
+    let event: Stripe.Event | null = null;
+
     try {
-      const stripe = createStripeClient();
-      const event = stripe.webhooks.constructEvent(payload, signatureHeader, webhookSecret);
-
-      if (event.type === "payment_intent.amount_capturable_updated") {
-        const paymentIntentId = (event.data.object as { id: string }).id;
-        const result = await persistConfirmedStripePaymentIntentOrder({ paymentIntentId });
-
-        return NextResponse.json(
-          {
-            status: result.status,
-            eventType: event.type,
-            eventId: event.id,
-            message: result.message,
-          },
-          { status: 200 },
-        );
-      }
+      event = createStripeClient().webhooks.constructEvent(payload, signatureHeader, webhookSecret);
     } catch {
-      // Not verifiable/relevant via the official SDK path — fall through.
+      // Not verifiable via the official SDK path — fall through.
+    }
+
+    // Outside the try so a persistence failure surfaces as a 500 and Stripe
+    // retries the event, instead of falling through to a 200 "ignored".
+    if (event?.type === "payment_intent.amount_capturable_updated") {
+      const paymentIntentId = (event.data.object as { id: string }).id;
+      const result = await persistConfirmedStripePaymentIntentOrder({ paymentIntentId });
+
+      return NextResponse.json(
+        {
+          status: result.status,
+          eventType: event.type,
+          eventId: event.id,
+          message: result.message,
+        },
+        { status: holdStillNeedsRelease(result) ? 500 : 200 },
+      );
     }
   }
 
@@ -98,6 +103,8 @@ export async function POST(request: Request) {
       status:
         orderPersistenceResult?.status === "configuration-error"
           ? 503
+          : orderPersistenceResult && holdStillNeedsRelease(orderPersistenceResult)
+          ? 500
           : receipt.status === "accepted" || receipt.status === "ignored"
           ? 200
           : receipt.status === "invalid-payload"
@@ -107,4 +114,10 @@ export async function POST(request: Request) {
               : 503,
     },
   );
+}
+
+// An order that lost the race for its last unit must not leave the buyer's card
+// held. A non-2xx response makes Stripe redeliver the event, which retries the release.
+function holdStillNeedsRelease(result: PersistConfirmedOrderResult) {
+  return result.status === "unavailable" && result.authorizationRelease !== "released";
 }
