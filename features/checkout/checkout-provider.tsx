@@ -464,7 +464,11 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     },
     restartCheckout({ limits, message }) {
       limitItems(limits);
-      paymentIntentIdRef.current = null;
+      // Cleared through the queue so a request still in flight cannot write
+      // the declined intent's id back after the restart.
+      paymentIntentRequestQueueRef.current = paymentIntentRequestQueueRef.current.then(() => {
+        paymentIntentIdRef.current = null;
+      });
       setPlaceOrderState(initialPlaceOrderState);
       setPaymentIntentRetryCount((count) => count + 1);
       goToStep(limitCartItems(items, limits).length > 0 ? "payment" : "shipping");
@@ -581,6 +585,8 @@ type RequestPaymentIntentResult = {
   message: string;
 };
 
+const paymentIntentRequestTimeoutMs = 30_000;
+
 async function requestPaymentIntent(
   input: RequestPaymentIntentInput,
 ): Promise<RequestPaymentIntentResult> {
@@ -588,6 +594,7 @@ async function requestPaymentIntent(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
+    signal: AbortSignal.timeout(paymentIntentRequestTimeoutMs),
   });
 
   return (await response.json()) as RequestPaymentIntentResult;

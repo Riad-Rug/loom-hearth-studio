@@ -221,8 +221,8 @@ export async function validateCheckoutOrderDraft(input: {
     ];
   });
 
-  // Rounded to cents at each step, as the cart does, so float error in a sum
-  // cannot push an order just under the free-shipping threshold.
+  // Rounded to cents so the authorized amount carries no float error. The
+  // free-shipping threshold is compared in cents inside calculateShippingUsd.
   const subtotalUsd = roundToCents(
     validatedLineItems.reduce((runningTotal, lineItem) => runningTotal + lineItem.priceUsd * lineItem.quantity, 0),
   );
