@@ -1100,9 +1100,9 @@ function createProductCardDimensionsLabel(product: Product) {
     return formatRugDimensionsShort(product);
   }
 
-  const dimensions = extractProductDimensions(product.name);
+  const { measures } = parseProductTitle(product.name);
 
-  return dimensions ? normalizeDimensionSeparators(dimensions) : undefined;
+  return measures.length ? measures.join(dimensionSeparator) : undefined;
 }
 
 function createProductSubtitle(product: Product) {
@@ -1119,22 +1119,6 @@ function createPrimaryMaterialsLabel(product: Product) {
   }
 
   return materials.map((label, index) => (index === 0 ? label : label.toLowerCase())).join(" & ");
-}
-
-function extractProductDimensions(title: string) {
-  const normalizedTitle = normalizeDimensionSeparators(title);
-  const titleDimensions =
-    normalizedTitle.match(
-      /\b\d{1,3}(?:\.\d+)?["”]?\s*[×x]\s*\d{1,3}(?:\.\d+)?["”]?\b/gu,
-    )?.[0] ??
-    normalizedTitle.match(
-      /\b\d{1,2}'\d{0,2}"\s*[×x]\s*\d{1,2}'\d{0,2}"\b/gu,
-    )?.[0] ??
-    normalizedTitle.match(
-      /\b\d{1,3}(?:\.\d+)?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)\b/iu,
-    )?.[0];
-
-  return titleDimensions?.replace(/\s+/gu, " ").trim() || undefined;
 }
 
 function formatRugDimensionsShort(product: Extract<Product, { type: "rug" }>) {
