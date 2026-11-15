@@ -242,7 +242,9 @@ function createReservationPanel(
       title: "What happens next",
       lines: [
         "Your card is only pre-authorized — a temporary hold, like a hotel deposit. Nothing has been charged.",
-        `Photos sent ${formatOrderDateTimeLabel(photosSentDate)} — you have until ${formatOrderDateTimeLabel(approveByDate)} to approve. You will not be charged before then.`,
+        approveByDate.getTime() > Date.now()
+          ? `Photos sent ${formatOrderDateTimeLabel(photosSentDate)} — you have until ${formatOrderDateTimeLabel(approveByDate)} to approve. You will not be charged before then.`
+          : `Photos sent ${formatOrderDateTimeLabel(photosSentDate)} — the time to approve ended ${formatOrderDateTimeLabel(approveByDate)}. Unless you have already approved with us, the order will be cancelled and the hold on your card released, with nothing charged.`,
         "Only once you approve is your card charged and the piece shipped — say no, or don't respond, and the hold releases automatically with nothing charged.",
       ],
     };

@@ -27,17 +27,23 @@ export type ApprovalExpiryRunResult = {
 
 // Stripe's own state wins: a captured or already-released hold just catches
 // the order up. Otherwise the hold is released a capture margin after the
-// buyer's deadline.
+// buyer's deadline. An order whose photos were never sent is never cancelled
+// early: the buyer never had their window, so the hold lapses at Stripe and
+// the record-released branch closes the order on the next run.
 export function decideAwaitingApprovalAction(input: {
+  photosSentAt: string | undefined;
   deadline: Date;
+  holdExpiresAt: Date;
   paymentIntentStatus: Stripe.PaymentIntent.Status;
   now: Date;
 }): AwaitingApprovalAction {
   if (input.paymentIntentStatus === "succeeded") return "record-captured";
   if (input.paymentIntentStatus === "canceled") return "record-released";
-  if (input.paymentIntentStatus !== "requires_capture") return "wait";
+  if (input.paymentIntentStatus !== "requires_capture" || !input.photosSentAt) return "wait";
 
-  return input.now.getTime() >= resolveAutoCancelMoment(input.deadline).getTime() ? "release-hold" : "wait";
+  const autoCancelAt = resolveAutoCancelMoment({ deadline: input.deadline, holdExpiresAt: input.holdExpiresAt });
+
+  return input.now.getTime() >= autoCancelAt.getTime() ? "release-hold" : "wait";
 }
 
 export async function expireUnapprovedOrders(
@@ -98,15 +104,14 @@ async function settleAwaitingApprovalOrder(input: {
     await input.repository.recordHoldExpiry(input.order.id, stripeHoldExpiresAt);
   }
 
-  const deadline = resolveApprovalDeadline({
-    photosSentAt: input.order.photosSentAt,
-    holdExpiresAt: resolveHoldExpiry({
-      placedAt: input.order.placedAt,
-      holdExpiresAt: stripeHoldExpiresAt ?? input.order.holdExpiresAt,
-    }),
+  const holdExpiresAt = resolveHoldExpiry({
+    placedAt: input.order.placedAt,
+    holdExpiresAt: stripeHoldExpiresAt ?? input.order.holdExpiresAt,
   });
   const action = decideAwaitingApprovalAction({
-    deadline,
+    photosSentAt: input.order.photosSentAt,
+    deadline: resolveApprovalDeadline({ photosSentAt: input.order.photosSentAt, holdExpiresAt }),
+    holdExpiresAt,
     paymentIntentStatus: paymentIntent.status,
     now: input.now,
   });

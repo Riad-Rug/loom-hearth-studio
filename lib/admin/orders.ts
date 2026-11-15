@@ -85,6 +85,10 @@ export type AdminOrderManagementItem = {
   // The order needed stock another order already held (a late capture, or a
   // payment taken for a piece someone else reserved first). A person settles it.
   inventoryConflict: boolean;
+  // When Stripe lets the card hold go (exact when known, estimated otherwise),
+  // and the buyer's approval deadline derived from it; see lib/order/approval-deadline.ts.
+  holdExpiresAt: string;
+  approvalDeadline: string;
   // Stripe's PaymentIntent id for this order, when one exists — lets the
   // admin table link straight through to the real payment/capture/refund
   // state in the Stripe dashboard, since none of the "Paid"/"Refunded"
@@ -146,9 +150,24 @@ export type AdminOrderStatusUpdateRequest = {
   status: AdminOrderStatusOption;
 };
 
+// Every row field a status change can move, so the orders view applies the
+// server's view of the row instead of guessing it from the new status.
+export type AdminOrderStatusView = Pick<
+  AdminOrderManagementItem,
+  | "status"
+  | "statusLabel"
+  | "paymentStatus"
+  | "paymentLabel"
+  | "inventoryConflict"
+  | "customerStatusLabel"
+  | "holdExpiresAt"
+  | "approvalDeadline"
+>;
+
 export type AdminOrderStatusUpdateResult = {
   status: "updated" | "ignored" | "invalid-request";
   order: Order | null;
+  orderView: AdminOrderStatusView | null;
   fulfillmentResult: FulfillmentOrchestrationResult | null;
   message: string;
 };
@@ -314,6 +333,21 @@ async function getFulfillmentHistoryByOrderId(
 export async function updateAdminOrderStatus(
   input: AdminOrderStatusUpdateRequest,
 ): Promise<AdminOrderStatusUpdateResult> {
+  const result = await applyAdminOrderStatus(input);
+
+  if (!result.order) {
+    return { ...result, orderView: null };
+  }
+
+  const inventoryHold =
+    (await createOrderRepository().listInventoryHolds([result.order.id])).get(result.order.id) ?? null;
+
+  return { ...result, orderView: createAdminOrderStatusView(result.order, inventoryHold) };
+}
+
+async function applyAdminOrderStatus(
+  input: AdminOrderStatusUpdateRequest,
+): Promise<Omit<AdminOrderStatusUpdateResult, "orderView">> {
   if (!input.orderId || !adminOrderStatusOptions.includes(input.status)) {
     return {
       status: "invalid-request",
@@ -683,13 +717,29 @@ function createAdminOrderShippingAddress(address: Order["shippingAddress"]): Adm
   };
 }
 
+function createAdminOrderStatusView(order: Order, inventoryHold: InventoryHold | null): AdminOrderStatusView {
+  const inventoryConflict = inventoryHold === "conflict";
+  const holdExpiresAt = resolveHoldExpiry(order);
+
+  return {
+    status: order.status,
+    statusLabel: capitalizeLabel(order.status),
+    paymentStatus: order.paymentStatus,
+    paymentLabel: inventoryConflict
+      ? `${capitalizeLabel(order.paymentStatus)}. Stock conflict: another order holds this piece; refund or resolve by hand.`
+      : capitalizeLabel(order.paymentStatus),
+    inventoryConflict,
+    customerStatusLabel: formatOrderStatusLabel(order.status, order.paymentStatus),
+    holdExpiresAt: holdExpiresAt.toISOString(),
+    approvalDeadline: resolveApprovalDeadline({ photosSentAt: order.photosSentAt, holdExpiresAt }).toISOString(),
+  };
+}
+
 function createAdminOrderManagementItem(
   order: Order,
   history: AdminOrderFulfillmentHistoryEntry[],
   inventoryHold: InventoryHold | null,
 ): AdminOrderManagementItem {
-  const inventoryConflict = inventoryHold === "conflict";
-
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const costBreakdown = computeOrderCostBreakdown(order);
 
@@ -702,13 +752,7 @@ function createAdminOrderManagementItem(
     itemCountLabel: `${formatInteger(itemCount)} item${itemCount === 1 ? "" : "s"}`,
     items: createAdminOrderLineItems(order),
     shippingAddress: createAdminOrderShippingAddress(order.shippingAddress),
-    status: order.status,
-    statusLabel: capitalizeLabel(order.status),
-    paymentStatus: order.paymentStatus,
-    paymentLabel: inventoryConflict
-      ? `${capitalizeLabel(order.paymentStatus)}. Stock conflict: another order holds this piece; refund or resolve by hand.`
-      : capitalizeLabel(order.paymentStatus),
-    inventoryConflict,
+    ...createAdminOrderStatusView(order, inventoryHold),
     paymentIntentId: order.stripePaymentIntentId ?? null,
     totalUsd: order.totalUsd,
     totalPaidLabel: formatTotalPaidLabel(order),
@@ -729,7 +773,6 @@ function createAdminOrderManagementItem(
       : "No costs entered yet.",
     history,
 
-    customerStatusLabel: formatOrderStatusLabel(order.status, order.paymentStatus),
 
     photosSentAt: order.photosSentAt ?? null,
     photosSentAtLabel: order.photosSentAt

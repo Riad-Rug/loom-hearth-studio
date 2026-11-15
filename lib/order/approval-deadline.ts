@@ -32,8 +32,10 @@ export function resolveApprovalDeadline(input: { photosSentAt?: string | null; h
 }
 
 // The buyer is shown the deadline; the hold is released one capture margin
-// later, so an approval that arrives at the last minute can still be captured.
-// The deadline is never later than the hold expiry less that margin.
-export function resolveAutoCancelMoment(deadline: Date): Date {
-  return new Date(deadline.getTime() + captureMarginHours * hourMs);
+// later, so an approval that arrives at the last minute can still be captured,
+// and never after Stripe would let the hold go anyway.
+export function resolveAutoCancelMoment(input: { deadline: Date; holdExpiresAt: Date }): Date {
+  return new Date(
+    Math.min(input.deadline.getTime() + captureMarginHours * hourMs, input.holdExpiresAt.getTime()),
+  );
 }
