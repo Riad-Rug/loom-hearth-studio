@@ -439,9 +439,12 @@ export function productSchema(input: {
         "@type": "MerchantReturnPolicy",
         applicableCountry: ["US"],
         returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-        merchantReturnDays: 14,
+        merchantReturnDays: storePromise.returnWindowDays,
         returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+        returnFees:
+          storePromise.returnShippingPaidBy === "buyer"
+            ? "https://schema.org/ReturnFeesCustomerResponsibility"
+            : "https://schema.org/FreeReturn",
       },
       shippingDetails: ["US"].map((country) => ({
         "@type": "OfferShippingDetails",
