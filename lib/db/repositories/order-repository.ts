@@ -1,11 +1,19 @@
 import {
   Prisma,
+  type InventoryHold,
   OrderStatus as PrismaOrderStatus,
   PaymentStatus as PrismaPaymentStatus,
 } from "@prisma/client";
 
 import { createRepositoryContext, type RepositoryContext } from "@/lib/db";
+import { moveStockForLines } from "@/lib/db/repositories/product-stock";
 import type { OrderPersistenceRequest } from "@/lib/order";
+import {
+  InventoryUnavailableError,
+  planStockMovement,
+  resolveInventoryHold,
+  toStockLines,
+} from "@/lib/order/inventory-hold";
 import type { Order } from "@/types/domain";
 import type { ProductVariant as DomainProductVariant } from "@/types/domain/product";
 
@@ -16,6 +24,7 @@ export interface OrderRepository {
   getByPaymentIntentId(paymentIntentId: string): Promise<Order | null>;
   getByCustomerEmail(customerEmail: string): Promise<Order[]>;
   listAll(): Promise<Order[]>;
+  listAwaitingApproval(): Promise<Order[]>;
   updateStatus(orderId: string, status: Order["status"]): Promise<Order>;
   updatePaymentTransition(
     orderId: string,
@@ -51,12 +60,31 @@ type OrderRecordWithLineItems = Prisma.OrderRecordGetPayload<{
 export class PrismaOrderRepository implements OrderRepository {
   constructor(private readonly context: RepositoryContext) {}
 
+  // Throws InventoryUnavailableError, and persists nothing, when another order
+  // already holds one of the ordered units.
   async create(input: OrderPersistenceRequest) {
-    const createdOrder = await this.context.client.orderRecord.create({
-      data: mapOrderPersistenceRequestToCreateInput(input),
-      include: {
-        lineItems: true,
-      },
+    const inventoryHold = resolveInventoryHold(input);
+    const movement = planStockMovement("released", inventoryHold);
+    const createdOrder = await this.context.client.$transaction(async (tx) => {
+      // Insert the order before locking stock: a duplicate request for the same
+      // payment then waits on the unique index and fails as a duplicate, rather
+      // than waiting on the stock lock and reading this order's hold as a rival's.
+      const order = await tx.orderRecord.create({
+        data: { ...mapOrderPersistenceRequestToCreateInput(input), inventoryHold },
+        include: {
+          lineItems: true,
+        },
+      });
+
+      if (movement) {
+        const stock = await moveStockForLines(tx, toStockLines(input.items), movement, new Date());
+
+        if (stock.status === "unavailable") {
+          throw new InventoryUnavailableError(stock.productIds);
+        }
+      }
+
+      return order;
     });
 
     return mapOrderRecordToDomainOrder(createdOrder);
@@ -134,37 +162,72 @@ export class PrismaOrderRepository implements OrderRepository {
     return orders.map(mapOrderRecordToDomainOrder);
   }
 
-  async updateStatus(orderId: string, status: Order["status"]) {
-    const updatedOrder = await this.context.client.orderRecord.update({
+  async listAwaitingApproval() {
+    const orders = await this.context.client.orderRecord.findMany({
       where: {
-        id: orderId,
-      },
-      data: {
-        status: mapOrderStatusToPrisma(status),
+        status: PrismaOrderStatus.pending,
+        paymentStatus: PrismaPaymentStatus.authorized,
       },
       include: {
         lineItems: true,
       },
+      orderBy: {
+        placedAt: "asc",
+      },
     });
 
-    return mapOrderRecordToDomainOrder(updatedOrder);
+    return orders.map(mapOrderRecordToDomainOrder);
+  }
+
+  async updateStatus(orderId: string, status: Order["status"]) {
+    return this.applyTransition(orderId, { status });
   }
 
   async updatePaymentTransition(
     orderId: string,
     transition: { status: Order["status"]; paymentStatus: Order["paymentStatus"] },
   ) {
-    const updatedOrder = await this.context.client.orderRecord.update({
-      where: {
-        id: orderId,
-      },
-      data: {
-        status: mapOrderStatusToPrisma(transition.status),
-        paymentStatus: mapPaymentStatusToPrisma(transition.paymentStatus),
-      },
-      include: {
-        lineItems: true,
-      },
+    return this.applyTransition(orderId, transition);
+  }
+
+  // Every status change moves the order's stock to match, in one transaction.
+  // Repeating a transition finds the hold already settled and moves nothing.
+  private async applyTransition(
+    orderId: string,
+    transition: { status: Order["status"]; paymentStatus?: Order["paymentStatus"] },
+  ) {
+    const updatedOrder = await this.context.client.$transaction(async (tx) => {
+      // The row lock serializes webhook retries, cron runs, and admin double-clicks.
+      const [current] = await tx.$queryRaw<
+        Array<{ paymentStatus: PrismaPaymentStatus; inventoryHold: InventoryHold | null }>
+      >`SELECT "paymentStatus", "inventoryHold" FROM "OrderRecord" WHERE "id" = ${orderId} FOR UPDATE`;
+      const inventoryHold = current
+        ? await settleInventoryHold(
+            tx,
+            orderId,
+            current.inventoryHold,
+            resolveInventoryHold({
+              status: transition.status,
+              paymentStatus: transition.paymentStatus ?? mapPrismaPaymentStatus(current.paymentStatus),
+            }),
+          )
+        : null;
+
+      return tx.orderRecord.update({
+        where: {
+          id: orderId,
+        },
+        data: {
+          status: mapOrderStatusToPrisma(transition.status),
+          ...(transition.paymentStatus && {
+            paymentStatus: mapPaymentStatusToPrisma(transition.paymentStatus),
+          }),
+          inventoryHold,
+        },
+        include: {
+          lineItems: true,
+        },
+      });
     });
 
     return mapOrderRecordToDomainOrder(updatedOrder);
@@ -306,6 +369,37 @@ export function createOrderRepository(context = createRepositoryContext()) {
   return new PrismaOrderRepository(context);
 }
 
+async function settleInventoryHold(
+  tx: Prisma.TransactionClient,
+  orderId: string,
+  current: InventoryHold | null,
+  target: InventoryHold,
+): Promise<InventoryHold | null> {
+  const movement = planStockMovement(current, target);
+
+  if (!movement) {
+    return current;
+  }
+
+  const lineItems = await tx.orderLineItemRecord.findMany({ where: { orderId } });
+  const stock = await moveStockForLines(
+    tx,
+    toStockLines(lineItems.map(mapLineItemRecordToDomainItem)),
+    movement,
+    new Date(),
+  );
+
+  if (stock.status === "moved") {
+    return target;
+  }
+
+  // Only a reopened or late-captured order can get here: its piece went back on
+  // sale and someone else now holds it. The status change still records what
+  // already happened at Stripe or in the admin; a person settles the piece.
+  console.error("ORDER_INVENTORY_CONFLICT", { orderId, movement, productIds: stock.productIds });
+  return current;
+}
+
 export const orderRepositoryTodo =
   "TODO: Extend the PrismaOrderRepository only when real order-persistence boundary consumption is wired into the webhook/order pipeline.";
 
@@ -351,16 +445,7 @@ function mapOrderRecordToDomainOrder(order: OrderRecordWithLineItems): Order {
   return {
     id: order.id,
     orderNumber: order.orderNumber,
-    items: order.lineItems.map((item) => ({
-      id: item.cartItemId,
-      productId: item.productId,
-      productType: item.productType as Order["items"][number]["productType"],
-      name: item.name,
-      slug: item.slug,
-      priceUsd: Number(item.priceUsd),
-      quantity: item.quantity,
-      variant: item.variant ? (item.variant as unknown as DomainProductVariant) : undefined,
-    })),
+    items: order.lineItems.map(mapLineItemRecordToDomainItem),
     status: mapPrismaOrderStatus(order.status),
     paymentStatus: mapPrismaPaymentStatus(order.paymentStatus),
     billingAddress: order.billingAddress
@@ -388,6 +473,19 @@ function mapOrderRecordToDomainOrder(order: OrderRecordWithLineItems): Order {
     paymentFeeUsd: order.paymentFeeUsd != null ? Number(order.paymentFeeUsd) : undefined,
     otherCostUsd: order.otherCostUsd != null ? Number(order.otherCostUsd) : undefined,
     costsUpdatedAt: order.costsUpdatedAt?.toISOString() ?? undefined,
+  };
+}
+
+function mapLineItemRecordToDomainItem(item: OrderRecordWithLineItems["lineItems"][number]): Order["items"][number] {
+  return {
+    id: item.cartItemId,
+    productId: item.productId,
+    productType: item.productType as Order["items"][number]["productType"],
+    name: item.name,
+    slug: item.slug,
+    priceUsd: Number(item.priceUsd),
+    quantity: item.quantity,
+    variant: item.variant ? (item.variant as unknown as DomainProductVariant) : undefined,
   };
 }
 

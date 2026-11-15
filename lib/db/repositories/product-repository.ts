@@ -17,6 +17,9 @@ export type ProductWithUpdatedAt = {
   updatedAt: Date;
 };
 
+// Reserved pieces stay listed so their pages keep resolving and read as taken.
+const storefrontProductStatuses = ["active", "reserved", "sold"];
+
 export interface ProductRepository {
   listAll(): Promise<Product[]>;
   listAllWithUpdatedAt(): Promise<ProductWithUpdatedAt[]>;
@@ -40,7 +43,7 @@ export class PrismaProductRepository implements ProductRepository {
   async listAll() {
     const products = await this.context.client.catalogProduct.findMany({
       where: {
-        status: { in: ["active", "sold"] },
+        status: { in: storefrontProductStatuses },
       },
       orderBy: {
         updatedAt: "desc",
@@ -55,7 +58,7 @@ export class PrismaProductRepository implements ProductRepository {
   async listAllWithUpdatedAt() {
     const products = await this.context.client.catalogProduct.findMany({
       where: {
-        status: { in: ["active", "sold"] },
+        status: { in: storefrontProductStatuses },
       },
       orderBy: {
         updatedAt: "desc",
@@ -72,7 +75,7 @@ export class PrismaProductRepository implements ProductRepository {
     const products = await this.context.client.catalogProduct.findMany({
       where: {
         category,
-        status: { in: ["active", "sold"] },
+        status: { in: storefrontProductStatuses },
       },
       orderBy: {
         updatedAt: "desc",
@@ -134,7 +137,7 @@ export class PrismaProductRepository implements ProductRepository {
     const product = await this.context.client.catalogProduct.findFirst({
       where: {
         slug,
-        status: { in: ["active", "sold"] },
+        status: { in: storefrontProductStatuses },
       },
     });
 
@@ -145,7 +148,7 @@ export class PrismaProductRepository implements ProductRepository {
     const product = await this.context.client.catalogProduct.findFirst({
       where: {
         previousSlugs: { has: slug },
-        status: { in: ["active", "sold"] },
+        status: { in: storefrontProductStatuses },
       },
       orderBy: {
         updatedAt: "desc",
