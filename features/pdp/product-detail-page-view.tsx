@@ -332,7 +332,7 @@ export function ProductDetailPageView({
                 <li>{storePromiseCopy.duties}</li>
                 <li>
                   Returns accepted within 14 days of delivery. Return shipping is paid by you unless the piece was
-                  misdescribed.{" "}
+                  materially misdescribed.{" "}
                   <Link className="underline underline-offset-2 text-[var(--color-green)]" href="/returns-policy">
                     Read the returns policy
                   </Link>
@@ -707,9 +707,12 @@ function getContentsNote(product: ProductDetailPageViewModel): { label: string; 
  */
 function formatMultiUnitSize(product: MultiUnitProductDetailPageViewModel) {
   const { heightCm } = product.cartProduct;
-  const titleHeight =
-    product.category === "poufs" ? parseProductTitle(product.name).height?.replace(/["”]/gu, "″") : undefined;
-  const height = heightCm ? `${heightCm} cm (${Math.round(heightCm / 2.54)}″)` : titleHeight;
+  const titleHeight = product.category === "poufs" ? parseProductTitle(product.name).height : undefined;
+  const height = heightCm
+    ? formatHeightInBothUnits(heightCm, "cm")
+    : titleHeight
+      ? formatTitleHeight(titleHeight)
+      : undefined;
   const footprint = product.dimensionsCm ? formatMultiUnitDimensions(product.dimensionsCm) : undefined;
 
   if (!height) {
@@ -717,6 +720,23 @@ function formatMultiUnitSize(product: MultiUnitProductDetailPageViewModel) {
   }
 
   return footprint ? `${footprint}, ${height} high` : `${height} high`;
+}
+
+/** "14\"" or "35 cm" from a title, in the footprint's "36 cm (14″)" form. Anything else is shown as written. */
+function formatTitleHeight(height: string) {
+  const match = /^(\d{1,3}(?:\.\d+)?)\s*(["”″]|inches|inch|in|cm)$/u.exec(height);
+
+  if (!match) {
+    return height;
+  }
+
+  return formatHeightInBothUnits(Number(match[1]), match[2] === "cm" ? "cm" : "in");
+}
+
+function formatHeightInBothUnits(value: number, unit: "cm" | "in") {
+  return unit === "cm"
+    ? `${value} cm (${Math.round(value / 2.54)}″)`
+    : `${Math.round(value * 2.54)} cm (${value}″)`;
 }
 
 function buildSpecificationRows(product: ProductDetailPageViewModel, rugStyleHasStock: boolean) {
