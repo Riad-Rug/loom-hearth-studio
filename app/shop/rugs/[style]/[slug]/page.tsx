@@ -90,7 +90,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
               ? product.palette.map((swatch) => swatch.label)
               : undefined,
           imageUrls: product.gallery.map((image) => image.src),
-          availability: product.status === "sold" ? "outOfStock" : "inStock",
+          availability: product.availability,
           isOneOfOne: true,
           createdAt: product.cartProduct.createdAt,
         })}
@@ -113,7 +113,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
       />
       <ProductOpenGraphMeta
         priceAmount={product.priceUsd}
-        availability={product.status === "sold" ? "oos" : "instock"}
+        availability={product.availability}
       />
       <ProductDetailPageView product={product} rugStyleHasStock={rugStyleHasStock} />
     </>

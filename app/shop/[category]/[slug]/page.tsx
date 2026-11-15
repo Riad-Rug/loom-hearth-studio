@@ -78,11 +78,7 @@ export default async function CategoryProductPage({
               ? product.palette.map((swatch) => swatch.label)
               : undefined,
           imageUrls: product.gallery.map((image) => image.src),
-          availability:
-            product.status === "sold" ||
-            (product.type === "multiUnit" && product.inventoryState === "outOfStock")
-              ? "outOfStock"
-              : "inStock",
+          availability: product.availability,
           isOneOfOne: product.category === "vintage",
           createdAt: product.cartProduct.createdAt,
         })}
@@ -100,12 +96,7 @@ export default async function CategoryProductPage({
       />
       <ProductOpenGraphMeta
         priceAmount={product.priceUsd}
-        availability={
-          product.status === "sold" ||
-          (product.type === "multiUnit" && product.inventoryState === "outOfStock")
-            ? "oos"
-            : "instock"
-        }
+        availability={product.availability}
       />
       <ProductDetailPageView product={product} />
     </>

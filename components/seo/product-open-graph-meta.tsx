@@ -1,9 +1,17 @@
 import { siteConfig } from "@/config/site";
+import type { ProductAvailability } from "@/lib/catalog/availability";
 
 type ProductOpenGraphMetaProps = {
   priceAmount: number;
   priceCurrency?: string;
-  availability: "instock" | "oos" | "preorder";
+  availability: ProductAvailability;
+};
+
+const openGraphAvailability: Record<ProductAvailability, "instock" | "oos"> = {
+  available: "instock",
+  reserved: "oos",
+  sold: "oos",
+  outOfStock: "oos",
 };
 
 /**
@@ -26,7 +34,7 @@ export function ProductOpenGraphMeta({
         <>
           <meta property="product:price:amount" content={priceAmount.toFixed(2)} />
           <meta property="product:price:currency" content={priceCurrency} />
-          <meta property="og:availability" content={availability} />
+          <meta property="og:availability" content={openGraphAvailability[availability]} />
         </>
       ) : null}
     </>

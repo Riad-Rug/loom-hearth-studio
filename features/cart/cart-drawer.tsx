@@ -5,7 +5,12 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { CartItemThumbnail } from "@/features/cart/cart-item-thumbnail";
-import { getCartItemDetails, getCartItemLabel } from "@/features/cart/cart-items";
+import {
+  getCartItemDetails,
+  getCartItemLabel,
+  unavailableCheckoutNote,
+  unavailableLineNote,
+} from "@/features/cart/cart-items";
 import { formatUsd, useCart } from "@/features/cart/cart-provider";
 import { FreeShippingProgress } from "@/features/cart/free-shipping-progress";
 
@@ -18,7 +23,17 @@ export function CartDrawer() {
   const [isPointerFine, setIsPointerFine] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
   const shellRef = useRef<HTMLDivElement | null>(null);
-  const { itemCount, items, subtotalUsd, discountUsd, promoCode, shippingUsd, totalUsd } = useCart();
+  const {
+    getItemAvailability,
+    hasUnavailableItems,
+    itemCount,
+    items,
+    subtotalUsd,
+    discountUsd,
+    promoCode,
+    shippingUsd,
+    totalUsd,
+  } = useCart();
   const visibleItems = items.slice(0, PREVIEW_ITEM_LIMIT);
   const hiddenItemCount = Math.max(0, items.length - PREVIEW_ITEM_LIMIT);
   const itemCountLabel = `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
@@ -178,27 +193,34 @@ export function CartDrawer() {
             </div>
 
             <div className={styles.itemList}>
-              {visibleItems.map((item) => (
-                <article key={item.id} className={styles.itemRow}>
-                  <CartItemThumbnail item={item} className={styles.itemMedia} />
-                  <div className={styles.itemContent}>
-                    <div className={styles.itemTopline}>
-                      <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
-                      <p className={styles.itemPrice}>{formatUsd(item.priceUsd)}</p>
+              {visibleItems.map((item) => {
+                const availability = getItemAvailability(item);
+
+                return (
+                  <article key={item.id} className={styles.itemRow}>
+                    <CartItemThumbnail item={item} className={styles.itemMedia} />
+                    <div className={styles.itemContent}>
+                      <div className={styles.itemTopline}>
+                        <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
+                        <p className={styles.itemPrice}>{formatUsd(item.priceUsd)}</p>
+                      </div>
+                      <h3>
+                        <Link
+                          className={styles.itemLink}
+                          href={item.href as Route}
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {item.name}
+                        </Link>
+                      </h3>
+                      <p className={styles.itemMeta}>{getCartItemDetails(item)}</p>
+                      {availability !== "available" ? (
+                        <p className={styles.itemMeta}>{unavailableLineNote[availability]}</p>
+                      ) : null}
                     </div>
-                    <h3>
-                      <Link
-                        className={styles.itemLink}
-                        href={item.href as Route}
-                        onClick={() => setIsOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                    </h3>
-                    <p className={styles.itemMeta}>{getCartItemDetails(item)}</p>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
 
             {hiddenItemCount > 0 ? (
@@ -227,14 +249,25 @@ export function CartDrawer() {
                 <strong>{formatUsd(totalUsd)}</strong>
               </div>
               <FreeShippingProgress />
+              {hasUnavailableItems ? (
+                <p className={styles.itemMeta} role="status">
+                  {unavailableCheckoutNote}
+                </p>
+              ) : null}
               <div className={styles.actionGroup}>
-                <Link
-                  className={styles.checkoutButton}
-                  href="/checkout"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Checkout
-                </Link>
+                {hasUnavailableItems ? (
+                  <button className={styles.checkoutButton} disabled type="button">
+                    Checkout
+                  </button>
+                ) : (
+                  <Link
+                    className={styles.checkoutButton}
+                    href="/checkout"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Checkout
+                  </Link>
+                )}
                 <Link
                   className={styles.secondaryButton}
                   href="/shop"

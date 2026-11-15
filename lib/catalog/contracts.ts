@@ -1,3 +1,4 @@
+import type { ProductAvailability } from "@/lib/catalog/availability";
 import type { LaunchInventoryState } from "@/lib/catalog/helpers";
 import type {
   MultiUnitProduct,
@@ -27,8 +28,8 @@ export type CatalogProductCardViewModel = {
   subtitle: string;
   category: ProductCategory;
   status: Product["status"];
+  availability: ProductAvailability;
   type: Product["type"];
-  availabilityLabel: string;
   /**
    * Multi-unit piece with nothing left on the shelf (inventory <= 0). Always
    * false for rugs, which are quantity-1 pieces with no inventory field — their
@@ -77,7 +78,7 @@ type ProductDetailPageViewModelBase = {
   name: string;
   subtitle: string;
   category: ProductCategory;
-  status: Product["status"];
+  availability: ProductAvailability;
   description: string;
   descriptionSections: ProductDetailSectionViewModel[];
   seoTitle: string;

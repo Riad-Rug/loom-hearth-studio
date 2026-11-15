@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 
+import { unavailableCopy } from "@/lib/catalog/availability";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { ArrowIcon } from "@/components/icons/arrow-icon";
 
@@ -116,8 +117,8 @@ export function InventoryProductPager({ products, pageSize = 8 }: InventoryProdu
                 <div className={styles.productMeta}>
                   <div className={styles.productTitleRow}>
                     <p className={styles.productTitle}>{product.displayName}</p>
-                    {product.status === "sold" ? (
-                      <span className={styles.productBadge}>SOLD</span>
+                    {product.availability !== "available" ? (
+                      <span className={styles.productBadge}>{unavailableCopy[product.availability].label}</span>
                     ) : null}
                   </div>
                   <p className={styles.productSubtitle}>{product.subtitle}</p>

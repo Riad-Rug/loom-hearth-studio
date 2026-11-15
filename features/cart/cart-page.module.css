@@ -213,6 +213,7 @@
   height: 2rem;
 }
 
+.primaryAction:disabled,
 .quantityButton:disabled {
   cursor: not-allowed;
   opacity: 0.45;

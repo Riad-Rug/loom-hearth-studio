@@ -117,6 +117,10 @@ type CheckoutContextValue = {
   setPlaceOrderState: (state: PlaceOrderState) => void;
   placedOrder: PlacedOrder | null;
   completeOrder: (order: PlacedOrder) => void;
+  // Another order took these pieces first and this order was not saved, so the
+  // old PaymentIntent cannot be confirmed again: drop the pieces and start a new
+  // PaymentIntent for whatever is left.
+  dropUnavailableItems: (input: { productIds: string[]; message: string }) => void;
 };
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
@@ -322,8 +326,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
             setCartRecoveryMessage(
               staleItems.length > 1
-                ? "A few items in your order just sold — we've removed them from your order. Your total has been updated."
-                : "That item just sold — we've removed it from your order. Your total has been updated.",
+                ? "A few pieces in your order are no longer available, so we removed them. Your total has been updated."
+                : "A piece in your order is no longer available, so we removed it. Your total has been updated.",
             );
 
             // Don't touch paymentIntent here: it's already "creating" (set
@@ -437,6 +441,15 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
       clearCart();
       goToStep("confirmation");
+    },
+    dropUnavailableItems({ productIds, message }) {
+      const unavailableItems = items.filter((item) => productIds.includes(item.productId));
+
+      unavailableItems.forEach((item) => removeItem(item.id));
+      setPlaceOrderState(initialPlaceOrderState);
+      setPaymentIntentRetryCount((count) => count + 1);
+      goToStep(unavailableItems.length < items.length ? "payment" : "shipping");
+      setCartRecoveryMessage(message);
     },
   };
 

@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
+import { unavailableCopy } from "@/lib/catalog/availability";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
 import styles from "./catalog-page.module.css";
@@ -128,8 +129,8 @@ export function ProductCard({
       <div className={styles.productContent}>
         <div className={styles.productTitleRow}>
           <Title className={styles.productTitle}>{product.displayName}</Title>
-          {product.status === "sold" ? (
-            <span className={styles.productMonoBadge}>SOLD</span>
+          {product.availability !== "available" ? (
+            <span className={styles.productMonoBadge}>{unavailableCopy[product.availability].label}</span>
           ) : null}
         </div>
         <p className={styles.productDimensions}>{product.subtitle}</p>

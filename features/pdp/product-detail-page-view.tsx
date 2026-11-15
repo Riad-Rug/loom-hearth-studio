@@ -24,6 +24,7 @@ import { useCart } from "@/features/cart/cart-provider";
 import { ProductCard, recommendationRailCardSizes } from "@/features/catalog/product-card";
 import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
 import { trackViewItem } from "@/lib/analytics/gtag";
+import { unavailableCopy, type ProductAvailability, type UnavailableReason } from "@/lib/catalog/availability";
 import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
 import { parseProductTitle } from "@/lib/catalog/product-card-name";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
@@ -56,19 +57,6 @@ type ProductDetailPageViewProps = {
 
 type GalleryItem = ProductDetailPageViewModel["gallery"][number];
 
-type PurchaseState = "available" | "reserved" | "sold" | "outOfStock";
-type UnavailableState = Exclude<PurchaseState, "available">;
-
-const unavailableCopy: Record<UnavailableState, { pill: string; headline: string; note?: string }> = {
-  reserved: {
-    pill: "RESERVED",
-    headline: "This piece is reserved.",
-    note: "On hold for another buyer while they review photos. If they pass, it comes back on the site.",
-  },
-  sold: { pill: "SOLD", headline: "This piece has sold.", note: "It stays in the catalog as a record." },
-  outOfStock: { pill: "OUT OF STOCK", headline: "This piece is out of stock." },
-};
-
 const PANEL_CARD = "grid gap-[var(--space-3)] p-[var(--space-4)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)]";
 const PANEL_EYEBROW = "text-[var(--color-green)] text-[0.72rem] font-semibold tracking-[0.08em] uppercase";
 const PRIMARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium";
@@ -89,7 +77,7 @@ export function ProductDetailPageView({
   const [isPointerFine, setIsPointerFine] = useState(false);
   const enlargeButtonRef = useRef<HTMLButtonElement | null>(null);
   const { reserve: reserveProduct } = usePurchaseActions(product);
-  const purchaseState = getPurchaseState(product);
+  const purchaseState = product.availability;
   const shippingCopy = getShippingCopy(product.priceUsd);
   const contentsNote = getContentsNote(product);
   const title = parseProductTitle(product.name);
@@ -1019,26 +1007,6 @@ function RugPurchaseShell({
   );
 }
 
-function getPurchaseState(product: ProductDetailPageViewModel): PurchaseState {
-  if (product.status === "sold") {
-    return "sold";
-  }
-
-  // The reservation branch adds status "reserved" (active -> reserved while
-  // an order awaits photo approval, then sold or back to active). Any status
-  // that is neither active nor sold lands here, so this keeps working when
-  // that value merges.
-  if (product.status !== "active") {
-    return "reserved";
-  }
-
-  if (product.type === "multiUnit" && product.inventoryState === "outOfStock") {
-    return "outOfStock";
-  }
-
-  return "available";
-}
-
 /**
  * Checkout applies the free-shipping threshold to the cart subtotal after
  * discounts, so the page can only say what the piece does at full price.
@@ -1054,9 +1022,9 @@ function getShippingCopy(priceUsd: number) {
   return { short: storePromiseCopy.shipping, full: `${storePromiseCopy.shipping}.` };
 }
 
-function getStatusPillLabel(product: ProductDetailPageViewModel, purchaseState: PurchaseState) {
+function getStatusPillLabel(product: ProductDetailPageViewModel, purchaseState: ProductAvailability) {
   if (purchaseState !== "available") {
-    return unavailableCopy[purchaseState].pill;
+    return unavailableCopy[purchaseState].label;
   }
 
   return product.type === "rug" ? "1 OF 1" : `${product.cartProduct.inventory} AVAILABLE`;
@@ -1067,7 +1035,7 @@ function UnavailablePurchaseShell({
   state,
 }: {
   product: ProductDetailPageViewModel;
-  state: UnavailableState;
+  state: UnavailableReason;
 }) {
   const similarInStock = product.similarRugs.slice(0, 3);
   const copy = unavailableCopy[state];

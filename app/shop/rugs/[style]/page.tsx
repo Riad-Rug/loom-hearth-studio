@@ -47,11 +47,7 @@ export async function generateMetadata({
   // hardcoding today's empty styles into the source, which is exactly the
   // staleness this change removes.
   const products = await listRugStyleProductCards({ style });
-  // Mirrors isPurchasableProduct against the card view model: active, and not an
-  // out-of-stock multi-unit listing.
-  const hasPurchasableProducts = products.some(
-    (product) => product.status === "active" && !product.isOutOfStock,
-  );
+  const hasPurchasableProducts = products.some((product) => product.availability === "available");
 
   return buildManagedMetadata({
     entityType: "category",

@@ -1,3 +1,4 @@
+import { unavailableCopy, type ProductAvailability, type UnavailableReason } from "@/lib/catalog/availability";
 import { getCategoryLabel, getProductRoutePath } from "@/lib/catalog/helpers";
 import type { CommerceItem } from "@/lib/analytics/commerce-events";
 import type { Product } from "@/types/domain";
@@ -155,7 +156,19 @@ export function getCartItemDetails(item: CartStoreItem) {
   return [`Qty ${item.quantity}`, item.variantName].filter(Boolean).join(" · ");
 }
 
-export function getCartItemAvailabilityNote(item: CartStoreItem) {
+export const unavailableLineNote: Record<UnavailableReason, string> = {
+  reserved: `${unavailableCopy.reserved.headline} ${unavailableCopy.reserved.note}`,
+  sold: unavailableCopy.sold.headline,
+  outOfStock: unavailableCopy.outOfStock.headline,
+};
+
+export const unavailableCheckoutNote = "Some pieces can't be bought right now. Remove them from your cart to check out.";
+
+export function getCartItemAvailabilityNote(item: CartStoreItem, availability: ProductAvailability) {
+  if (availability !== "available") {
+    return unavailableLineNote[availability];
+  }
+
   if (item.productType === "rug") {
     return "One of a kind";
   }

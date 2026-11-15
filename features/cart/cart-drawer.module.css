@@ -303,6 +303,11 @@
   box-shadow: 0 0.75rem 1.5rem rgba(198, 106, 61, 0.18);
 }
 
+.checkoutButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .secondaryButton {
   padding: 0.85rem 1rem;
   border: 1px solid var(--button-secondary-border);

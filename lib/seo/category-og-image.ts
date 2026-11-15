@@ -10,7 +10,7 @@ import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
  */
 export function categoryOgImage(products: CatalogProductCardViewModel[]) {
   const representative = products.find(
-    (product) => product.status === "active" && !product.isOutOfStock && product.primaryImage?.src,
+    (product) => product.availability === "available" && product.primaryImage?.src,
   );
 
   if (!representative?.primaryImage) {

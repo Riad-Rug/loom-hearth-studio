@@ -1,5 +1,6 @@
 import { siteConfig } from "@/config/site";
-import { getProductRoutePath, isPurchasableProduct } from "@/lib/catalog/helpers";
+import { getProductAvailability } from "@/lib/catalog/availability";
+import { getProductRoutePath } from "@/lib/catalog/helpers";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository } from "@/lib/db/repositories/product-repository";
 import { absoluteUrl } from "@/lib/seo/metadata";
@@ -41,7 +42,7 @@ function buildFeedImageUrl(publicId: string) {
 }
 
 function getAvailability(product: Product) {
-  return isPurchasableProduct(product) ? "in stock" : "out of stock";
+  return getProductAvailability(product) === "available" ? "in stock" : "out of stock";
 }
 
 function getCondition(product: Product) {

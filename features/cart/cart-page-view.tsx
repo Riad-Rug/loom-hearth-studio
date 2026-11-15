@@ -10,6 +10,7 @@ import {
   getCartItemLabel,
   getMaxQuantity,
   toCommerceItems,
+  unavailableCheckoutNote,
 } from "@/features/cart/cart-items";
 import { formatUsd, useCart } from "@/features/cart/cart-provider";
 import { FreeShippingProgress } from "@/features/cart/free-shipping-progress";
@@ -21,6 +22,8 @@ import styles from "./cart-page.module.css";
 export function CartPageView() {
   const {
     discountUsd,
+    getItemAvailability,
+    hasUnavailableItems,
     itemCount,
     items,
     promoCode,
@@ -66,12 +69,18 @@ export function CartPageView() {
             <Link className={styles.secondaryAction} href="/shop">
               Continue shopping
             </Link>
-            <Link
-              className={styles.primaryAction}
-              href={isEmpty ? "/shop" : "/checkout"}
-            >
-              {isEmpty ? "Shop products" : "Checkout"}
-            </Link>
+            {hasUnavailableItems ? (
+              <button className={styles.primaryAction} disabled type="button">
+                Checkout
+              </button>
+            ) : (
+              <Link
+                className={styles.primaryAction}
+                href={isEmpty ? "/shop" : "/checkout"}
+              >
+                {isEmpty ? "Shop products" : "Checkout"}
+              </Link>
+            )}
           </div>
         </div>
 
@@ -90,7 +99,7 @@ export function CartPageView() {
           <div className={styles.contentGrid}>
             <div className={styles.itemList}>
               {items.map((item) => {
-                const availabilityNote = getCartItemAvailabilityNote(item);
+                const availabilityNote = getCartItemAvailabilityNote(item, getItemAvailability(item));
 
                 return (
                   <article key={item.id} className={styles.itemRow}>
@@ -190,9 +199,20 @@ export function CartPageView() {
               </div>
               <FreeShippingProgress />
               <div className={styles.summaryActions}>
-                <Link className={styles.primaryAction} href="/checkout">
-                  Proceed to checkout
-                </Link>
+                {hasUnavailableItems ? (
+                  <>
+                    <p className={styles.quantityRule} role="status">
+                      {unavailableCheckoutNote}
+                    </p>
+                    <button className={styles.primaryAction} disabled type="button">
+                      Proceed to checkout
+                    </button>
+                  </>
+                ) : (
+                  <Link className={styles.primaryAction} href="/checkout">
+                    Proceed to checkout
+                  </Link>
+                )}
                 <Link className={styles.secondaryAction} href="/shop">
                   Continue shopping
                 </Link>

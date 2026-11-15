@@ -14,8 +14,8 @@ import {
   getProductBadgeLabel,
   getProductRoutePath,
   getProductRoutePattern,
-  isPurchasableProduct,
 } from "@/lib/catalog/helpers";
+import { getProductAvailability } from "@/lib/catalog/availability";
 import type {
   CatalogProductCardViewModel,
   CatalogProductSizeBucket,
@@ -70,7 +70,7 @@ export async function listCatalogProductCards(input?: {
 /**
  * Does this category hold at least one piece a shopper can buy right now?
  * Rows alone are not enough: a category whose only listing is active but out of
- * stock (a notify-me presentation) counts as empty. See isPurchasableProduct.
+ * stock (a notify-me presentation) counts as empty.
  */
 export async function categoryHasPurchasableProducts(
   category: ProductCategory,
@@ -80,7 +80,7 @@ export async function categoryHasPurchasableProducts(
 
   const products = await repository.listByCategory(category);
 
-  return products.some(isPurchasableProduct);
+  return products.some((product) => getProductAvailability(product) === "available");
 }
 
 /**
@@ -98,7 +98,9 @@ export async function listUnavailableCategoryHrefs(
 
   const products = await repository.listAll();
   const purchasableCategories = new Set(
-    products.filter(isPurchasableProduct).map((product) => product.category),
+    products
+      .filter((product) => getProductAvailability(product) === "available")
+      .map((product) => product.category),
   );
 
   return productCategoryOptions
@@ -110,10 +112,10 @@ export async function listUnavailableCategoryHrefs(
  * Rug-style slugs with at least one piece a shopper can buy right now, so the
  * /shop/rugs style nav and the sitemap can list exactly the styles that have
  * stock instead of hardcoding which ones do. Rows alone are not enough here
- * either: a style whose every rug is sold counts as empty (see
- * isPurchasableProduct). Live read on every render — rugs are one of a kind, so
- * a style drops out when its last piece sells and returns on its own the moment
- * new stock lands. One listByCategory("rugs") per call.
+ * either: a style whose every rug is sold or reserved counts as empty. Live read
+ * on every render — rugs are one of a kind, so a style drops out when its last
+ * piece sells and returns on its own the moment new stock lands. One
+ * listByCategory("rugs") per call.
  */
 export async function listAvailableRugStyleSlugs(
   repository: ProductRepository = createProductRepository(),
@@ -126,7 +128,7 @@ export async function listAvailableRugStyleSlugs(
     products
       .filter(
         (product): product is RugProduct =>
-          product.type === "rug" && isPurchasableProduct(product),
+          product.type === "rug" && getProductAvailability(product) === "available",
       )
       .map((product) => normalizeSlug(product.rugStyle))
       .filter(Boolean),
@@ -308,10 +310,9 @@ export async function listAddToOrderCandidateProducts(input: {
   const allProducts = await repository.listAll();
 
   const candidates = allProducts
-    .filter((product) => product.status === "active")
+    .filter((product) => getProductAvailability(product) === "available")
     .filter((product) => !excludeProductIds.has(product.id))
     .filter((product) => categoryRank.has(product.category))
-    .filter((product) => product.type !== "multiUnit" || product.inventory > 0)
     .filter((product) => product.priceUsd > 0 && product.priceUsd <= priceCeilingUsd)
     .sort((left, right) => {
       const rankDelta = (categoryRank.get(left.category) ?? 0) - (categoryRank.get(right.category) ?? 0);
@@ -417,9 +418,8 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     subtitle: createProductSubtitle(product),
     category: product.category,
     status: product.status,
+    availability: getProductAvailability(product),
     type: product.type,
-    availabilityLabel:
-      product.status === "sold" ? "SOLD" : product.type === "rug" ? "ONE OF A KIND" : "Available now",
     isOutOfStock: product.type === "multiUnit" && getInventoryState(product) === "outOfStock",
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
@@ -490,7 +490,7 @@ function createProductDetailPageViewModel(
     name: product.name,
     subtitle: createProductSubtitle(product),
     category: product.category,
-    status: product.status,
+    availability: getProductAvailability(product),
     description: createProductDescriptionLead(product),
     descriptionSections: createProductDescriptionSections(product),
     seoTitle: product.seoTitle,
@@ -598,19 +598,7 @@ function isRecommendableCandidate(
   product: Product,
   candidate: Product,
 ) {
-  if (candidate.id === product.id) {
-    return false;
-  }
-
-  if (candidate.status !== "active") {
-    return false;
-  }
-
-  if (candidate.type === "multiUnit" && candidate.inventory <= 0) {
-    return false;
-  }
-
-  return true;
+  return candidate.id !== product.id && getProductAvailability(candidate) === "available";
 }
 
 function getRecommendationScore(
