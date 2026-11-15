@@ -39,6 +39,7 @@ export type AdminProductFormPageData = {
 };
 
 export type AdminProductEditPageData = AdminProductFormPageData & {
+  heldByOrderNumber: string | null;
   // Status and stock as this page rendered them; the save action merges against them.
   loaded: ProductEditBase;
 };
@@ -73,8 +74,16 @@ export async function getAdminProductFormPageData(productId: string): Promise<Ad
   }
 
   const product = mapCatalogProductRecordToDomainProduct(record);
+  const holdingOrder =
+    record.status === "reserved" && record.heldByOrderId
+      ? await createRepositoryContext().client.orderRecord.findUnique({
+          where: { id: record.heldByOrderId },
+          select: { orderNumber: true },
+        })
+      : null;
 
   return {
+    heldByOrderNumber: holdingOrder?.orderNumber ?? null,
     title: `Edit ${product.name}`,
     description:
       "Edit persisted product content, pricing, route fields, and publish visibility from the admin products boundary.",

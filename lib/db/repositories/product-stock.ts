@@ -14,7 +14,7 @@ type LockedProductRow = {
   type: string;
   uniquenessTier: string | null;
   status: string;
-  reservedByOrderId: string | null;
+  heldByOrderId: string | null;
   inventory: number | null;
   variants: Prisma.JsonValue | null;
   soldAt: Date | null;
@@ -32,7 +32,7 @@ export async function moveStockForLines(
   const productIds = [...new Set(input.lines.map((line) => line.productId))].sort();
   const rows = productIds.length
     ? await tx.$queryRaw<LockedProductRow[]>`
-        SELECT "id", "type", "uniquenessTier", "status", "reservedByOrderId", "inventory",
+        SELECT "id", "type", "uniquenessTier", "status", "heldByOrderId", "inventory",
                "variants", "soldAt", "updatedAt"
         FROM "CatalogProduct"
         WHERE "id" IN (${Prisma.join(productIds)})
@@ -66,7 +66,7 @@ function toProductStock(row: LockedProductRow): ProductStock {
     type: row.type,
     uniquenessTier: row.uniquenessTier,
     status: row.status,
-    reservedByOrderId: row.reservedByOrderId,
+    heldByOrderId: row.heldByOrderId,
     inventory: row.inventory,
     variants: Array.isArray(row.variants) ? (row.variants as unknown as ProductVariant[]) : [],
     soldAt: row.soldAt,

@@ -26,7 +26,7 @@ export type ProductStockState = {
   status: string;
   type: string;
   uniquenessTier: string | null;
-  reservingOrderNumber: string | null;
+  holdingOrderNumber: string | null;
   inventory: number | null;
   variants: ProductVariant[];
   // Units in orders that hold them awaiting approval, and units those orders sold.
@@ -34,12 +34,14 @@ export type ProductStockState = {
   soldUnits: number;
 };
 
-export type ProductUpdateResult = {
-  product: Product;
-  // Values ("status", "stock") an order changed while the admin's form was open
-  // and the admin also edited; the order's value was kept.
-  conflicts: Array<"status" | "stock">;
-};
+// An order changed a value ("status" or "stock") the admin also changed while
+// their form was open. Nothing is saved; the admin reloads and decides again.
+export class ProductEditConflictError extends Error {
+  constructor(readonly fields: Array<"status" | "stock">) {
+    super(`An order changed this product's ${fields.join(" and ")} while it was being edited.`);
+    this.name = "ProductEditConflictError";
+  }
+}
 
 export interface ProductRepository {
   listAll(): Promise<Product[]>;
@@ -54,11 +56,8 @@ export interface ProductRepository {
   getById(id: string): Promise<Product | null>;
   create(input: ProductMutationInput): Promise<Product>;
   // `loaded` is what the admin's form showed, so a save never undoes what an
-  // order changed meanwhile.
-  update(
-    input: ProductMutationInput & { id: string },
-    options: { loaded: ProductEditBase },
-  ): Promise<ProductUpdateResult>;
+  // order changed meanwhile. Throws ProductEditConflictError when both changed it.
+  update(input: ProductMutationInput & { id: string }, options: { loaded: ProductEditBase }): Promise<Product>;
   getStockState(id: string): Promise<ProductStockState | null>;
   delete(id: string): Promise<void>;
   slugExists(input: { slug: string; excludeId?: string }): Promise<boolean>;
@@ -259,6 +258,15 @@ export class PrismaProductRepository implements ProductRepository {
               current: { inventory: existingProduct.inventory, variants: parseVariants(existingProduct.variants) },
             })
           : null;
+      const conflicts = [
+        ...(status.conflict ? (["status"] as const) : []),
+        ...(stock?.conflict ? (["stock"] as const) : []),
+      ];
+
+      if (conflicts.length > 0) {
+        throw new ProductEditConflictError(conflicts);
+      }
+
       const kept = {
         status: status.status as Product["status"],
         // A status kept from the database keeps its sold date too.
@@ -277,16 +285,12 @@ export class PrismaProductRepository implements ProductRepository {
         data: {
           ...mapProductMutationInputToUpdateInput(nextInput),
           ...(previousSlugs ? { previousSlugs } : {}),
+          // A piece put back on sale (or hidden) by hand is no longer any order's.
+          ...(kept.status !== "reserved" && kept.status !== "sold" && { heldByOrderId: null }),
         },
       });
 
-      return {
-        product: mapCatalogProductRecordToDomainProduct(updatedProduct),
-        conflicts: [
-          ...(status.conflict ? (["status"] as const) : []),
-          ...(stock?.conflict ? (["stock"] as const) : []),
-        ],
-      };
+      return mapCatalogProductRecordToDomainProduct(updatedProduct);
     });
   }
 
@@ -297,7 +301,7 @@ export class PrismaProductRepository implements ProductRepository {
         status: true,
         type: true,
         uniquenessTier: true,
-        reservedByOrderId: true,
+        heldByOrderId: true,
         inventory: true,
         variants: true,
       },
@@ -312,9 +316,9 @@ export class PrismaProductRepository implements ProductRepository {
         where: { productId: id, order: { inventoryHold: { in: ["held", "sold"] } } },
         select: { quantity: true, order: { select: { inventoryHold: true } } },
       }),
-      product.reservedByOrderId
+      product.heldByOrderId
         ? this.context.client.orderRecord.findUnique({
-            where: { id: product.reservedByOrderId },
+            where: { id: product.heldByOrderId },
             select: { orderNumber: true },
           })
         : null,
@@ -328,7 +332,7 @@ export class PrismaProductRepository implements ProductRepository {
       status: product.status,
       type: product.type,
       uniquenessTier: product.uniquenessTier,
-      reservingOrderNumber: reservingOrder?.orderNumber ?? null,
+      holdingOrderNumber: reservingOrder?.orderNumber ?? null,
       inventory: product.inventory,
       variants: parseVariants(product.variants),
       heldUnits: unitsWithHold("held"),

@@ -78,7 +78,7 @@ HAVING bool_and(product_id IN (SELECT product_id FROM coverable_products));
 
 UPDATE "CatalogProduct" p
 SET status = CASE WHEN a.captured THEN 'sold' ELSE 'reserved' END,
-    "reservedByOrderId" = CASE WHEN a.captured THEN NULL ELSE a.order_id END,
+    "heldByOrderId" = a.order_id,
     "soldAt" = CASE WHEN a.captured THEN COALESCE(p."soldAt", now()) ELSE p."soldAt" END
 FROM legacy_lines l
 JOIN adoptable_orders a ON a.order_id = l.order_id
@@ -118,6 +118,14 @@ FROM product_before b
 JOIN "CatalogProduct" p ON p.id = b.id
 WHERE (b.status, b.inventory) IS DISTINCT FROM (p.status, p.inventory)
 ORDER BY b.name;
+
+-- Paid, unshipped orders whose piece was still on sale: the double-sale risk.
+-- Adopted ones are now sold; any others also appear under settle-by-hand.
+SELECT 'paid-unshipped:' || l.order_number || ' ' || b.name || ' was ' || b.status AS paid_unshipped
+FROM legacy_lines l
+JOIN product_before b ON b.id = l.product_id
+WHERE l.captured AND b.status = 'active'
+ORDER BY l.order_number;
 
 SELECT 'settle-by-hand:' || o."orderNumber" AS settle_by_hand
 FROM "OrderRecord" o

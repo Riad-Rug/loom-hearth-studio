@@ -242,8 +242,8 @@ model CatalogProduct {
   shippingNotes    Json?
   careNote         String?         @db.Text
   status           String
-  // The order holding this one-of-one piece while status is "reserved".
-  reservedByOrderId String?
+  // The order holding this one-of-one piece while status is "reserved" or "sold".
+  heldByOrderId String?
   soldAt           DateTime?
   images           Json
   materials        Json

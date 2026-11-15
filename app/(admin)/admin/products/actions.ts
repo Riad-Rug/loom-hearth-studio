@@ -13,6 +13,7 @@ import type { ProductMutationInput } from "@/lib/catalog/product-validation";
 import {
   createProductRepository,
   isUniqueConstraintError,
+  ProductEditConflictError,
   type ProductStockState,
 } from "@/lib/db/repositories/product-repository";
 import { isOneOfOne, mergeStockEdit, type ProductEditBase } from "@/lib/order/inventory-hold";
@@ -168,10 +169,7 @@ export async function updateAdminProductAction(
       };
     }
 
-    const { product: updatedProduct, conflicts } = await repository.update(
-      { ...parsed.value, id: productId },
-      { loaded },
-    );
+    const updatedProduct = await repository.update({ ...parsed.value, id: productId }, { loaded });
 
     revalidateCatalogPaths({
       productId,
@@ -182,12 +180,18 @@ export async function updateAdminProductAction(
 
     return {
       status: "success",
-      message: conflicts.length
-        ? `Persisted product saved, except ${conflicts.join(" and ")}: an order changed it while you were editing, so the current value was kept and is shown now. Re-enter your change if it still applies.`
-        : "Persisted product saved.",
+      message: "Persisted product saved.",
       fieldErrors: {},
     };
   } catch (error) {
+    if (error instanceof ProductEditConflictError) {
+      return {
+        status: "error",
+        message: `An order changed this piece's ${error.fields.join(" and ")} while you were editing, so nothing was saved. Reload the page to see the current values, then make your change again.`,
+        fieldErrors: {},
+      };
+    }
+
     if (isUniqueConstraintError(error)) {
       return {
         status: "error",
@@ -259,7 +263,7 @@ export async function deleteAdminProductAction(productId: string) {
   }
 
   if (isHeldByOrder(await repository.getStockState(productId))) {
-    throw new Error(`"${product.name}" is held by an open order. Delete it after that order settles.`);
+    redirect(productListNoticeRoute({ held: [product.name], invalid: [] }));
   }
 
   await repository.delete(productId);
@@ -300,7 +304,7 @@ export async function bulkAdminProductsAction(formData: FormData) {
   }
 
   const repository = createProductRepository();
-  const skippedNames: string[] = [];
+  const skipped = { held: [] as string[], invalid: [] as string[] };
 
   for (const productId of productIds) {
     const product = await repository.getById(productId);
@@ -314,7 +318,7 @@ export async function bulkAdminProductsAction(formData: FormData) {
     // A reserved piece's status belongs to its order, and deleting a product an
     // order holds would strand that order's stock.
     if (product.status === "reserved" || (bulkAction === "delete" && isHeldByOrder(stored))) {
-      skippedNames.push(product.name);
+      skipped.held.push(product.name);
       continue;
     }
 
@@ -351,10 +355,11 @@ export async function bulkAdminProductsAction(formData: FormData) {
     );
 
     if (validation.status === "invalid") {
-      throw new Error(`Could not ${bulkAction} "${product.name}": ${validation.message}`);
+      skipped.invalid.push(product.name);
+      continue;
     }
 
-    const { product: updatedProduct } = await repository.update(
+    const updatedProduct = await repository.update(
       { ...validation.value, id: productId },
       { loaded: toEditBase(product) },
     );
@@ -367,13 +372,20 @@ export async function bulkAdminProductsAction(formData: FormData) {
     });
   }
 
-  if (skippedNames.length > 0) {
-    throw new Error(
-      `Skipped ${skippedNames.map((name) => `"${name}"`).join(", ")}: reserved or held by an open order. The rest were updated.`,
-    );
-  }
+  redirect(productListNoticeRoute(skipped));
+}
 
-  redirect("/admin/products" as Route);
+// Guard outcomes travel to the products list as query parameters, not thrown
+// errors: Next replaces a thrown server-action message with a generic one in
+// production. The list page renders them through a fixed template.
+function productListNoticeRoute(skipped: { held: string[]; invalid: string[] }): Route {
+  const params = new URLSearchParams();
+
+  if (skipped.held.length) params.set("held", skipped.held.join("|"));
+  if (skipped.invalid.length) params.set("invalid", skipped.invalid.join("|"));
+
+  const query = params.toString();
+  return (query ? `/admin/products?${query}` : "/admin/products") as Route;
 }
 
 const onlyAnOrderReservesMessage = "Only an order can reserve a piece. Choose another status.";
@@ -385,7 +397,7 @@ function describeOrderOwnedChange(
   input: ProductMutationInput,
   loaded: ProductEditBase,
 ): { field: string; message: string } | null {
-  const holder = stored.reservingOrderNumber ? `order ${stored.reservingOrderNumber}` : "an open order";
+  const holder = stored.holdingOrderNumber ? `order ${stored.holdingOrderNumber}` : "an open order";
   const adminChangedStatus = input.status !== loaded.status;
 
   if (stored.status === "reserved" && input.status !== "reserved" && adminChangedStatus) {

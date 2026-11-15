@@ -23,14 +23,14 @@ export type ProductStock = {
   type: string;
   uniquenessTier: string | null;
   status: string;
-  reservedByOrderId: string | null;
+  heldByOrderId: string | null;
   inventory: number | null;
   variants: ProductVariant[];
   soldAt: Date | null;
 };
 
 export type ProductStockUpdate = { id: string } & Partial<
-  Pick<ProductStock, "status" | "reservedByOrderId" | "inventory" | "variants" | "soldAt">
+  Pick<ProductStock, "status" | "heldByOrderId" | "inventory" | "variants" | "soldAt">
 >;
 
 export type StockMovementResult =
@@ -54,7 +54,7 @@ export class InventoryUnavailableError extends Error {
 }
 
 // One-of-one pieces are tracked by status (active, reserved, sold) and by the
-// order holding them; everything else by unit count.
+// order holding them, through "sold" too; everything else by unit count.
 export function isOneOfOne(product: { type: string; uniquenessTier?: string | null }) {
   return product.type === "rug" || product.uniquenessTier === trueOneOffUniquenessTier;
 }
@@ -161,8 +161,8 @@ export function moveStock(input: {
       const update: ProductStockUpdate = { id: moved.id };
 
       if (moved.status !== original.status) update.status = moved.status;
-      if (moved.reservedByOrderId !== original.reservedByOrderId) {
-        update.reservedByOrderId = moved.reservedByOrderId;
+      if (moved.heldByOrderId !== original.heldByOrderId) {
+        update.heldByOrderId = moved.heldByOrderId;
       }
       if (moved.soldAt !== original.soldAt) update.soldAt = moved.soldAt;
       if (moved.inventory !== original.inventory) update.inventory = moved.inventory;
@@ -179,25 +179,30 @@ function movePiece(
   orderId: string,
   now: Date,
 ): ProductStock | null {
-  const heldByThisOrder = product.status === "reserved" && product.reservedByOrderId === orderId;
+  const heldByThisOrder = product.heldByOrderId === orderId;
 
   switch (movement) {
     case "take":
       return product.status === "active"
-        ? { ...product, status: "reserved", reservedByOrderId: orderId }
+        ? { ...product, status: "reserved", heldByOrderId: orderId }
         : null;
     case "sell":
-      return heldByThisOrder ? sellPiece(product, now) : null;
+      return product.status === "reserved" && heldByThisOrder ? sellPiece(product, orderId, now) : null;
     case "take-and-sell":
-      return product.status === "active" ? sellPiece(product, now) : null;
+      // A piece still sold to this order (refunded, then marked paid again) is its own to take back.
+      return product.status === "active" || (product.status === "sold" && heldByThisOrder)
+        ? sellPiece(product, orderId, now)
+        : null;
     case "restore":
       // Nothing to give back once the piece is no longer this order's.
-      return heldByThisOrder ? { ...product, status: "active", reservedByOrderId: null } : product;
+      return product.status === "reserved" && heldByThisOrder
+        ? { ...product, status: "active", heldByOrderId: null }
+        : product;
   }
 }
 
-function sellPiece(product: ProductStock, now: Date): ProductStock {
-  return { ...product, status: "sold", reservedByOrderId: null, soldAt: product.soldAt ?? now };
+function sellPiece(product: ProductStock, orderId: string, now: Date): ProductStock {
+  return { ...product, status: "sold", heldByOrderId: orderId, soldAt: product.soldAt ?? now };
 }
 
 function moveUnits(product: ProductStock, line: StockLine, movement: StockMovement): ProductStock | null {

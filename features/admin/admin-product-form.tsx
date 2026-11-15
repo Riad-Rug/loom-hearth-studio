@@ -40,6 +40,8 @@ type AdminProductFormProps = {
   title: string;
   description: string;
   product: AdminProductFormValues;
+  // Set while an order holds this piece ("reserved"), so the form can say which.
+  heldByOrderNumber?: string | null;
   action: (
     state: AdminProductActionState,
     formData: FormData,
@@ -59,6 +61,17 @@ const ageClassOptions = [
   "Not Stated",
 ] as const;
 const provenanceLabelOptions = ["Verified", "Attributed", "Not Stated"] as const;
+
+function createUnusedVariantId(variants: ReadonlyArray<{ id: string }>) {
+  const takenIds = new Set(variants.map((variant) => variant.id));
+  let suffix = variants.length + 1;
+
+  while (takenIds.has(`variant-${suffix}`)) {
+    suffix += 1;
+  }
+
+  return `variant-${suffix}`;
+}
 
 export function AdminProductForm(props: AdminProductFormProps) {
   const [state, formAction] = useActionState(props.action, initialAdminProductActionState);
@@ -114,6 +127,10 @@ export function AdminProductForm(props: AdminProductFormProps) {
       : [createEmptyImageRow({ sortOrder: 1, role: "hero" })],
   );
   const [variants, setVariants] = useState(props.product.variants);
+  const savedVariantIds = useMemo(
+    () => new Set(props.product.variants.map((variant) => variant.id)),
+    [props.product.variants],
+  );
   const [notifyMeEnabled, setNotifyMeEnabled] = useState(props.product.notifyMeEnabled);
   const [homepageFeatured, setHomepageFeatured] = useState(props.product.homepageFeatured);
   const [homepageRank, setHomepageRank] = useState(props.product.homepageRank);
@@ -696,21 +713,35 @@ export function AdminProductForm(props: AdminProductFormProps) {
 
         <section className={styles.card}>
           <p className={styles.cardEyebrow}>Publishing</p>
-          <label className={styles.formField}>
-            <span>Status</span>
-            <select
-              name="status"
-              value={status}
-              onChange={(event) => setStatus(event.target.value as typeof status)}
-            >
-              {adminProductStatusOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-            <em>{state.fieldErrors.status}</em>
-          </label>
+          {status === "reserved" ? (
+            <div className={styles.formField}>
+              <span>Status</span>
+              <input name="status" type="hidden" value="reserved" />
+              <strong>
+                Reserved{props.heldByOrderNumber ? ` by order ${props.heldByOrderNumber}` : " by an open order"}
+              </strong>
+              <em>
+                {state.fieldErrors.status ??
+                  "Set by that order. It returns to active or becomes sold when the order is cancelled, expires, or is captured. Other fields can still be edited."}
+              </em>
+            </div>
+          ) : (
+            <label className={styles.formField}>
+              <span>Status</span>
+              <select
+                name="status"
+                value={status}
+                onChange={(event) => setStatus(event.target.value as typeof status)}
+              >
+                {adminProductStatusOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              <em>{state.fieldErrors.status}</em>
+            </label>
+          )}
           {status === "sold" ? (
             <label className={styles.formField}>
               <span>Sold date</span>
@@ -1009,6 +1040,8 @@ export function AdminProductForm(props: AdminProductFormProps) {
                   <label className={styles.formField}>
                     <span>Variant ID</span>
                     <input
+                      // Orders reference a saved variant by id, so it is fixed once saved.
+                      readOnly={savedVariantIds.has(variant.id)}
                       type="text"
                       value={variant.id}
                       onChange={(event) => updateVariant(index, { id: event.target.value })}
@@ -1077,7 +1110,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
                   setVariants((current) => [
                     ...current,
                     {
-                      id: `variant-${current.length + 1}`,
+                      id: createUnusedVariantId(current),
                       name: "",
                       sku: "",
                       inventory: 0,
