@@ -19,6 +19,13 @@ export type CartStoreItem = {
   availableQuantity?: number;
 };
 
+// What POST /api/cart/availability says a cart line can be bought as right now.
+// availableQuantity is set for a listed multi-unit piece on sale.
+export type CartLineStock = { availability: ProductAvailability; availableQuantity?: number };
+
+// The units a cart line can still have; 0 drops the line.
+export type CartLineLimit = { id: string; availableQuantity: number };
+
 export type AddCartProductInput = {
   product: Product;
   quantity: number;
@@ -125,6 +132,24 @@ export function setCartItemQuantity(
   });
 }
 
+// Lowers each limited line to the units it can still have, its cap too, so the
+// quantity control cannot climb back over them.
+export function limitCartItems(currentItems: CartStoreItem[], limits: ReadonlyArray<CartLineLimit>): CartStoreItem[] {
+  const limitById = new Map(limits.map((limit) => [limit.id, limit.availableQuantity]));
+
+  return currentItems.flatMap((item) => {
+    const availableQuantity = limitById.get(item.id);
+
+    if (availableQuantity === undefined) {
+      return [item];
+    }
+
+    return availableQuantity < 1
+      ? []
+      : [{ ...item, availableQuantity, quantity: Math.min(item.quantity, availableQuantity) }];
+  });
+}
+
 export function parseStoredCartItem(value: unknown): value is CartStoreItem {
   if (!value || typeof value !== "object") {
     return false;
@@ -164,13 +189,25 @@ export const unavailableLineNote: Record<UnavailableReason, string> = {
 
 export const unavailableCheckoutNote = "Some pieces can't be bought right now. Remove them from your cart to check out.";
 
-export function getCartItemAvailabilityNote(item: CartStoreItem, availability: ProductAvailability) {
+export function getQuantityReducedNote(item: CartStoreItem) {
+  return `Only ${getMaxQuantity(item)} left, so we changed your quantity.`;
+}
+
+export function getCartItemAvailabilityNote(
+  item: CartStoreItem,
+  availability: ProductAvailability,
+  quantityReduced: boolean,
+) {
   if (availability !== "available") {
     return unavailableLineNote[availability];
   }
 
   if (item.productType === "rug") {
     return "One of a kind";
+  }
+
+  if (quantityReduced) {
+    return getQuantityReducedNote(item);
   }
 
   const maxQuantity = getMaxQuantity(item);

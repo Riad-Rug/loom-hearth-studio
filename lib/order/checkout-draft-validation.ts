@@ -2,6 +2,7 @@ import "server-only";
 
 import { isSupportedCheckoutCountry, supportedCheckoutCountryLabels } from "@/config/supported-markets";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
+import { getPurchasableQuantity } from "@/lib/order/inventory-hold";
 import { calculateShippingUsd } from "@/lib/order/shipping";
 import { createStripeMetadataChunks } from "@/lib/stripe/service";
 import { validatePromoCode } from "@/lib/promos/service";
@@ -51,6 +52,10 @@ export type CheckoutOrderDraftValidationIssue = {
   code: string;
   message: string;
   productId?: string;
+  // Set on every issue about one cart line.
+  lineItemId?: string;
+  // "insufficient-inventory": how many units of the line can still be ordered.
+  availableQuantity?: number;
 };
 
 export type CheckoutOrderDraftValidationResult =
@@ -122,6 +127,7 @@ export async function validateCheckoutOrderDraft(input: {
         code: "product-not-found",
         message: `Product ${lineItem.productId} no longer exists in the catalog.`,
         productId: lineItem.productId,
+        lineItemId: lineItem.id,
       });
       return [];
     }
@@ -131,6 +137,7 @@ export async function validateCheckoutOrderDraft(input: {
         code: "product-unavailable",
         message: `Product ${product.id} is no longer available for checkout.`,
         productId: product.id,
+        lineItemId: lineItem.id,
       });
       return [];
     }
@@ -141,6 +148,7 @@ export async function validateCheckoutOrderDraft(input: {
           code: "invalid-rug-quantity",
           message: `Rug ${product.id} must be ordered in a quantity of 1.`,
           productId: product.id,
+          lineItemId: lineItem.id,
         });
         return [];
       }
@@ -164,50 +172,34 @@ export async function validateCheckoutOrderDraft(input: {
         code: "invalid-quantity",
         message: `Product ${product.id} quantity must be at least 1.`,
         productId: product.id,
+        lineItemId: lineItem.id,
       });
       return [];
     }
 
-    if (lineItem.variantName) {
-      const matchedVariant = product.variants.find((variant) => variant.name === lineItem.variantName);
+    const matchedVariant = lineItem.variantName
+      ? product.variants.find((variant) => variant.name === lineItem.variantName)
+      : undefined;
 
-      if (!matchedVariant) {
-        issues.push({
-          code: "variant-not-found",
-          message: `Product ${product.id} no longer has the selected variant.`,
-          productId: product.id,
-        });
-        return [];
-      }
-
-      if (lineItem.quantity > matchedVariant.inventory) {
-        issues.push({
-          code: "insufficient-inventory",
-          message: `Variant inventory for ${product.id} is lower than the requested quantity.`,
-          productId: product.id,
-        });
-        return [];
-      }
-
-      return [
-        {
-          id: lineItem.id,
-          productId: product.id,
-          productType: product.type,
-          name: product.name,
-          slug: product.slug,
-          quantity: lineItem.quantity,
-          priceUsd: matchedVariant.priceUsd ?? product.priceUsd,
-          variant: matchedVariant,
-        },
-      ];
+    if (lineItem.variantName && !matchedVariant) {
+      issues.push({
+        code: "variant-not-found",
+        message: `Product ${product.id} no longer has the selected variant.`,
+        productId: product.id,
+        lineItemId: lineItem.id,
+      });
+      return [];
     }
 
-    if (lineItem.quantity > product.inventory) {
+    const availableQuantity = getPurchasableQuantity(product, lineItem.variantName);
+
+    if (lineItem.quantity > availableQuantity) {
       issues.push({
         code: "insufficient-inventory",
-        message: `Product ${product.id} inventory is lower than the requested quantity.`,
+        message: `Only ${availableQuantity} of product ${product.id} can be ordered.`,
         productId: product.id,
+        lineItemId: lineItem.id,
+        availableQuantity,
       });
       return [];
     }
@@ -220,8 +212,8 @@ export async function validateCheckoutOrderDraft(input: {
         name: product.name,
         slug: product.slug,
         quantity: lineItem.quantity,
-        priceUsd: product.priceUsd,
-        variant: undefined,
+        priceUsd: matchedVariant?.priceUsd ?? product.priceUsd,
+        variant: matchedVariant,
       },
     ];
   });

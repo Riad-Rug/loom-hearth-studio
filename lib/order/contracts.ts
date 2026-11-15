@@ -85,6 +85,15 @@ export type OrderPersistenceBoundary = {
   acceptedOrderStatuses: ReadonlyArray<Extract<OrderStatus, "paid" | "pending">>;
 };
 
+// A line of a declined order that another order left short. availableQuantity is
+// fewer than the line asked for; 0 means none can be had.
+export type UnavailableLine = {
+  lineId: string;
+  productId: string;
+  name: string;
+  availableQuantity: number;
+};
+
 type PersistConfirmedOrderOutcome = {
   orderCreationRequest: OrderCreationRequest | null;
   persistenceRequest: OrderPersistenceRequest | null;
@@ -101,14 +110,14 @@ export type PersistConfirmedOrderResult =
       status: "unavailable";
       persistedOrder: null;
       authorizationRelease: Exclude<PaymentIntentHoldRelease, "captured">;
-      unavailableProductIds: string[];
+      unavailableLines: UnavailableLine[];
     })
   // The payment was already captured, so the order was saved with a stock conflict for a refund.
   | (PersistConfirmedOrderOutcome & {
       status: "oversold";
       persistedOrder: Order;
       authorizationRelease: "captured";
-      unavailableProductIds?: string[];
+      unavailableLines?: UnavailableLine[];
     });
 
 export const orderCreationTodo = {

@@ -18,10 +18,6 @@ export async function POST(request: Request): Promise<NextResponse<CompleteOrder
   });
 
   if (result.status === "unavailable" || result.status === "oversold") {
-    const unavailableItems = (result.persistenceRequest?.items ?? [])
-      .filter((item) => result.unavailableProductIds?.includes(item.productId))
-      .map((item) => ({ productId: item.productId, name: item.name }));
-
     return NextResponse.json(
       result.status === "unavailable"
         ? {
@@ -29,7 +25,7 @@ export async function POST(request: Request): Promise<NextResponse<CompleteOrder
             order: null,
             orderNumber: null,
             cardHold: result.authorizationRelease,
-            unavailableItems,
+            unavailableItems: result.unavailableLines,
             message: result.message,
           }
         : {
@@ -37,7 +33,7 @@ export async function POST(request: Request): Promise<NextResponse<CompleteOrder
             order: null,
             orderNumber: result.persistedOrder.orderNumber,
             cardHold: result.authorizationRelease,
-            unavailableItems,
+            unavailableItems: (result.unavailableLines ?? []).map(({ productId, name }) => ({ productId, name })),
             message: result.message,
           },
       { status: 409 },

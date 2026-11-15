@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 
-import { toCommerceItems, type CartStoreItem } from "@/features/cart/cart-items";
+import { limitCartItems, toCommerceItems, type CartLineLimit, type CartStoreItem } from "@/features/cart/cart-items";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
 import { trackCommerceEvent } from "@/lib/analytics/commerce-tracking";
@@ -70,6 +70,8 @@ type PaymentIntentValidationIssue = {
   code: string;
   message: string;
   productId?: string;
+  lineItemId?: string;
+  availableQuantity?: number;
 };
 
 const stepPathMap: Record<CheckoutStepKey, string> = {
@@ -117,16 +119,16 @@ type CheckoutContextValue = {
   setPlaceOrderState: (state: PlaceOrderState) => void;
   placedOrder: PlacedOrder | null;
   completeOrder: (order: PlacedOrder) => void;
-  // Another order took these pieces first and this order was not saved, so the
-  // old PaymentIntent cannot be confirmed again: drop the pieces and start a new
-  // PaymentIntent for whatever is left.
-  dropUnavailableItems: (input: { productIds: string[]; message: string }) => void;
+  // Another order took stock first and this order was not saved, so the old
+  // PaymentIntent cannot be confirmed again: lower or drop the lines it left short
+  // and start a new PaymentIntent for whatever is left.
+  restartCheckout: (input: { limits: CartLineLimit[]; message: string }) => void;
 };
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
-  const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd, clearCart, removeItem } = useCart();
+  const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd, clearCart, limitItems } = useCart();
   const [step, setStep] = useState<CheckoutStepKey>("shipping");
   const [addresses, setAddresses] = useState<CheckoutAddresses | null>(null);
   const [paymentIntent, setPaymentIntent] = useState<PaymentIntentState>(initialPaymentIntentState);
@@ -297,41 +299,26 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         }
 
         if (result.status === "validation-error") {
-          // A validation-error can mean one specific cart line went stale
-          // (sold out / inventory ran out between page load and this
-          // request) rather than the whole draft being broken. Self-heal
-          // that narrow case by dropping only the offending line(s) instead
-          // of failing the entire order — but only when every reported
-          // issue can be traced back to a productId that's actually in the
-          // cart. If any issue can't be mapped to a cart line (e.g. a bad
-          // promo code, a missing address field), treat it as a real error
-          // instead of silently dropping items around an unrelated problem.
+          // A validation-error can mean specific cart lines went stale (sold
+          // out, or fewer units left than the line asks for, between page load
+          // and this request) rather than the whole draft being broken.
+          // Self-heal that narrow case by lowering or dropping only those
+          // lines, but only when every reported issue names a line actually
+          // in the cart. Any other issue (a bad promo code, a missing address
+          // field) is a real error, not a reason to change the cart around it.
           const issues = result.issues ?? [];
-          const staleProductIds = new Set(
-            issues
-              .filter(
-                (issue): issue is PaymentIntentValidationIssue & { productId: string } =>
-                  Boolean(issue.productId) && items.some((item) => item.productId === issue.productId),
-              )
-              .map((issue) => issue.productId),
-          );
-          const hasUnresolvableIssue = issues.some(
-            (issue) => !issue.productId || !staleProductIds.has(issue.productId),
-          );
+          const limits = issues.flatMap((issue) => {
+            const item = items.find((candidate) => candidate.id === issue.lineItemId);
 
-          if (staleProductIds.size > 0 && !hasUnresolvableIssue) {
-            const staleItems = items.filter((item) => staleProductIds.has(item.productId));
+            return item ? [{ id: item.id, availableQuantity: issue.availableQuantity ?? 0 }] : [];
+          });
 
-            staleItems.forEach((item) => removeItem(item.id));
-
-            setCartRecoveryMessage(
-              staleItems.length > 1
-                ? "A few pieces in your order are no longer available, so we removed them. Your total has been updated."
-                : "A piece in your order is no longer available, so we removed it. Your total has been updated.",
-            );
+          if (limits.length > 0 && limits.length === issues.length) {
+            limitItems(limits);
+            setCartRecoveryMessage(describeLimitedLines(items, limits));
 
             // Don't touch paymentIntent here: it's already "creating" (set
-            // above) and removing the stale line(s) changes draftSignature,
+            // above) and changing the stale line(s) changes draftSignature,
             // which naturally re-triggers this effect with the corrected
             // cart moments from now.
             return;
@@ -442,13 +429,11 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       clearCart();
       goToStep("confirmation");
     },
-    dropUnavailableItems({ productIds, message }) {
-      const unavailableItems = items.filter((item) => productIds.includes(item.productId));
-
-      unavailableItems.forEach((item) => removeItem(item.id));
+    restartCheckout({ limits, message }) {
+      limitItems(limits);
       setPlaceOrderState(initialPlaceOrderState);
       setPaymentIntentRetryCount((count) => count + 1);
-      goToStep(unavailableItems.length < items.length ? "payment" : "shipping");
+      goToStep(limitCartItems(items, limits).length > 0 ? "payment" : "shipping");
       setCartRecoveryMessage(message);
     },
   };
@@ -464,6 +449,29 @@ export function useCheckout() {
   }
 
   return value;
+}
+
+function describeLimitedLines(items: CartStoreItem[], limits: CartLineLimit[]) {
+  const removedCount = limits.filter((limit) => limit.availableQuantity < 1).length;
+  const lowered = limits.flatMap((limit) => {
+    const item = items.find((candidate) => candidate.id === limit.id);
+
+    return item && limit.availableQuantity >= 1
+      ? [`${item.name}: only ${limit.availableQuantity} left, so we changed your quantity.`]
+      : [];
+  });
+
+  return [
+    removedCount > 1
+      ? "A few pieces in your order are no longer available, so we removed them."
+      : removedCount === 1
+        ? "A piece in your order is no longer available, so we removed it."
+        : "",
+    ...lowered,
+    "Your total has been updated.",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function getStepFromPathname(pathname: string): CheckoutStepKey {

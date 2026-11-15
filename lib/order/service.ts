@@ -4,13 +4,19 @@ import { Prisma } from "@prisma/client";
 
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import type { OrderRepository } from "@/lib/db/repositories/order-repository";
+import { createProductRepository } from "@/lib/db/repositories/product-repository";
 import { getPostmarkEmailConfig } from "@/lib/email/config";
 import { sendOrderConfirmationEmailFromCreatedOrder, sendTransactionalEmailMessage } from "@/lib/email/service";
 import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
 import { parseCheckoutOrderDraftSnapshotFromMetadata } from "@/lib/order/checkout-draft-validation";
-import { InventoryUnavailableError } from "@/lib/order/inventory-hold";
+import { getPurchasableQuantity, InventoryUnavailableError } from "@/lib/order/inventory-hold";
 import { createOversoldEmails } from "@/lib/order/oversold-notice";
-import type { OrderCreationRequest, OrderPersistenceRequest, PersistConfirmedOrderResult } from "@/lib/order/contracts";
+import type {
+  OrderCreationRequest,
+  OrderPersistenceRequest,
+  PersistConfirmedOrderResult,
+  UnavailableLine,
+} from "@/lib/order/contracts";
 import { recordPromoRedemption } from "@/lib/promos/service";
 import {
   createLaunchOrderNumber,
@@ -486,9 +492,13 @@ async function createOrderTakingStock(input: {
         : persistenceRequest.paymentIntentId
           ? await releasePaymentIntentHold(input.stripe ?? createStripeClient(), persistenceRequest.paymentIntentId)
           : "unresolved";
-    const unavailableNames = persistenceRequest.items
-      .filter((item) => error.productIds.includes(item.productId))
-      .map((item) => item.name);
+    const shortLines = await findUnavailableLines(persistenceRequest.items);
+    const unavailableLines = shortLines.length
+      ? shortLines
+      : persistenceRequest.items
+          .filter((item) => error.productIds.includes(item.productId))
+          .map((item) => ({ lineId: item.id, productId: item.productId, name: item.name, availableQuantity: 0 }));
+    const unavailableNames = unavailableLines.map((line) => line.name);
     const subject = unavailableNames.length
       ? `${unavailableNames.join(", ")} ${unavailableNames.length > 1 ? "are" : "is"}`
       : "A piece in your order is";
@@ -497,7 +507,7 @@ async function createOrderTakingStock(input: {
       persistenceRequest,
       emailDeliveryResult: null,
       fulfillmentResult: null,
-      unavailableProductIds: error.productIds,
+      unavailableLines,
     };
 
     if (authorizationRelease === "captured") {
@@ -553,11 +563,46 @@ async function createOrderTakingStock(input: {
         status: "unavailable",
         authorizationRelease,
         persistedOrder: null,
-        message:
-          authorizationRelease === "released"
-            ? `${subject} no longer available: another buyer reserved it moments before your order went through. The hold on your card has been released and you have not been charged.`
-            : `${subject} no longer available: another buyer reserved it moments before your order went through. You have not been charged. The hold on your card has not been released yet; it lapses on its own within 7 days, or contact the studio to release it sooner.`,
+        message: unavailableMessage(unavailableLines, authorizationRelease),
       },
     };
   }
+}
+
+function unavailableMessage(lines: UnavailableLine[], release: "released" | "unresolved") {
+  const gone = lines.filter((line) => line.availableQuantity === 0).map((line) => line.name);
+
+  return [
+    gone.length
+      ? `${gone.join(", ")} ${gone.length > 1 ? "are" : "is"} no longer available: another buyer reserved ${gone.length > 1 ? "them" : "it"} moments before your order went through.`
+      : "",
+    ...lines
+      .filter((line) => line.availableQuantity > 0)
+      .map((line) => `${line.name}: only ${line.availableQuantity} left, so we changed your quantity.`),
+    release === "released"
+      ? "The hold on your card has been released and you have not been charged."
+      : "You have not been charged. The hold on your card has not been released yet; it lapses on its own within 7 days, or contact the studio to release it sooner.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+// The lines the listed stock can no longer fill, each with the units it could
+// still get. Lines of one product share its units, as they do when stock is taken.
+async function findUnavailableLines(items: Order["items"]): Promise<UnavailableLine[]> {
+  const products = await createProductRepository().listListedByIds([...new Set(items.map((item) => item.productId))]);
+  const productById = new Map(products.map((product) => [product.id, product]));
+  const unitsLeft = new Map<string, number>();
+
+  return items.flatMap((item) => {
+    const product = productById.get(item.productId);
+    const shared = product ? (unitsLeft.get(product.id) ?? getPurchasableQuantity(product)) : 0;
+    const granted = product ? Math.min(item.quantity, shared, getPurchasableQuantity(product, item.variant?.name)) : 0;
+
+    unitsLeft.set(item.productId, shared - granted);
+
+    return granted < item.quantity
+      ? [{ lineId: item.id, productId: item.productId, name: item.name, availableQuantity: granted }]
+      : [];
+  });
 }

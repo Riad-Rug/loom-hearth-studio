@@ -14,13 +14,14 @@ export type CompleteOrderResponse =
       message: string;
     }
   | {
-      // Another order holds a unit and nothing was saved. "unresolved": the hold
-      // on the buyer's card could not be released yet.
+      // Another order holds a unit and nothing was saved. Each item is a cart line
+      // with the units it can still have (0: none). "unresolved": the hold on the
+      // buyer's card could not be released yet.
       status: "unavailable";
       order: null;
       orderNumber: null;
       cardHold: "released" | "unresolved";
-      unavailableItems: UnavailablePiece[];
+      unavailableItems: Array<UnavailablePiece & { lineId: string; availableQuantity: number }>;
       message: string;
     }
   | {

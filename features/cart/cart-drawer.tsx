@@ -8,6 +8,7 @@ import { CartItemThumbnail } from "@/features/cart/cart-item-thumbnail";
 import {
   getCartItemDetails,
   getCartItemLabel,
+  getQuantityReducedNote,
   unavailableCheckoutNote,
   unavailableLineNote,
 } from "@/features/cart/cart-items";
@@ -26,6 +27,7 @@ export function CartDrawer() {
   const {
     getItemAvailability,
     hasUnavailableItems,
+    isQuantityReduced,
     itemCount,
     items,
     subtotalUsd,
@@ -216,6 +218,8 @@ export function CartDrawer() {
                       <p className={styles.itemMeta}>{getCartItemDetails(item)}</p>
                       {availability !== "available" ? (
                         <p className={styles.itemMeta}>{unavailableLineNote[availability]}</p>
+                      ) : isQuantityReduced(item) ? (
+                        <p className={styles.itemMeta}>{getQuantityReducedNote(item)}</p>
                       ) : null}
                     </div>
                   </article>

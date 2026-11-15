@@ -45,6 +45,7 @@ export class ProductEditConflictError extends Error {
 
 export interface ProductRepository {
   listAll(): Promise<Product[]>;
+  listListedByIds(ids: string[]): Promise<Product[]>;
   listAllWithUpdatedAt(): Promise<ProductWithUpdatedAt[]>;
   listByCategory(category: Product["category"]): Promise<Product[]>;
   listHomepageFeatured(limit: number): Promise<Product[]>;
@@ -73,6 +74,17 @@ export class PrismaProductRepository implements ProductRepository {
       },
       orderBy: {
         updatedAt: "desc",
+      },
+    });
+
+    return products.map(mapCatalogProductRecordToDomainProduct);
+  }
+
+  async listListedByIds(ids: string[]) {
+    const products = await this.context.client.catalogProduct.findMany({
+      where: {
+        id: { in: ids },
+        status: { in: storefrontProductStatuses },
       },
     });
 

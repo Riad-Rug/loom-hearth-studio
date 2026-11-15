@@ -37,7 +37,7 @@ export function ReviewStep() {
     placeOrderState,
     setPlaceOrderState,
     completeOrder,
-    dropUnavailableItems,
+    restartCheckout,
     goToStep,
   } = useCheckout();
 
@@ -106,8 +106,8 @@ export function ReviewStep() {
           completeOrder(result.order);
           return;
         case "unavailable":
-          dropUnavailableItems({
-            productIds: result.unavailableItems.map((item) => item.productId),
+          restartCheckout({
+            limits: result.unavailableItems.map((item) => ({ id: item.lineId, availableQuantity: item.availableQuantity })),
             // The studio needs the old payment to release a hold Stripe would not let go.
             message:
               result.cardHold === "unresolved"
