@@ -6,6 +6,7 @@ import {
   categoryHasPurchasableProducts,
   listCatalogProductCards,
 } from "@/lib/catalog/service";
+import { categoryOgImage } from "@/lib/seo/category-og-image";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
@@ -21,15 +22,19 @@ export async function generateMetadata(): Promise<Metadata> {
   // companion products the view renders) all point at pages that do want crawl
   // signal, so there is nothing to gain from the "nofollow" half.
   const hasPurchasableProducts = await categoryHasPurchasableProducts("decor");
+  const products = hasPurchasableProducts
+    ? await listCatalogProductCards({ category: "decor" })
+    : [];
 
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "decor",
     title: "Moroccan Decor & Antiques",
     description:
-      "Handmade Moroccan decor and antique pieces, sourced in person. Exact-piece photos before payment; ships from Casablanca.",
+      "Handmade Moroccan decor and antique pieces, sourced in person. Approve photos and video of the exact piece before payment.",
     path: "/shop/decor",
     noIndexFollow: !hasPurchasableProducts,
+    ...categoryOgImage(products),
   });
 }
 

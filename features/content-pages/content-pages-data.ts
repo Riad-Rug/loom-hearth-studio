@@ -1,11 +1,28 @@
 import type { FaqItem, PolicyPage, Testimonial } from "@/types/domain";
 import { publicBusinessDetails } from "@/config/public-business-details";
+import { supportReplyWindow } from "@/features/content-pages/support-reply";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
+
+const approvalMedia = storePromise.approvalMedia;
+const turnaround = storePromiseCopy.approvalTurnaround;
+const turnaroundHours = `${storePromise.approvalTurnaroundHours.min} to ${storePromise.approvalTurnaroundHours.max} hours`;
+const decisionDays = storePromise.decisionWindowDays;
+const deliveryWindow = storePromiseCopy.deliveryWindow;
+const shipsFrom = `${storePromise.shipsFromCity}, ${storePromise.shipsFromCountry}`;
+const freeShippingUsd = storePromise.freeShippingThresholdUsd;
+const flatShippingUsd = storePromise.flatShippingUsd;
+const dutiesSentence = storePromiseCopy.duties;
+const complaintsLine = `If something has gone wrong, please tell us by email at ${publicBusinessDetails.email}. A real person reads every message and will reply.`;
 
 type AboutSection = {
   eyebrow: string;
   title: string;
   body: string;
 };
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
 
 export const aboutHero = {
   eyebrow: "Why it matters to me",
@@ -33,12 +50,12 @@ export const aboutBridge = {
 export const contactData = {
   title: "Get in touch",
   body:
-    "Whether you have a question about an order, a piece you have your eye on, or a trade project to price out, this is the place. We reply personally within 24 hours - usually with photos or a short video of the actual piece.",
+    `Whether you have a question about an order, a piece you have your eye on, or a trade project to price out, this is the place. We reply personally ${supportReplyWindow}, usually with photos or video of the actual piece.`,
   legalNameLabel: publicBusinessDetails.legalName,
   emailLabel: publicBusinessDetails.email,
   whatsappLabel: publicBusinessDetails.whatsappLabel,
   whatsappUrl: publicBusinessDetails.whatsappUrl,
-  hoursLabel: "Mon-Fri, 9am-6pm Marrakech local time",
+  hoursLabel: `Mon-Fri, 9am-6pm ${storePromise.shipsFromCity} time`,
 } as const;
 
 export const faqItems: FaqItem[] = [
@@ -47,15 +64,15 @@ export const faqItems: FaqItem[] = [
     group: "Ordering",
     question: "Can I see the rug before I pay?",
     answer:
-      "Yes. We contact you within 24 hours of your order, and before your payment is captured we send you a video of the actual piece \u2014 texture, colour in natural light, and size in context. Most verifications are completed within 24 to 48 hours. If it is not right for your space, your payment is released. No charge. This applies to every rug order.",
+      `Yes. ${capitalize(turnaround)} of your order we send you ${approvalMedia} of the actual piece, showing texture, colour in natural light, and size in context. Your card is only charged once you approve, and you have ${decisionDays} days to decide. If it is not right for your space, say no and the hold on your card is released. No charge. This applies to every order.`,
     sortOrder: 1,
   },
   {
     id: "faq-2",
     group: "Ordering",
-    question: "Can you reserve a piece for me?",
+    question: "Can I reserve a piece?",
     answer:
-      "Account holders can request a short hold while reviewing a piece. For longer holds, contact us directly \u2014 we handle these case by case.",
+      `Placing an order reserves the piece. Your card is authorised, not charged, and the piece is marked Reserved so no one else can buy it. You then have ${decisionDays} days to review the ${approvalMedia} and approve. If you have questions before you order, message us and we will answer them.`,
     sortOrder: 2,
   },
   {
@@ -71,7 +88,7 @@ export const faqItems: FaqItem[] = [
     group: "Ordering",
     question: "How do I know the rug is genuinely hand-knotted?",
     answer:
-      "Look at the back. On a hand-knotted rug, the knot structure is visible on the reverse \u2014 individual knots, slightly irregular, tied into the warp threads. Machine-made and tufted rugs have a smooth or latex-backed reverse. We photograph the back of every rug in the listing, and you can verify this in the pre-shipment video.",
+      "Look at the back. On a hand-knotted rug, the knot structure is visible on the reverse \u2014 individual knots, slightly irregular, tied into the warp threads. Machine-made and tufted rugs have a smooth or latex-backed reverse. We photograph the back of every rug in the listing, and you can check it again in the photos and video we send before you pay.",
     sortOrder: 4,
   },
   {
@@ -79,7 +96,7 @@ export const faqItems: FaqItem[] = [
     group: "Ordering",
     question: "Do you offer samples?",
     answer:
-      "No. The pieces in this collection are ONE OF A KIND \u2014 there is no sample stock. What we offer instead is a pre-shipment video of the actual piece in natural light before your payment is captured. This gives you the most accurate read of colour, pile depth, and size before committing.",
+      `No. The pieces in this collection are ONE OF A KIND \u2014 there is no sample stock. What we offer instead is ${approvalMedia} of the actual piece before your card is charged. This gives you the most accurate read of colour, pile depth, and size before committing.`,
     sortOrder: 5,
   },
   {
@@ -103,7 +120,7 @@ export const faqItems: FaqItem[] = [
     group: "Products",
     question: "Is the colour in the photos accurate?",
     answer:
-      "We calibrate listing photographs for colour accuracy, but screen calibration varies by device. This is why we offer the pre-shipment video \u2014 filmed in natural light, it gives the most accurate read of the rug's true colour. If colour is critical to your decision, use the video before approving shipment.",
+      `We calibrate listing photographs for colour accuracy, but screen calibration varies by device. This is why we send ${approvalMedia} of your exact piece before you pay. Filmed in natural light, they give the most accurate read of the true colour. If colour is critical to your decision, check them before approving.`,
     sortOrder: 8,
   },
   {
@@ -119,14 +136,14 @@ export const faqItems: FaqItem[] = [
     group: "Products",
     question: "What size rug do I need?",
     answer:
-      "Living room with sofa and two chairs: an 8\u00d710 ft rug grounds the seating group without leaving furniture legs floating. Smaller groupings work with a 6\u00d79 ft. Dining room: the rug should extend at least 24 inches beyond the table edge on all sides so chairs stay on the rug when pulled out. Bedroom: a 9\u00d712 ft rug under a king bed with the rug visible on both sides of the frame is the standard. Send us your room dimensions and we will give you a specific recommendation.",
+      "Measure the space first, and mark the rug's footprint on the floor with painter's tape. Most of our rugs are small to mid-size pieces, and every product page lists exact dimensions. Living room: choose a rug big enough that at least the front legs of the sofa and chairs sit on it, or use a smaller rug as an accent in front of the seating. Dining room: the rug should extend at least 24 inches beyond the table edge on all sides so chairs stay on the rug when pulled out. Bedroom: a rug beside the bed or at its foot works well. Entry or hallway: a small or runner-shaped rug fits best. Send us your room dimensions and we will tell you which of the current pieces will work.",
     sortOrder: 10,
   },
   {
     id: "faq-11",
     group: "Shipping",
     question: "Where do orders ship from?",
-    answer: "All orders ship from Morocco.",
+    answer: `All orders ship from ${shipsFrom}.`,
     sortOrder: 11,
   },
   {
@@ -134,7 +151,7 @@ export const faqItems: FaqItem[] = [
     group: "Shipping",
     question: "How long does shipping take?",
     answer:
-      "Orders ship from Morocco to the United States. Delivery timing varies by carrier availability and customs processing, and we confirm destination timing with you before payment is captured. If you are outside the United States, you can still inquire and we will review shipping availability case by case before payment is captured. We send tracking when the order leaves Morocco.",
+      `Orders ship from ${shipsFrom} to the United States. Once you approve your piece, delivery takes ${deliveryWindow}. Customs processing can add time outside our control. If you are outside the United States, you can still inquire and we will review shipping availability case by case before payment is captured. We send tracking when the order leaves ${storePromise.shipsFromCountry}.`,
     sortOrder: 12,
   },
   {
@@ -149,7 +166,7 @@ export const faqItems: FaqItem[] = [
     group: "Shipping",
     question: "Do I need to pay customs or import duties?",
     answer:
-      "Import duties, VAT, GST, and customs fees depend on the destination. We confirm destination-specific shipping and delivery conditions with you before payment is captured, and any charges due on arrival remain the buyer\'s responsibility unless we confirm otherwise in writing before capture.",
+      `${dutiesSentence} Prices at checkout do not include them. If you have questions about customs for your delivery, contact us before you approve.`,
     sortOrder: 14,
   },
   {
@@ -173,7 +190,7 @@ export const faqItems: FaqItem[] = [
     group: "Returns",
     question: "How do I avoid needing to return a rug?",
     answer:
-      "The most common reasons for returns are colour mismatch and size mismatch. The pre-shipment video addresses both directly. Accept the video before your rug ships and you will see the actual colour in natural light and can confirm the size in context.",
+      `The most common reasons for returns are colour mismatch and size mismatch. The ${approvalMedia} we send before you pay address both directly. Check them before you approve and you will see the actual colour in natural light and can confirm the size in context.`,
     sortOrder: 17,
   },
   {
@@ -220,7 +237,7 @@ Last updated: March 29, 2026
 
 ## 1. Where all orders ship from
 
-Every item in the Loom & Hearth Studio collection is sourced and stored in Morocco. All orders are packed and dispatched directly from Morocco. There is no warehouse or fulfilment centre in the United States or elsewhere. Your piece travels directly from Morocco to your door.
+Every item in the Loom & Hearth Studio collection is sourced in Morocco. All orders are packed and dispatched directly from ${shipsFrom}. There is no warehouse or fulfilment centre in the United States or elsewhere. Your piece travels directly from ${storePromise.shipsFromCity} to your door.
 
 ---
 
@@ -232,17 +249,15 @@ We currently ship to the **United States**. If you are outside the United States
 
 ## 3. Shipping cost
 
-Shipping to the United States is **free on orders of $210 or more**. Orders under $210 ship for a **flat $50**. The shipping amount is shown at checkout before payment. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
+Shipping to the United States is **free on orders of $${freeShippingUsd} or more**. Orders under $${freeShippingUsd} ship for a **flat $${flatShippingUsd}**. The shipping amount is shown at checkout before payment. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
 
 ---
 
 ## 4. How dispatch works - the pre-shipment verification window
 
-Before your order ships, we contact you within 24 hours of your order to offer a short video of the exact piece you ordered, shown in natural Moroccan light with a tape measure for scale. This is our pre-shipment verification process. It exists because color, texture, and scale are difficult to fully communicate through photographs alone, and we would rather you review the piece before it is packed than have uncertainty after delivery.
+Before your order ships, we send you ${approvalMedia} of the exact piece you ordered ${turnaround} of your order, shown in natural Moroccan light with a tape measure for scale. This is our pre-shipment verification process. It exists because color, texture, and scale are difficult to fully communicate through photographs alone, and we would rather you review the piece before it is packed than have uncertainty after delivery.
 
-Once you confirm you are happy, payment is captured and your order is packed and dispatched. Most verifications are completed within 24 to 48 hours of your order.
-
-If we are unable to reach you or confirm your destination, timing, or delivery conditions, we will not capture payment until that confirmation is complete. In this case, dispatch can take up to 7 days from the order date — this is the exception, not the norm.
+You have ${decisionDays} days to review them. Once you approve, payment is captured and your order is packed and dispatched. If you say no, or we do not hear from you within ${decisionDays} days, the order is cancelled, the hold on your card is released, and you are not charged.
 
 For the full details of how the verification works, see the [Terms of Service](https://www.loomandhearthstudio.com/terms-and-conditions).
 
@@ -258,11 +273,11 @@ We do not offer carrier selection as part of the current inquiry-first order pro
 
 ## 6. Estimated delivery times
 
-All delivery time estimates below are measured from the **date of dispatch**, not the date of order. Allow 24 to 48 hours for the pre-shipment verification window before dispatch begins.
+All delivery time estimates below are measured from the **date of dispatch**, not the date of order. Allow ${turnaroundHours} for the pre-shipment verification window, plus the time you take to approve, before dispatch begins.
 
 | Destination | Estimated delivery after dispatch |
 |---|---|
-| United States | 7 to 14 business days |
+| United States | ${deliveryWindow} |
 | Other countries | Inquiry only. Shipping availability is reviewed case by case before payment is captured |
 
 These are estimates, not guarantees. International shipments from Morocco pass through customs clearance, which can add time outside our control. Carrier delays, public holidays, and weather events can also affect timelines. We will always provide you with a tracking number so you can monitor your shipment in real time.
@@ -281,9 +296,7 @@ If your tracking number is not working or showing no updates within 48 hours of 
 
 ## 8. Customs and import duties
 
-Import duties, VAT, GST, and customs fees vary by destination. We review destination-specific shipping, customs, and delivery conditions with you before payment is captured.
-
-Unless we confirm otherwise in writing before capture, any duties, VAT, GST, brokerage, or customs fees assessed on arrival remain the buyer's responsibility.
+${dutiesSentence} Prices at checkout do not include them. If you have questions about customs for your delivery, contact us before you approve.
 
 ---
 
@@ -360,7 +373,7 @@ For any question about your shipment, tracking, or delivery:
 **Loom and Hearth Studio LLC**
 Address: ${publicBusinessDetails.address}
 Email: ${publicBusinessDetails.email}
-${publicBusinessDetails.complaintsLine}
+${complaintsLine}
 
 We aim to respond to all shipping enquiries within 2 business days.`,
     seoTitle: "Shipping policy | Loom & Hearth Studio",
@@ -439,7 +452,7 @@ Examples that qualify:
 
 Examples that do not qualify:
 
-- Colour appearing slightly different on your screen than in photographs (this is why we offer pre-shipment video)
+- Colour appearing slightly different on your screen than in photographs (this is why we send ${approvalMedia} before you pay)
 - Natural variation in pattern or weave density inherent to handmade production
 - Minor tonal differences in areas of abrash that were visible in photographs
 
@@ -535,11 +548,11 @@ We will open a carrier investigation and work toward a resolution  replacement w
 
 ## 12. Pre-shipment verification and returns
 
-We offer a pre-shipment video verification on every order. Before payment is captured and before your item ships, we send you a video of the actual piece in natural Moroccan light  showing colour, texture, pile height, and size in context.
+We offer pre-shipment verification on every order. Before payment is captured and before your item ships, we send you ${approvalMedia} of the actual piece in natural Moroccan light  showing colour, texture, pile height, and size in context.
 
-Accepting this offer is the most effective way to ensure you are completely happy with your purchase before it leaves Morocco. If after watching the video you have any concerns  about colour, scale, texture, or anything else  tell us before confirming. That is the right moment to raise it.
+Accepting this offer is the most effective way to ensure you are completely happy with your purchase before it leaves Morocco. If after reviewing the photos and video you have any concerns  about colour, scale, texture, or anything else  tell us before confirming. That is the right moment to raise it.
 
-If you accepted the pre-shipment verification and confirmed you were happy with the item, and subsequently return it for reasons visible in the verification video, that will be taken into account when assessing your return. This does not remove your right to return within 14 days  but it is relevant to whether a return shipping cost exemption applies.
+If you accepted the pre-shipment verification and confirmed you were happy with the item, and subsequently return it for reasons visible in the verification photos and video, that will be taken into account when assessing your return. This does not remove your right to return within 14 days  but it is relevant to whether a return shipping cost exemption applies.
 
 ---
 
@@ -558,7 +571,7 @@ For return requests, questions about this policy, or anything related to an orde
 **Loom and Hearth Studio LLC**
 Address: ${publicBusinessDetails.address}
 Email: ${publicBusinessDetails.email}
-${publicBusinessDetails.complaintsLine}
+${complaintsLine}
 Subject line: Return Request  Order [your order number]
 
 We aim to respond to all return-related enquiries within 3 business days.`,
@@ -766,7 +779,7 @@ For any question, request, or concern about this Privacy Policy or how we handle
 **Loom and Hearth Studio LLC**
 Address: ${publicBusinessDetails.address}
 Email: ${publicBusinessDetails.email}
-${publicBusinessDetails.complaintsLine}
+${complaintsLine}
 
 We aim to respond to all inquiries within 5 business days.`,
     seoTitle: "Privacy Policy | Loom & Hearth Studio",
@@ -840,7 +853,7 @@ If we cancel your order, we will notify you promptly by email and release any pa
 
 ### 4.1 Prices
 
-All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $210 or more; orders under $210 ship for a flat $50, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
+All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $${freeShippingUsd} or more; orders under $${freeShippingUsd} ship for a flat $${flatShippingUsd}, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping or any import duties, VAT, GST, brokerage, or customs fees unless we confirm otherwise in writing before payment is captured.
 
 We reserve the right to correct pricing errors on the site at any time. If an error is identified after you have placed an order, we will contact you to confirm whether you wish to proceed at the correct price, or cancel for a full release of any held funds.
 
@@ -850,9 +863,9 @@ We reserve the right to correct pricing errors on the site at any time. If an er
 
 **Step 1 — Authorisation after confirmation.** If you decide to proceed after direct confirmation with us, your payment method is authorised for the order total. This places a hold on the funds on your card or account. You will see this as a pending charge. No money is transferred to us at this point.
 
-**Step 2 — Capture after verification.** Payment is captured — meaning funds are actually collected — only after your pre-shipment verification is complete (see section 5). Verification is typically completed within 24 to 48 hours of your order. In the rare case we cannot reach you, the capture window extends up to 7 days from the order date (see section 5).
+**Step 2 — Capture after verification.** Payment is captured — meaning funds are actually collected — only after your pre-shipment verification is complete (see section 5). We send your ${approvalMedia} ${turnaround} of your order, and you have ${decisionDays} days to approve (see section 5).
 
-If you confirm after seeing the verification video that you are happy with the item, we capture payment and your order ships. If we cancel the order for any reason, or if you choose not to proceed after the verification, the authorisation is released in full and no funds are collected. The time for a released authorisation to disappear from your statement depends on your card issuer — typically 3 to 7 business days.
+If you approve after seeing the verification ${approvalMedia} and are happy with the item, we capture payment and your order ships. If we cancel the order for any reason, or if you choose not to proceed after the verification, the authorisation is released in full and no funds are collected. The time for a released authorisation to disappear from your statement depends on your card issuer — typically 3 to 7 business days.
 
 ### 4.3 Payment processing
 
@@ -862,17 +875,17 @@ Payments are processed by Stripe if you proceed after direct confirmation with u
 
 ## 5. Pre-shipment verification
 
-We offer a pre-shipment video verification for every order. This is a core part of how we operate — not a delay.
+We offer pre-shipment verification for every order. This is a core part of how we operate — not a delay.
 
-**How it works.** Within 24 hours of your confirmed order request, we will contact you by email to offer a short video of the actual piece you selected — shown in natural light in Morocco, with a tape measure for scale, so you can see the colour, texture, and size before your payment is captured and your item ships. Most verifications are completed within 24 to 48 hours of your order.
+**How it works.** ${capitalize(turnaround)} of your order, we will email you ${approvalMedia} of the actual piece you selected, shown in natural light in Morocco with a tape measure for scale, so you can see the colour, texture, and size before your payment is captured and your item ships. You then have ${decisionDays} days to decide.
 
-**Your options.** You can confirm by reply email, request a live video call via WhatsApp or FaceTime, or receive a short recorded video clip — whichever suits you best.
+**Your options.** You can approve by reply email, or ask for a live video call via WhatsApp or FaceTime, or ask for extra shots in different light. Whichever suits you best.
 
 **If you are happy.** We capture payment and your item ships.
 
 **If something is not right.** Contact us before confirming and we will work with you to resolve it before the item ships. This is the right moment to raise any concern — it is far easier to resolve before shipment than after.
 
-**If we cannot reach you.** If we do not receive a response within 7 days of the order date after two contact attempts, we will keep the order on hold and will not capture payment until destination, timing, and delivery conditions are confirmed.
+**If we do not hear from you.** If we do not receive a decision within ${decisionDays} days, the order is cancelled, the authorisation on your card is released in full, and no funds are collected. The piece then goes back on the site.
 
 Accepting the pre-shipment verification offer significantly reduces the likelihood of returns due to colour or size mismatch. We encourage all buyers to take advantage of it.
 
@@ -882,7 +895,7 @@ Accepting the pre-shipment verification offer significantly reduces the likeliho
 
 ### 6.1 All orders ship from Morocco
 
-Every item in our collection is sourced and stored in Morocco. All orders are packed and dispatched from Morocco.
+Every item in our collection is sourced in Morocco. All orders are packed and dispatched from ${shipsFrom}.
 
 ### 6.2 Carriers
 
@@ -890,14 +903,14 @@ We ship using DHL Express, FedEx International, or Aramex, selected based on des
 
 ### 6.3 Estimated delivery times
 
-- United States: 7 to 14 business days from dispatch
+- United States: ${deliveryWindow} from dispatch
 - Other countries: inquiry only, with shipping availability reviewed case by case before payment is captured
 
 These are estimates, not guarantees. Customs clearance, carrier delays, and circumstances outside our control may extend delivery times. We will provide you with a tracking number when your order is dispatched so you can monitor progress.
 
 ### 6.4 Dispatch timing
 
-Orders are dispatched after pre-shipment verification is complete and payment is captured. Verification is typically completed within 24 to 48 hours of the order date, so dispatch usually follows shortly after. If we are unable to reach you, this process can take up to 7 days — see section 5.
+Orders are dispatched after you approve your piece and payment is captured. We send your ${approvalMedia} ${turnaround} of your order, so dispatch usually follows shortly after you approve. See section 5.
 
 ### 6.5 Risk of loss
 
@@ -905,9 +918,7 @@ Risk of loss and damage passes to you when the item is handed to the carrier for
 
 ### 6.6 Import duties and customs
 
-Import duties, VAT, GST, brokerage, and customs fees vary by destination. We confirm the destination-specific shipping and import conditions with you before payment is captured.
-
-Unless we confirm otherwise in writing before capture, any import duties, VAT, GST, brokerage, or customs fees assessed by the destination country remain the buyer's responsibility.
+${dutiesSentence} Prices at checkout do not include them. If you have questions about customs for your delivery, contact us before you approve.
 
 ---
 
@@ -938,7 +949,7 @@ All content on this website — including product photographs, written descripti
 We make every reasonable effort to ensure that product descriptions, dimensions, weights, and photographs accurately represent each item. However:
 
 - Handmade products have natural variation in texture, weave density, and colour tone that is inherent to the craft and is not a defect.
-- Colour rendering varies across screens and viewing conditions. Our pre-shipment video process is designed specifically to address this before dispatch.
+- Colour rendering varies across screens and viewing conditions. Our pre-shipment photos and video are designed specifically to address this before dispatch.
 - Minor imperfections consistent with age or hand production are disclosed in the product description where present and are not grounds for return unless they constitute a material misdescription.
 
 If you believe an item was materially misdescribed — meaning the listing contained a significant factual error that influenced your purchase decision — contact us before initiating a return. We will address it fairly.
@@ -986,7 +997,7 @@ For any question about these Terms:
 **Loom and Hearth Studio LLC**
 Address: ${publicBusinessDetails.address}
 Email: ${publicBusinessDetails.email}
-${publicBusinessDetails.complaintsLine}
+${complaintsLine}
 
 We aim to respond to all inquiries within 5 business days.`,
     seoTitle: "Terms of Service | Loom & Hearth Studio",

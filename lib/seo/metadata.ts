@@ -15,6 +15,12 @@ type BuildMetadataOptions = {
    * Takes precedence over `noIndex` when both are set.
    */
   noIndexFollow?: boolean;
+  /**
+   * "product" suppresses Next's own og:type, which cannot express it. The page
+   * renders ProductOpenGraphMeta (components/seo) for og:type and the product
+   * price tags, because Next's `metadata.other` emits `name=` attributes and
+   * Open Graph tags have to be `property=`.
+   */
   type?: "website" | "article" | "product";
   canonicalUrl?: string;
   ogTitle?: string;
@@ -23,17 +29,6 @@ type BuildMetadataOptions = {
   ogImageAlt?: string;
   ogImageWidth?: number;
   ogImageHeight?: number;
-  /**
-   * Product-only Open Graph tags consumed by Pinterest Rich Pins, Meta and
-   * other social scrapers. Only emitted when `type === "product"`.
-   */
-  product?: ProductOpenGraphOptions;
-};
-
-export type ProductOpenGraphOptions = {
-  priceAmount: number;
-  priceCurrency?: string;
-  availability: "instock" | "oos" | "preorder";
 };
 
 /**
@@ -65,9 +60,8 @@ export function buildMetadata({
   ogDescription,
   ogImageUrl,
   ogImageAlt,
-  ogImageWidth = defaultOgImageWidth,
-  ogImageHeight = defaultOgImageHeight,
-  product,
+  ogImageWidth,
+  ogImageHeight,
 }: BuildMetadataOptions): Metadata {
   const shouldIndex = !noIndex && !noIndexFollow;
   const shouldFollow = noIndexFollow || !noIndex;
@@ -89,8 +83,14 @@ export function buildMetadata({
       {
         url: resolvedOgImage,
         alt: ogImageAlt || siteConfig.name,
-        width: ogImageWidth,
-        height: ogImageHeight,
+        // The default image's size is known. A caller's own image with no size
+        // given gets none, since a wrong size is worse for scrapers than none.
+        ...(ogImageUrl
+          ? { width: ogImageWidth, height: ogImageHeight }
+          : {
+              width: ogImageWidth ?? defaultOgImageWidth,
+              height: ogImageHeight ?? defaultOgImageHeight,
+            }),
       },
     ],
   };
@@ -116,30 +116,7 @@ export function buildMetadata({
       description: resolvedOgDescription,
       images: [resolvedOgImage],
     },
-    other: type === "product" ? buildProductOpenGraphTags(product) : undefined,
   };
-}
-
-/**
- * Pinterest reads `og:type=product` plus the `product:*` price tags and
- * `og:availability` to turn a saved pin into a Product Rich Pin that shows live
- * price and stock. Values follow the Open Graph product spec:
- * https://developers.pinterest.com/docs/web-features/rich-pins-overview/
- */
-function buildProductOpenGraphTags(
-  product: ProductOpenGraphOptions | undefined,
-): NonNullable<Metadata["other"]> {
-  const tags: NonNullable<Metadata["other"]> = { "og:type": "product" };
-
-  if (!product || !Number.isFinite(product.priceAmount)) {
-    return tags;
-  }
-
-  tags["product:price:amount"] = product.priceAmount.toFixed(2);
-  tags["product:price:currency"] = product.priceCurrency || siteConfig.currency;
-  tags["og:availability"] = product.availability;
-
-  return tags;
 }
 
 export async function buildManagedMetadata({
@@ -158,7 +135,6 @@ export async function buildManagedMetadata({
   ogImageAlt,
   ogImageWidth,
   ogImageHeight,
-  product,
 }: BuildManagedMetadataOptions): Promise<Metadata> {
   const setting = await getSeoSetting({ entityType, entityKey });
   const managedTitle = cleanManagedString(setting?.title);
@@ -186,7 +162,6 @@ export async function buildManagedMetadata({
     ogImageAlt,
     ogImageWidth,
     ogImageHeight,
-    product,
   });
 }
 

@@ -7,6 +7,7 @@ import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-si
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import type { HomePageContent } from "@/features/home/home-page-data";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import { allowedImageHostnames } from "@/lib/media/allowed-image-hosts";
 import type { ProductCategory } from "@/types/domain";
 
@@ -34,8 +35,7 @@ type HomePageViewProps = {
   unavailableCategoryHrefs?: readonly string[];
 };
 
-const founderNoteDesktop =
-  "I photograph every piece myself in Casablanca. You approve the exact photos — daylight, wear included — before you pay.";
+const founderNoteDesktop = `I photograph every piece myself in ${storePromise.shipsFromCity}. You approve ${storePromise.approvalMedia} of the exact piece before you pay.`;
 const founderNoteMobile = "I photograph every piece myself. You approve before you pay.";
 
 const howItWorksSideDesktop =
@@ -54,21 +54,23 @@ const howItWorksSteps = [
   },
   {
     number: "2",
-    tag: "WITHIN 24 HOURS",
+    tag: storePromiseCopy.approvalTurnaround.toUpperCase(),
     title: "I photograph your piece",
-    bodyDesktop:
-      "Fresh daylight photos of your exact piece — true colour, edges, wear, everything — in your inbox within a day. Want it in lamplight, or beside a colour you're matching? Ask, and I'll shoot that too.",
-    bodyMobile: "Daylight photos of your exact piece within 24h. Extra shots in your kind of light — just ask.",
+    bodyDesktop: `Fresh ${storePromise.approvalMedia} of your exact piece, showing true colour, edges and wear, in your inbox ${storePromiseCopy.approvalTurnaround}. Want it in lamplight, or beside a colour you're matching? Ask, and I'll shoot that too.`,
+    bodyMobile: `${capitalize(storePromise.approvalMedia)} of your exact piece ${storePromiseCopy.approvalTurnaround}. Extra shots in your kind of light, just ask.`,
   },
   {
     number: "3",
-    tag: "YOU HAVE 5 DAYS",
+    tag: `YOU HAVE ${storePromise.decisionWindowDays} DAYS`,
     title: "You decide",
-    bodyDesktop:
-      "Approve, and only then is your card charged — your piece ships tracked, 5–10 days across the US. Say no and the hold is released; you pay nothing, and the piece goes back on the site. No reply within 5 days? The order cancels itself and the hold lifts automatically.",
+    bodyDesktop: `Approve, and only then is your card charged. Your piece ships tracked from ${storePromise.shipsFromCity} and arrives in ${storePromiseCopy.deliveryWindow}. Say no and the hold is released; you pay nothing, and the piece goes back on the site. No reply within ${storePromiseCopy.decisionWindow}? The order cancels itself and the hold lifts automatically.`,
     bodyMobile: "Approve → charged → ships tracked. Say no — or say nothing — and the hold lifts. You pay nothing.",
   },
 ] as const;
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
 
 const categoryCardCategoryKey: Record<string, ProductCategory> = {
   "category-rugs": "rugs",
@@ -333,7 +335,9 @@ export function HomePageView({
         <div className={styles.storyCopy}>
           <p className={styles.eyebrow}>{content.brandStory.eyebrow}</p>
           <h2>{content.brandStory.title}</h2>
-          <p>{content.brandStory.paragraph}</p>
+          {splitParagraphs(content.brandStory.paragraph).map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
         </div>
         <div className={styles.storyMedia}>
           <Image
@@ -365,6 +369,13 @@ export function HomePageView({
       </section>
     </div>
   );
+}
+
+function splitParagraphs(text: string) {
+  return text
+    .split(/\n{2,}/u)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
 }
 
 function getRenderableImage(src: string) {

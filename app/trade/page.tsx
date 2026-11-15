@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     entityKey: "trade",
     title: "Trade Program for Interior Designers: Moroccan Rugs & Decor",
     description:
-      "Trade pricing and sourcing support for designers buying Moroccan rugs, poufs, pillows and antiques. Direct studio contact, exact-piece photos, US shipping.",
+      "Trade pricing and sourcing support for designers buying Moroccan rugs, poufs, pillows and antiques. Direct studio contact, photos and video of the exact piece, US shipping.",
     path: "/trade",
   });
 }

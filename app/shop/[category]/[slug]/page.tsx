@@ -3,6 +3,7 @@ import type { Route } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
+import { ProductOpenGraphMeta } from "@/components/seo/product-open-graph-meta";
 import {
   getCategoryProductDetailByParams,
   getProductRedirectPathForSlug,
@@ -49,6 +50,7 @@ export default async function CategoryProductPage({
       <JsonLd
         data={productSchema({
           id: product.id,
+          catalogNumber: product.catalogNumber,
           name: product.name,
           description: product.description,
           path: productPath,
@@ -96,6 +98,15 @@ export default async function CategoryProductPage({
           { name: product.name, path: productPath },
         ])}
       />
+      <ProductOpenGraphMeta
+        priceAmount={product.priceUsd}
+        availability={
+          product.status === "sold" ||
+          (product.type === "multiUnit" && product.inventoryState === "outOfStock")
+            ? "oos"
+            : "instock"
+        }
+      />
       <ProductDetailPageView product={product} />
     </>
   );
@@ -113,7 +124,7 @@ export async function generateMetadata({
   if (!product) {
     return buildMetadata({
       title: "Shop",
-      description: "Browse Moroccan rugs, poufs, pillows, and decor sourced in Marrakech and prepared for review-first buying.",
+      description: "Browse Moroccan rugs, poufs, pillows, and decor sourced in Morocco and prepared for review-first buying.",
       path: "/shop",
     });
   }
@@ -131,14 +142,6 @@ export async function generateMetadata({
     ogImageAlt: ogImage?.altText || product.name,
     ogImageWidth: 1600,
     ogImageHeight: 1200,
-    product: {
-      priceAmount: product.priceUsd,
-      availability:
-        product.status === "sold" ||
-        (product.type === "multiUnit" && product.inventoryState === "outOfStock")
-          ? "oos"
-          : "instock",
-    },
   });
 }
 

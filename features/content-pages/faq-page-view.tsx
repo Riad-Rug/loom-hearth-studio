@@ -1,9 +1,9 @@
 import { faqItems } from "@/features/content-pages/content-pages-data";
+import { supportReplyWindow } from "@/features/content-pages/support-reply";
 
 import styles from "./content-pages.module.css";
 
-const faqIntro =
-  "Answers to the questions we get asked most often. If something is not here, send us a message \u2014 we respond within 24 hours.";
+const faqIntro = `Answers to the questions we get asked most often. If something is not here, send us a message and we will reply ${supportReplyWindow}.`;
 
 const faqGroups = ["Ordering", "Products", "Shipping", "Returns", "Rug Care"] as const;
 

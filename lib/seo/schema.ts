@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { DEFAULT_BLOG_AUTHOR } from "@/features/blog/blog-author-data";
 import { aboutHero } from "@/features/content-pages/content-pages-data";
 import { calculateShippingUsd } from "@/lib/order/shipping";
+import { storePromise } from "@/lib/order/store-promise";
 
 /**
  * Canonical @id for the founder Person node. The node itself is only emitted on
@@ -239,8 +240,17 @@ const CONTEMPORARY_CONDITION_PATTERN = /contemporary|newly\s+made/i;
  */
 const PRICE_VALIDITY_DAYS = 90;
 
+/** Same shape the admin form enforces (lib/catalog/product-validation.ts). */
+const CATALOG_NUMBER_PATTERN = /^LH-[A-Z]-\d{4}$/;
+
 export function productSchema(input: {
   id: string;
+  /**
+   * The visible product number (for example LH-R-0037). Used for sku and mpn
+   * when it is in the catalog format; the view model carries a placeholder
+   * string for pieces that have none yet, and that is never published.
+   */
+  catalogNumber?: string;
   name: string;
   description: string;
   path: string;
@@ -275,6 +285,10 @@ export function productSchema(input: {
   createdAt?: string;
 }) {
   const url = absoluteUrl(input.path);
+  const sku =
+    input.catalogNumber && CATALOG_NUMBER_PATTERN.test(input.catalogNumber.trim())
+      ? input.catalogNumber.trim()
+      : input.id;
   const validFrom = toSchemaDate(input.createdAt);
   const availability =
     input.availability === "outOfStock"
@@ -364,8 +378,8 @@ export function productSchema(input: {
     // and flags brand as missing its name. seller below keeps the @id, since
     // the seller really is that Organization.
     brand: { "@type": "Brand", name: "Loom & Hearth Studio" },
-    sku: input.id,
-    mpn: input.id,
+    sku,
+    mpn: sku,
     productID: input.id,
     category: input.category,
     url,
@@ -442,22 +456,21 @@ export function productSchema(input: {
           value: calculateShippingUsd(Number(priceValue)),
           currency: "USD",
         },
-        // Figures come from the shipping policy page (the authoritative copy in
-        // features/content-pages/content-pages-data.ts): verification completes
-        // in 24-48 hours (1-2 days handling), then 7-14 business days in transit
-        // to the US.
+        // Figures come from storePromise (lib/order/store-promise.ts): the
+        // approval turnaround in hours is the handling time in days, then the
+        // delivery window in business days is the transit time to the US.
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
           handlingTime: {
             "@type": "QuantitativeValue",
-            minValue: 1,
-            maxValue: 2,
+            minValue: Math.ceil(storePromise.approvalTurnaroundHours.min / 24),
+            maxValue: Math.ceil(storePromise.approvalTurnaroundHours.max / 24),
             unitCode: "DAY",
           },
           transitTime: {
             "@type": "QuantitativeValue",
-            minValue: 7,
-            maxValue: 14,
+            minValue: storePromise.deliveryBusinessDays.min,
+            maxValue: storePromise.deliveryBusinessDays.max,
             unitCode: "DAY",
           },
         },
