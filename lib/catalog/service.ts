@@ -48,6 +48,7 @@ import {
 } from "@/lib/catalog/random-selection";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import type { MediaAsset, Product, ProductCategory, RugProduct } from "@/types/domain";
 
 const defaultRugPalette = ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"] as const;
@@ -610,27 +611,19 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
     `Tradition: ${tradition}`,
   ];
 
+  const approvalLine = `We send ${storePromise.approvalMedia} of the exact ${product.type === "rug" ? "rug" : "piece"} ${storePromiseCopy.approvalTurnaround} of your order.`;
+  const shipsFromLine = `${storePromiseCopy.shipsFrom} to ${storePromise.shipsToLabel}.`;
+  const deliveryLine = `Delivery usually takes ${storePromiseCopy.deliveryWindow} after dispatch.`;
+
   const verificationItems =
     product.verificationNotes?.filter(Boolean).length
       ? product.verificationNotes.filter(Boolean).map(normalizeDimensionSeparators)
-      : product.type === "rug"
-        ? [
-            "We film the exact rug in natural, warm, and cool light.",
-            "You review and approve the video before payment is captured.",
-          ]
-        : [
-            "Availability and destination are reviewed before payment is captured.",
-            "Additional details can be requested through the inquiry flow.",
-          ];
+      : [approvalLine, "Your card is charged only after you approve."];
 
   const shippingItems =
     product.shippingNotes?.filter(Boolean).length
       ? product.shippingNotes.filter(Boolean).map(normalizeDimensionSeparators)
-      : [
-          "Ships from our Marrakech atelier via tracked international carrier.",
-          "Typical dispatch window is 24 to 48 hours.",
-          "Duties are included for US delivery.",
-        ];
+      : [shipsFromLine, deliveryLine, storePromiseCopy.duties];
 
   const panels: ProductSupportPanelViewModel[] = [
     {
@@ -646,18 +639,14 @@ function createProductSupportPanels(product: Product): ProductSupportPanelViewMo
       id: "verification",
       eyebrow: "Verification",
       title: product.type === "rug" ? "How this piece is confirmed before shipment" : "How availability is confirmed before shipment",
-      body:
-        product.type === "rug"
-          ? "Before we charge you, we film the exact rug in natural, warm, and cool light, and send the video for your approval. If the piece is not what you expected, you walk away. Nothing is captured until you say yes."
-          : "For multi-unit pieces, availability, destination, and delivery conditions are reviewed before payment is captured.",
+      body: `${approvalLine} If it is not what you expected, you walk away. Nothing is charged until you approve.`,
       items: verificationItems,
     },
     {
       id: "shipping",
       eyebrow: "Shipping",
       title: "Shipping and delivery notes",
-      body:
-        "Ships from our Marrakech atelier via tracked international carrier, typically arriving 7 to 14 business days after dispatch. Duties are included for US delivery - no surprise charges at delivery.",
+      body: `${shipsFromLine} ${deliveryLine} ${storePromiseCopy.duties}`,
       items: shippingItems,
     },
   ];
