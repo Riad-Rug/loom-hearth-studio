@@ -324,7 +324,9 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
           if (limits.length > 0 && limits.length === issues.length) {
             limitItems(limits);
-            setCartRecoveryMessage(describeLimitedLines(items, limits));
+            // Added to the notice, not swapped in: a restart's message there can hold
+            // the only reference to a card hold that was not released.
+            setCartRecoveryMessage((current) => [current, describeLimitedLines(items, limits)].filter(Boolean).join(" "));
 
             // Don't touch paymentIntent here: it's already "creating" (set
             // above) and changing the stale line(s) changes draftSignature,
