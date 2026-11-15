@@ -257,7 +257,10 @@ export function mergeStatusEdit(input: {
 }): { status: string; conflict: boolean } {
   // Only an order sets or clears "reserved".
   if (input.current === "reserved" || input.submitted === "reserved") {
-    return { status: input.current, conflict: false };
+    return {
+      status: input.current,
+      conflict: input.current !== input.loaded && input.submitted !== input.loaded,
+    };
   }
 
   if (input.current === input.loaded) return { status: input.submitted, conflict: false };
