@@ -4,10 +4,12 @@ import { Prisma } from "@prisma/client";
 
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import type { OrderRepository } from "@/lib/db/repositories/order-repository";
-import { sendOrderConfirmationEmailFromCreatedOrder } from "@/lib/email/service";
+import { getPostmarkEmailConfig } from "@/lib/email/config";
+import { sendOrderConfirmationEmailFromCreatedOrder, sendTransactionalEmailMessage } from "@/lib/email/service";
 import { orchestrateLaunchOrderFulfillment } from "@/lib/fulfillment/service";
 import { parseCheckoutOrderDraftSnapshotFromMetadata } from "@/lib/order/checkout-draft-validation";
 import { InventoryUnavailableError } from "@/lib/order/inventory-hold";
+import { createOversoldEmails } from "@/lib/order/oversold-notice";
 import type { OrderCreationRequest, OrderPersistenceRequest, PersistConfirmedOrderResult } from "@/lib/order/contracts";
 import { recordPromoRedemption } from "@/lib/promos/service";
 import {
@@ -508,6 +510,22 @@ async function createOrderTakingStock(input: {
       // The rival may have let the piece go in between, which makes this a normal sale.
       if ((await input.repository.listInventoryHolds([flaggedOrder.id])).get(flaggedOrder.id) !== "conflict") {
         return { status: "created", order: flaggedOrder };
+      }
+
+      // Sent once, here: retries find the saved order and never reach this branch.
+      for (const message of createOversoldEmails({
+        orderNumber: flaggedOrder.orderNumber,
+        buyerEmail: flaggedOrder.shippingAddress.email,
+        buyerName: flaggedOrder.shippingAddress.fullName,
+        studioEmail: process.env.STUDIO_NOTIFICATION_EMAIL || getPostmarkEmailConfig().fromEmail,
+        paymentIntentId: persistenceRequest.paymentIntentId,
+        pieceNames: unavailableNames,
+      })) {
+        const delivery = await sendTransactionalEmailMessage(message);
+
+        if (delivery.status !== "sent") {
+          console.error("OVERSOLD_EMAIL_NOT_SENT", { to: message.to, orderNumber: flaggedOrder.orderNumber, delivery });
+        }
       }
 
       return {
