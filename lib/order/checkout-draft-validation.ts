@@ -10,6 +10,8 @@ import type { OrderAddress } from "@/types/domain";
 import type { ProductVariant } from "@/types/domain/product";
 
 const orderDraftSnapshotMetadataKeyPrefix = "order_draft_snapshot_";
+// How many numbered chunks hold the snapshot; its suffix is not a number, so it is never read as a chunk.
+const orderDraftSnapshotChunkCountKey = "order_draft_snapshot_count";
 
 export type CheckoutOrderDraftLineItemRequest = {
   id: string;
@@ -280,14 +282,21 @@ export async function validateCheckoutOrderDraft(input: {
 // Stripe metadata values are capped at 500 characters, so a validated
 // snapshot (two addresses, line items, totals) is JSON-stringified and
 // split across numbered keys, then reassembled in order on the way back.
+// Stripe merges metadata on update, so the chunks of a longer snapshot already
+// on the PaymentIntent (`currentMetadata`) are sent as "", which Stripe removes.
 export function buildCheckoutOrderDraftSnapshotMetadata(
   snapshot: CheckoutOrderDraftSnapshot,
+  currentMetadata: Record<string, string> = {},
 ): Record<string, string> {
-  const metadata: Record<string, string> = {};
+  const metadata: Record<string, string> = Object.fromEntries(
+    readSnapshotChunks(currentMetadata).map(({ key }) => [key, ""]),
+  );
+  const chunks = createStripeMetadataChunks(JSON.stringify(snapshot));
 
-  createStripeMetadataChunks(JSON.stringify(snapshot)).forEach((chunk, index) => {
+  chunks.forEach((chunk, index) => {
     metadata[`${orderDraftSnapshotMetadataKeyPrefix}${index}`] = chunk;
   });
+  metadata[orderDraftSnapshotChunkCountKey] = String(chunks.length);
 
   return metadata;
 }
@@ -295,26 +304,51 @@ export function buildCheckoutOrderDraftSnapshotMetadata(
 export function parseCheckoutOrderDraftSnapshotFromMetadata(
   metadata: Record<string, string | null | undefined>,
 ): CheckoutOrderDraftSnapshot | null {
-  const chunkedValue = Object.entries(metadata)
+  const chunks = readSnapshotChunks(metadata);
+  const countValue = metadata[orderDraftSnapshotChunkCountKey];
+
+  if (countValue !== undefined && countValue !== null) {
+    const count = Number(countValue);
+    const snapshotChunks = chunks.slice(0, count);
+
+    return Number.isInteger(count) &&
+      snapshotChunks.length === count &&
+      snapshotChunks.every((chunk, index) => chunk.index === index)
+      ? parseSnapshot(snapshotChunks.map((chunk) => chunk.value).join(""))
+      : null;
+  }
+
+  // Written before the chunk count: a longer snapshot written earlier may have
+  // left its tail behind, and no shorter run of chunks than the whole snapshot
+  // is valid JSON, so the first run that parses is the snapshot.
+  for (let end = 1; end <= chunks.length; end += 1) {
+    const snapshot = parseSnapshot(chunks.slice(0, end).map((chunk) => chunk.value).join(""));
+
+    if (snapshot) {
+      return snapshot;
+    }
+  }
+
+  return null;
+}
+
+function readSnapshotChunks(metadata: Record<string, string | null | undefined>) {
+  return Object.entries(metadata)
     .flatMap(([key, value]) => {
-      if (!key.startsWith(orderDraftSnapshotMetadataKeyPrefix) || typeof value !== "string") {
+      if (!key.startsWith(orderDraftSnapshotMetadataKeyPrefix) || typeof value !== "string" || !value) {
         return [];
       }
 
-      const suffix = Number(key.slice(orderDraftSnapshotMetadataKeyPrefix.length));
+      const index = Number(key.slice(orderDraftSnapshotMetadataKeyPrefix.length));
 
-      return Number.isInteger(suffix) ? [{ suffix, value }] : [];
+      return Number.isInteger(index) ? [{ key, index, value }] : [];
     })
-    .sort((left, right) => left.suffix - right.suffix)
-    .map((entry) => entry.value)
-    .join("");
+    .sort((left, right) => left.index - right.index);
+}
 
-  if (!chunkedValue) {
-    return null;
-  }
-
+function parseSnapshot(value: string): CheckoutOrderDraftSnapshot | null {
   try {
-    const parsed = JSON.parse(chunkedValue) as CheckoutOrderDraftSnapshot;
+    const parsed = JSON.parse(value) as CheckoutOrderDraftSnapshot;
 
     if (
       !parsed ||

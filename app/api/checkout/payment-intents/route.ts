@@ -30,7 +30,6 @@ export async function POST(request: Request) {
 
   const snapshot = validation.validatedDraft;
   const amount = Math.round(snapshot.totalUsd * 100);
-  const metadata = buildCheckoutOrderDraftSnapshotMetadata(snapshot);
 
   try {
     const stripe = createStripeClient();
@@ -50,7 +49,7 @@ export async function POST(request: Request) {
         // hold for whatever payment method is actually offered.
         payment_method_types: ["card"],
         receipt_email: snapshot.billingAddress.email,
-        metadata,
+        metadata: buildCheckoutOrderDraftSnapshotMetadata(snapshot),
       });
 
     let paymentIntent;
@@ -58,7 +57,13 @@ export async function POST(request: Request) {
 
     if (body.paymentIntentId) {
       try {
-        paymentIntent = await stripe.paymentIntents.update(body.paymentIntentId, { amount, metadata });
+        // One update writes the whole snapshot and removes what is left of an
+        // older one, so whichever of two overlapping updates lands last is whole.
+        const { metadata: currentMetadata } = await stripe.paymentIntents.retrieve(body.paymentIntentId);
+        paymentIntent = await stripe.paymentIntents.update(body.paymentIntentId, {
+          amount,
+          metadata: buildCheckoutOrderDraftSnapshotMetadata(snapshot, currentMetadata),
+        });
         status = "updated";
       } catch (updateError) {
         // Stripe refuses to change the amount once a PaymentIntent has moved
