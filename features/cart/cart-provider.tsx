@@ -153,7 +153,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     setItems((currentItems) => limitCartItems(currentItems, limits));
-    setReducedLineIds((current) => new Set([...current, ...limits.filter((limit) => limit.reduced).map((limit) => limit.id)]));
+    // A line whose new cap is above its quantity is no longer held down by the stock.
+    setReducedLineIds((current) => {
+      const next = new Set(current);
+
+      for (const limit of limits) {
+        if (limit.reduced) {
+          next.add(limit.id);
+        } else {
+          next.delete(limit.id);
+        }
+      }
+
+      return next;
+    });
   }, [items, stockByLineId]);
 
   const getItemAvailability = useCallback(
