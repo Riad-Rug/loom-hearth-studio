@@ -2,7 +2,7 @@ import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-si
 
 import styles from "./blog.module.css";
 
-/** Closing signup for a post. The site footer stands down on post pages so only one form is on screen. */
+/** Closing signup for a post. The site footer stands down on post pages so two signups do not stack at the bottom. */
 export function BlogSignupBlock() {
   return (
     <section className={styles.signupBlock} aria-labelledby="blog-signup-heading">
@@ -12,6 +12,7 @@ export function BlogSignupBlock() {
         <p>Each piece is one of one. Join to see new arrivals before they sell.</p>
       </div>
       <NewsletterSignupIntentForm
+        source="blog"
         ctaLabel="JOIN"
         inputLabel="Email address"
         inputPlaceholder="Your email address"

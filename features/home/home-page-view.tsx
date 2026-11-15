@@ -362,6 +362,7 @@ export function HomePageView({
           <p>{content.newsletter.paragraph}</p>
         </div>
         <NewsletterSignupIntentForm
+          source="homepage"
           ctaLabel={content.newsletter.ctaLabel}
           inputLabel={content.newsletter.inputLabel}
           inputPlaceholder={content.newsletter.inputPlaceholder}

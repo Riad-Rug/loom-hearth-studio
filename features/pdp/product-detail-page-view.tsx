@@ -1100,6 +1100,7 @@ function UnavailablePurchaseShell({
       <div className="grid gap-[var(--space-2)]">
         <p className="font-medium text-[var(--color-ink)]">Get an email when new pieces arrive</p>
         <NewsletterSignupIntentForm
+          source="sold-piece"
           ctaLabel="Notify me"
           inputLabel="Email address"
           inputPlaceholder="Your email address"
