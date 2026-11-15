@@ -81,6 +81,7 @@ export function ProductDetailPageView({
   const purchaseState = getPurchaseState(product);
   const shippingCopy = getShippingCopy(product.priceUsd);
   const contentsNote = getContentsNote(product);
+  const title = parseProductTitle(product.name);
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -242,7 +243,17 @@ export function ProductDetailPageView({
               </span>
             </div>
 
-            <h1 className="text-[clamp(2.35rem,4vw,3.5rem)]">{product.name}</h1>
+            <h1 className="text-[clamp(1.65rem,4vw,3.5rem)]">
+              {title.name}
+              {title.size ? (
+                <>
+                  {" "}
+                  <span className="block mt-[0.4rem] [font-family:var(--font-body)] text-[clamp(1rem,1.6vw,1.2rem)] text-[var(--color-text-muted)]">
+                    {title.size}
+                  </span>
+                </>
+              ) : null}
+            </h1>
             <div className="grid gap-[0.35rem]">
               <p className="text-[var(--color-green)] text-[clamp(1.8rem,3vw,2.3rem)] leading-[1.26]">
                 {product.priceUsdLabel}
