@@ -15,7 +15,7 @@ import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useRef, useState } from "react";
-import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, RefObject } from "react";
 
 import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
@@ -87,6 +87,7 @@ export function ProductDetailPageView({
   const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isPointerFine, setIsPointerFine] = useState(false);
+  const enlargeButtonRef = useRef<HTMLButtonElement | null>(null);
   const { reserve: reserveProduct } = usePurchaseActions(product);
   const purchaseState = getPurchaseState(product);
   const shippingCopy = getShippingCopy(product.priceUsd);
@@ -121,7 +122,27 @@ export function ProductDetailPageView({
       }
       return new Set(previous).add(id);
     });
+
+    // The lightbox only renders a photo that loads. If the one it shows fails,
+    // move on to the next good photo, or close, so the open state never
+    // outlives the dialog and reopens it on the next thumbnail click.
+    if (isLightboxOpen && gallery[activeImageIndex]?.id === id) {
+      const nextIndex = findAdjacentViewableIndex(gallery, new Set(failedImageIds).add(id), activeImageIndex, 1);
+
+      if (nextIndex === null) {
+        closeLightbox();
+      } else {
+        setActiveImageIndex(nextIndex);
+      }
+    }
   };
+
+  function closeLightbox() {
+    setIsLightboxOpen(false);
+    // Headless UI returns focus to the button that opened the dialog, but that
+    // button unmounts once the shopper moves to another photo.
+    requestAnimationFrame(() => enlargeButtonRef.current?.focus());
+  }
 
   useEffect(() => {
     setPreferredHistoryCategory(getTopRecommendationHistoryCategory());
@@ -154,13 +175,11 @@ export function ProductDetailPageView({
   const activeViewablePosition = viewableImageIndexes.indexOf(activeImageIndex);
 
   function showAdjacentImage(step: 1 | -1) {
-    if (viewableImageIndexes.length < 2) {
-      return;
-    }
+    const nextIndex = findAdjacentViewableIndex(gallery, failedImageIds, activeImageIndex, step);
 
-    const nextPosition =
-      (activeViewablePosition + step + viewableImageIndexes.length) % viewableImageIndexes.length;
-    setActiveImageIndex(viewableImageIndexes[nextPosition]);
+    if (nextIndex !== null) {
+      setActiveImageIndex(nextIndex);
+    }
   }
 
   function handleLightboxKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
@@ -238,6 +257,7 @@ export function ProductDetailPageView({
                       className="h-[min(78vh,40rem)] max-[700px]:h-[60vh] flex items-center justify-center overflow-hidden border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)] max-[700px]:order-1"
                     >
                       <ProductHeroImage
+                        enlargeButtonRef={index === activeImageIndex ? enlargeButtonRef : undefined}
                         isBroken={failedImageIds.has(item.id)}
                         isPointerFine={isPointerFine}
                         item={item}
@@ -452,7 +472,7 @@ export function ProductDetailPageView({
         <Dialog
           className="relative z-[1000]"
           open={isLightboxOpen}
-          onClose={() => setIsLightboxOpen(false)}
+          onClose={closeLightbox}
           onKeyDown={handleLightboxKeyDown}
         >
           <DialogBackdrop className="fixed inset-0 bg-[rgba(20,20,20,0.9)]" />
@@ -461,7 +481,7 @@ export function ProductDetailPageView({
               aria-label="Close zoomed image"
               className={`absolute top-[var(--space-4)] right-[var(--space-4)] ${LIGHTBOX_CONTROL}`}
               type="button"
-              onClick={() => setIsLightboxOpen(false)}
+              onClick={closeLightbox}
             >
               Close
             </button>
@@ -472,6 +492,7 @@ export function ProductDetailPageView({
                 alt={activeImageAlt}
                 className="block w-auto h-auto max-w-[92vw] max-h-[78vh] object-contain"
                 src={activeImage.src}
+                onError={() => handleImageError(activeImage.id)}
               />
               {viewableImageIndexes.length > 1 ? (
                 <div className="flex items-center gap-[var(--space-3)] text-[var(--color-bg)]">
@@ -508,6 +529,7 @@ const LENS_SIZE = 180;
 const LENS_ZOOM = 2.5;
 
 function ProductHeroImage({
+  enlargeButtonRef,
   item,
   productName,
   isBroken,
@@ -516,6 +538,7 @@ function ProductHeroImage({
   onImageError,
   onOpenLightbox,
 }: {
+  enlargeButtonRef?: RefObject<HTMLButtonElement | null>;
   item: GalleryItem;
   productName: string;
   isBroken: boolean;
@@ -641,6 +664,7 @@ function ProductHeroImage({
       onPointerMove={handlePointerMove}
     >
       <button
+        ref={enlargeButtonRef}
         aria-label={`Enlarge photo: ${item.altText || productName}`}
         className="block w-full h-full p-0 border-0 cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-green)] focus-visible:ring-offset-2"
         type="button"
@@ -678,6 +702,25 @@ function ProductHeroImage({
       ) : null}
     </div>
   );
+}
+
+/** The next photo in `step` direction that has a source and has not failed, wrapping; null when there is none. */
+function findAdjacentViewableIndex(
+  gallery: GalleryItem[],
+  failedImageIds: ReadonlySet<string>,
+  fromIndex: number,
+  step: 1 | -1,
+) {
+  for (let offset = 1; offset < gallery.length; offset += 1) {
+    const index = (((fromIndex + step * offset) % gallery.length) + gallery.length) % gallery.length;
+    const item = gallery[index];
+
+    if (item?.src && !failedImageIds.has(item.id)) {
+      return index;
+    }
+  }
+
+  return null;
 }
 
 function clamp(value: number, min: number, max: number) {
