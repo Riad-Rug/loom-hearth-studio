@@ -61,7 +61,7 @@ export const siteConfig = {
   tagline:
     "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
   announcementDesktop: `SEE YOUR EXACT PIECE IN ${promiseMedia} BEFORE YOU PAY · FREE SHIPPING ON ORDERS OF $${storePromise.freeShippingThresholdUsd} OR MORE · SHIPS FROM ${promiseOrigin}`,
-  announcementMobile: `SEE ${promiseMedia} BEFORE YOU PAY · FREE SHIPPING ON $${storePromise.freeShippingThresholdUsd}+`,
+  announcementMobile: `${promiseMedia} FIRST · FREE SHIPPING $${storePromise.freeShippingThresholdUsd}+`,
   primaryNav: [
     {
       label: "Collection",
