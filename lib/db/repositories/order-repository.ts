@@ -10,25 +10,43 @@ import { moveStockForLines } from "@/lib/db/repositories/product-stock";
 import type { OrderPersistenceRequest } from "@/lib/order";
 import {
   InventoryUnavailableError,
-  planStockMovement,
+  planHoldStep,
   resolveInventoryHold,
   toStockLines,
 } from "@/lib/order/inventory-hold";
 import type { Order } from "@/types/domain";
 import type { ProductVariant as DomainProductVariant } from "@/types/domain/product";
 
+// What a transition does when the stock it needs is held by another order.
+// "refuse" throws InventoryUnavailableError and changes nothing. "record-conflict"
+// applies the change anyway and marks the order's hold "conflict": for facts that
+// already happened at Stripe, such as a captured payment.
+export type UnavailableStockPolicy = "refuse" | "record-conflict";
+
+export type OrderHoldFacts = {
+  inventoryHold: InventoryHold | null;
+  holdExpiresAt: string | null;
+};
+
 export interface OrderRepository {
-  create(input: OrderPersistenceRequest): Promise<Order>;
+  create(input: OrderPersistenceRequest, options?: { onUnavailable?: UnavailableStockPolicy }): Promise<Order>;
   getById(orderId: string): Promise<Order | null>;
   getByCheckoutSessionId(checkoutSessionId: string | null): Promise<Order | null>;
   getByPaymentIntentId(paymentIntentId: string): Promise<Order | null>;
   getByCustomerEmail(customerEmail: string): Promise<Order[]>;
   listAll(): Promise<Order[]>;
   listAwaitingApproval(): Promise<Order[]>;
-  updateStatus(orderId: string, status: Order["status"]): Promise<Order>;
+  // Stock and card-hold facts the domain Order does not carry.
+  listHoldFacts(orderIds: string[]): Promise<Map<string, OrderHoldFacts>>;
+  updateStatus(
+    orderId: string,
+    status: Order["status"],
+    options?: { onUnavailable?: UnavailableStockPolicy },
+  ): Promise<Order>;
   updatePaymentTransition(
     orderId: string,
     transition: { status: Order["status"]; paymentStatus: Order["paymentStatus"] },
+    options?: { onUnavailable?: UnavailableStockPolicy },
   ): Promise<Order>;
   updateCustomerNotesByPaymentIntentId(paymentIntentId: string, notes: string): Promise<Order | null>;
   markPhotosSent(orderId: string): Promise<Order>;
@@ -60,31 +78,49 @@ type OrderRecordWithLineItems = Prisma.OrderRecordGetPayload<{
 export class PrismaOrderRepository implements OrderRepository {
   constructor(private readonly context: RepositoryContext) {}
 
-  // Throws InventoryUnavailableError, and persists nothing, when another order
-  // already holds one of the ordered units.
-  async create(input: OrderPersistenceRequest) {
-    const inventoryHold = resolveInventoryHold(input);
-    const movement = planStockMovement("released", inventoryHold);
+  // With the default "refuse" policy, throws InventoryUnavailableError and
+  // persists nothing when another order already holds one of the ordered units.
+  async create(
+    input: OrderPersistenceRequest,
+    options: { onUnavailable?: UnavailableStockPolicy } = {},
+  ) {
+    const step = planHoldStep("released", resolveInventoryHold(input))!;
     const createdOrder = await this.context.client.$transaction(async (tx) => {
       // Insert the order before locking stock: a duplicate request for the same
       // payment then waits on the unique index and fails as a duplicate, rather
       // than waiting on the stock lock and reading this order's hold as a rival's.
       const order = await tx.orderRecord.create({
-        data: { ...mapOrderPersistenceRequestToCreateInput(input), inventoryHold },
+        data: { ...mapOrderPersistenceRequestToCreateInput(input), inventoryHold: step.next },
         include: {
           lineItems: true,
         },
       });
 
-      if (movement) {
-        const stock = await moveStockForLines(tx, toStockLines(input.items), movement, new Date());
-
-        if (stock.status === "unavailable") {
-          throw new InventoryUnavailableError(stock.productIds);
-        }
+      if (!step.movement) {
+        return order;
       }
 
-      return order;
+      const stock = await moveStockForLines(tx, {
+        orderId: order.id,
+        lines: toStockLines(input.items),
+        movement: step.movement,
+        now: new Date(),
+      });
+
+      if (stock.status === "moved") {
+        return order;
+      }
+
+      if (options.onUnavailable !== "record-conflict") {
+        throw new InventoryUnavailableError(stock.productIds);
+      }
+
+      console.error("ORDER_INVENTORY_CONFLICT", { orderId: order.id, productIds: stock.productIds });
+      return tx.orderRecord.update({
+        where: { id: order.id },
+        data: { inventoryHold: "conflict" },
+        include: { lineItems: true },
+      });
     });
 
     return mapOrderRecordToDomainOrder(createdOrder);
@@ -179,15 +215,34 @@ export class PrismaOrderRepository implements OrderRepository {
     return orders.map(mapOrderRecordToDomainOrder);
   }
 
-  async updateStatus(orderId: string, status: Order["status"]) {
-    return this.applyTransition(orderId, { status });
+  async listHoldFacts(orderIds: string[]) {
+    const orders = await this.context.client.orderRecord.findMany({
+      where: { id: { in: orderIds } },
+      select: { id: true, inventoryHold: true, holdExpiresAt: true },
+    });
+
+    return new Map(
+      orders.map((order) => [
+        order.id,
+        { inventoryHold: order.inventoryHold, holdExpiresAt: order.holdExpiresAt?.toISOString() ?? null },
+      ] as const),
+    );
+  }
+
+  async updateStatus(
+    orderId: string,
+    status: Order["status"],
+    options: { onUnavailable?: UnavailableStockPolicy } = {},
+  ) {
+    return this.applyTransition(orderId, { status }, options.onUnavailable ?? "refuse");
   }
 
   async updatePaymentTransition(
     orderId: string,
     transition: { status: Order["status"]; paymentStatus: Order["paymentStatus"] },
+    options: { onUnavailable?: UnavailableStockPolicy } = {},
   ) {
-    return this.applyTransition(orderId, transition);
+    return this.applyTransition(orderId, transition, options.onUnavailable ?? "refuse");
   }
 
   // Every status change moves the order's stock to match, in one transaction.
@@ -195,6 +250,7 @@ export class PrismaOrderRepository implements OrderRepository {
   private async applyTransition(
     orderId: string,
     transition: { status: Order["status"]; paymentStatus?: Order["paymentStatus"] },
+    onUnavailable: UnavailableStockPolicy,
   ) {
     const updatedOrder = await this.context.client.$transaction(async (tx) => {
       // The row lock serializes webhook retries, cron runs, and admin double-clicks.
@@ -202,15 +258,15 @@ export class PrismaOrderRepository implements OrderRepository {
         Array<{ paymentStatus: PrismaPaymentStatus; inventoryHold: InventoryHold | null }>
       >`SELECT "paymentStatus", "inventoryHold" FROM "OrderRecord" WHERE "id" = ${orderId} FOR UPDATE`;
       const inventoryHold = current
-        ? await settleInventoryHold(
-            tx,
+        ? await settleInventoryHold(tx, {
             orderId,
-            current.inventoryHold,
-            resolveInventoryHold({
+            current: current.inventoryHold,
+            target: resolveInventoryHold({
               status: transition.status,
               paymentStatus: transition.paymentStatus ?? mapPrismaPaymentStatus(current.paymentStatus),
             }),
-          )
+            onUnavailable,
+          })
         : null;
 
       return tx.orderRecord.update({
@@ -371,33 +427,43 @@ export function createOrderRepository(context = createRepositoryContext()) {
 
 async function settleInventoryHold(
   tx: Prisma.TransactionClient,
-  orderId: string,
-  current: InventoryHold | null,
-  target: InventoryHold,
+  input: {
+    orderId: string;
+    current: InventoryHold | null;
+    target: ReturnType<typeof resolveInventoryHold>;
+    onUnavailable: UnavailableStockPolicy;
+  },
 ): Promise<InventoryHold | null> {
-  const movement = planStockMovement(current, target);
+  const step = planHoldStep(input.current, input.target);
 
-  if (!movement) {
-    return current;
+  if (!step?.movement) {
+    return step ? step.next : input.current;
   }
 
-  const lineItems = await tx.orderLineItemRecord.findMany({ where: { orderId } });
-  const stock = await moveStockForLines(
-    tx,
-    toStockLines(lineItems.map(mapLineItemRecordToDomainItem)),
-    movement,
-    new Date(),
-  );
+  const lineItems = await tx.orderLineItemRecord.findMany({ where: { orderId: input.orderId } });
+  const stock = await moveStockForLines(tx, {
+    orderId: input.orderId,
+    lines: toStockLines(lineItems.map(mapLineItemRecordToDomainItem)),
+    movement: step.movement,
+    now: new Date(),
+  });
 
   if (stock.status === "moved") {
-    return target;
+    return step.next;
   }
 
-  // Only a reopened or late-captured order can get here: its piece went back on
-  // sale and someone else now holds it. The status change still records what
-  // already happened at Stripe or in the admin; a person settles the piece.
-  console.error("ORDER_INVENTORY_CONFLICT", { orderId, movement, productIds: stock.productIds });
-  return current;
+  // A reopened or late-captured order whose piece went back on sale and now
+  // belongs to another order, or a piece moved by hand while this order held it.
+  if (input.onUnavailable === "refuse") {
+    throw new InventoryUnavailableError(stock.productIds);
+  }
+
+  console.error("ORDER_INVENTORY_CONFLICT", {
+    orderId: input.orderId,
+    movement: step.movement,
+    productIds: stock.productIds,
+  });
+  return "conflict";
 }
 
 export const orderRepositoryTodo =
@@ -423,6 +489,7 @@ function mapOrderPersistenceRequestToCreateInput(
     taxUsd: createPrismaDecimal(input.taxUsd),
     totalUsd: createPrismaDecimal(input.totalUsd),
     currency: input.currency,
+    holdExpiresAt: input.holdExpiresAt ? new Date(input.holdExpiresAt) : null,
     stripeEventId: input.metadata.stripeEventId,
     stripeEventType: input.metadata.stripeEventType,
     placedAt: new Date(input.placedAt),

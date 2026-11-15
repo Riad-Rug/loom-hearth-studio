@@ -66,6 +66,8 @@ export type OrderPersistenceRequest = {
   totalUsd: number;
   currency: "USD";
   placedAt: string;
+  // ISO time Stripe refunds the uncaptured hold (charge capture_before), when known.
+  holdExpiresAt?: string;
   metadata: OrderCreationRequest["metadata"];
 };
 
@@ -84,14 +86,18 @@ export type OrderPersistenceBoundary = {
 };
 
 export type PersistConfirmedOrderResult = {
-  status: "created" | "ignored" | "configuration-error" | "already-persisted" | "unavailable";
+  // "unavailable": another order holds a unit, nothing was saved, and the card
+  // hold was released if it could be. "oversold": the payment was already
+  // captured, so the order was saved with a stock conflict for a refund.
+  status: "created" | "ignored" | "configuration-error" | "already-persisted" | "unavailable" | "oversold";
   orderCreationRequest: OrderCreationRequest | null;
   persistenceRequest: OrderPersistenceRequest | null;
   persistedOrder: Order | null;
   emailDeliveryResult: OrderConfirmationEmailSendResult | null;
   fulfillmentResult: FulfillmentOrchestrationResult | null;
-  // Set when status is "unavailable": what became of the buyer's card hold.
+  // Set when status is "unavailable" or "oversold".
   authorizationRelease?: PaymentIntentHoldRelease;
+  unavailableProductIds?: string[];
   message: string;
 };
 

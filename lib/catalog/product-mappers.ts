@@ -230,15 +230,14 @@ function sanitizeJsonValue<T>(value: T): T {
   return value;
 }
 
-// "reserved" is a rug held by an open order (see lib/order/inventory-hold.ts).
-// The domain status type has no "reserved" yet, so it reads as "sold", which
-// every storefront purchase gate already blocks.
 function mapStatus(status: string): Product["status"] {
-  if (status === "reserved") {
-    return "sold";
-  }
-
-  if (status === "draft" || status === "active" || status === "sold" || status === "archived") {
+  if (
+    status === "draft" ||
+    status === "active" ||
+    status === "reserved" ||
+    status === "sold" ||
+    status === "archived"
+  ) {
     return status;
   }
 

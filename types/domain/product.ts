@@ -1,5 +1,8 @@
 import type { EntityStatus, MediaAsset, SeoFields } from "@/types/domain/common";
 
+/** "reserved": a one-of-one piece held by an order awaiting the buyer's approval. */
+export type ProductStatus = EntityStatus | "reserved";
+
 export type ProductCategory =
   | "rugs"
   | "poufs"
@@ -22,7 +25,7 @@ export type ProductBase = SeoFields & {
   materials: string[];
   palette: string[];
   origin: string;
-  status: EntityStatus;
+  status: ProductStatus;
   provenanceNote?: string;
   sourcingNote?: string;
   attributionRegion?: string;

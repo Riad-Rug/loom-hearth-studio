@@ -1,6 +1,10 @@
 -- CreateEnum
-CREATE TYPE "InventoryHold" AS ENUM ('held', 'sold', 'released');
+CREATE TYPE "InventoryHold" AS ENUM ('held', 'sold', 'released', 'conflict');
 
 -- AlterTable
-ALTER TABLE "OrderRecord" ADD COLUMN     "inventoryHold" "InventoryHold";
+ALTER TABLE "CatalogProduct" ADD COLUMN     "reservedByOrderId" TEXT;
+
+-- AlterTable
+ALTER TABLE "OrderRecord" ADD COLUMN     "holdExpiresAt" TIMESTAMP(3),
+ADD COLUMN     "inventoryHold" "InventoryHold";
 

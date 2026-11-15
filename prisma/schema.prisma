@@ -47,6 +47,7 @@ enum InventoryHold {
   held
   sold
   released
+  conflict
 }
 
 enum PromoType {
@@ -158,6 +159,8 @@ model OrderRecord {
   placedAt          DateTime            @default(now())
   // Null for orders placed before automatic reservation; their stock is managed by hand.
   inventoryHold     InventoryHold?
+  // When Stripe refunds the uncaptured card hold (charge capture_before).
+  holdExpiresAt     DateTime?
 
   // Photo/fulfillment tracking
   photosSentAt      DateTime?
@@ -239,6 +242,8 @@ model CatalogProduct {
   shippingNotes    Json?
   careNote         String?         @db.Text
   status           String
+  // The order holding this one-of-one piece while status is "reserved".
+  reservedByOrderId String?
   soldAt           DateTime?
   images           Json
   materials        Json
