@@ -4,6 +4,7 @@ import type { AdminProductFormValues } from "@/lib/admin/product-form-shared";
 import { getProductRoutePreview } from "@/lib/catalog/product-validation";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createRepositoryContext } from "@/lib/db";
+import type { StockLevels } from "@/lib/order/inventory-hold";
 import type { Product } from "@/types/domain";
 
 export type AdminProductListItem = {
@@ -37,6 +38,11 @@ export type AdminProductFormPageData = {
   product: AdminProductFormValues;
 };
 
+export type AdminProductEditPageData = AdminProductFormPageData & {
+  // Stock as this page rendered it; the save action merges against it.
+  loadedStock: StockLevels;
+};
+
 export async function getAdminProductsPageData(): Promise<AdminProductsPageData> {
   const records = await createRepositoryContext().client.catalogProduct.findMany({
     orderBy: {
@@ -57,7 +63,7 @@ export async function getAdminProductsPageData(): Promise<AdminProductsPageData>
   };
 }
 
-export async function getAdminProductFormPageData(productId: string): Promise<AdminProductFormPageData | null> {
+export async function getAdminProductFormPageData(productId: string): Promise<AdminProductEditPageData | null> {
   const record = await createRepositoryContext().client.catalogProduct.findUnique({
     where: { id: productId },
   });
@@ -77,6 +83,10 @@ export async function getAdminProductFormPageData(productId: string): Promise<Ad
         record.acquisitionCostMad === null ? "" : String(record.acquisitionCostMad),
       soldAt: record.soldAt ? formatDateInput(record.soldAt) : "",
     }),
+    loadedStock: {
+      inventory: record.inventory,
+      variants: product.type === "multiUnit" ? product.variants : [],
+    },
   };
 }
 

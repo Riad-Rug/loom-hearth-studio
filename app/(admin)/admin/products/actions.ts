@@ -9,7 +9,13 @@ import type { AdminProductActionState } from "@/lib/admin/product-actions-shared
 import { getProductRoutePath } from "@/lib/catalog/helpers";
 import { normalizeSlug, parseProductFormData, validateProductMutationInput } from "@/lib/catalog/product-validation";
 import { requireAdminRoleForMutation } from "@/lib/auth/service";
-import { createProductRepository, isUniqueConstraintError } from "@/lib/db/repositories/product-repository";
+import type { ProductMutationInput } from "@/lib/catalog/product-validation";
+import {
+  createProductRepository,
+  isUniqueConstraintError,
+  type ProductStockState,
+} from "@/lib/db/repositories/product-repository";
+import { isOneOfOne, mergeStockEdit, type StockLevels } from "@/lib/order/inventory-hold";
 
 export async function createAdminProductAction(
   _previousState: AdminProductActionState,
@@ -25,7 +31,17 @@ export async function createAdminProductAction(
     };
   }
 
-  const validation = validateProductMutationInput(parseProductFormData(formData));
+  const parsed = parseProductFormData(formData);
+
+  if (parsed.status === "parsed" && parsed.value.status === "reserved") {
+    return {
+      status: "error",
+      message: onlyAnOrderReservesMessage,
+      fieldErrors: { status: onlyAnOrderReservesMessage },
+    };
+  }
+
+  const validation = validateProductMutationInput(parsed);
 
   if (validation.status === "invalid") {
     return {
@@ -82,8 +98,11 @@ export async function createAdminProductAction(
   }
 }
 
+// `loadedStock` is bound by the edit page when it renders, so the save can tell
+// stock the admin changed from stock an order moved while the form was open.
 export async function updateAdminProductAction(
   productId: string,
+  loadedStock: StockLevels,
   _previousState: AdminProductActionState,
   formData: FormData,
 ): Promise<AdminProductActionState> {
@@ -97,17 +116,47 @@ export async function updateAdminProductAction(
     };
   }
 
-  const validation = validateProductMutationInput(parseProductFormData(formData));
+  const parsed = parseProductFormData(formData);
+  const repository = createProductRepository();
+  const stored = await repository.getStockState(productId);
 
-  if (validation.status === "invalid") {
+  if (!stored) {
+    return { status: "error", message: "Product not found.", fieldErrors: {} };
+  }
+
+  const orderOwnedChange = parsed.status === "parsed" ? describeOrderOwnedChange(stored, parsed.value) : null;
+
+  if (orderOwnedChange) {
     return {
       status: "error",
-      message: validation.message,
-      fieldErrors: validation.fieldErrors,
+      message: orderOwnedChange.message,
+      fieldErrors: { [orderOwnedChange.field]: orderOwnedChange.message },
     };
   }
 
-  const repository = createProductRepository();
+  // Validate the stock as it will be saved: counts the admin left alone take
+  // whatever orders have made them since the form loaded.
+  const savedStock =
+    parsed.status === "parsed" && parsed.value.type === "multiUnit"
+      ? mergeStockEdit({ loaded: loadedStock, submitted: parsed.value, current: stored })
+      : null;
+  const validation = validateProductMutationInput(
+    savedStock && parsed.status === "parsed" && parsed.value.type === "multiUnit"
+      ? {
+          ...parsed,
+          value: { ...parsed.value, inventory: savedStock.inventory, variants: savedStock.variants },
+        }
+      : parsed,
+    { committedUnits: stored.heldUnits + stored.soldUnits },
+  );
+
+  if (validation.status === "invalid" || parsed.status !== "parsed") {
+    return {
+      status: "error",
+      message: validation.status === "invalid" ? validation.message : "Product save request is invalid.",
+      fieldErrors: validation.status === "invalid" ? validation.fieldErrors : {},
+    };
+  }
 
   try {
     if (await repository.slugExists({ slug: validation.value.slug, excludeId: productId })) {
@@ -118,10 +167,10 @@ export async function updateAdminProductAction(
       };
     }
 
-    const updatedProduct = await repository.update({
-      ...validation.value,
-      id: productId,
-    });
+    const { product: updatedProduct, stockConflicts } = await repository.update(
+      { ...parsed.value, id: productId },
+      { loadedStock },
+    );
 
     revalidateCatalogPaths({
       productId,
@@ -132,7 +181,9 @@ export async function updateAdminProductAction(
 
     return {
       status: "success",
-      message: "Persisted product saved.",
+      message: stockConflicts.length
+        ? `Persisted product saved, except stock: an order changed ${stockConflicts.join(", ")} while you were editing, so the current count was kept. Reload and re-enter your stock change if it still applies.`
+        : "Persisted product saved.",
       fieldErrors: {},
     };
   } catch (error) {
@@ -206,6 +257,10 @@ export async function deleteAdminProductAction(productId: string) {
     redirect("/admin/products" as Route);
   }
 
+  if (isHeldByOrder(await repository.getStockState(productId))) {
+    throw new Error(`"${product.name}" is held by an open order. Delete it after that order settles.`);
+  }
+
   await repository.delete(productId);
 
   revalidateCatalogPaths({
@@ -244,11 +299,21 @@ export async function bulkAdminProductsAction(formData: FormData) {
   }
 
   const repository = createProductRepository();
+  const skippedNames: string[] = [];
 
   for (const productId of productIds) {
     const product = await repository.getById(productId);
 
     if (!product) {
+      continue;
+    }
+
+    const stored = await repository.getStockState(productId);
+
+    // A reserved piece's status belongs to its order, and deleting a product an
+    // order holds would strand that order's stock.
+    if (product.status === "reserved" || (bulkAction === "delete" && isHeldByOrder(stored))) {
+      skippedNames.push(product.name);
       continue;
     }
 
@@ -270,25 +335,28 @@ export async function bulkAdminProductsAction(formData: FormData) {
       ...product,
       status: nextStatus,
     };
-    const validation = validateProductMutationInput({
-      status: "parsed",
-      value: nextProduct,
-      urlState: {
-        hasUrlChange: false,
-        previousPath: getProductRoutePath(product),
-        nextPath: getProductRoutePath(nextProduct),
-        confirmUrlChange: false,
+    const validation = validateProductMutationInput(
+      {
+        status: "parsed",
+        value: nextProduct,
+        urlState: {
+          hasUrlChange: false,
+          previousPath: getProductRoutePath(product),
+          nextPath: getProductRoutePath(nextProduct),
+          confirmUrlChange: false,
+        },
       },
-    });
+      { committedUnits: stored ? stored.heldUnits + stored.soldUnits : 0 },
+    );
 
     if (validation.status === "invalid") {
       throw new Error(`Could not ${bulkAction} "${product.name}": ${validation.message}`);
     }
 
-    const updatedProduct = await repository.update({
-      ...validation.value,
-      id: productId,
-    });
+    const { product: updatedProduct } = await repository.update(
+      { ...validation.value, id: productId },
+      { loadedStock: toStockLevels(product) },
+    );
 
     revalidateCatalogPaths({
       productId,
@@ -298,7 +366,53 @@ export async function bulkAdminProductsAction(formData: FormData) {
     });
   }
 
+  if (skippedNames.length > 0) {
+    throw new Error(
+      `Skipped ${skippedNames.map((name) => `"${name}"`).join(", ")}: reserved or held by an open order. The rest were updated.`,
+    );
+  }
+
   redirect("/admin/products" as Route);
+}
+
+const onlyAnOrderReservesMessage = "Only an order can reserve a piece. Choose another status.";
+
+function describeOrderOwnedChange(
+  stored: ProductStockState,
+  input: ProductMutationInput,
+): { field: string; message: string } | null {
+  const holder = stored.reservingOrderNumber ? `order ${stored.reservingOrderNumber}` : "an open order";
+
+  if (stored.status === "reserved" && input.status !== "reserved") {
+    return {
+      field: "status",
+      message: `This piece is reserved by ${holder}. Its status changes on its own when that order is captured, cancelled, or expires.`,
+    };
+  }
+
+  if (stored.status !== "reserved" && input.status === "reserved") {
+    return { field: "status", message: onlyAnOrderReservesMessage };
+  }
+
+  // Switching between status-tracked and count-tracked stock would strand the units already held.
+  if (stored.heldUnits > 0 && isOneOfOne(stored) !== isOneOfOne(input)) {
+    return {
+      field: input.type !== stored.type ? "type" : "uniquenessTier",
+      message: `Units of this product are held by ${holder}. Change its type or uniqueness tier after that order settles.`,
+    };
+  }
+
+  return null;
+}
+
+function isHeldByOrder(stored: ProductStockState | null) {
+  return Boolean(stored && (stored.status === "reserved" || stored.heldUnits > 0));
+}
+
+function toStockLevels(product: { type: string; inventory?: number; variants?: StockLevels["variants"] }): StockLevels {
+  return product.type === "multiUnit"
+    ? { inventory: product.inventory ?? 0, variants: product.variants ?? [] }
+    : { inventory: null, variants: [] };
 }
 
 function revalidateCatalogPaths(input: {

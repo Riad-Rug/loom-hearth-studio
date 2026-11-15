@@ -4,7 +4,9 @@ import { inspect } from "node:util";
 import { mapCatalogProductRecordToDomainProduct, mapProductMutationInputToCreateInput, mapProductMutationInputToUpdateInput } from "@/lib/catalog/product-mappers";
 import type { ProductMutationInput } from "@/lib/catalog/product-validation";
 import { createRepositoryContext, type RepositoryContext } from "@/lib/db";
+import { mergeStockEdit, type StockLevels } from "@/lib/order/inventory-hold";
 import type { Product } from "@/types/domain";
+import type { ProductVariant } from "@/types/domain/product";
 
 /**
  * A listed product paired with its raw persistence timestamp. Kept as a
@@ -20,6 +22,25 @@ export type ProductWithUpdatedAt = {
 // Reserved pieces stay listed so their pages keep resolving and read as taken.
 const storefrontProductStatuses = ["active", "reserved", "sold"];
 
+export type ProductStockState = {
+  status: string;
+  type: string;
+  uniquenessTier: string | null;
+  reservingOrderNumber: string | null;
+  inventory: number | null;
+  variants: ProductVariant[];
+  // Units in orders that hold them awaiting approval, and units those orders sold.
+  heldUnits: number;
+  soldUnits: number;
+};
+
+export type ProductUpdateResult = {
+  product: Product;
+  // Counts an order changed while the admin's form was open and the admin also
+  // edited; the order's value was kept.
+  stockConflicts: string[];
+};
+
 export interface ProductRepository {
   listAll(): Promise<Product[]>;
   listAllWithUpdatedAt(): Promise<ProductWithUpdatedAt[]>;
@@ -32,7 +53,13 @@ export interface ProductRepository {
   listForAdmin(): Promise<Product[]>;
   getById(id: string): Promise<Product | null>;
   create(input: ProductMutationInput): Promise<Product>;
-  update(input: ProductMutationInput & { id: string }): Promise<Product>;
+  // `loadedStock` is the stock the admin's form showed, so a save never undoes
+  // what an order moved meanwhile.
+  update(
+    input: ProductMutationInput & { id: string },
+    options: { loadedStock: StockLevels },
+  ): Promise<ProductUpdateResult>;
+  getStockState(id: string): Promise<ProductStockState | null>;
   delete(id: string): Promise<void>;
   slugExists(input: { slug: string; excludeId?: string }): Promise<boolean>;
 }
@@ -196,34 +223,109 @@ export class PrismaProductRepository implements ProductRepository {
     }
   }
 
-  async update(input: ProductMutationInput & { id: string }) {
-    // When the slug changes, remember the old one so the old URL keeps resolving
-    // (see getByPreviousSlug). Runs on every admin save, so nothing is done by hand.
-    const existingProduct = await this.context.client.catalogProduct.findUnique({
-      where: { id: input.id },
-      select: { slug: true, previousSlugs: true },
-    });
-    const previousSlugs =
-      existingProduct && existingProduct.slug !== input.slug
-        ? [
-            ...existingProduct.previousSlugs.filter(
-              (slug) => slug !== input.slug && slug !== existingProduct.slug,
-            ),
-            existingProduct.slug,
-          ]
-        : undefined;
+  async update(input: ProductMutationInput & { id: string }, options: { loadedStock: StockLevels }) {
+    return this.context.client.$transaction(async (tx) => {
+      // The same row lock order stock moves take, so a save cannot interleave with one.
+      const [existingProduct] = await tx.$queryRaw<
+        Array<{
+          slug: string;
+          previousSlugs: string[];
+          status: string;
+          inventory: number | null;
+          variants: Prisma.JsonValue | null;
+        }>
+      >`SELECT "slug", "previousSlugs", "status", "inventory", "variants"
+        FROM "CatalogProduct" WHERE "id" = ${input.id} FOR UPDATE`;
+      // When the slug changes, remember the old one so the old URL keeps resolving
+      // (see getByPreviousSlug). Runs on every admin save, so nothing is done by hand.
+      const previousSlugs =
+        existingProduct && existingProduct.slug !== input.slug
+          ? [
+              ...existingProduct.previousSlugs.filter(
+                (slug) => slug !== input.slug && slug !== existingProduct.slug,
+              ),
+              existingProduct.slug,
+            ]
+          : undefined;
+      // Only an order reserves a piece or gives it back; product edits never write that status.
+      const status =
+        existingProduct && (existingProduct.status === "reserved" || input.status === "reserved")
+          ? (existingProduct.status as Product["status"])
+          : input.status;
+      const stock =
+        existingProduct && input.type === "multiUnit"
+          ? mergeStockEdit({
+              loaded: options.loadedStock,
+              submitted: { inventory: input.inventory, variants: input.variants },
+              current: { inventory: existingProduct.inventory, variants: parseVariants(existingProduct.variants) },
+            })
+          : null;
+      const nextInput: ProductMutationInput =
+        stock && input.type === "multiUnit"
+          ? { ...input, status, inventory: stock.inventory, variants: stock.variants }
+          : { ...input, status };
 
-    const updatedProduct = await this.context.client.catalogProduct.update({
-      where: {
-        id: input.id,
-      },
-      data: {
-        ...mapProductMutationInputToUpdateInput(input),
-        ...(previousSlugs ? { previousSlugs } : {}),
+      const updatedProduct = await tx.catalogProduct.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          ...mapProductMutationInputToUpdateInput(nextInput),
+          ...(previousSlugs ? { previousSlugs } : {}),
+        },
+      });
+
+      return {
+        product: mapCatalogProductRecordToDomainProduct(updatedProduct),
+        stockConflicts: stock?.conflicts ?? [],
+      };
+    });
+  }
+
+  async getStockState(id: string) {
+    const product = await this.context.client.catalogProduct.findUnique({
+      where: { id },
+      select: {
+        status: true,
+        type: true,
+        uniquenessTier: true,
+        reservedByOrderId: true,
+        inventory: true,
+        variants: true,
       },
     });
 
-    return mapCatalogProductRecordToDomainProduct(updatedProduct);
+    if (!product) {
+      return null;
+    }
+
+    const [committedLines, reservingOrder] = await Promise.all([
+      this.context.client.orderLineItemRecord.findMany({
+        where: { productId: id, order: { inventoryHold: { in: ["held", "sold"] } } },
+        select: { quantity: true, order: { select: { inventoryHold: true } } },
+      }),
+      product.reservedByOrderId
+        ? this.context.client.orderRecord.findUnique({
+            where: { id: product.reservedByOrderId },
+            select: { orderNumber: true },
+          })
+        : null,
+    ]);
+    const unitsWithHold = (hold: "held" | "sold") =>
+      committedLines
+        .filter((line) => line.order.inventoryHold === hold)
+        .reduce((total, line) => total + line.quantity, 0);
+
+    return {
+      status: product.status,
+      type: product.type,
+      uniquenessTier: product.uniquenessTier,
+      reservingOrderNumber: reservingOrder?.orderNumber ?? null,
+      inventory: product.inventory,
+      variants: parseVariants(product.variants),
+      heldUnits: unitsWithHold("held"),
+      soldUnits: unitsWithHold("sold"),
+    };
   }
 
   async delete(id: string) {
@@ -257,6 +359,10 @@ export class PrismaProductRepository implements ProductRepository {
 
 export function createProductRepository(context = createRepositoryContext()) {
   return new PrismaProductRepository(context);
+}
+
+function parseVariants(value: Prisma.JsonValue | null): ProductVariant[] {
+  return Array.isArray(value) ? (value as unknown as ProductVariant[]) : [];
 }
 
 export function isUniqueConstraintError(error: unknown) {
