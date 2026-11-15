@@ -1,5 +1,6 @@
 import { siteConfig } from "@/config/site";
 import { allowedImageHostnames } from "@/lib/media/allowed-image-hosts";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 
 export const homepageSectionOrderKeys = [
   "hero",
@@ -134,7 +135,7 @@ const defaultHomePageContent: HomePageContent = {
   pageSeo: {
     title: "Loom & Hearth | Handmade Moroccan Rugs",
     description:
-      "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
+      `Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from ${storePromise.shipsFromCity}.`,
   },
   sectionOrder: [...homepageSectionOrderKeys],
   hero: {
@@ -142,9 +143,9 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Loom & Hearth | Handmade Moroccan Rugs",
       metaDescription:
-        "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
+        `Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from ${storePromise.shipsFromCity}.`,
     },
-    eyebrow: "DIRECT FROM CASABLANCA",
+    eyebrow: `DIRECT FROM ${storePromise.shipsFromCity.toUpperCase()}`,
     title: "Woven by hand in the Atlas. Warm underfoot in your home.",
     paragraph:
       "One-of-a-kind rugs, poufs and antiques, found and shipped by one person in Morocco — from $30.",
@@ -265,7 +266,12 @@ const defaultHomePageContent: HomePageContent = {
     eyebrow: "How we source",
     title: "In Morocco, since 1967.",
     paragraph:
-      "I grew up surrounded by Moroccan artisanat. My grandfather started the family business in 1967, and much of what I know today comes from being raised around the people, places, and work that shaped it. Over the years, I have developed my own understanding of Moroccan artisanat and built relationships with makers, workshops, and traders across the country. I know where to look, who to speak to, what good workmanship should look like, and what is realistic when it comes to price, timing, and production. Some of the people I work with come from families that have practiced their craft for generations; others belong to a newer generation of makers bringing a different perspective to traditional Moroccan work. Today, my mother and I are taking what came before us and building something of our own with Loom & Hearth — sourcing carefully, being straightforward about what is possible, and helping people find pieces we genuinely believe are worth bringing into their homes and projects.",
+      [
+        "I grew up surrounded by Moroccan artisanat. My grandfather started the family business in 1967, and much of what I know today comes from being raised around the people, places, and work that shaped it.",
+        "Over the years, I have developed my own understanding of Moroccan artisanat and built relationships with makers, workshops, and traders across the country. I know where to look, who to speak to, what good workmanship should look like, and what is realistic when it comes to price, timing, and production.",
+        "Some of the people I work with come from families that have practiced their craft for generations. Others belong to a newer generation of makers bringing a different perspective to traditional Moroccan work.",
+        "Today, my mother and I are taking what came before us and building something of our own with Loom & Hearth. We source carefully, we are straightforward about what is possible, and we help people find pieces we genuinely believe are worth bringing into their homes and projects.",
+      ].join("\n\n"),
     linkLabel: "READ THE FULL STORY",
     href: "/blog/stories-sourcing/marrakech-rug-bazaar-grandfather-1967",
   },
@@ -293,7 +299,7 @@ const defaultHomePageContent: HomePageContent = {
     },
     introTitle: siteConfig.name,
     introBody: "",
-    introMeta: "Prices in USD · Free shipping across the US.",
+    introMeta: `Prices in USD · ${storePromiseCopy.shipping}.`,
     exploreHeading: "Explore",
     exploreLinks: [
       { href: "/shop", label: "Shop" },
