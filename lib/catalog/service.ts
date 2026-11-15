@@ -11,10 +11,8 @@ import {
   formatRugWeight,
   getCategoryLabel,
   getCategoryRoutePath,
-  getInventoryMessage,
   getInventoryState,
   getProductBadgeLabel,
-  getProductMerchandisingNote,
   getProductRoutePath,
   getProductRoutePattern,
   isPurchasableProduct,
@@ -428,7 +426,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
     description: normalizeDimensionSeparators(product.description),
-    merchandisingNote: normalizeDimensionSeparators(getProductMerchandisingNote(product)),
+    merchandisingNote: "",
     routePattern: getProductRoutePattern(product),
     badge: getProductBadgeLabel(product),
     primaryImage: primaryImage
@@ -496,7 +494,7 @@ function createProductDetailPageViewModel(
     category: product.category,
     status: product.status,
     description: createProductDescriptionLead(product),
-    merchandisingNote: normalizeDimensionSeparators(getProductMerchandisingNote(product)),
+    merchandisingNote: "",
     descriptionSections: createProductDescriptionSections(product),
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
@@ -541,7 +539,7 @@ function createProductDetailPageViewModel(
     })),
     quantityMin: 1,
     inventoryState: getInventoryState(product),
-    inventoryMessage: getInventoryMessage(product),
+    inventoryMessage: createInventoryMessage(product),
     variantLabel: product.variants.length ? "Variant" : undefined,
     notifyMeLabel: product.notifyMeEnabled ? "Notify me when available" : undefined,
     cartProduct: product,
@@ -1228,5 +1226,16 @@ function createInventoryStateLabel(product: Extract<Product, { type: "multiUnit"
   }
 
   return "In stock";
+}
+
+function createInventoryMessage(product: Extract<Product, { type: "multiUnit" }>) {
+  switch (getInventoryState(product)) {
+    case "outOfStock":
+      return "Out of stock.";
+    case "lowStock":
+      return `Only ${product.inventory} left.`;
+    case "inStock":
+      return "In stock.";
+  }
 }
 
