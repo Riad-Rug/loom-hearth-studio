@@ -3,6 +3,7 @@ import type { Route } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
+import { ProductOpenGraphMeta } from "@/components/seo/product-open-graph-meta";
 import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
 import {
@@ -66,6 +67,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
       <JsonLd
         data={productSchema({
           id: product.id,
+          catalogNumber: product.catalogNumber,
           name: product.name,
           description: product.description,
           path: productPath,
@@ -109,6 +111,10 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           { name: product.name, path: productPath },
         ])}
       />
+      <ProductOpenGraphMeta
+        priceAmount={product.priceUsd}
+        availability={product.status === "sold" ? "oos" : "instock"}
+      />
       <ProductDetailPageView product={product} rugStyleHasStock={rugStyleHasStock} />
     </>
   );
@@ -144,10 +150,6 @@ export async function generateMetadata({
     ogImageAlt: ogImage?.altText || product.name,
     ogImageWidth: 1600,
     ogImageHeight: 1200,
-    product: {
-      priceAmount: product.priceUsd,
-      availability: product.status === "sold" ? "oos" : "instock",
-    },
   });
 }
 
