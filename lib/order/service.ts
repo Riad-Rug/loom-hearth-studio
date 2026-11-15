@@ -30,6 +30,7 @@ import {
   isDeclinedPaymentIntent,
   readHoldExpiry,
   releasePaymentIntentHold,
+  type PaymentIntentHoldRelease,
 } from "@/lib/stripe/payment-intent-hold";
 import type {
   StripeCheckoutPaymentConfirmation,
@@ -298,7 +299,17 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
     };
   }
 
-  if (paymentIntent.status !== "requires_capture" && paymentIntent.status !== "succeeded") {
+  // A cancelled PaymentIntent, or a held one the checkout already declined, never
+  // becomes an order: its hold is released (again) and the buyer is told what is
+  // short now. A captured one still becomes an order, so that money always has one.
+  const declined =
+    paymentIntent.status === "canceled"
+      ? "released"
+      : paymentIntent.status === "requires_capture" && isDeclinedPaymentIntent(paymentIntent)
+        ? await releasePaymentIntentHold(stripe, input.paymentIntentId)
+        : undefined;
+
+  if (!declined && paymentIntent.status !== "requires_capture" && paymentIntent.status !== "succeeded") {
     return {
       status: "ignored",
       orderCreationRequest: null,
@@ -379,9 +390,7 @@ export async function persistConfirmedStripePaymentIntentOrder(input: {
       orderCreationRequest,
       persistenceRequest,
       stripe,
-      // Once declined, a held payment only ever gets released; a captured one
-      // still becomes an order, so that money always has one.
-      declined: paymentIntent.status === "requires_capture" && isDeclinedPaymentIntent(paymentIntent),
+      declined,
     });
 
     if (creation.status === "declined") {
@@ -476,16 +485,17 @@ function oversoldMessage(subject: string, orderNumber: string) {
 }
 
 // Creates the order and takes its stock. When another order got there first, or
-// the PaymentIntent was already declined: an uncaptured hold is released and
-// nothing is saved, so the buyer is not left with money reserved for a piece they
-// cannot have; a payment already captured is saved with a stock conflict instead,
-// so that money always has an order the studio sees and refunds.
+// the PaymentIntent was already declined (`declined` is where its hold stands):
+// an uncaptured hold is released and nothing is saved, so the buyer is not left
+// with money reserved for a piece they cannot have; a payment already captured
+// is saved with a stock conflict instead, so that money always has an order the
+// studio sees and refunds.
 async function createOrderTakingStock(input: {
   repository: OrderRepository;
   orderCreationRequest: OrderCreationRequest;
   persistenceRequest: OrderPersistenceRequest;
   stripe?: ReturnType<typeof createStripeClient>;
-  declined?: boolean;
+  declined?: PaymentIntentHoldRelease;
 }): Promise<{ status: "created"; order: Order } | { status: "declined"; result: PersistConfirmedOrderResult }> {
   const { persistenceRequest } = input;
 
@@ -500,14 +510,12 @@ async function createOrderTakingStock(input: {
   }
 
   const authorizationRelease =
-    persistenceRequest.paymentStatus === "paid"
+    input.declined ??
+    (persistenceRequest.paymentStatus === "paid"
       ? "captured"
       : persistenceRequest.paymentIntentId
-        ? await (input.declined ? releasePaymentIntentHold : declinePaymentIntent)(
-            input.stripe ?? createStripeClient(),
-            persistenceRequest.paymentIntentId,
-          )
-        : "unresolved";
+        ? await declinePaymentIntent(input.stripe ?? createStripeClient(), persistenceRequest.paymentIntentId)
+        : "unresolved");
   const unavailableLines = await findUnavailableLines(persistenceRequest.items);
   const unavailableNames = unavailableLines.map((line) => line.name);
   const subject = unavailableNames.length
