@@ -19,7 +19,7 @@ export const storePromiseCopy = {
   approvalTurnaround: `within ${storePromise.approvalTurnaroundHours.min} to ${storePromise.approvalTurnaroundHours.max} hours`,
   deliveryWindow: `${storePromise.deliveryBusinessDays.min} to ${storePromise.deliveryBusinessDays.max} business days`,
   decisionWindow: `${storePromise.decisionWindowDays} days`,
-  shipping: `Shipping $${storePromise.flatShippingUsd}, free over $${storePromise.freeShippingThresholdUsd}`,
+  shipping: `Shipping $${storePromise.flatShippingUsd}, free on orders of $${storePromise.freeShippingThresholdUsd} or more`,
   shipsFrom: `Tracked shipping from ${storePromise.shipsFromCity}, ${storePromise.shipsFromCountry}`,
   duties:
     storePromise.duties === "included"
