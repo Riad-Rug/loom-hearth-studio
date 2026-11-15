@@ -6,6 +6,7 @@ import { useEffect } from "react";
 
 import { ConsentGate } from "@/components/compliance/cookie-consent-provider";
 import { trackPageView } from "@/lib/analytics/gtag";
+import { useAnalyticsVendor } from "@/lib/analytics/commerce-tracking";
 
 type GoogleAnalyticsProps = {
   measurementId: string;
@@ -35,6 +36,7 @@ gtag('config', '${measurementId}', { send_page_view: false });`}
 }
 
 function PageViewTracker({ measurementId }: GoogleAnalyticsProps) {
+  useAnalyticsVendor("ga");
   const pathname = usePathname();
   const searchParams = useSearchParams();
 

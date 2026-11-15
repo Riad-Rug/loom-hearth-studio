@@ -69,24 +69,6 @@ export function trackBeginCheckout(input: {
   });
 }
 
-export function trackPurchase(input: {
-  transactionId: string;
-  currency?: string;
-  value?: number;
-  items: AnalyticsItem[];
-}) {
-  if (!canTrack()) {
-    return;
-  }
-
-  window.gtag!("event", "purchase", {
-    transaction_id: input.transactionId,
-    currency: input.currency || "USD",
-    value: input.value,
-    items: input.items,
-  });
-}
-
 export function trackGenerateLead(input: {
   inquiryType?: string;
   productName?: string;
