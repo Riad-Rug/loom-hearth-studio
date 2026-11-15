@@ -221,9 +221,10 @@ export async function validateCheckoutOrderDraft(input: {
     ];
   });
 
-  const subtotalUsd = validatedLineItems.reduce(
-    (runningTotal, lineItem) => runningTotal + lineItem.priceUsd * lineItem.quantity,
-    0,
+  // Rounded to cents at each step, as the cart does, so float error in a sum
+  // cannot push an order just under the free-shipping threshold.
+  const subtotalUsd = roundToCents(
+    validatedLineItems.reduce((runningTotal, lineItem) => runningTotal + lineItem.priceUsd * lineItem.quantity, 0),
   );
   let discountUsd = 0;
 
@@ -249,8 +250,9 @@ export async function validateCheckoutOrderDraft(input: {
     }
   }
 
-  const shippingUsd = calculateShippingUsd(subtotalUsd - discountUsd);
-  const totalUsd = subtotalUsd - discountUsd + shippingUsd;
+  const discountedSubtotalUsd = roundToCents(subtotalUsd - discountUsd);
+  const shippingUsd = calculateShippingUsd(discountedSubtotalUsd);
+  const totalUsd = roundToCents(discountedSubtotalUsd + shippingUsd);
 
   if (issues.length || !draft.billingAddress || !draft.shippingAddress) {
     return {
@@ -366,4 +368,8 @@ function parseSnapshot(value: string): CheckoutOrderDraftSnapshot | null {
   } catch {
     return null;
   }
+}
+
+function roundToCents(valueUsd: number): number {
+  return Math.round(valueUsd * 100) / 100;
 }

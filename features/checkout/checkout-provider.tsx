@@ -147,6 +147,10 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [hasHydrated, setHasHydrated] = useState(false);
   const [paymentIntentRetryCount, setPaymentIntentRetryCount] = useState(0);
   const paymentIntentIdRef = useRef<string | null>(null);
+  // One request at a time: the server applies updates to a PaymentIntent in the
+  // order they reach Stripe, so two overlapping requests could leave the intent
+  // carrying the older cart while this page shows the newer one.
+  const paymentIntentRequestQueueRef = useRef<Promise<void>>(Promise.resolve());
   const hasTrackedBeginCheckout = useRef(false);
   const trackedFunnelSteps = useRef(new Set<FunnelStepEventName>());
 
@@ -277,26 +281,44 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     setPaymentIntent((current) => ({ ...current, status: "creating", message: null }));
 
-    requestPaymentIntent({
-      billingAddress: resolvedBillingAddress,
-      shippingAddress: resolvedShippingAddress,
-      items: items.map((item) => ({
-        id: item.id,
-        productId: item.productId,
-        productType: item.productType,
-        quantity: item.quantity,
-        variantName: item.variantName,
-      })),
-      promoCode: promoCode ?? undefined,
-      paymentIntentId: paymentIntentIdRef.current ?? undefined,
-    })
+    const sendRequest = () =>
+      requestPaymentIntent({
+        billingAddress: resolvedBillingAddress,
+        shippingAddress: resolvedShippingAddress,
+        items: items.map((item) => ({
+          id: item.id,
+          productId: item.productId,
+          productType: item.productType,
+          quantity: item.quantity,
+          variantName: item.variantName,
+        })),
+        promoCode: promoCode ?? undefined,
+        paymentIntentId: paymentIntentIdRef.current ?? undefined,
+      });
+    const request = paymentIntentRequestQueueRef.current.then(() => (cancelled ? null : sendRequest()));
+
+    paymentIntentRequestQueueRef.current = request.then(
+      () => undefined,
+      () => undefined,
+    );
+
+    request
       .then((result) => {
+        if (!result) {
+          return;
+        }
+
+        // Kept even when a newer request has superseded this one, so the newer
+        // request updates this intent instead of creating a second one.
+        if (result.status === "created" || result.status === "updated") {
+          paymentIntentIdRef.current = result.paymentIntentId;
+        }
+
         if (cancelled) {
           return;
         }
 
         if (result.status === "created" || result.status === "updated") {
-          paymentIntentIdRef.current = result.paymentIntentId;
           setPaymentIntent({
             status: "ready",
             clientSecret: result.clientSecret,
