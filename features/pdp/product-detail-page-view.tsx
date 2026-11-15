@@ -732,8 +732,8 @@ function getContentsNote(product: ProductDetailPageViewModel): { label: string; 
 }
 
 /**
- * Poufs have no height field in the admin form, so their height lives only in
- * the title ("24\" × 24\" × 14\""). A recorded heightCm always wins.
+ * Older poufs carry their height only in the title ("24\" × 24\" × 14\"").
+ * A recorded heightCm always wins.
  */
 function formatMultiUnitSize(product: MultiUnitProductDetailPageViewModel) {
   const { heightCm } = product.cartProduct;

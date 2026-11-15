@@ -27,15 +27,8 @@ export type CatalogProductCardViewModel = {
   sizeBucket?: CatalogProductSizeBucket;
   subtitle: string;
   category: ProductCategory;
-  status: Product["status"];
   availability: ProductAvailability;
   type: Product["type"];
-  /**
-   * Multi-unit piece with nothing left on the shelf (inventory <= 0). Always
-   * false for rugs, which are quantity-1 pieces with no inventory field — their
-   * availability reads from `status` instead.
-   */
-  isOutOfStock: boolean;
   priceUsd: number;
   priceUsdLabel: string;
   /** ISO time the listing was created, for a "Newest" sort. */
