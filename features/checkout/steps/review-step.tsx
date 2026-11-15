@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useElements, useStripe } from "@stripe/react-stripe-js";
+import type { PaymentIntent, Stripe, StripeElements } from "@stripe/stripe-js";
 
 import Link from "next/link";
 
@@ -20,6 +21,49 @@ const finalizeFailedMessage =
 type PlaceOrderProblem =
   | { kind: "error"; message: string }
   | { kind: "oversold"; orderNumber: string | null; message: string };
+
+// Resolves to null once the card is authorized, or to what to tell the buyer.
+// A confirm that failed in transit, or one Stripe refused because the card was
+// already authorized, leaves the PaymentIntent's own status as the answer.
+async function authorizeCard(stripe: Stripe, elements: StripeElements, clientSecret: string): Promise<string | null> {
+  let problem: string;
+
+  // stripe.confirmPayment() normally resolves with { error } rather than
+  // throwing, but it can reject outright (network failure, unexpected
+  // Elements state) — without this catch-all, a rejection here leaves the
+  // button frozen on "Authorizing card…" forever with no way to recover.
+  try {
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      clientSecret,
+      confirmParams: {
+        return_url: `${window.location.origin}/checkout/review`,
+      },
+      redirect: "if_required",
+    });
+
+    if (!error && isAuthorized(paymentIntent)) {
+      return null;
+    }
+
+    problem = error
+      ? (error.message ?? "Payment could not be authorized. Check your card details and try again.")
+      : "Payment was not authorized. Please try again.";
+  } catch (thrown) {
+    problem =
+      thrown instanceof Error
+        ? `Payment could not be authorized: ${thrown.message}`
+        : "Payment could not be authorized. Check your card details and try again.";
+  }
+
+  const current = await stripe.retrievePaymentIntent(clientSecret).catch(() => null);
+
+  return isAuthorized(current?.paymentIntent) ? null : problem;
+}
+
+function isAuthorized(paymentIntent: PaymentIntent | undefined) {
+  return paymentIntent?.status === "requires_capture" || paymentIntent?.status === "succeeded";
+}
 
 export function ReviewStep() {
   const stripe = useStripe();
@@ -42,6 +86,11 @@ export function ReviewStep() {
   } = useCheckout();
 
   const [problem, setProblem] = useState<PlaceOrderProblem | null>(null);
+  // Set synchronously, so a second click before the button re-renders disabled starts nothing.
+  const isPlacingRef = useRef(false);
+  // Stripe refuses to confirm a PaymentIntent twice, so once this one is authorized
+  // a retry after a failed complete call only asks the server again.
+  const authorizedPaymentIntentIdRef = useRef<string | null>(null);
 
   function fail(message: string) {
     setPlaceOrderState({ status: "error", message: null });
@@ -49,54 +98,41 @@ export function ReviewStep() {
   }
 
   async function handlePlaceOrder() {
-    if (!stripe || !elements || !paymentIntent.clientSecret || !paymentIntent.paymentIntentId) {
+    const { clientSecret, paymentIntentId } = paymentIntent;
+
+    if (isPlacingRef.current || !stripe || !elements || !clientSecret || !paymentIntentId) {
       return;
     }
 
+    isPlacingRef.current = true;
     setProblem(null);
-    setPlaceOrderState({ status: "confirming", message: null });
 
-    // stripe.confirmPayment() normally resolves with { error } rather than
-    // throwing, but it can reject outright (network failure, unexpected
-    // Elements state) — without this catch-all, a rejection here leaves the
-    // button frozen on "Authorizing card…" forever with no way to recover.
-    let error;
-    let confirmedIntent;
     try {
-      ({ error, paymentIntent: confirmedIntent } = await stripe.confirmPayment({
-        elements,
-        clientSecret: paymentIntent.clientSecret,
-        confirmParams: {
-          return_url: `${window.location.origin}/checkout/review`,
-        },
-        redirect: "if_required",
-      }));
-    } catch (thrown) {
-      fail(
-        thrown instanceof Error
-          ? `Payment could not be authorized: ${thrown.message}`
-          : "Payment could not be authorized. Check your card details and try again.",
-      );
-      return;
+      if (authorizedPaymentIntentIdRef.current !== paymentIntentId) {
+        setPlaceOrderState({ status: "confirming", message: null });
+        const authorizationProblem = await authorizeCard(stripe, elements, clientSecret);
+
+        if (authorizationProblem) {
+          fail(authorizationProblem);
+          return;
+        }
+
+        authorizedPaymentIntentIdRef.current = paymentIntentId;
+      }
+
+      setPlaceOrderState({ status: "creating-order", message: null });
+      await finishOrder(paymentIntentId);
+    } finally {
+      isPlacingRef.current = false;
     }
+  }
 
-    if (error) {
-      fail(error.message ?? "Payment could not be authorized. Check your card details and try again.");
-      return;
-    }
-
-    if (confirmedIntent?.status !== "requires_capture" && confirmedIntent?.status !== "succeeded") {
-      fail("Payment was not authorized. Please try again.");
-      return;
-    }
-
-    setPlaceOrderState({ status: "creating-order", message: null });
-
+  async function finishOrder(paymentIntentId: string) {
     try {
       const response = await fetch("/api/checkout/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentIntentId: paymentIntent.paymentIntentId }),
+        body: JSON.stringify({ paymentIntentId }),
       });
       const result = (await response.json()) as CompleteOrderResponse;
 
@@ -114,9 +150,7 @@ export function ReviewStep() {
                 : [],
             // The studio needs the old payment to release a hold Stripe would not let go.
             message:
-              result.cardHold === "unresolved"
-                ? `${result.message} Reference: ${paymentIntent.paymentIntentId}.`
-                : result.message,
+              result.cardHold === "unresolved" ? `${result.message} Reference: ${paymentIntentId}.` : result.message,
           });
           return;
         case "oversold":
