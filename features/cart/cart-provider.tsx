@@ -53,6 +53,8 @@ type CartContextValue = {
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   limitItems: (limits: CartLineLimit[]) => void;
+  // A line keeps the price it was added at until this sets the price charged now; it also re-reads stock.
+  refreshItems: (prices: ReadonlyArray<{ id: string; priceUsd: number }>) => void;
   applyPromoCode: (code: string) => Promise<{ status: "success" | "error"; message: string }>;
   removePromoCode: () => void;
   clearCart: () => void;
@@ -70,6 +72,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
   const [stockByLineId, setStockByLineId] = useState<Partial<Record<string, CartLineStock>>>({});
   const [reducedLineIds, setReducedLineIds] = useState<ReadonlySet<string>>(new Set());
+  const [stockReadCount, setStockReadCount] = useState(0);
   // Quantities are part of the key so a changed line is checked against fresh stock.
   const stockRequestKey = JSON.stringify(
     items
@@ -132,7 +135,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [stockRequestKey]);
+  }, [stockRequestKey, stockReadCount]);
 
   // Keeps each line's cap at the units the shop has left, and lowers a line the
   // stock no longer covers instead of letting checkout refuse it.
@@ -234,6 +237,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       },
       limitItems(limits) {
         setItems((currentItems) => limitCartItems(currentItems, limits));
+      },
+      refreshItems(prices) {
+        const priceById = new Map(prices.map((line) => [line.id, line.priceUsd]));
+
+        setItems((currentItems) =>
+          currentItems.map((item) => ({ ...item, priceUsd: priceById.get(item.id) ?? item.priceUsd })),
+        );
+        setStockReadCount((count) => count + 1);
       },
       async applyPromoCode(code) {
         const result = await validatePromo(code, buyableItems);

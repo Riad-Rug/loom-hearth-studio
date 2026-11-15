@@ -35,11 +35,20 @@ type StoredCheckoutState = {
 
 type FunnelStepEventName = "add_shipping_info" | "add_payment_info";
 
+// The order as the server priced it for the PaymentIntent; its total is the amount authorized.
+export type AuthorizedOrderSummary = {
+  items: Array<{ id: string; name: string; quantity: number; priceUsd: number }>;
+  subtotalUsd: number;
+  discountUsd: number;
+  shippingUsd: number;
+  totalUsd: number;
+};
+
 type PaymentIntentState = {
   status: "idle" | "creating" | "ready" | "error";
   clientSecret: string | null;
   paymentIntentId: string | null;
-  totalUsd: number | null;
+  summary: AuthorizedOrderSummary | null;
   message: string | null;
 };
 
@@ -85,7 +94,7 @@ const initialPaymentIntentState: PaymentIntentState = {
   status: "idle",
   clientSecret: null,
   paymentIntentId: null,
-  totalUsd: null,
+  summary: null,
   message: null,
 };
 
@@ -292,7 +301,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
             status: "ready",
             clientSecret: result.clientSecret,
             paymentIntentId: result.paymentIntentId,
-            totalUsd: result.totalUsd,
+            summary: result.summary,
             message: null,
           });
           return;
@@ -329,7 +338,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
           status: "error",
           clientSecret: null,
           paymentIntentId: null,
-          totalUsd: null,
+          summary: null,
           message: result.message,
         });
       })
@@ -339,7 +348,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
             status: "error",
             clientSecret: null,
             paymentIntentId: null,
-            totalUsd: null,
+            summary: null,
             message: "Could not prepare payment for this order. Check your connection and try again.",
           });
         }
@@ -543,7 +552,7 @@ type RequestPaymentIntentResult = {
   status: "created" | "updated" | "validation-error" | "api-error";
   clientSecret: string | null;
   paymentIntentId: string | null;
-  totalUsd: number | null;
+  summary: AuthorizedOrderSummary | null;
   issues?: PaymentIntentValidationIssue[];
   message: string;
 };

@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         status: "validation-error",
         clientSecret: null,
         paymentIntentId: null,
-        totalUsd: null,
+        summary: null,
         issues: validation.issues,
         message: validation.message,
       },
@@ -84,7 +84,14 @@ export async function POST(request: Request) {
       status,
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
-      totalUsd: snapshot.totalUsd,
+      // The order as priced here, at today's prices; `amount` is its total in cents.
+      summary: {
+        items: snapshot.items.map(({ id, name, quantity, priceUsd }) => ({ id, name, quantity, priceUsd })),
+        subtotalUsd: snapshot.subtotalUsd,
+        discountUsd: snapshot.discountUsd,
+        shippingUsd: snapshot.shippingUsd,
+        totalUsd: snapshot.totalUsd,
+      },
       issues: [],
       message: "PaymentIntent is ready for the embedded payment step.",
     });
@@ -99,7 +106,7 @@ export async function POST(request: Request) {
         status: "api-error",
         clientSecret: null,
         paymentIntentId: null,
-        totalUsd: null,
+        summary: null,
         issues: [],
         message,
       },

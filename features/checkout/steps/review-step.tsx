@@ -6,7 +6,7 @@ import type { PaymentIntent, Stripe, StripeElements } from "@stripe/stripe-js";
 
 import Link from "next/link";
 
-import { formatUsd } from "@/features/cart/cart-provider";
+import { formatUsd, useCart } from "@/features/cart/cart-provider";
 import { useCheckout } from "@/features/checkout/checkout-provider";
 import type { CompleteOrderResponse } from "@/lib/checkout/complete-order-response";
 import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
@@ -65,6 +65,10 @@ function isAuthorized(paymentIntent: PaymentIntent | undefined) {
   return paymentIntent?.status === "requires_capture" || paymentIntent?.status === "succeeded";
 }
 
+function toCents(amountUsd: number) {
+  return Math.round(amountUsd * 100);
+}
+
 export function ReviewStep() {
   const stripe = useStripe();
   const elements = useElements();
@@ -72,11 +76,7 @@ export function ReviewStep() {
     addresses,
     resolvedBillingAddress,
     resolvedShippingAddress,
-    items,
-    subtotalUsd,
-    shippingUsd,
-    discountUsd,
-    totalUsd,
+    totalUsd: cartTotalUsd,
     paymentIntent,
     placeOrderState,
     setPlaceOrderState,
@@ -84,6 +84,12 @@ export function ReviewStep() {
     restartCheckout,
     goToStep,
   } = useCheckout();
+  const { refreshItems } = useCart();
+  const { summary } = paymentIntent;
+  // The cart keeps each line at the price it was added at and counts only the lines
+  // it last saw in stock, so it can disagree with the amount the card is authorized for.
+  const totalsDiffer =
+    paymentIntent.status === "ready" && summary !== null && toCents(summary.totalUsd) !== toCents(cartTotalUsd);
 
   const [problem, setProblem] = useState<PlaceOrderProblem | null>(null);
   // Set synchronously, so a second click before the button re-renders disabled starts nothing.
@@ -219,19 +225,37 @@ export function ReviewStep() {
             Edit payment
           </button>
         </div>
-        {items.map((item) => (
-          <p key={item.id}>
-            {item.name} × {item.quantity} — {formatUsd(item.priceUsd * item.quantity)}
-          </p>
-        ))}
-        <p>Subtotal: {formatUsd(subtotalUsd)}</p>
-        <p>Shipping: {shippingUsd === 0 ? "Free" : formatUsd(shippingUsd)}</p>
-        {discountUsd > 0 ? <p>Discount: -{formatUsd(discountUsd)}</p> : null}
-        <p>
-          <strong>Total: {formatUsd(totalUsd)}</strong>
-        </p>
+        {summary ? (
+          <>
+            {summary.items.map((item) => (
+              <p key={item.id}>
+                {item.name} × {item.quantity} — {formatUsd(item.priceUsd * item.quantity)}
+              </p>
+            ))}
+            <p>Subtotal: {formatUsd(summary.subtotalUsd)}</p>
+            <p>Shipping: {summary.shippingUsd === 0 ? "Free" : formatUsd(summary.shippingUsd)}</p>
+            {summary.discountUsd > 0 ? <p>Discount: -{formatUsd(summary.discountUsd)}</p> : null}
+            <p>
+              <strong>Total: {formatUsd(summary.totalUsd)}</strong>
+            </p>
+          </>
+        ) : null}
         <p className={styles.summaryNote}>{storePromiseCopy.duties}</p>
       </div>
+
+      {totalsDiffer ? (
+        <div className={styles.reviewCardError}>
+          <h3>Your total has changed</h3>
+          <p role="alert">
+            A price or the stock changed since these pieces went into your cart. Your cart shows{" "}
+            {formatUsd(cartTotalUsd)}, and this order comes to {formatUsd(summary.totalUsd)}. Update your cart to
+            place the order at {formatUsd(summary.totalUsd)}.
+          </p>
+          <button className={styles.secondaryAction} type="button" onClick={() => refreshItems(summary.items)}>
+            Update cart
+          </button>
+        </div>
+      ) : null}
 
       {problem?.kind === "oversold" ? (
         <div className={styles.reviewCardError}>
@@ -272,7 +296,12 @@ export function ReviewStep() {
         <button
           className={styles.primaryAction}
           disabled={
-            !stripe || !elements || paymentIntent.status !== "ready" || isPlacing || problem?.kind === "oversold"
+            !stripe ||
+            !elements ||
+            paymentIntent.status !== "ready" ||
+            totalsDiffer ||
+            isPlacing ||
+            problem?.kind === "oversold"
           }
           type="button"
           onClick={() => {
