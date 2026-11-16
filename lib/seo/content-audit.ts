@@ -24,6 +24,53 @@ export function normalizeSeoText(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
 }
 
+export type ProductCopyField = "description" | "seoDescription";
+
+export type DuplicateProductCopy = {
+  productId: string;
+  field: ProductCopyField;
+  /** Every other product carrying the same text, so the fix can start on either side. */
+  sharedWith: string[];
+};
+
+/**
+ * Products whose description or SEO description reads the same as another
+ * product's once case, punctuation and spacing are set aside. Two one-of-a-kind
+ * pieces with one text look like one page to a search engine.
+ */
+export function findDuplicateProductCopy(
+  products: ReadonlyArray<{ id: string } & Record<ProductCopyField, string>>,
+): DuplicateProductCopy[] {
+  return (["description", "seoDescription"] as const).flatMap((field) => {
+    const productIdsByText = new Map<string, string[]>();
+
+    for (const product of products) {
+      const text = normalizeSeoText(product[field]);
+
+      if (text) {
+        productIdsByText.set(text, [...(productIdsByText.get(text) ?? []), product.id]);
+      }
+    }
+
+    return [...productIdsByText.values()]
+      .filter((productIds) => productIds.length > 1)
+      .flatMap((productIds) =>
+        productIds.map((productId) => ({
+          productId,
+          field,
+          sharedWith: productIds.filter((otherId) => otherId !== productId),
+        })),
+      );
+  });
+}
+
+/** The same comparison as findDuplicateProductCopy, for one value against the rest. */
+export function isDuplicateProductCopy(value: string, otherValues: readonly string[]) {
+  const text = normalizeSeoText(value);
+
+  return Boolean(text) && otherValues.some((otherValue) => normalizeSeoText(otherValue) === text);
+}
+
 export function isSeoTitleAlignedWithHeading(heading: string, seoTitle: string) {
   const normalizedHeading = normalizeSeoText(heading);
   const normalizedSeoTitle = normalizeSeoText(seoTitle);

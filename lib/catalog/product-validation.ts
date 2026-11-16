@@ -11,6 +11,7 @@ import {
   productUniquenessTierOptions,
   trueOneOffUniquenessTier,
 } from "@/lib/admin/category-form-copy";
+import { isDuplicateProductCopy } from "@/lib/seo/content-audit";
 import type { MediaAsset, Product, ProductStatus, ProductVariant } from "@/types/domain";
 
 export const productTypeOptions = ["rug", "multiUnit"] as const;
@@ -215,17 +216,25 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
   };
 }
 
-// `committedUnits` are units of this product that orders hold or have sold; they
-// still count toward a cut-from-one-rug cover total.
+export type ProductMutationContext = {
+  /** Units of this product that orders hold or have sold; they still count toward a cut-from-one-rug cover total. */
+  committedUnits?: number;
+  /** The SEO description of every other product. */
+  otherSeoDescriptions?: readonly string[];
+  /** This product's SEO description before the save; absent when creating. */
+  storedSeoDescription?: string;
+};
+
 export function validateProductMutationInput(
   parsed: ProductFormParseResult,
-  stock: { committedUnits: number } = { committedUnits: 0 },
+  context: ProductMutationContext = {},
 ): ProductMutationValidationResult {
   if (parsed.status === "invalid") {
     return parsed;
   }
 
   const input = parsed.value;
+  const committedUnits = context.committedUnits ?? 0;
   const fieldErrors: ProductMutationFieldErrors = {};
 
   if (!input.name.trim()) {
@@ -455,6 +464,15 @@ export function validateProductMutationInput(
 
   if (!input.seoDescription.trim()) {
     fieldErrors.seoDescription = "SEO description is required.";
+  } else if (
+    // Only a description this save sets is checked, so products that already
+    // share copy stay saveable for unrelated edits; findDuplicateProductCopy
+    // (lib/seo/content-audit.ts) reports those.
+    (context.storedSeoDescription === undefined ||
+      !isDuplicateProductCopy(input.seoDescription, [context.storedSeoDescription])) &&
+    isDuplicateProductCopy(input.seoDescription, context.otherSeoDescriptions ?? [])
+  ) {
+    fieldErrors.seoDescription = "Another product already uses this SEO description. Write one for this piece.";
   }
 
   if (
@@ -518,10 +536,10 @@ export function validateProductMutationInput(
         : input.uniquenessTier === cutFromOneRugUniquenessTier
           ? input.sourceCoverCount
           : undefined;
-      const accountedUnits = isTrueOneOff ? input.inventory : input.inventory + stock.committedUnits;
+      const accountedUnits = isTrueOneOff ? input.inventory : input.inventory + committedUnits;
       const committedNote =
-        !isTrueOneOff && stock.committedUnits > 0
-          ? ` (${input.inventory} on sale plus ${stock.committedUnits} held or sold by orders)`
+        !isTrueOneOff && committedUnits > 0
+          ? ` (${input.inventory} on sale plus ${committedUnits} held or sold by orders)`
           : "";
 
       if (maximumInventory !== undefined && Number.isInteger(maximumInventory)) {
