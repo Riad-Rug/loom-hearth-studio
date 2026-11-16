@@ -46,13 +46,13 @@ import "./tailwind.css";
 type ProductDetailPageViewProps = {
   product: ProductDetailPageViewModel;
   /**
-   * Whether the rug's style page has something purchasable behind it right now.
-   * Only the rug route can answer that (it is a live catalog read), and while a
-   * style is empty its page is served noindex, so neither the breadcrumb nor the
-   * Style row may link to it. Defaults to true because the category route never
-   * renders a style level at all and has nothing to report.
+   * Whether the rug's style page is indexed right now (lib/seo/index-policy.ts).
+   * Only the rug route can answer that (it is a live catalog read), and while the
+   * page asks to be dropped neither the breadcrumb nor the Style row may link to
+   * it. Defaults to true because the category route never renders a style level
+   * at all and has nothing to report.
    */
-  rugStyleHasStock?: boolean;
+  rugStylePageIndexable?: boolean;
 };
 
 type GalleryItem = ProductDetailPageViewModel["gallery"][number];
@@ -67,7 +67,7 @@ const LIGHTBOX_CONTROL = "px-[1rem] py-[0.6rem] border border-[color:var(--color
 
 export function ProductDetailPageView({
   product,
-  rugStyleHasStock = true,
+  rugStylePageIndexable = true,
 }: ProductDetailPageViewProps) {
   const gallery = product.gallery;
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -195,7 +195,7 @@ export function ProductDetailPageView({
     displayedCrossSellRecommendations,
     preferredHistoryCategory,
   );
-  const specRows = buildSpecificationRows(product, rugStyleHasStock);
+  const specRows = buildSpecificationRows(product, rugStylePageIndexable);
 
   return (
     <div className="grid gap-[var(--space-7)] max-[700px]:pb-[5rem]">
@@ -270,7 +270,7 @@ export function ProductDetailPageView({
           <div
             className="grid gap-[var(--space-4)] p-[var(--space-5)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-bg)] col-start-2 row-start-1 row-span-3 self-start sticky top-[var(--site-header-scroll-offset)] max-[1100px]:static max-[1100px]:col-start-auto max-[1100px]:row-start-auto max-[1100px]:row-span-1"
           >
-            <ProductBreadcrumb product={product} rugStyleHasStock={rugStyleHasStock} />
+            <ProductBreadcrumb product={product} rugStylePageIndexable={rugStylePageIndexable} />
 
             <div className="flex flex-wrap gap-[0.6rem]">
               <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-green)] rounded-full text-[var(--color-green)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
@@ -769,7 +769,7 @@ function formatHeightInBothUnits(value: number, unit: "cm" | "in") {
     : `${Math.round(value * 2.54)} cm (${value}″)`;
 }
 
-function buildSpecificationRows(product: ProductDetailPageViewModel, rugStyleHasStock: boolean) {
+function buildSpecificationRows(product: ProductDetailPageViewModel, rugStylePageIndexable: boolean) {
   const rows: { label: string; value: string; href?: Route }[] = [];
 
   const sizeValue =
@@ -790,7 +790,7 @@ function buildSpecificationRows(product: ProductDetailPageViewModel, rugStyleHas
   );
 
   if (product.type === "rug") {
-    const styleCrumb = getRugStyleCrumb(product, rugStyleHasStock);
+    const styleCrumb = getRugStyleCrumb(product, rugStylePageIndexable);
 
     rows.push({
       label: "Style",
@@ -850,12 +850,12 @@ function extractConditionNote(product: ProductDetailPageViewModel) {
  * and "vintage" is itself a key in rugStyleCollections, so a type-only check
  * would invent a /shop/rugs/vintage ancestor that the route does not serve.
  *
- * An empty style is dropped for the same reason the route drops it from the
- * schema: its page is noindex until stock lands, and a crawlable anchor from a
- * still-indexable sold-rug PDP would point crawl signal at it.
+ * A style whose page is not indexed is dropped for the same reason the route
+ * drops it from the schema: a crawlable anchor would point crawl signal at a page
+ * we are asking Google to drop.
  */
-function getRugStyleCrumb(product: ProductDetailPageViewModel, rugStyleHasStock: boolean) {
-  if (!rugStyleHasStock || product.type !== "rug" || product.category === "vintage") {
+function getRugStyleCrumb(product: ProductDetailPageViewModel, rugStylePageIndexable: boolean) {
+  if (!rugStylePageIndexable || product.type !== "rug" || product.category === "vintage") {
     return null;
   }
 
@@ -871,13 +871,13 @@ function getRugStyleCrumb(product: ProductDetailPageViewModel, rugStyleHasStock:
 
 function ProductBreadcrumb({
   product,
-  rugStyleHasStock,
+  rugStylePageIndexable,
 }: {
   product: ProductDetailPageViewModel;
-  rugStyleHasStock: boolean;
+  rugStylePageIndexable: boolean;
 }) {
   const categoryPath = getProductCategoryHref(product);
-  const styleCrumb = getRugStyleCrumb(product, rugStyleHasStock);
+  const styleCrumb = getRugStyleCrumb(product, rugStylePageIndexable);
   const items: Array<{ label: string; href?: Route }> = [
     { label: "Home", href: "/" },
     { label: "Shop", href: "/shop" },

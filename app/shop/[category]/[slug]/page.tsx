@@ -6,10 +6,12 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { ProductOpenGraphMeta } from "@/components/seo/product-open-graph-meta";
 import {
   getCategoryProductDetailByParams,
+  getProductIndexFacts,
   getProductRedirectPathForSlug,
 } from "@/lib/catalog/service";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
+import { isProductIndexable } from "@/lib/seo/index-policy";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { buildProductMetaDescription } from "@/lib/seo/product-metadata";
 import { applyProductTitle, buildProductTitle } from "@/lib/seo/product-title";
@@ -123,6 +125,7 @@ export async function generateMetadata({
 
   const ogImage = product.gallery[0];
   const title = buildProductTitle(product);
+  const indexFacts = await getProductIndexFacts(product.cartProduct);
 
   return applyProductTitle(
     await buildManagedMetadata({
@@ -131,6 +134,7 @@ export async function generateMetadata({
       title: title.text,
       description: buildProductMetaDescription(product),
       path: getCategoryProductPath(product),
+      noIndexFollow: !isProductIndexable(indexFacts, new Date()),
       type: "product",
       ogImageUrl: ogImage?.src,
       ogImageAlt: ogImage?.altText || product.name,

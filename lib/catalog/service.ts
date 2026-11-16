@@ -2,6 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 
 import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
 import {
+  rugStyleCollections,
   rugStyleNavLinks,
   type RugStyleNavLink,
 } from "@/features/catalog/rug-style-collections";
@@ -45,6 +46,11 @@ import {
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
 import { storePromise } from "@/lib/order/store-promise";
+import {
+  isProductIndexable,
+  isRugStylePageIndexable,
+  type ProductIndexFacts,
+} from "@/lib/seo/index-policy";
 import type { CloudinaryAssetRole, MediaAsset, Product, ProductCategory, RugProduct } from "@/types/domain";
 
 const defaultRugPalette = ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"] as const;
@@ -110,8 +116,8 @@ export async function listUnavailableCategoryHrefs(
 
 /**
  * Rug-style slugs with at least one piece a shopper can buy right now, so the
- * /shop/rugs style nav and the sitemap can list exactly the styles that have
- * stock instead of hardcoding which ones do. Rows alone are not enough here
+ * /shop/rugs style nav can list exactly the styles that have stock instead of
+ * hardcoding which ones do. Rows alone are not enough here
  * either: a style whose every rug is sold or reserved counts as empty. Live read
  * on every render — rugs are one of a kind, so a style drops out when its last
  * piece sells and returns on its own the moment new stock lands. One
@@ -139,10 +145,9 @@ export async function listAvailableRugStyleSlugs(
  * Every rug style nav entry paired with whether it has something purchasable
  * behind it right now, so the header dropdown, the homepage strip and the
  * sibling strips can all gate on the same live check instead of each deciding
- * for themselves. Styles with no stock are served noindex by
- * app/shop/rugs/[style]/page.tsx, so linking one as a normal anchor would point
- * crawl signal at a page we are asking not to be indexed: callers must either
- * grey the entry (header, footer) or omit it (content strips).
+ * for themselves. Callers grey an empty style (header, footer) or omit it
+ * (content strips) so nobody is sent to a page with nothing to buy. Whether that
+ * page is indexed is a separate, slower rule: listIndexableRugStyleSlugs.
  *
  * Order and anchor text come from rugStyleNavLinks; this only adds liveness.
  * One listByCategory("rugs") per call, same cost profile as
@@ -169,22 +174,82 @@ export async function listUnavailableRugStyleHrefs(
 }
 
 /**
- * Route href paired with the last database write for every listed product, so
- * app/sitemap.ts can emit a real <lastmod> per product URL instead of leaving
- * the whole catalog dateless. Deliberately narrow: updatedAt is a persistence
- * timestamp with exactly one consumer, so it stays off the domain Product and
+ * Route href paired with the last database write for every product the index
+ * policy (lib/seo/index-policy.ts) wants in search, so app/sitemap.ts lists
+ * exactly the product pages that do not ask to be dropped, each with a real
+ * <lastmod>. Deliberately narrow: updatedAt is a persistence timestamp with
+ * exactly one consumer, so it stays off the domain Product and
  * CatalogProductCardViewModel types rather than being threaded through every
- * catalog surface for this one field. One listAllWithUpdatedAt() per call.
+ * catalog surface for this one field.
  */
 export async function listProductSitemapEntries(
+  now: Date,
   repository: ProductRepository = createProductRepository(),
 ): Promise<Array<{ href: string; updatedAt: Date }>> {
-  const records = await repository.listAllWithUpdatedAt();
+  const [records, soldDates] = await Promise.all([
+    repository.listAllWithUpdatedAt(),
+    repository.listSoldDates(),
+  ]);
 
-  return records.map(({ product, updatedAt }) => ({
-    href: getProductRoutePath(product),
-    updatedAt,
-  }));
+  return records
+    .filter(({ product }) => isProductIndexable(toIndexFacts(product, soldDates), now))
+    .map(({ product, updatedAt }) => ({
+      href: getProductRoutePath(product),
+      updatedAt,
+    }));
+}
+
+/** What the index policy needs to decide a product page's robots directive. */
+export async function getProductIndexFacts(
+  product: Pick<Product, "id" | "status">,
+  repository: ProductRepository = createProductRepository(),
+): Promise<ProductIndexFacts> {
+  noStore();
+
+  return toIndexFacts(product, await repository.listSoldDates());
+}
+
+/**
+ * Rug-style slugs whose /shop/rugs/{style} page the index policy wants in search
+ * right now: the page's robots tag, the sitemap, and the rug breadcrumb all read
+ * this. The pieces are the rows listRugStyleProductCards shows on that page, sold
+ * ones included. "vintage" is skipped because /shop/rugs/vintage only redirects.
+ */
+export async function listIndexableRugStyleSlugs(
+  now: Date,
+  repository: ProductRepository = createProductRepository(),
+): Promise<Set<string>> {
+  noStore();
+
+  const [products, soldDates] = await Promise.all([
+    repository.listByCategory("rugs"),
+    repository.listSoldDates(),
+  ]);
+
+  return new Set(
+    Object.entries(rugStyleCollections)
+      .filter(
+        ([slug, collection]) =>
+          collection.category === "rugs" &&
+          isRugStylePageIndexable(
+            {
+              hasGuideCopy: collection.description.trim().length > 0,
+              pieces: products
+                .filter((product) => product.type === "rug" && normalizeSlug(product.rugStyle) === slug)
+                .map((product) => toIndexFacts(product, soldDates)),
+            },
+            now,
+          ),
+      )
+      .map(([slug]) => slug),
+  );
+}
+
+function toIndexFacts(
+  product: Pick<Product, "id" | "status">,
+  soldDates: ReadonlyMap<string, Date>,
+): ProductIndexFacts {
+  return { status: product.status, soldAt: soldDates.get(product.id) ?? null };
 }
 
 export async function listRugStyleProductCards(input: {

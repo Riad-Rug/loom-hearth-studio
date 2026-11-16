@@ -7,12 +7,14 @@ import { ProductOpenGraphMeta } from "@/components/seo/product-open-graph-meta";
 import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
 import {
+  getProductIndexFacts,
   getProductRedirectPathForSlug,
   getRugProductDetailByParams,
-  listAvailableRugStyleSlugs,
+  listIndexableRugStyleSlugs,
 } from "@/lib/catalog/service";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
+import { isProductIndexable } from "@/lib/seo/index-policy";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { buildProductMetaDescription } from "@/lib/seo/product-metadata";
 import { applyProductTitle, buildProductTitle } from "@/lib/seo/product-title";
@@ -53,14 +55,12 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
     permanentRedirect(productPath as Route);
   }
 
-  // A style page is served noindex while nothing of that style is purchasable,
-  // and a sold rug's PDP stays indexable, so the last piece of a style to sell
-  // would otherwise keep a crawlable breadcrumb aimed at a page we are asking
-  // Google to ignore. The schema below and the visible trail drop the style
-  // level together in that case; the view is told the answer so it cannot
-  // disagree with the schema.
-  const rugStyleHasStock = collection
-    ? (await listAvailableRugStyleSlugs()).has(rugStyleSlug)
+  // The breadcrumb names the style level only while that style page is indexed
+  // (lib/seo/index-policy.ts), so a crawlable trail never points at a page we are
+  // asking Google to drop. The schema below and the visible trail decide
+  // together; the view is told the answer so it cannot disagree with the schema.
+  const rugStylePageIndexable = collection
+    ? (await listIndexableRugStyleSlugs(new Date())).has(rugStyleSlug)
     : false;
 
   return (
@@ -101,7 +101,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           { name: "Home", path: "/" },
           { name: "Shop", path: "/shop" },
           { name: getCategoryLabel(product.category), path: "/shop/rugs" },
-          ...(collection && rugStyleHasStock
+          ...(collection && rugStylePageIndexable
             ? [
                 {
                   name: collection.title,
@@ -116,7 +116,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
         priceAmount={product.priceUsd}
         availability={product.availability}
       />
-      <ProductDetailPageView product={product} rugStyleHasStock={rugStyleHasStock} />
+      <ProductDetailPageView product={product} rugStylePageIndexable={rugStylePageIndexable} />
     </>
   );
 }
@@ -140,6 +140,7 @@ export async function generateMetadata({
 
   const ogImage = product.gallery[0];
   const title = buildProductTitle(product);
+  const indexFacts = await getProductIndexFacts(product.cartProduct);
 
   return applyProductTitle(
     await buildManagedMetadata({
@@ -148,6 +149,7 @@ export async function generateMetadata({
       title: title.text,
       description: buildProductMetaDescription(product),
       path: getRugProductPath(product),
+      noIndexFollow: !isProductIndexable(indexFacts, new Date()),
       type: "product",
       ogImageUrl: ogImage?.src,
       ogImageAlt: ogImage?.altText || product.name,

@@ -47,6 +47,11 @@ export interface ProductRepository {
   listAll(): Promise<Product[]>;
   listListedByIds(ids: string[]): Promise<Product[]>;
   listAllWithUpdatedAt(): Promise<ProductWithUpdatedAt[]>;
+  /**
+   * When each sold product sold, by product id, for the search index policy.
+   * Kept off Product for the same reason as updatedAt above.
+   */
+  listSoldDates(): Promise<Map<string, Date>>;
   listByCategory(category: Product["category"]): Promise<Product[]>;
   listHomepageFeatured(limit: number): Promise<Product[]>;
   listInventoryEligible(): Promise<Product[]>;
@@ -107,6 +112,15 @@ export class PrismaProductRepository implements ProductRepository {
       product: mapCatalogProductRecordToDomainProduct(record),
       updatedAt: record.updatedAt,
     }));
+  }
+
+  async listSoldDates() {
+    const products = await this.context.client.catalogProduct.findMany({
+      where: { status: "sold", soldAt: { not: null } },
+      select: { id: true, soldAt: true },
+    });
+
+    return new Map(products.flatMap(({ id, soldAt }) => (soldAt ? [[id, soldAt] as const] : [])));
   }
 
   async listByCategory(category: Product["category"]) {
