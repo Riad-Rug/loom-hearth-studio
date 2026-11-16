@@ -13,9 +13,15 @@ import { pathToFileURL } from "node:url";
 
 const root = path.resolve(import.meta.dirname, "..");
 
+// The catalog service reaches the Prisma repository, which uses TypeScript
+// parameter properties (strip-only mode rejects them, so sources are
+// transformed instead) and imports "server-only" (which throws outside a React
+// server bundle). Nothing connects to a database until a query runs, and the
+// service tests below only ever pass a fake repository.
 register(
   `data:text/javascript,${encodeURIComponent(`
-    import { existsSync } from "node:fs";
+    import { existsSync, readFileSync } from "node:fs";
+    import { stripTypeScriptTypes } from "node:module";
     import { fileURLToPath } from "node:url";
     let rootUrl;
     export function initialize(data) { rootUrl = data.rootUrl; }
@@ -26,7 +32,16 @@ register(
           if (existsSync(fileURLToPath(candidate))) return next(candidate.href, context);
         }
       }
+      if (specifier === "server-only") return { url: "data:text/javascript,", shortCircuit: true };
+      if (specifier === "next/cache") return next("next/cache.js", context);
       return next(specifier, context);
+    }
+    export async function load(url, context, next) {
+      if (url.startsWith(rootUrl) && url.endsWith(".ts") && !url.includes("/node_modules/")) {
+        const source = readFileSync(fileURLToPath(url), "utf8");
+        return { format: "module", source: stripTypeScriptTypes(source, { mode: "transform", sourceUrl: url }), shortCircuit: true };
+      }
+      return next(url, context);
     }
   `)}`,
   { data: { rootUrl: pathToFileURL(`${root}/`).href } },
@@ -39,6 +54,9 @@ const { buildProductMetaDescription, truncateMetaDescription } = await load("lib
 const { isProductIndexable, isRugStylePageIndexable, soldIndexWindowDays } = await load("lib/seo/index-policy.ts");
 const { findDuplicateProductCopy } = await load("lib/seo/content-audit.ts");
 const { validateProductMutationInput } = await load("lib/catalog/product-validation.ts");
+const { getProductIndexFacts, listIndexableRugStyleSlugs, listProductSitemapEntries } = await load(
+  "lib/catalog/service.ts",
+);
 
 const brand = " | Loom & Hearth";
 const rendered = (title) => (title.templated ? `${title.text}${brand}` : title.text);
@@ -224,6 +242,52 @@ test("a style page needs guide copy and a live or recently sold piece", () => {
   assert.equal(style([{ status: "sold", soldAt: daysAgo(120) }, { status: "sold", soldAt: null }]), false);
   assert.equal(style([]), false);
   assert.equal(style([{ status: "active", soldAt: null }], false), false);
+});
+
+const catalogRow = (slug, rugStyle, status, soldAt) => ({
+  product: { id: slug, slug, type: "rug", category: "rugs", rugStyle, status },
+  soldAt,
+});
+const catalogRows = [
+  catalogRow("sold-89-days-ago", "Beni Ourain", "sold", daysAgo(89)),
+  catalogRow("sold-91-days-ago", "Azilal", "sold", daysAgo(91)),
+  catalogRow("sold-without-date", "Boujad", "sold", null),
+  catalogRow("reserved", "Zemmour", "reserved", null),
+];
+const fakeProductRepository = {
+  listAllWithUpdatedAt: async () => catalogRows.map(({ product }) => ({ product, updatedAt: now })),
+  listByCategory: async (category) =>
+    catalogRows.map(({ product }) => product).filter((product) => product.category === category),
+  listSoldDates: async () =>
+    new Map(
+      catalogRows
+        .filter(({ product, soldAt }) => product.status === "sold" && soldAt)
+        .map(({ product, soldAt }) => [product.id, soldAt]),
+    ),
+  getSoldAt: async (id) => catalogRows.find(({ product }) => product.id === id)?.soldAt ?? null,
+};
+
+test("the sitemap lists a product page exactly when its robots tag allows indexing", async () => {
+  const sitemapPaths = new Set(
+    (await listProductSitemapEntries(now, fakeProductRepository)).map((entry) => entry.href),
+  );
+
+  assert.deepEqual([...sitemapPaths].sort(), [
+    "/shop/rugs/beni-ourain/sold-89-days-ago",
+    "/shop/rugs/zemmour/reserved",
+  ]);
+  for (const { product } of catalogRows) {
+    const pageIndexable = isProductIndexable(await getProductIndexFacts(product, fakeProductRepository), now);
+    const listed = [...sitemapPaths].some((path) => path.endsWith(`/${product.slug}`));
+    assert.equal(pageIndexable, listed, product.slug);
+  }
+});
+
+test("a style page is indexable, and in the sitemap, while one of its pieces is", async () => {
+  assert.deepEqual([...(await listIndexableRugStyleSlugs(now, fakeProductRepository))].sort(), [
+    "beni-ourain",
+    "zemmour",
+  ]);
 });
 
 test("duplicate copy is flagged on every product that shares it, ignoring case and punctuation", () => {
