@@ -1,26 +1,16 @@
-import type { Route } from "next";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import styles from "@/features/content-pages/content-pages.module.css";
-import {
-  getCategoryLabel,
-  getCategoryRoutePath,
-} from "@/lib/catalog/helpers";
-import { listUnavailableCategoryHrefs } from "@/lib/catalog/service";
-import { productCategoryOptions } from "@/lib/catalog/product-validation";
 
 export const metadata: Metadata = {
   title: "Page not found",
-  robots: { index: false, follow: true },
+  // Next adds its own noindex to every 404; null drops the layout's
+  // "index, follow" so that tag is the only robots meta.
+  robots: null,
 };
 
-export default async function NotFound() {
-  const unavailableHrefs = new Set(await listUnavailableCategoryHrefs());
-  const categories = productCategoryOptions.filter(
-    (category) => !unavailableHrefs.has(getCategoryRoutePath(category)),
-  );
-
+export default function NotFound() {
   return (
     <div className={styles.page}>
       <article className={styles.policyShell}>
@@ -35,15 +25,15 @@ export default async function NotFound() {
           <Link className={styles.primaryAction} href="/shop">
             Shop the collection
           </Link>
-          {categories.map((category) => (
-            <Link
-              key={category}
-              className={styles.secondaryAction}
-              href={getCategoryRoutePath(category) as Route}
-            >
-              {getCategoryLabel(category)}
-            </Link>
-          ))}
+          <Link className={styles.secondaryAction} href="/shop/rugs">
+            Moroccan rugs
+          </Link>
+          <Link className={styles.secondaryAction} href="/shop/poufs">
+            Poufs
+          </Link>
+          <Link className={styles.secondaryAction} href="/shop/pillows">
+            Pillows
+          </Link>
           <Link className={styles.secondaryAction} href="/blog">
             Read the blog
           </Link>
