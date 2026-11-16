@@ -15,6 +15,7 @@ import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { buildProductMetaDescription } from "@/lib/seo/product-metadata";
+import { applyProductTitle, buildProductTitle } from "@/lib/seo/product-title";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/schema";
 
 type RugProductPageProps = {
@@ -138,19 +139,23 @@ export async function generateMetadata({
   }
 
   const ogImage = product.gallery[0];
+  const title = buildProductTitle(product);
 
-  return buildManagedMetadata({
-    entityType: "product",
-    entityKey: product.id,
-    title: product.seoTitle || product.name,
-    description: buildProductMetaDescription(product),
-    path: getRugProductPath(product),
-    type: "product",
-    ogImageUrl: ogImage?.src,
-    ogImageAlt: ogImage?.altText || product.name,
-    ogImageWidth: 1600,
-    ogImageHeight: 1200,
-  });
+  return applyProductTitle(
+    await buildManagedMetadata({
+      entityType: "product",
+      entityKey: product.id,
+      title: title.text,
+      description: buildProductMetaDescription(product),
+      path: getRugProductPath(product),
+      type: "product",
+      ogImageUrl: ogImage?.src,
+      ogImageAlt: ogImage?.altText || product.name,
+      ogImageWidth: 1600,
+      ogImageHeight: 1200,
+    }),
+    title,
+  );
 }
 
 function getRugProductPath(product: { rugStyle: string; slug: string }) {
