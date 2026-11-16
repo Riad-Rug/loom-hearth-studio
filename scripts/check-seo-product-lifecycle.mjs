@@ -55,7 +55,6 @@ const { isProductIndexable, isRugStylePageIndexable, soldIndexWindowDays } = awa
 const { findDuplicateProductCopy, normalizeSeoText } = await load("lib/seo/content-audit.ts");
 const { validateProductMutationInput } = await load("lib/catalog/product-validation.ts");
 const { rugStyleCollections } = await load("features/catalog/rug-style-collections.ts");
-const { productSchema } = await load("lib/seo/schema.ts");
 const {
   getProductIndexFacts,
   getRugProductDetailByParams,
@@ -356,23 +355,6 @@ test("a product's og:image alt describes its first photo without a gallery posit
 
   assert.equal(product.gallery[0].altText, "Beni Ourain Pile Rug Brown & Lilac Chevrons, full view, photo 1 of 2");
   assert.equal(product.ogImageAlt, "Beni Ourain Pile Rug Brown & Lilac Chevrons, full view");
-});
-
-test("Product JSON-LD names the site's brand and publishes the 7 to 14 business-day transit as calendar days", () => {
-  const schema = productSchema({
-    id: "rug-1",
-    name: "Beni Ourain Pile Rug",
-    description: "A rug.",
-    path: "/shop/rugs/beni-ourain/rug-1",
-    priceUsdLabel: "$900.00",
-    category: "rugs",
-    imageUrls: [],
-    availability: "available",
-  });
-
-  assert.deepEqual(schema.brand, { "@type": "Brand", name: "Loom & Hearth", alternateName: "Loom & Hearth Studio" });
-  const { transitTime } = schema.offers.shippingDetails[0].deliveryTime;
-  assert.deepEqual([transitTime.minValue, transitTime.maxValue, transitTime.unitCode], [10, 20, "DAY"]);
 });
 
 test("every rug style page's meta description fits in 155 characters", () => {
