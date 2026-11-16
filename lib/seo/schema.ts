@@ -275,6 +275,14 @@ const schemaOrgAvailability: Record<ProductAvailability, string> = {
   outOfStock: "https://schema.org/OutOfStock",
 };
 
+/**
+ * Every five business days span seven calendar days, rounded up so the
+ * published window is never shorter than the one promised.
+ */
+function businessToCalendarDays(businessDays: number) {
+  return Math.ceil((businessDays * 7) / 5);
+}
+
 /** Same shape the admin form enforces (lib/catalog/product-validation.ts). */
 const CATALOG_NUMBER_PATTERN = /^LH-[A-Z]-\d{4}$/;
 
@@ -495,7 +503,8 @@ export function productSchema(input: {
         // ships only once its buyer approves the photos, so handling runs from
         // the order to that approval: the photo turnaround, plus up to the
         // whole decision window (none for a buyer who approves at once). The
-        // delivery window in business days is the transit time to the US.
+        // transit time is the promised delivery window, stated in business
+        // days and published in calendar days.
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
           handlingTime: {
@@ -507,8 +516,8 @@ export function productSchema(input: {
           },
           transitTime: {
             "@type": "QuantitativeValue",
-            minValue: storePromise.deliveryBusinessDays.min,
-            maxValue: storePromise.deliveryBusinessDays.max,
+            minValue: businessToCalendarDays(storePromise.deliveryBusinessDays.min),
+            maxValue: businessToCalendarDays(storePromise.deliveryBusinessDays.max),
             unitCode: "DAY",
           },
         },
