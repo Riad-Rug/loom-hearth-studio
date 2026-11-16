@@ -122,6 +122,7 @@ export async function generateMetadata({
   });
   const publishedTime = toSchemaDate(post.publishedAt);
   const modifiedTime = toSchemaDateTime(post.updatedAt);
+  const authorName = author.name.trim();
 
   return {
     ...metadata,
@@ -130,7 +131,7 @@ export async function generateMetadata({
       type: "article",
       ...(publishedTime ? { publishedTime } : {}),
       ...(modifiedTime ? { modifiedTime } : {}),
-      authors: [author.name],
+      ...(authorName ? { authors: [authorName] } : {}),
     },
   };
 }
