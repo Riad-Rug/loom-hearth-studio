@@ -45,6 +45,8 @@ const marketingPixelIds = {
 };
 const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || "";
 const microsoftClarityId = process.env.NEXT_PUBLIC_MICROSOFT_CLARITY_ID?.trim() || "";
+const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim() || "";
+const bingSiteVerification = process.env.BING_SITE_VERIFICATION?.trim() || "";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
@@ -59,11 +61,13 @@ export const metadata: Metadata = {
     follow: true,
   },
   verification: {
+    ...(googleSiteVerification ? { google: googleSiteVerification } : {}),
     // Pinterest business account "Claim website" (renders <meta name="p:domain_verify">).
     // Lives under `verification` rather than `other` so product pages, which set
     // their own `other` block, don't shadow it.
     other: {
       "p:domain_verify": "ef05a361758af924a242b921499adca5",
+      ...(bingSiteVerification ? { "msvalidate.01": bingSiteVerification } : {}),
     },
   },
   openGraph: {
