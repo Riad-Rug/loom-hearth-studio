@@ -1,4 +1,5 @@
 import { unstable_noStore as noStore } from "next/cache";
+import { cache } from "react";
 
 import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
 import {
@@ -61,6 +62,16 @@ const paletteLabelsByHex = new Map([
   ["#B9562A", "Burnt orange"],
   ["#7A2B2B", "Burgundy"],
 ]);
+
+/**
+ * The header's style menu, a style page's metadata and body, and a rug page's
+ * breadcrumb all start from the same rug rows. React cache scopes both of these
+ * to one server render, so a request reads those rows once; outside a render
+ * (the sitemap route, scripts) each call reads afresh.
+ */
+const requestProductRepository = cache(() => createProductRepository());
+const listRugRows = cache((repository: ProductRepository) => repository.listByCategory("rugs"));
+
 export async function listCatalogProductCards(input?: {
   category?: ProductCategory;
   repository?: ProductRepository;
@@ -120,15 +131,14 @@ export async function listUnavailableCategoryHrefs(
  * hardcoding which ones do. Rows alone are not enough here
  * either: a style whose every rug is sold or reserved counts as empty. Live read
  * on every render — rugs are one of a kind, so a style drops out when its last
- * piece sells and returns on its own the moment new stock lands. One
- * listByCategory("rugs") per call.
+ * piece sells and returns on its own the moment new stock lands.
  */
 export async function listAvailableRugStyleSlugs(
-  repository: ProductRepository = createProductRepository(),
+  repository: ProductRepository = requestProductRepository(),
 ): Promise<Set<string>> {
   noStore();
 
-  const products = await repository.listByCategory("rugs");
+  const products = await listRugRows(repository);
 
   return new Set(
     products
@@ -150,11 +160,9 @@ export async function listAvailableRugStyleSlugs(
  * page is indexed is a separate, slower rule: listIndexableRugStyleSlugs.
  *
  * Order and anchor text come from rugStyleNavLinks; this only adds liveness.
- * One listByCategory("rugs") per call, same cost profile as
- * listAvailableRugStyleSlugs above.
  */
 export async function listRugStyleNavLinks(
-  repository: ProductRepository = createProductRepository(),
+  repository: ProductRepository = requestProductRepository(),
 ): Promise<(RugStyleNavLink & { available: boolean })[]> {
   const availableStyles = await listAvailableRugStyleSlugs(repository);
 
@@ -166,7 +174,7 @@ export async function listRugStyleNavLinks(
 
 /** Style hrefs with nothing purchasable behind them, for `unavailableHrefs` consumers. */
 export async function listUnavailableRugStyleHrefs(
-  repository: ProductRepository = createProductRepository(),
+  repository: ProductRepository = requestProductRepository(),
 ): Promise<string[]> {
   const links = await listRugStyleNavLinks(repository);
 
@@ -223,14 +231,11 @@ export async function getProductIndexFacts(
  */
 export async function listIndexableRugStyleSlugs(
   now: Date,
-  repository: ProductRepository = createProductRepository(),
+  repository: ProductRepository = requestProductRepository(),
 ): Promise<Set<string>> {
   noStore();
 
-  const [products, soldDates] = await Promise.all([
-    repository.listByCategory("rugs"),
-    repository.listSoldDates(),
-  ]);
+  const [products, soldDates] = await Promise.all([listRugRows(repository), repository.listSoldDates()]);
 
   return new Set(
     Object.entries(rugStyleCollections)
@@ -262,16 +267,14 @@ export async function listRugStyleProductCards(input: {
   style: string;
   repository?: ProductRepository;
 }): Promise<CatalogProductCardViewModel[]> {
-  const repository = input.repository ?? createProductRepository();
+  const repository = input.repository ?? requestProductRepository();
   const style = normalizeSlug(input.style);
-  const category = style === "vintage" ? "vintage" : "rugs";
-  const products = await repository.listByCategory(category);
 
   if (style === "vintage") {
-    return products.map(createCatalogProductCardViewModel);
+    return (await repository.listByCategory("vintage")).map(createCatalogProductCardViewModel);
   }
 
-  return products
+  return (await listRugRows(repository))
     .filter(
       (product): product is RugProduct =>
         product.type === "rug" && normalizeSlug(product.rugStyle) === style,

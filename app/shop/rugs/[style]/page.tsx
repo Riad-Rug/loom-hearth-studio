@@ -41,13 +41,8 @@ export async function generateMetadata({
   // One-of-a-kind stock means a style can stand at zero pieces for a while. The
   // page stays indexed while a piece is for sale or sold recently enough to still
   // rank (lib/seo/index-policy.ts), then asks to be dropped but keeps its links
-  // followed, since they all point at pages that want crawl signal.
-  //
-  // These are second reads of the rows the page body loads below: nothing in
-  // this codebase wraps repository reads in React cache(), and service.ts leans
-  // on noStore() rather than memoisation, so generateMetadata and the render
-  // each issue their own query. Accepted deliberately, since the alternative is
-  // hardcoding today's empty styles into the source.
+  // followed, since they all point at pages that want crawl signal. The rug rows
+  // read here are the ones the body below reuses (listRugRows in service.ts).
   const [products, indexableStyles] = await Promise.all([
     listRugStyleProductCards({ style }),
     listIndexableRugStyleSlugs(new Date()),
