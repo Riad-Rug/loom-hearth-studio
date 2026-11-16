@@ -20,8 +20,15 @@ export function isImageAltReady(value: string) {
   return value.trim().length >= DESCRIPTIVE_IMAGE_ALT_MIN_LENGTH;
 }
 
+/** Lowercase letters and digits only, with accents dropped, so "Aït" and "Ait" compare equal. */
 export function normalizeSeoText(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+  return value
+    .normalize("NFKD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/gu, " ")
+    .trim();
 }
 
 export type ProductCopyField = "description" | "seoDescription";

@@ -52,7 +52,7 @@ const load = (modulePath) => import(pathToFileURL(path.join(root, modulePath)).h
 const { applyProductTitle, buildProductTitle } = await load("lib/seo/product-title.ts");
 const { buildProductMetaDescription, truncateMetaDescription } = await load("lib/seo/product-metadata.ts");
 const { isProductIndexable, isRugStylePageIndexable, soldIndexWindowDays } = await load("lib/seo/index-policy.ts");
-const { findDuplicateProductCopy } = await load("lib/seo/content-audit.ts");
+const { findDuplicateProductCopy, normalizeSeoText } = await load("lib/seo/content-audit.ts");
 const { validateProductMutationInput } = await load("lib/catalog/product-validation.ts");
 const { rugStyleCollections } = await load("features/catalog/rug-style-collections.ts");
 const {
@@ -367,7 +367,20 @@ test("duplicate copy is flagged on every product that shares it, ignoring case a
   );
 });
 
-const takenSeoDescription = "Hand-knotted Beni Ourain rug in undyed wool, sourced in the Middle Atlas.";
+test("copy compares the same with or without accents, and non-Latin text is kept", () => {
+  assert.equal(normalizeSeoText("Aït Ouaouzguite rug"), normalizeSeoText("Ait Ouaouzguite rug"));
+  assert.equal(normalizeSeoText("Bejaâd, Khémisset!"), "bejaad khemisset");
+  assert.equal(normalizeSeoText("زربية مغربية"), "زربية مغربية");
+  assert.deepEqual(
+    findDuplicateProductCopy([
+      { id: "a", description: "زربية مغربية", seoDescription: "" },
+      { id: "b", description: "زربية أمازيغية", seoDescription: "" },
+    ]),
+    [],
+  );
+});
+
+const takenSeoDescription ="Hand-knotted Beni Ourain rug in undyed wool, sourced in the Middle Atlas.";
 const draftRug = (seoDescription) => ({
   status: "parsed",
   value: {
