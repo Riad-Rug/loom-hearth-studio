@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { siteConfig } from "@/config/site";
 import { normalizeDimensionSeparators, parseProductTitle } from "@/lib/catalog/product-card-name";
+import { stripBrandSuffix } from "@/lib/seo/brand-suffix";
 import { SEO_TITLE_MAX_LENGTH } from "@/lib/seo/content-audit";
 
 /** Where Google starts cutting a title in results, give or take a wide letter. */
@@ -106,8 +107,14 @@ function truncateTitle(value: string, maxLength: number) {
   );
 }
 
+/**
+ * A pasted name with the brand on the end, or with straight quotes where the
+ * name has primes or curly ones, is still the name.
+ */
 function comparableTitle(value: string) {
-  return collapseWhitespace(normalizeDimensionSeparators(value)).toLowerCase();
+  const straightQuotes = stripBrandSuffix(value).replace(/[″“”„]/gu, '"').replace(/[′‘’‚]/gu, "'");
+
+  return collapseWhitespace(normalizeDimensionSeparators(straightQuotes)).toLowerCase();
 }
 
 function collapseWhitespace(value: string) {

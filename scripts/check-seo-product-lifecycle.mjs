@@ -67,6 +67,24 @@ test("an empty seoTitle is rebuilt the same way", () => {
   assert.deepEqual(title, { text: "Beni Ourain Pile Rug — Brown & Lilac Chevrons — 7'9\" × 4'2\"", templated: false });
 });
 
+test("a seoTitle that is the name plus the brand, or with other quote marks, still counts as copied", () => {
+  const name = "Beni Ourain Pile Rug — 7'9\" × 4'2\" — Brown & Lilac Chevrons";
+  const rebuilt = buildProductTitle(untitled(name));
+  const copies = [
+    `${name} | Loom & Hearth`,
+    `${name} - Loom and Hearth Studio`,
+    "Beni Ourain Pile Rug — 7′9″ × 4′2″ — Brown & Lilac Chevrons",
+    "Beni Ourain Pile Rug — 7’9” × 4’2” — Brown & Lilac Chevrons | Loom & Hearth",
+  ];
+
+  assert.equal(rebuilt.text, "Beni Ourain Pile Rug — Brown & Lilac Chevrons — 7'9\" × 4'2\"");
+  for (const seoTitle of copies) assert.deepEqual(buildProductTitle({ name, seoTitle }), rebuilt, seoTitle);
+  assert.deepEqual(
+    buildProductTitle({ name: "Wool Pile Pouf — 24″ × 24″ × 10″ — Red Floral Grid", seoTitle: 'Wool Pile Pouf — 24" × 24" × 10" — Red Floral Grid' }),
+    buildProductTitle(untitled("Wool Pile Pouf — 24″ × 24″ × 10″ — Red Floral Grid")),
+  );
+});
+
 test("a short name keeps the brand suffix", () => {
   const title = buildProductTitle(untitled("Mellalia & Bettania Handwoven Pillow Cover"));
 
