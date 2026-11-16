@@ -101,6 +101,10 @@ function joinTitleParts(...parts: string[]) {
 const danglingTitleTail = /(?:[\s,;:&×–—-]|\b(?:a|an|the|with|and|of|across)\b)+$/iu;
 
 function truncateTitle(value: string, maxLength: number) {
+  if (value.length <= maxLength) {
+    return value;
+  }
+
   const cut = value.slice(0, maxLength + 1);
   const lastSpace = cut.lastIndexOf(" ");
 

@@ -136,6 +136,13 @@ test("a name too long for any rung is cut at a word and never keeps half a size"
   assert.ok("Moroccan Handmade Zemmour Hanbel Lumbar Pillow Cover With Tassels".startsWith(title.text));
 });
 
+test("a name that fits once its size is dropped keeps every word", () => {
+  assert.deepEqual(
+    buildProductTitle(untitled("Moroccan Handmade Zemmour Hanbel Lumbar Pillow Cover — 24.4″ × 14.6″")),
+    { text: "Moroccan Handmade Zemmour Hanbel Lumbar Pillow Cover", templated: false },
+  );
+});
+
 test("a title cut at a word never ends on a dangling small word", () => {
   const cuts = {
     "Moroccan Handmade Zemmour Hanbel Lumbar Pillow Cover With Tassels — 24.4\" × 14.6\"":
