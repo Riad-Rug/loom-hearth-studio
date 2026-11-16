@@ -878,7 +878,9 @@ function createProductGallery(product: Product) {
     .slice()
     .sort((left, right) => left.sortOrder - right.sortOrder);
 
-  return images.map((image, index) => createGalleryItem(product, image, index, images.length));
+  const storedAltTexts = images.map((image) => image.altText.trim());
+
+  return images.map((image, index) => createGalleryItem(product, image, index, storedAltTexts));
 }
 
 function createProductPalette(product: Product) {
@@ -895,7 +897,12 @@ function createProductPalette(product: Product) {
   });
 }
 
-function createGalleryItem(product: Product, image: MediaAsset, index: number, total: number) {
+function createGalleryItem(
+  product: Product,
+  image: MediaAsset,
+  index: number,
+  storedAltTexts: readonly string[],
+) {
   return {
     id: image.id,
     label: galleryRoleCopy[image.role]?.label ?? `Photo ${index + 1}`,
@@ -911,13 +918,43 @@ function createGalleryItem(product: Product, image: MediaAsset, index: number, t
     width: image.width,
     height: image.height,
     publicId: image.publicId,
-    altText: createImageAltText(product, image, `photo ${index + 1} of ${total}`),
+    altText: createGalleryAltText(product, image, index, storedAltTexts),
     role: image.role,
   };
 }
 
+/**
+ * One alt per photo. The admin fills every image's alt with the product name, so
+ * stored text only stands when it was written for this photo: not the name and
+ * not shared with another photo of the piece. Otherwise the alt is the name, what
+ * the photo shows when its role says, and its place in the gallery.
+ */
+function createGalleryAltText(
+  product: Product,
+  image: MediaAsset,
+  index: number,
+  storedAltTexts: readonly string[],
+) {
+  const storedAltText = image.altText.trim();
+  const isWrittenForThisPhoto =
+    storedAltText &&
+    !adminDefaultAltTextPattern.test(storedAltText) &&
+    storedAltText.toLowerCase() !== product.name.trim().toLowerCase() &&
+    storedAltTexts.filter((altText) => altText === storedAltText).length === 1;
+
+  if (isWrittenForThisPhoto) {
+    return storedAltText;
+  }
+
+  const productName = parseProductTitle(getDisplayProductName(product.name)).name;
+  const position =
+    storedAltTexts.length > 1 ? `photo ${index + 1} of ${storedAltTexts.length}` : "";
+
+  return [productName, galleryRoleCopy[image.role]?.view, position].filter(Boolean).join(", ");
+}
+
 /** Alt text a person wrote, or the product name plus what the photo shows. */
-function createImageAltText(product: Product, image: MediaAsset, unnamedView = "photo") {
+function createImageAltText(product: Product, image: MediaAsset) {
   const storedAltText = image.altText.trim();
 
   if (storedAltText && !adminDefaultAltTextPattern.test(storedAltText)) {
@@ -926,7 +963,7 @@ function createImageAltText(product: Product, image: MediaAsset, unnamedView = "
 
   const productName = parseProductTitle(getDisplayProductName(product.name)).name;
 
-  return `${productName}, ${galleryRoleCopy[image.role]?.view ?? unnamedView}`;
+  return `${productName}, ${galleryRoleCopy[image.role]?.view ?? "photo"}`;
 }
 
 // The admin form fills an empty alt with "{product name} image {n}" (see

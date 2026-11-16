@@ -26,8 +26,8 @@ import { getRugStyleCollection } from "@/features/catalog/rug-style-collections"
 import { trackViewItem } from "@/lib/analytics/gtag";
 import { unavailableCopy, type ProductAvailability, type UnavailableReason } from "@/lib/catalog/availability";
 import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
-import { parseProductTitle } from "@/lib/catalog/product-card-name";
-import { normalizeSlug } from "@/lib/catalog/product-validation";
+import { humanizeProductToken, parseProductTitle } from "@/lib/catalog/product-card-name";
+import { normalizeSlug, productRugStyleOptions } from "@/lib/catalog/product-validation";
 import { calculateShippingUsd } from "@/lib/order/shipping";
 import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import {
@@ -378,7 +378,7 @@ export function ProductDetailPageView({
 
               {product.detailSections.map((section) => (
                 <section key={section.title}>
-                  <h3 className={PANEL_EYEBROW}>{section.title}</h3>
+                  <h2 className={PANEL_EYEBROW}>{section.title}</h2>
                   <p className="text-[var(--color-ink)] leading-[1.65]">{section.body}</p>
                 </section>
               ))}
@@ -794,7 +794,7 @@ function buildSpecificationRows(product: ProductDetailPageViewModel, rugStyleHas
 
     rows.push({
       label: "Style",
-      value: product.rugStyle ?? "Handwoven rug",
+      value: getRugStyleLabel(product.rugStyle) || "Handwoven rug",
       ...(styleCrumb ? { href: styleCrumb.href } : {}),
     });
     if (product.techniqueLabel) {
@@ -816,6 +816,13 @@ function buildSpecificationRows(product: ProductDetailPageViewModel, rugStyleHas
   }
 
   return rows;
+}
+
+/** Rows store either the admin label ("Beni Ourain") or its slug ("beni-ourain"); both read as the label. */
+function getRugStyleLabel(rugStyle: string) {
+  const slug = normalizeSlug(rugStyle);
+
+  return productRugStyleOptions.find((option) => normalizeSlug(option) === slug) ?? humanizeProductToken(rugStyle);
 }
 
 function extractConditionNote(product: ProductDetailPageViewModel) {
