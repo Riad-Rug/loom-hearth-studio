@@ -52,6 +52,8 @@ export interface ProductRepository {
    * Kept off Product for the same reason as updatedAt above.
    */
   listSoldDates(): Promise<Map<string, Date>>;
+  /** One product's soldAt, for the same policy on that product's own page. */
+  getSoldAt(id: string): Promise<Date | null>;
   listByCategory(category: Product["category"]): Promise<Product[]>;
   listHomepageFeatured(limit: number): Promise<Product[]>;
   listInventoryEligible(): Promise<Product[]>;
@@ -121,6 +123,15 @@ export class PrismaProductRepository implements ProductRepository {
     });
 
     return new Map(products.flatMap(({ id, soldAt }) => (soldAt ? [[id, soldAt] as const] : [])));
+  }
+
+  async getSoldAt(id: string) {
+    const product = await this.context.client.catalogProduct.findUnique({
+      where: { id },
+      select: { soldAt: true },
+    });
+
+    return product?.soldAt ?? null;
   }
 
   async listByCategory(category: Product["category"]) {

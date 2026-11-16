@@ -199,14 +199,20 @@ export async function listProductSitemapEntries(
     }));
 }
 
-/** What the index policy needs to decide a product page's robots directive. */
+/**
+ * What the index policy needs to decide a product page's robots directive. The
+ * policy reads soldAt only for a sold piece, so no other status queries it.
+ */
 export async function getProductIndexFacts(
   product: Pick<Product, "id" | "status">,
   repository: ProductRepository = createProductRepository(),
 ): Promise<ProductIndexFacts> {
   noStore();
 
-  return toIndexFacts(product, await repository.listSoldDates());
+  return {
+    status: product.status,
+    soldAt: product.status === "sold" ? await repository.getSoldAt(product.id) : null,
+  };
 }
 
 /**
