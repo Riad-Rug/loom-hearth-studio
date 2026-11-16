@@ -196,6 +196,18 @@ test("a long description ends on the last full sentence that fits", () => {
   assert.ok(!description.includes("Selected for"), description);
 });
 
+test("an abbreviation's full stop is not where the description ends", () => {
+  const opener = "Hand-knotted Beni Ourain rug in undyed Middle Atlas wool, with brown diamond lines drawn across an ivory field.";
+
+  for (const abbreviation of ["approx.", "e.g.", "i.e.", "St.", "No."]) {
+    const description = truncateMetaDescription(
+      `${opener} Measures ${abbreviation} 240 cm long and ships rolled, with photos and video of the exact piece first.`,
+    );
+
+    assert.equal(description, opener, abbreviation);
+  }
+});
+
 test("with no sentence end late enough, the cut falls on a word and shows an ellipsis", () => {
   const runOn = `${"Hand-knotted wool pile with raised cord diamonds and a soft undyed fringe ".repeat(3)}end`;
   const description = truncateMetaDescription(runOn);

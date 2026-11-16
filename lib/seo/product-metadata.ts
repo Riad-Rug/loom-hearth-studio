@@ -15,6 +15,9 @@ const metaDescriptionMaxLength = 160;
  */
 const sentenceCutMinLength = 100;
 
+/** A full stop, ! or ? before a space, except the stop that closes "approx.", "e.g.", "i.e.", "St." or "No.". */
+const sentenceEndPattern = /(?:(?<!\b(?:[Aa]pprox|[Ee]\.g|[Ii]\.e|St|No))\.|[!?])["'”’)]*(?=\s)/gu;
+
 /**
  * Singular nouns for the fallback sentence. `getCategoryLabel` is the plural,
  * title-cased storefront label ("Poufs", "Decor & antiques") and reads wrong
@@ -41,7 +44,7 @@ export function truncateMetaDescription(value: string, maxLength = metaDescripti
   }
 
   const window = value.slice(0, maxLength + 1);
-  const sentenceEnd = [...window.matchAll(/[.!?]["'”’)]*(?=\s)/gu)]
+  const sentenceEnd = [...window.matchAll(sentenceEndPattern)]
     .map((match) => match.index + match[0].length)
     .filter((end) => end >= sentenceCutMinLength && end <= maxLength)
     .at(-1);
