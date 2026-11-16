@@ -409,7 +409,7 @@ export function productSchema(input: {
     // Search Console's merchant-listing report does not resolve the reference
     // and flags brand as missing its name. seller below keeps the @id, since
     // the seller really is that Organization.
-    brand: { "@type": "Brand", name: "Loom & Hearth Studio" },
+    brand: { "@type": "Brand", name: siteConfig.name, alternateName: siteConfig.alternateName },
     sku,
     mpn: sku,
     productID: input.id,
