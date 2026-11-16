@@ -23,8 +23,8 @@ type HomePageViewProps = {
    * Deliberately a code-owned prop rather than CMS content: the homepage sections
    * are database-driven and merged by index over the code defaults, so adding
    * these as category cards would render "photo pending" placeholders until six
-   * images were uploaded. Empty styles are omitted rather than greyed — a strip
-   * has no fixed slots to hold open, and their pages are noindex.
+   * images were uploaded. Styles with nothing to buy are omitted rather than
+   * greyed, since a strip has no fixed slots to hold open.
    */
   rugStyleLinks?: readonly { href: string; label: string }[];
   /**

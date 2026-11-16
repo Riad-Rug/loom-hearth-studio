@@ -81,11 +81,9 @@ export default async function RugStylePage({ params }: RugStylePageProps) {
   // link, from the chip row on /shop/rugs, which left the six pages that should
   // rank for "beni ourain rug" and its siblings starved while /shop and
   // /shop/rugs absorbed the weight. Every stocked style now links to every other
-  // one under its own keyword-exact anchor. Styles with nothing purchasable are
-  // omitted rather than greyed — this is a content strip with no fixed slots,
-  // and their pages are served noindex, so an anchor here would aim crawl signal
-  // at a page we are asking Google to skip. They rejoin on their own the moment
-  // stock lands.
+  // one under its own keyword-exact anchor. Styles with nothing to buy are
+  // omitted rather than greyed, since this strip has no fixed slots to hold
+  // open. They rejoin on their own the moment stock lands.
   const siblingStyleLinks = styleNavLinks.filter(
     (link) => link.available && link.slug !== style,
   );

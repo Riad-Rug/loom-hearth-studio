@@ -35,7 +35,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Rug-style and product pages follow lib/seo/index-policy.ts, the same rule
-  // their robots tags read, so nothing here is "Submitted URL marked noindex".
+  // their robots tags read, so the policy never lists a page it noindexes. An
+  // admin SEO setting with robotsIndex off is not read here and can still
+  // noindex a listed page.
   const rugStyleEntries = [...(await listIndexableRugStyleSlugs(now))].sort().map((style) => ({
     url: absoluteUrl(`/shop/rugs/${style}`),
   }));
