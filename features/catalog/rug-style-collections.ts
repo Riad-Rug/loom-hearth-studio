@@ -276,7 +276,7 @@ export const rugStyleCollections = {
       heading: "Mixed-Technique Moroccan Rugs",
       metaTitle: "Mixed-Technique Moroccan Rugs",
       metaDescription:
-        "Moroccan rugs that combine flatweave, knotted pile and brocade in one piece, from Taznakht, the Siroua and the High Atlas. See the exact rug before you pay.",
+        "Moroccan rugs combining flatweave, knotted pile and brocade in one piece, from Taznakht, the Siroua and the High Atlas. See the exact rug before you pay.",
       guide: {
         heading: "About mixed-technique rugs",
         body:

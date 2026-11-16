@@ -54,6 +54,7 @@ const { buildProductMetaDescription, truncateMetaDescription } = await load("lib
 const { isProductIndexable, isRugStylePageIndexable, soldIndexWindowDays } = await load("lib/seo/index-policy.ts");
 const { findDuplicateProductCopy } = await load("lib/seo/content-audit.ts");
 const { validateProductMutationInput } = await load("lib/catalog/product-validation.ts");
+const { rugStyleCollections } = await load("features/catalog/rug-style-collections.ts");
 const {
   getProductIndexFacts,
   getRugProductDetailByParams,
@@ -342,6 +343,13 @@ test("a product's og:image alt describes its first photo without a gallery posit
 
   assert.equal(product.gallery[0].altText, "Beni Ourain Pile Rug Brown & Lilac Chevrons, full view, photo 1 of 2");
   assert.equal(product.ogImageAlt, "Beni Ourain Pile Rug Brown & Lilac Chevrons, full view");
+});
+
+test("every rug style page's meta description fits in 155 characters", () => {
+  for (const [slug, collection] of Object.entries(rugStyleCollections)) {
+    const description = collection.page?.metaDescription ?? "";
+    assert.ok(description.length <= 155, `${slug}: ${description.length}`);
+  }
 });
 
 test("duplicate copy is flagged on every product that shares it, ignoring case and punctuation", () => {
