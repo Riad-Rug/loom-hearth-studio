@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -38,7 +39,7 @@ export default async function NotFound() {
             <Link
               key={category}
               className={styles.secondaryAction}
-              href={getCategoryRoutePath(category)}
+              href={getCategoryRoutePath(category) as Route}
             >
               {getCategoryLabel(category)}
             </Link>
