@@ -239,7 +239,7 @@ export async function listIndexableRugStyleSlugs(
           collection.category === "rugs" &&
           isRugStylePageIndexable(
             {
-              hasGuideCopy: collection.description.trim().length > 0,
+              hasGuideCopy: Boolean(collection.page?.guide.body.trim()),
               pieces: products
                 .filter((product) => product.type === "rug" && normalizeSlug(product.rugStyle) === slug)
                 .map((product) => toIndexFacts(product, soldDates)),
