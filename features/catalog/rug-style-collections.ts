@@ -120,7 +120,7 @@ export const rugStyleCollections = {
           {
             question: "Are the colors natural dyes?",
             answer:
-              "Not always. Each listing says whether I assess the dye as natural or synthetic and what that assessment rests on. I do not claim natural dye where I cannot verify it.",
+              "Not always. When I have assessed a rug's dye, the listing says whether I read it as natural or synthetic. I do not claim natural dye where I cannot verify it.",
           },
         ],
       },

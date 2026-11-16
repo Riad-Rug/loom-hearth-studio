@@ -171,7 +171,7 @@ const defaultHomePageContent: HomePageContent = {
     seo: {
       seoTitle: "Shop Moroccan rugs, poufs, pillows, and decor by category.",
       metaDescription:
-        "Browse Moroccan rugs, vintage rugs, rug-made poufs, cactus silk pillows, and decor through a structured category section on the homepage.",
+        "Browse Moroccan rugs, vintage rugs, wool poufs and pillow covers, and decor through a structured category section on the homepage.",
     },
     eyebrow: "SHOP BY CATEGORY",
     title: "Handmade Moroccan rugs, poufs, pillows, decor, and antiques.",
@@ -199,7 +199,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/poufs",
         visible: true,
         description:
-          "Rug-made and leather poufs. Functional seating with a quieter footprint than upholstered furniture.",
+          "Poufs sewn from handmade wool rugs and Bettania. Functional seating with a quieter footprint than upholstered furniture.",
         image: {
           src: "",
           alt: "Moroccan poufs photo placeholder",
@@ -214,7 +214,7 @@ const defaultHomePageContent: HomePageContent = {
         href: "/shop/pillows",
         visible: true,
         description:
-          "Cactus silk and rug-based pillows. Flat-woven, low-shed, with strong colour saturation.",
+          "Pillow covers sewn from handmade wool rugs and Bettania. Flatweave and pile, with strong colour saturation.",
         image: {
           src: "",
           alt: "Moroccan pillows photo placeholder",

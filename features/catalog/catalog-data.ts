@@ -6,7 +6,7 @@ export const catalogLanding = {
   description:
     "Handcrafted Moroccan rugs, poufs, pillows, and decor \u2014 sourced directly from Marrakech. Every rug is ONE OF A KIND. When a piece sells, it does not return.",
   bullets: [
-    "Hand-knotted rugs, rug-made poufs, cactus silk pillows, and handcrafted decor",
+    "Hand-knotted rugs, poufs and pillow covers sewn from handmade wool textiles, and handcrafted decor",
     "Every rug is ONE OF A KIND \u2014 sold pieces are not restocked",
     "Filter by category or sort by price and arrival date",
   ],
@@ -162,7 +162,7 @@ export const catalogIntros: Partial<Record<"shop" | ProductCategory, CatalogIntr
   pillows: {
     paragraphs: [
       [
-        "Our pillow covers are made from handmade textiles, including Bettania, handira, flatweave rugs and pile rugs, plus sabra (cactus silk).",
+        "Our pillow covers are made from handmade textiles, including Bettania, handira, flatweave rugs and pile rugs.",
       ],
       [
         desktopAndTablet("One textile can give us enough material for several covers"),
