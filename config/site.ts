@@ -51,6 +51,7 @@ export function normalizePublicUrl(value: string, fallbackBase = siteConfig.site
 
 export const siteConfig = {
   name: "Loom & Hearth",
+  alternateName: "Loom & Hearth Studio",
   description:
     `Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from ${storePromise.shipsFromCity}.`,
   siteUrl: normalizePublicSiteUrl(process.env.NEXT_PUBLIC_SITE_URL),

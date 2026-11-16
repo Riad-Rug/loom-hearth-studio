@@ -53,7 +53,8 @@ export function organizationSchema() {
     "@context": "https://schema.org",
     "@type": ["Organization", "OnlineStore"],
     "@id": `${absoluteUrl("/")}#organization`,
-    name: "Loom & Hearth Studio",
+    name: siteConfig.name,
+    alternateName: siteConfig.alternateName,
     url: absoluteUrl("/"),
     logo: {
       "@type": "ImageObject",
@@ -77,7 +78,8 @@ export function websiteSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Loom & Hearth Studio",
+    name: siteConfig.name,
+    alternateName: siteConfig.alternateName,
     url: absoluteUrl("/"),
   };
 }
@@ -171,15 +173,30 @@ export function toSchemaDate(value?: string | null) {
   return `${year}-${month}-${day}`;
 }
 
+/** A real timestamp (such as a record's updatedAt) as ISO 8601, or null when it does not parse. */
+export function toSchemaDateTime(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
 export function articleSchema(input: {
   title: string;
   description: string;
   path: string;
   publishedAt?: string;
+  /** ISO timestamp of the post's last save. */
+  modifiedAt?: string;
   imageUrl?: string | null;
   author?: { name: string; photoUrl?: string | null } | null;
 }) {
+  const url = absoluteUrl(input.path);
   const datePublished = toSchemaDate(input.publishedAt);
+  const dateModified = toSchemaDateTime(input.modifiedAt);
   const authorName = input.author?.name?.trim();
 
   return {
@@ -187,21 +204,27 @@ export function articleSchema(input: {
     "@type": "Article",
     headline: input.title,
     description: input.description,
-    url: absoluteUrl(input.path),
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
     ...(datePublished ? { datePublished } : {}),
+    ...(dateModified ? { dateModified } : {}),
     ...(input.imageUrl ? { image: [input.imageUrl] } : {}),
     ...(authorName
       ? {
+          // The journal has one author, the founder, so the byline is the
+          // Person node /about defines.
           author: {
             "@type": "Person",
+            "@id": PERSON_ID,
             name: authorName,
+            url: absoluteUrl("/about"),
             ...(input.author?.photoUrl ? { image: input.author.photoUrl } : {}),
           },
         }
       : {}),
     publisher: {
       "@type": "Organization",
-      name: "Loom & Hearth Studio",
+      name: siteConfig.name,
       logo: {
         "@type": "ImageObject",
         url: absoluteUrl("/brand/logo.png"),
@@ -243,11 +266,12 @@ const PRICE_VALIDITY_DAYS = 90;
 
 // A reserved piece cannot be bought now and may come back, which is what
 // OutOfStock says. schema.org's own Reserved fits better, but Google's merchant
-// listing docs do not list it among the values they accept.
+// listing docs do not list it among the values they accept. A sold one-of-one
+// is gone for good, and SoldOut is on that list.
 const schemaOrgAvailability: Record<ProductAvailability, string> = {
   available: "https://schema.org/InStock",
   reserved: "https://schema.org/OutOfStock",
-  sold: "https://schema.org/OutOfStock",
+  sold: "https://schema.org/SoldOut",
   outOfStock: "https://schema.org/OutOfStock",
 };
 
@@ -467,15 +491,18 @@ export function productSchema(input: {
           value: calculateShippingUsd(Number(priceValue)),
           currency: "USD",
         },
-        // Figures come from storePromise (lib/order/store-promise.ts): the
-        // approval turnaround in hours is the handling time in days, then the
+        // Figures come from storePromise (lib/order/store-promise.ts). A piece
+        // ships only once its buyer approves the photos, so handling runs from
+        // the order to that approval: the photo turnaround, plus up to the
+        // whole decision window (none for a buyer who approves at once). The
         // delivery window in business days is the transit time to the US.
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
           handlingTime: {
             "@type": "QuantitativeValue",
             minValue: Math.ceil(storePromise.approvalTurnaroundHours.min / 24),
-            maxValue: Math.ceil(storePromise.approvalTurnaroundHours.max / 24),
+            maxValue:
+              Math.ceil(storePromise.approvalTurnaroundHours.max / 24) + storePromise.decisionWindowDays,
             unitCode: "DAY",
           },
           transitTime: {
