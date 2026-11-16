@@ -97,14 +97,14 @@ function joinTitleParts(...parts: string[]) {
   return parts.filter(Boolean).join(partSeparator);
 }
 
+/** Separators and small words a cut title must not end on, however many trail it. */
+const danglingTitleTail = /(?:[\s,;:&×–—-]|\b(?:a|an|the|with|and|of|across)\b)+$/iu;
+
 function truncateTitle(value: string, maxLength: number) {
   const cut = value.slice(0, maxLength + 1);
   const lastSpace = cut.lastIndexOf(" ");
 
-  return (lastSpace > 0 ? cut.slice(0, lastSpace) : value.slice(0, maxLength)).replace(
-    /[\s,;:&×–—-]+$/u,
-    "",
-  );
+  return (lastSpace > 0 ? cut.slice(0, lastSpace) : value.slice(0, maxLength)).replace(danglingTitleTail, "");
 }
 
 /**

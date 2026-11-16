@@ -132,6 +132,21 @@ test("a name too long for any rung is cut at a word and never keeps half a size"
   assert.ok("Moroccan Handmade Zemmour Hanbel Lumbar Pillow Cover With Tassels".startsWith(title.text));
 });
 
+test("a title cut at a word never ends on a dangling small word", () => {
+  const cuts = {
+    "Moroccan Handmade Zemmour Hanbel Lumbar Pillow Cover With Tassels — 24.4\" × 14.6\"":
+      "Moroccan Handmade Zemmour Hanbel Lumbar Pillow Cover",
+    "Zemmour Hanbel Runner Woven in Red Wool With Ivory Bands & a Row of Black Diamonds Across":
+      "Zemmour Hanbel Runner Woven in Red Wool With Ivory Bands",
+    "Beni Ourain Runner Rug in Thick Undyed Ivory Wool Pile and the Dark Brown Diamond Lattice":
+      "Beni Ourain Runner Rug in Thick Undyed Ivory Wool Pile",
+  };
+
+  for (const [name, expected] of Object.entries(cuts)) {
+    assert.deepEqual(buildProductTitle(untitled(name)), { text: expected, templated: false }, name);
+  }
+});
+
 test("every rebuilt title leads with the keyword and stays within budget", () => {
   const names = [
     "Zemmour-Type Hanbel Runner — 4'8\" × 2'4\" — Red with Zigzag Bands",
