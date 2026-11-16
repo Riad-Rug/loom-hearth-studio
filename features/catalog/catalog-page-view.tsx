@@ -11,9 +11,12 @@ import { CatalogFilterControls } from "@/features/catalog/catalog-filter-control
 import {
   catalogBelowGridEssays,
   catalogCategories,
+  type CatalogGuide,
+  type CatalogIntroParagraph,
   catalogIntros,
-  type CatalogIntroTier,
   catalogLanding,
+  catalogShippingScopeNote,
+  type CatalogViewport,
   genericSizeFilterOptions,
   rugSizeFilterOptions,
   type CatalogPriceFilter,
@@ -65,6 +68,7 @@ type CatalogPageViewProps = {
     description: string;
     bullets: readonly string[];
     href?: string;
+    guide?: CatalogGuide;
   };
   /**
    * Optional sub-category navigation rendered under the page lede — currently
@@ -221,9 +225,8 @@ export function CatalogPageView({
   const displayedProductCountLabel = `${filteredProducts.length} ${
     filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
-  const internationalInquiryHref = "/contact?inquiryType=international-shipping" as Route;
   /**
-   * Which tiered header copy this view uses, if any (see `catalogIntros`). The
+   * Which header copy this view uses, if any (see `catalogIntros`). The
    * generic /shop landing is keyed "shop"; a category route is keyed by its
    * category. A rug-style collection is deliberately excluded even though its
    * `category` is set, because its own description is what the page is for.
@@ -232,44 +235,10 @@ export function CatalogPageView({
   const isLandingView = !category && !hasExactCategoryLink;
   const introKey = isLandingView ? "shop" : collection ? null : category ?? null;
   const intro = introKey ? catalogIntros[introKey] ?? null : null;
-  const belowGridEssay = introKey ? catalogBelowGridEssays[introKey] ?? null : null;
-  const belowGridEssayParagraphs = belowGridEssay ? heroCopy.split("\n\n") : [];
-
-  const renderIntroTier = (tier: CatalogIntroTier, tierClassName: string, tierKey: string) => (
-    <>
-      {tier.paragraphs.map((paragraph, index) => (
-        <p className={`${styles.lede} ${tierClassName}`} key={`${tierKey}-${index}`}>
-          {paragraph}
-        </p>
-      ))}
-      <p className={`${styles.shopHeaderTrustNote} ${tierClassName}`}>
-        {tier.closing.before}
-        {tier.closing.link ? (
-          <Link href={internationalInquiryHref}>{tier.closing.link}</Link>
-        ) : null}
-        {tier.closing.after}
-      </p>
-    </>
-  );
-
-  /**
-   * Default header for every view without tiered copy: the restock note, the
-   * shipping scope, then the route's editorial description.
-   */
-  const shippingScopeNote = (
-    <>
-      <p className={`${styles.shopHeaderTrustNote} ${styles.desktopCopy}`}>
-        Shipping to the US. Outside the US?{" "}
-        <Link href={internationalInquiryHref}>Send an inquiry</Link> and we&apos;ll confirm
-        shipping before you order.
-      </p>
-      <p className={`${styles.shopHeaderTrustNote} ${styles.tabletCopy}`}>
-        Shipping to the US. Outside the US?{" "}
-        <Link href={internationalInquiryHref}>Send an inquiry</Link>.
-      </p>
-      <p className={`${styles.shopHeaderTrustNote} ${styles.phoneCopy}`}>Shipping to the US.</p>
-    </>
-  );
+  const categoryEssay = introKey ? catalogBelowGridEssays[introKey] : undefined;
+  const belowGridEssay: CatalogGuide | null =
+    collection?.guide ?? (categoryEssay ? { ...categoryEssay, body: heroCopy } : null);
+  const belowGridEssayParagraphs = belowGridEssay ? belowGridEssay.body.split("\n\n") : [];
   const activeCategoryKey = serializeCategoryFilter(activeCategories);
   const activePriceKey = serializePriceFilter(selectedPrices);
   const activeSizeKey = serializeSizeFilter(selectedSizes);
@@ -409,16 +378,20 @@ export function CatalogPageView({
               </div>
               {intro ? (
                 <>
-                  {renderIntroTier(intro.desktop, styles.desktopCopy, "intro-desktop")}
-                  {renderIntroTier(intro.tablet, styles.tabletCopy, "intro-tablet")}
-                  {renderIntroTier(intro.phone, styles.phoneCopy, "intro-phone")}
+                  {intro.paragraphs.map((paragraph, index) => (
+                    <IntroParagraph className={styles.lede} key={index} runs={paragraph} />
+                  ))}
+                  <IntroParagraph className={styles.shopHeaderTrustNote} runs={intro.closing} />
                 </>
               ) : (
                 <>
                   <p className={styles.shopHeaderTrustNote}>
                     Each piece is individually made and won&apos;t be restocked.
                   </p>
-                  {shippingScopeNote}
+                  <IntroParagraph
+                    className={styles.shopHeaderTrustNote}
+                    runs={catalogShippingScopeNote}
+                  />
                   {heroCopy.split("\n\n").map((paragraph, index) => (
                     <p className={styles.lede} key={index}>
                       {paragraph}
@@ -511,19 +484,26 @@ export function CatalogPageView({
             <h2>{belowGridEssay.heading}</h2>
             {belowGridEssayParagraphs[0] ? <p>{renderInline(belowGridEssayParagraphs[0])}</p> : null}
             {belowGridEssayParagraphs[1] ? (
-              <p className={isEssayExpanded ? undefined : styles.catalogEssayClamp}>
-                {renderInline(belowGridEssayParagraphs[1])}
-              </p>
-            ) : null}
-            {belowGridEssayParagraphs.length > 2 ? (
               <>
-                <div hidden={!isEssayExpanded} id="catalog-essay-rest">
-                  {belowGridEssayParagraphs.slice(2).map((paragraph, index) => (
-                    <p key={index}>{renderInline(paragraph)}</p>
-                  ))}
-                </div>
+                <p
+                  className={isEssayExpanded ? undefined : styles.catalogEssayClamp}
+                  id="catalog-essay-more"
+                >
+                  {renderInline(belowGridEssayParagraphs[1])}
+                </p>
+                {belowGridEssayParagraphs.length > 2 ? (
+                  <div hidden={!isEssayExpanded} id="catalog-essay-rest">
+                    {belowGridEssayParagraphs.slice(2).map((paragraph, index) => (
+                      <p key={index}>{renderInline(paragraph)}</p>
+                    ))}
+                  </div>
+                ) : null}
                 <button
-                  aria-controls="catalog-essay-rest"
+                  aria-controls={
+                    belowGridEssayParagraphs.length > 2
+                      ? "catalog-essay-more catalog-essay-rest"
+                      : "catalog-essay-more"
+                  }
                   aria-expanded={isEssayExpanded}
                   className={styles.catalogEssayToggle}
                   onClick={() => setIsEssayExpanded((value) => !value)}
@@ -532,6 +512,16 @@ export function CatalogPageView({
                   {isEssayExpanded ? "Read less" : "Read more"}
                 </button>
               </>
+            ) : null}
+            {belowGridEssay.faqs?.length ? (
+              <div className={styles.catalogEssayFaqs}>
+                {belowGridEssay.faqs.map((faq) => (
+                  <div key={faq.question}>
+                    <h3>{faq.question}</h3>
+                    <p>{renderInline(faq.answer)}</p>
+                  </div>
+                ))}
+              </div>
             ) : null}
           </div>
         </Section>
@@ -558,6 +548,54 @@ export function CatalogPageView({
         </div>
       </Section>
     </div>
+  );
+}
+
+const internationalInquiryHref = "/contact?inquiryType=international-shipping" as Route;
+
+const catalogViewports: readonly CatalogViewport[] = ["desktop", "tablet", "phone"];
+
+const hideOnViewport: Record<CatalogViewport, string> = {
+  desktop: styles.hideOnDesktop,
+  tablet: styles.hideOnTablet,
+  phone: styles.hideOnPhone,
+};
+
+function hideOutside(shownOn: readonly CatalogViewport[]) {
+  return catalogViewports
+    .filter((viewport) => !shownOn.includes(viewport))
+    .map((viewport) => hideOnViewport[viewport])
+    .join(" ");
+}
+
+/**
+ * One header paragraph, rendered once. Runs limited to some widths are hidden
+ * by CSS at the others, and the paragraph itself is hidden wherever none of
+ * its runs show, so it leaves no empty margin behind.
+ */
+function IntroParagraph({ className, runs }: { className: string; runs: CatalogIntroParagraph }) {
+  const shownOn = catalogViewports.filter((viewport) =>
+    runs.some((run) => typeof run === "string" || run.on.includes(viewport)),
+  );
+
+  return (
+    <p className={`${className} ${hideOutside(shownOn)}`}>
+      {runs.map((run, index) => {
+        if (typeof run === "string") {
+          return run;
+        }
+
+        return run.link ? (
+          <Link className={hideOutside(run.on)} href={internationalInquiryHref} key={index}>
+            {run.text}
+          </Link>
+        ) : (
+          <span className={hideOutside(run.on)} key={index}>
+            {run.text}
+          </span>
+        );
+      })}
+    </p>
   );
 }
 

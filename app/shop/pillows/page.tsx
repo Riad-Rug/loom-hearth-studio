@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "pillows",
-    title: "Moroccan Pillow Covers, Handwoven",
+    title: "Moroccan Pillow Covers: Kilim & Battania",
     description:
       "Handwoven Moroccan pillow covers cut from kilim and vintage Battania textiles. One of a kind, approved by you before payment.",
     path: "/shop/pillows",

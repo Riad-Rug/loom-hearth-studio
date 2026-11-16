@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
     entityKey: "vintage",
     title: "Vintage Moroccan Rugs, One of a Kind",
     description:
-      "Vintage Beni Ourain, Azilal and Boujad rugs with honest condition photos. Approve photos and video of the exact rug before you pay.",
+      "Vintage Moroccan pile rugs and flatweaves, each checked for wear and repairs before listing. Approve photos and video of the exact rug before you pay.",
     path: "/shop/vintage",
     ...categoryOgImage(products),
   });

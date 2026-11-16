@@ -52,8 +52,8 @@ export async function generateMetadata({
   return buildManagedMetadata({
     entityType: "category",
     entityKey: `rugs-${style}`,
-    title: collection.title,
-    description: collection.description,
+    title: collection.page?.metaTitle ?? collection.title,
+    description: collection.page?.metaDescription ?? collection.description,
     path: `/shop/rugs/${style}`,
     noIndex: !hasPurchasableProducts,
     ...categoryOgImage(products),
@@ -111,10 +111,11 @@ export default async function RugStylePage({ params }: RugStylePageProps) {
         category={collection.category}
         collection={{
           eyebrow: "Collection",
-          title: collection.title,
+          title: collection.page?.heading ?? collection.title,
           description: collection.description,
           bullets: collection.bullets,
           href: `/shop/rugs/${style}`,
+          guide: collection.page?.guide,
         }}
         products={products}
         styleLinks={

@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildManagedMetadata({
     entityType: "category",
     entityKey: "rugs",
-    title: "Moroccan Rugs: Beni Ourain, Azilal, Kilim & More",
+    title: "Moroccan Rugs: Beni Ourain, Azilal & Kilim",
     description:
       "Hand-knotted and flatweave Moroccan rugs by style and size. Every rug is the exact piece photographed; approve photos and video before you pay.",
     path: "/shop/rugs",
