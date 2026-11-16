@@ -9,6 +9,9 @@ import styles from "./catalog-page.module.css";
 
 const initialVisibleProductCount = 20;
 const showMoreProductCount = 10;
+// The grid tops out at three columns (see .productGrid), so the first three
+// cards cover the first row at every width.
+const firstRowProductCount = 3;
 
 type CatalogProductBrowserProps = {
   products: CatalogProductCardViewModel[];
@@ -31,14 +34,20 @@ export function CatalogProductBrowser({ products, filterKey }: CatalogProductBro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterKey]);
 
-  const visibleProducts = products.slice(0, visibleCount);
   const hasMoreProducts = visibleCount < products.length;
 
+  // Every card is rendered so each product link is in the server HTML; the ones
+  // past "Show more" are hidden rather than left out.
   return (
     <>
       <div className={styles.productGrid} id="shop-grid">
-        {visibleProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+        {products.map((product, index) => (
+          <ProductCard
+            hidden={index >= visibleCount}
+            key={product.id}
+            priority={index < firstRowProductCount}
+            product={product}
+          />
         ))}
       </div>
 

@@ -609,6 +609,12 @@
     border-color 180ms ease;
 }
 
+/* Cards waiting behind "Show more" carry [hidden], which .productCard's
+   display: flex would otherwise defeat. */
+.productCard[hidden] {
+  display: none;
+}
+
 .productCard:hover,
 .productCard:focus-visible {
   border-color: rgba(34, 33, 38, 0.18);
