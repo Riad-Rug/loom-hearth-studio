@@ -137,7 +137,7 @@ export async function generateMetadata({
       noIndexFollow: !isProductIndexable(indexFacts, new Date()),
       type: "product",
       ogImageUrl: ogImage?.src,
-      ogImageAlt: ogImage?.altText || product.name,
+      ogImageAlt: product.ogImageAlt,
       ogImageWidth: 1600,
       ogImageHeight: 1200,
     }),

@@ -549,6 +549,7 @@ function createProductDetailPageViewModel(
     2,
   );
   const similarRugs = createRecommendedProductCards(product, allProducts);
+  const gallery = createProductGallery(product);
   const crossSellRecommendations = createCrossSellRecommendationCards(
     product,
     allProducts,
@@ -570,7 +571,8 @@ function createProductDetailPageViewModel(
     type: product.type,
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
-    gallery: createProductGallery(product),
+    gallery: gallery.items,
+    ogImageAlt: gallery.ogImageAlt,
     palette: createProductPalette(product),
     materialLabel: product.materials.join(", "),
     originLabel: product.origin,
@@ -954,7 +956,12 @@ function createProductGallery(product: Product) {
 
   const storedAltTexts = images.map((image) => image.altText.trim());
 
-  return images.map((image, index) => createGalleryItem(product, image, index, storedAltTexts));
+  return {
+    items: images.map((image, index) => createGalleryItem(product, image, index, storedAltTexts)),
+    // A social card shows the first photo on its own, so its alt has no
+    // place in the gallery to give.
+    ogImageAlt: images[0] ? createGalleryAltText(product, images[0], storedAltTexts) : product.name,
+  };
 }
 
 function createProductPalette(product: Product) {
@@ -992,7 +999,12 @@ function createGalleryItem(
     width: image.width,
     height: image.height,
     publicId: image.publicId,
-    altText: createGalleryAltText(product, image, index, storedAltTexts),
+    altText: createGalleryAltText(
+      product,
+      image,
+      storedAltTexts,
+      storedAltTexts.length > 1 ? `photo ${index + 1} of ${storedAltTexts.length}` : undefined,
+    ),
     role: image.role,
   };
 }
@@ -1001,13 +1013,13 @@ function createGalleryItem(
  * One alt per photo. The admin fills every image's alt with the product name, so
  * stored text only stands when it was written for this photo: not the name and
  * not shared with another photo of the piece. Otherwise the alt is the name, what
- * the photo shows when its role says, and its place in the gallery.
+ * the photo shows when its role says, and its place in the gallery when given.
  */
 function createGalleryAltText(
   product: Product,
   image: MediaAsset,
-  index: number,
   storedAltTexts: readonly string[],
+  position?: string,
 ) {
   const storedAltText = image.altText.trim();
   const isWrittenForThisPhoto =
@@ -1021,8 +1033,6 @@ function createGalleryAltText(
   }
 
   const productName = parseProductTitle(getDisplayProductName(product.name)).name;
-  const position =
-    storedAltTexts.length > 1 ? `photo ${index + 1} of ${storedAltTexts.length}` : "";
 
   return [productName, galleryRoleCopy[image.role]?.view, position].filter(Boolean).join(", ");
 }

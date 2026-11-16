@@ -54,9 +54,12 @@ const { buildProductMetaDescription, truncateMetaDescription } = await load("lib
 const { isProductIndexable, isRugStylePageIndexable, soldIndexWindowDays } = await load("lib/seo/index-policy.ts");
 const { findDuplicateProductCopy } = await load("lib/seo/content-audit.ts");
 const { validateProductMutationInput } = await load("lib/catalog/product-validation.ts");
-const { getProductIndexFacts, listIndexableRugStyleSlugs, listProductSitemapEntries } = await load(
-  "lib/catalog/service.ts",
-);
+const {
+  getProductIndexFacts,
+  getRugProductDetailByParams,
+  listIndexableRugStyleSlugs,
+  listProductSitemapEntries,
+} = await load("lib/catalog/service.ts");
 
 const brand = " | Loom & Hearth";
 const rendered = (title) => (title.templated ? `${title.text}${brand}` : title.text);
@@ -303,6 +306,42 @@ test("a style page is indexable, and in the sitemap, while one of its pieces is"
     "beni-ourain",
     "zemmour",
   ]);
+});
+
+test("a product's og:image alt describes its first photo without a gallery position", async () => {
+  const photo = (id, role, sortOrder) => ({
+    id,
+    publicId: `loom-hearth/${id}`,
+    altText: "Beni Ourain Pile Rug — 7'9\" × 4'2\" — Brown & Lilac Chevrons",
+    sortOrder,
+    role,
+    mediaType: "image",
+  });
+  const rug = {
+    id: "rug-1",
+    slug: "beni-ourain-pile-rug-brown-lilac-chevrons",
+    name: "Beni Ourain Pile Rug — 7'9\" × 4'2\" — Brown & Lilac Chevrons",
+    type: "rug",
+    category: "rugs",
+    rugStyle: "Beni Ourain",
+    status: "active",
+    description: "A rug.",
+    priceUsd: 900,
+    origin: "Morocco",
+    images: [photo("detail", "detail", 2), photo("hero", "hero", 1)],
+    materials: ["Wool"],
+    palette: [],
+    seoTitle: "",
+    seoDescription: "",
+    dimensionsCm: { length: 236, width: 127 },
+    weightKg: 9,
+    fixedQuantity: 1,
+  };
+  const repository = { getBySlug: async () => rug, listAll: async () => [rug] };
+  const product = await getRugProductDetailByParams({ style: "beni-ourain", slug: rug.slug, repository });
+
+  assert.equal(product.gallery[0].altText, "Beni Ourain Pile Rug Brown & Lilac Chevrons, full view, photo 1 of 2");
+  assert.equal(product.ogImageAlt, "Beni Ourain Pile Rug Brown & Lilac Chevrons, full view");
 });
 
 test("duplicate copy is flagged on every product that shares it, ignoring case and punctuation", () => {

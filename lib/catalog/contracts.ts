@@ -92,6 +92,8 @@ type ProductDetailPageViewModelBase = {
     role: string;
     isDerived?: boolean;
   }>;
+  /** Alt for gallery[0] as the og:image, which shows it alone, so with no gallery position. */
+  ogImageAlt: string;
   palette: Array<{
     hex: string;
     label: string;
