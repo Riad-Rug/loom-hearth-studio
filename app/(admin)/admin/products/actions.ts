@@ -9,11 +9,12 @@ import type { AdminProductActionState } from "@/lib/admin/product-actions-shared
 import { getProductRoutePath } from "@/lib/catalog/helpers";
 import { normalizeSlug, parseProductFormData, validateProductMutationInput } from "@/lib/catalog/product-validation";
 import { requireAdminRoleForMutation } from "@/lib/auth/service";
-import type { ProductMutationInput } from "@/lib/catalog/product-validation";
+import type { ProductMutationContext, ProductMutationInput } from "@/lib/catalog/product-validation";
 import {
   createProductRepository,
   isUniqueConstraintError,
   ProductEditConflictError,
+  type ProductRepository,
   type ProductStockState,
 } from "@/lib/db/repositories/product-repository";
 import { isOneOfOne, mergeStockEdit, type ProductEditBase } from "@/lib/order/inventory-hold";
@@ -43,7 +44,8 @@ export async function createAdminProductAction(
     };
   }
 
-  const validation = validateProductMutationInput(parsed);
+  const repository = createProductRepository();
+  const validation = validateProductMutationInput(parsed, await loadSeoDescriptionContext(repository));
 
   if (validation.status === "invalid") {
     return {
@@ -52,8 +54,6 @@ export async function createAdminProductAction(
       fieldErrors: validation.fieldErrors,
     };
   }
-
-  const repository = createProductRepository();
 
   try {
     if (await repository.slugExists({ slug: validation.value.slug })) {
@@ -149,7 +149,10 @@ export async function updateAdminProductAction(
           value: { ...parsed.value, inventory: savedStock.inventory, variants: savedStock.variants },
         }
       : parsed,
-    { committedUnits: stored.heldUnits + stored.soldUnits },
+    {
+      committedUnits: stored.heldUnits + stored.soldUnits,
+      ...(await loadSeoDescriptionContext(repository, productId)),
+    },
   );
 
   if (validation.status === "invalid" || parsed.status !== "parsed") {
@@ -420,6 +423,22 @@ function describeOrderOwnedChange(
   }
 
   return null;
+}
+
+// Every product counts, drafts and archived pieces too, since either can go live
+// without its SEO description being touched again.
+async function loadSeoDescriptionContext(
+  repository: ProductRepository,
+  productId?: string,
+): Promise<Pick<ProductMutationContext, "otherSeoDescriptions" | "storedSeoDescription">> {
+  const products = await repository.listForAdmin();
+
+  return {
+    otherSeoDescriptions: products
+      .filter((product) => product.id !== productId)
+      .map((product) => product.seoDescription),
+    storedSeoDescription: products.find((product) => product.id === productId)?.seoDescription,
+  };
 }
 
 function isHeldByOrder(stored: ProductStockState | null) {
