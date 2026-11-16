@@ -2,13 +2,28 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
+import type { BlogPostRecord } from "@/features/blog/blog-post-data";
 import { BlogProductRail } from "@/features/blog/blog-product-rail";
 import { BlogPostPageView } from "@/features/blog/blog-post-page-view";
 import { BlogSignupBlock } from "@/features/blog/blog-signup-block";
 import { getDefaultBlogAuthor } from "@/lib/blog/author";
 import { getBlogPostByParams, getBlogPosts } from "@/lib/blog/posts";
+import { getCloudinaryConfig } from "@/lib/cloudinary/config";
+import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
-import { articleSchema, breadcrumbSchema } from "@/lib/seo/schema";
+import { articleSchema, breadcrumbSchema, toSchemaDate, toSchemaDateTime } from "@/lib/seo/schema";
+
+const relatedPostLimit = 2;
+
+/** The link-preview size Facebook and LinkedIn recommend. */
+const ogImageSize = { width: 1200, height: 630 };
+
+/**
+ * A stored URL whose first segment after /upload/ is already a transformation
+ * ("w_800/v123/…"). A crop chained in front of it would not decide the output
+ * size, so such a URL is published as stored.
+ */
+const cloudinaryTransformationPrefix = /^[a-z]{1,3}_[^/]*\//u;
 
 type BlogPostPageProps = {
   params: Promise<{
@@ -33,7 +48,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   // Related links must come from the same published set as the post itself, never from
   // the placeholder data in features/blog/blog-post-data.ts, which links to paths that
   // do not exist in production.
-  const relatedPosts = posts.filter((candidate) => candidate.id !== post.id).slice(0, 2);
+  const relatedPosts = selectRelatedPosts(post, posts);
   const author = await getDefaultBlogAuthor();
 
   return (
@@ -45,6 +60,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             description: post.excerpt,
             path: `/blog/${post.categorySlug}/${post.slug}`,
             publishedAt: post.publishedAt,
+            modifiedAt: post.updatedAt,
             imageUrl: post.images[0]?.src || null,
             author: author.name ? { name: author.name, photoUrl: author.photoUrl } : null,
           }),
@@ -86,14 +102,77 @@ export async function generateMetadata({
   }
 
   const heroImage = post.images[0];
-
-  return buildManagedMetadata({
+  const ogImage = heroImage?.src ? toOpenGraphImage(heroImage.src) : null;
+  const author = await getDefaultBlogAuthor();
+  const metadata = await buildManagedMetadata({
     entityType: "blog_post",
     entityKey: post.id,
     title: post.seoTitle || post.title,
     description: post.seoDescription || post.excerpt,
     path: `/blog/${post.categorySlug}/${post.slug}`,
     type: "article",
-    ...(heroImage?.src ? { ogImageUrl: heroImage.src, ogImageAlt: heroImage.alt || post.title } : {}),
+    ...(heroImage?.src
+      ? {
+          ogImageUrl: ogImage?.url ?? heroImage.src,
+          ogImageAlt: heroImage.alt || post.title,
+          ogImageWidth: ogImage?.width,
+          ogImageHeight: ogImage?.height,
+        }
+      : {}),
   });
+  const publishedTime = toSchemaDate(post.publishedAt);
+  const modifiedTime = toSchemaDateTime(post.updatedAt);
+
+  return {
+    ...metadata,
+    openGraph: {
+      ...metadata.openGraph,
+      type: "article",
+      ...(publishedTime ? { publishedTime } : {}),
+      ...(modifiedTime ? { modifiedTime } : {}),
+      authors: [author.name],
+    },
+  };
+}
+
+function selectRelatedPosts(post: BlogPostRecord, posts: BlogPostRecord[]) {
+  const sameCategory = (candidate: BlogPostRecord) => (candidate.categorySlug === post.categorySlug ? 1 : 0);
+  const publishedDay = (candidate: BlogPostRecord) => toSchemaDate(candidate.publishedAt) ?? "";
+
+  return posts
+    .filter((candidate) => candidate.id !== post.id)
+    .sort(
+      (left, right) =>
+        sameCategory(right) - sameCategory(left) ||
+        compareText(publishedDay(right), publishedDay(left)) ||
+        compareText(left.id, right.id),
+    )
+    .slice(0, relatedPostLimit);
+}
+
+function compareText(left: string, right: string) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+/**
+ * Blog photos are stored as full delivery URLs. One on the site's own Cloudinary
+ * account is re-delivered through the builder the product pages use, cropped to
+ * the link-preview size so the declared width and height are true, and as JPEG
+ * because a hero can be a multi-megabyte PNG. Anything else is published as
+ * stored, with no size.
+ */
+function toOpenGraphImage(src: string) {
+  const uploadPrefix = `${getCloudinaryConfig().baseDeliveryUrl}/`;
+  const assetPath = src.startsWith(uploadPrefix) ? src.slice(uploadPrefix.length) : "";
+
+  if (!assetPath || cloudinaryTransformationPrefix.test(assetPath)) {
+    return null;
+  }
+
+  return {
+    url: buildCloudinaryUrl(assetPath, {
+      transformation: { c: "fill", g: "auto", w: ogImageSize.width, h: ogImageSize.height, q: "auto", f: "jpg" },
+    }),
+    ...ogImageSize,
+  };
 }
