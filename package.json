@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run prisma:migrate:deploy && next build",
+    "build": "npm run check:images && npm run prisma:migrate:deploy && next build",
     "build:release": "bash ./scripts/prisma-migrate-deploy.sh && npm run catalog:bootstrap && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "check:seo": "node scripts/check-seo-product-lifecycle.mjs",
+    "images": "node scripts/build-images.mjs",
+    "check:images": "node scripts/check-image-budget.mjs",
     "admin:promote-user": "node scripts/promote-admin-user.mjs",
     "catalog:import-launch-local": "node scripts/import-launch-products.mjs",
     "homepage:seed-featured": "node scripts/seed-homepage-featured-products.mjs",
@@ -20,7 +22,8 @@
     "postinstall": "prisma generate",
     "catalog:bootstrap": "node scripts/bootstrap-launch-catalog.mjs",
     "catalog:backfill-rug-style-labels": "node scripts/backfill-rug-style-labels.mjs",
-    "db:sync-from-prod": "bash ./scripts/sync-local-db-from-neon.sh"
+    "db:sync-from-prod": "bash ./scripts/sync-local-db-from-neon.sh",
+    "test:images": "node --test scripts/check-image-budget.test.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
@@ -51,6 +54,7 @@
     "eslint-config-next": "^15.2.0",
     "playwright": "^1.61.0",
     "prisma": "^6.16.2",
+    "sharp": "^0.34.5",
     "typescript": "^5.7.2"
   },
   "optionalDependencies": {
