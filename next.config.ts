@@ -101,10 +101,7 @@ const permissionsPolicy = [
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: allowedImageHostnames.map((hostname) => ({
-      protocol: "https" as const,
-      hostname,
-    })),
+    unoptimized: true,
   },
   typedRoutes: true,
   async headers() {
