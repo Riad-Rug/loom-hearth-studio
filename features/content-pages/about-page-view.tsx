@@ -109,7 +109,7 @@ export function AboutPageView() {
             fill
             priority
             sizes="(max-width: 1100px) 100vw, 40vw"
-            src="/about/founder-portrait.png"
+            src="/about/founder-portrait-hero.webp"
           />
         </div>
       </section>

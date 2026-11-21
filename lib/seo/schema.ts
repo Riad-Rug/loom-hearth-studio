@@ -28,7 +28,7 @@ export function personSchema() {
     name: DEFAULT_BLOG_AUTHOR.name,
     jobTitle: "Founder",
     url: absoluteUrl("/about"),
-    image: absoluteUrl("/about/founder-portrait.png"),
+    image: absoluteUrl("/about/founder-portrait-hero.webp"),
     description: aboutHero.body,
     worksFor: { "@id": `${absoluteUrl("/")}#organization` },
   };

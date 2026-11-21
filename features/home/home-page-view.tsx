@@ -345,7 +345,7 @@ export function HomePageView({
             className={styles.storyImage}
             fill
             sizes="(max-width: 980px) 100vw, 38vw"
-            src="/home/marrakech-bazaar-entrance.png"
+            src="/home/marrakech-bazaar-entrance-hero.webp"
           />
           <div className={styles.storyActions}>
             <Link className={styles.primaryAction} href={content.brandStory.href as Route}>
