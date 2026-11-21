@@ -139,6 +139,7 @@ If PostgreSQL is empty, run the appropriate Prisma migration workflow before tes
 Drop original PNG or JPEG files into `assets-src/<folder>/`.
 Run `npm run images` to create the WebP variants under `public/`.
 Commit the generated files in `public/` with your code changes.
+Generated filenames carry a content hash, and `lib/media/static-images.generated.json` is generated with them.
 
 ## Known Gaps
 

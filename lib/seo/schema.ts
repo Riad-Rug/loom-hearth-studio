@@ -6,6 +6,7 @@ import { DEFAULT_BLOG_AUTHOR } from "@/features/blog/blog-author-data";
 import { aboutHero } from "@/features/content-pages/content-pages-data";
 import { calculateShippingUsd } from "@/lib/order/shipping";
 import { storePromise } from "@/lib/order/store-promise";
+import { staticImageSrc } from "@/lib/media/static-image";
 
 /**
  * Canonical @id for the founder Person node. The node itself is only emitted on
@@ -28,7 +29,7 @@ export function personSchema() {
     name: DEFAULT_BLOG_AUTHOR.name,
     jobTitle: "Founder",
     url: absoluteUrl("/about"),
-    image: absoluteUrl("/about/founder-portrait-hero.webp"),
+    image: absoluteUrl(staticImageSrc("about/founder-portrait", "hero")),
     description: aboutHero.body,
     worksFor: { "@id": `${absoluteUrl("/")}#organization` },
   };

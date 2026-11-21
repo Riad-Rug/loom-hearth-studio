@@ -107,6 +107,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/:path*.:hash([a-f0-9]{8}).webp",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
         source: "/(.*)",
         has: [{ type: "host", value: ".*\\.vercel\\.app" }],
         headers: [{ key: "X-Robots-Tag", value: "noindex" }],

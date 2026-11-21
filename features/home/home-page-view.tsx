@@ -9,6 +9,7 @@ import type { HomePageContent } from "@/features/home/home-page-data";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import { allowedImageHostnames } from "@/lib/media/allowed-image-hosts";
+import { staticImageSrc } from "@/lib/media/static-image";
 import type { ProductCategory } from "@/types/domain";
 
 import { InventoryProductPager } from "./inventory-product-pager";
@@ -345,7 +346,7 @@ export function HomePageView({
             className={styles.storyImage}
             fill
             sizes="(max-width: 980px) 100vw, 38vw"
-            src="/home/marrakech-bazaar-entrance-hero.webp"
+            src={staticImageSrc("home/marrakech-bazaar-entrance", "hero")}
           />
           <div className={styles.storyActions}>
             <Link className={styles.primaryAction} href={content.brandStory.href as Route}>

@@ -1,0 +1,127 @@
+{
+  "about/founder-portrait": {
+    "thumb": "/about/founder-portrait-thumb.e6e229fd.webp",
+    "card": "/about/founder-portrait-card.21a917c7.webp",
+    "hero": "/about/founder-portrait-hero.cdae18ce.webp"
+  },
+  "about/marrakech-bazaar-hero": {
+    "thumb": "/about/marrakech-bazaar-hero-thumb.d2dbbc12.webp",
+    "card": "/about/marrakech-bazaar-hero-card.8048b248.webp",
+    "hero": "/about/marrakech-bazaar-hero-hero.56156007.webp"
+  },
+  "about/rug-construction-detail": {
+    "thumb": "/about/rug-construction-detail-thumb.250c8c4e.webp",
+    "card": "/about/rug-construction-detail-card.3dec3d30.webp",
+    "hero": "/about/rug-construction-detail-hero.ceb0f799.webp"
+  },
+  "about/sourcing-hands": {
+    "thumb": "/about/sourcing-hands-thumb.994cb9d0.webp",
+    "card": "/about/sourcing-hands-card.a3affac7.webp",
+    "hero": "/about/sourcing-hands-hero.bb8ef4a0.webp"
+  },
+  "hero/verification-strip-v1": {
+    "thumb": "/hero/verification-strip-v1-thumb.f71beb80.webp",
+    "card": "/hero/verification-strip-v1-card.5846eef1.webp",
+    "hero": "/hero/verification-strip-v1-hero.d4c388d0.webp"
+  },
+  "hero/verification-topdown-v1": {
+    "thumb": "/hero/verification-topdown-v1-thumb.5fd2b529.webp",
+    "card": "/hero/verification-topdown-v1-card.22fb3424.webp",
+    "hero": "/hero/verification-topdown-v1-hero.18bf402f.webp"
+  },
+  "home/marrakech-bazaar-entrance": {
+    "thumb": "/home/marrakech-bazaar-entrance-thumb.1492a435.webp",
+    "card": "/home/marrakech-bazaar-entrance-card.ec9674a9.webp",
+    "hero": "/home/marrakech-bazaar-entrance-hero.0ecd0d04.webp"
+  },
+  "homepage/category-poufs-pillows-editorial-v1": {
+    "thumb": "/homepage/category-poufs-pillows-editorial-v1-thumb.548c71a6.webp",
+    "card": "/homepage/category-poufs-pillows-editorial-v1-card.19516fd0.webp",
+    "hero": "/homepage/category-poufs-pillows-editorial-v1-hero.7ecdbe6b.webp"
+  },
+  "homepage/category-poufs-pillows-editorial-v2": {
+    "thumb": "/homepage/category-poufs-pillows-editorial-v2-thumb.8ecf8bfb.webp",
+    "card": "/homepage/category-poufs-pillows-editorial-v2-card.d85de650.webp",
+    "hero": "/homepage/category-poufs-pillows-editorial-v2-hero.5cb22fad.webp"
+  },
+  "homepage/category-rugs-editorial-v1": {
+    "thumb": "/homepage/category-rugs-editorial-v1-thumb.ade9a0a2.webp",
+    "card": "/homepage/category-rugs-editorial-v1-card.6d4d850d.webp",
+    "hero": "/homepage/category-rugs-editorial-v1-hero.ab4393f3.webp"
+  },
+  "homepage/category-rugs-editorial-v2": {
+    "thumb": "/homepage/category-rugs-editorial-v2-thumb.3a153ae1.webp",
+    "card": "/homepage/category-rugs-editorial-v2-card.8f68f19e.webp",
+    "hero": "/homepage/category-rugs-editorial-v2-hero.77889234.webp"
+  },
+  "homepage/category-vintage-editorial-v1": {
+    "thumb": "/homepage/category-vintage-editorial-v1-thumb.e238afd7.webp",
+    "card": "/homepage/category-vintage-editorial-v1-card.98df338f.webp",
+    "hero": "/homepage/category-vintage-editorial-v1-hero.4ad7a49c.webp"
+  },
+  "homepage/category-vintage-editorial-v2": {
+    "thumb": "/homepage/category-vintage-editorial-v2-thumb.74ee4309.webp",
+    "card": "/homepage/category-vintage-editorial-v2-card.fbe77c18.webp",
+    "hero": "/homepage/category-vintage-editorial-v2-hero.eedd1f0c.webp"
+  },
+  "homepage/hero-bazaar-editorial-v1": {
+    "thumb": "/homepage/hero-bazaar-editorial-v1-thumb.f6a25675.webp",
+    "card": "/homepage/hero-bazaar-editorial-v1-card.bae333e7.webp",
+    "hero": "/homepage/hero-bazaar-editorial-v1-hero.48aa06ec.webp"
+  },
+  "homepage/hero-bazaar-editorial-v2": {
+    "thumb": "/homepage/hero-bazaar-editorial-v2-thumb.a975eeeb.webp",
+    "card": "/homepage/hero-bazaar-editorial-v2-card.fc84668e.webp",
+    "hero": "/homepage/hero-bazaar-editorial-v2-hero.341db654.webp"
+  },
+  "homepage/sourcing-bazaar-process-v1": {
+    "thumb": "/homepage/sourcing-bazaar-process-v1-thumb.9110b11e.webp",
+    "card": "/homepage/sourcing-bazaar-process-v1-card.c3c9ed82.webp",
+    "hero": "/homepage/sourcing-bazaar-process-v1-hero.e7890222.webp"
+  },
+  "homepage/sourcing-bazaar-process-v2": {
+    "thumb": "/homepage/sourcing-bazaar-process-v2-thumb.3170e2d9.webp",
+    "card": "/homepage/sourcing-bazaar-process-v2-card.72ddc652.webp",
+    "hero": "/homepage/sourcing-bazaar-process-v2-hero.4650cb4e.webp"
+  },
+  "lookbook/atlas-bedroom": {
+    "thumb": "/lookbook/atlas-bedroom-thumb.b508cd7d.webp",
+    "card": "/lookbook/atlas-bedroom-card.6553e4a3.webp",
+    "hero": "/lookbook/atlas-bedroom-hero.ddcb246d.webp"
+  },
+  "lookbook/atlas-bedroom-v2": {
+    "thumb": "/lookbook/atlas-bedroom-v2-thumb.7737453f.webp",
+    "card": "/lookbook/atlas-bedroom-v2-card.b5b79ace.webp",
+    "hero": "/lookbook/atlas-bedroom-v2-hero.2af50a0a.webp"
+  },
+  "lookbook/beni-ourain-living-room-v2": {
+    "thumb": "/lookbook/beni-ourain-living-room-v2-thumb.2da258f6.webp",
+    "card": "/lookbook/beni-ourain-living-room-v2-card.792bb5d8.webp",
+    "hero": "/lookbook/beni-ourain-living-room-v2-hero.3fbcd706.webp"
+  },
+  "lookbook/clay-pouf-sitting-room": {
+    "thumb": "/lookbook/clay-pouf-sitting-room-thumb.9945660d.webp",
+    "card": "/lookbook/clay-pouf-sitting-room-card.c2cac932.webp",
+    "hero": "/lookbook/clay-pouf-sitting-room-hero.5bc608ba.webp"
+  },
+  "lookbook/hearth-pillow-reading-corner": {
+    "thumb": "/lookbook/hearth-pillow-reading-corner-thumb.adf4b032.webp",
+    "card": "/lookbook/hearth-pillow-reading-corner-card.ee5b7cdb.webp",
+    "hero": "/lookbook/hearth-pillow-reading-corner-hero.09f40f8f.webp"
+  },
+  "lookbook/layered-sitting-room-v2": {
+    "thumb": "/lookbook/layered-sitting-room-v2-thumb.2171c586.webp",
+    "card": "/lookbook/layered-sitting-room-v2-card.166fe7b8.webp",
+    "hero": "/lookbook/layered-sitting-room-v2-hero.a8821288.webp"
+  },
+  "lookbook/terracotta-salon": {
+    "thumb": "/lookbook/terracotta-salon-thumb.a6101788.webp",
+    "card": "/lookbook/terracotta-salon-card.50f4d6dd.webp",
+    "hero": "/lookbook/terracotta-salon-hero.b182a7f2.webp"
+  },
+  "lookbook/terracotta-salon-v2": {
+    "thumb": "/lookbook/terracotta-salon-v2-thumb.ad99953c.webp",
+    "card": "/lookbook/terracotta-salon-v2-card.45df32cc.webp",
+    "hero": "/lookbook/terracotta-salon-v2-hero.d9b54c69.webp"
+  }
+}
