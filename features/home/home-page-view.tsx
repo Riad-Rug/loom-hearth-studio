@@ -6,6 +6,7 @@ import type { CSSProperties } from "react";
 import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import type { HomePageContent } from "@/features/home/home-page-data";
+import { withDefaultDelivery } from "@/lib/cloudinary/url";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import { allowedImageHostnames } from "@/lib/media/allowed-image-hosts";
@@ -387,9 +388,11 @@ function getRenderableImage(src: string) {
 
   try {
     const parsed = new URL(src);
-    return parsed.protocol === "https:" && allowedImageHostnames.includes(parsed.hostname as (typeof allowedImageHostnames)[number])
-      ? src
-      : "";
+    if (parsed.protocol !== "https:" || !allowedImageHostnames.includes(parsed.hostname as (typeof allowedImageHostnames)[number])) {
+      return "";
+    }
+
+    return parsed.hostname === "res.cloudinary.com" ? withDefaultDelivery(src) : src;
   } catch {
     return "";
   }
