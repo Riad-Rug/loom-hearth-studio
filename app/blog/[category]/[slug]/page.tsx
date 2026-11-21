@@ -9,7 +9,7 @@ import { BlogSignupBlock } from "@/features/blog/blog-signup-block";
 import { getDefaultBlogAuthor } from "@/lib/blog/author";
 import { getBlogPostByParams, getBlogPosts } from "@/lib/blog/posts";
 import { getCloudinaryConfig } from "@/lib/cloudinary/config";
-import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
+import { buildCloudinaryUrl, cloudinaryTransformationPrefix } from "@/lib/cloudinary/url";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { articleSchema, breadcrumbSchema, toSchemaDate, toSchemaDateTime } from "@/lib/seo/schema";
 
@@ -23,7 +23,6 @@ const ogImageSize = { width: 1200, height: 630 };
  * ("w_800/v123/…"). A crop chained in front of it would not decide the output
  * size, so such a URL is published as stored.
  */
-const cloudinaryTransformationPrefix = /^[a-z]{1,3}_[^/]*\//u;
 
 type BlogPostPageProps = {
   params: Promise<{

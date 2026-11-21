@@ -1,5 +1,8 @@
 import { getCloudinaryConfig } from "@/lib/cloudinary/config";
 import type { CloudinaryDeliveryOptions, CloudinaryTransformation } from "@/lib/cloudinary/types";
+import { cloudinaryTransformationPrefix, withDefaultDelivery } from "@/lib/cloudinary/default-delivery.mjs";
+
+export { cloudinaryTransformationPrefix, withDefaultDelivery };
 
 function serializeTransformation(transformation: CloudinaryTransformation) {
   return Object.entries(transformation)

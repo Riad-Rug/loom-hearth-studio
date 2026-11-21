@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { withDefaultDelivery } from "@/lib/cloudinary/url";
 import { Fragment } from "react";
 import type { ReactNode } from "react";
 
@@ -147,7 +148,7 @@ function renderImageBlock(alt: string, url: string, key: number) {
             className={styles.image}
             fill
             sizes="(max-width: 1100px) 100vw, 48rem"
-            src={url}
+            src={withDefaultDelivery(url)}
           />
         </div>
       ) : (

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { withDefaultDelivery } from "@/lib/cloudinary/url";
 import type { Route } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -64,7 +65,7 @@ export function BlogPostPageView({
                 fill
                 priority
                 sizes="(max-width: 1100px) 100vw, 80vw"
-                src={post.images[0].src}
+                src={withDefaultDelivery(post.images[0].src)}
               />
             ) : (
               <PlaceholderMedia

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { withDefaultDelivery } from "@/lib/cloudinary/url";
 
 import type { BlogAuthor } from "@/types/domain";
 
@@ -20,7 +21,7 @@ export function BlogAuthorBlock({ author }: BlogAuthorBlockProps) {
     <section className={styles.authorBlock} aria-label="Article author">
       {author.photoUrl ? (
         <div className={styles.authorPhotoFrame}>
-          <Image alt={author.name} fill sizes="80px" src={author.photoUrl} />
+          <Image alt={author.name} fill sizes="80px" src={withDefaultDelivery(author.photoUrl)} />
         </div>
       ) : (
         <div className={styles.authorFallback} aria-hidden="true">
