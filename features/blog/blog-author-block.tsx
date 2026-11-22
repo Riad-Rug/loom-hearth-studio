@@ -21,7 +21,7 @@ export function BlogAuthorBlock({ author }: BlogAuthorBlockProps) {
     <section className={styles.authorBlock} aria-label="Article author">
       {author.photoUrl ? (
         <div className={styles.authorPhotoFrame}>
-          <Image alt={author.name} fill sizes="80px" src={withDefaultDelivery(author.photoUrl)} />
+          <Image alt={author.name} fill sizes="80px" src={withDefaultDelivery(author.photoUrl, 400)} />
         </div>
       ) : (
         <div className={styles.authorFallback} aria-hidden="true">

@@ -95,7 +95,7 @@ export function BlogIndexPageView({ posts }: BlogIndexPageViewProps) {
                   className={styles.postImage}
                   fill
                   sizes="(max-width: 1100px) 100vw, 33vw"
-                  src={withDefaultDelivery(post.images[0]?.src ?? "")}
+                  src={withDefaultDelivery(post.images[0]?.src ?? "", 800)}
                 />
               ) : (
                 <PlaceholderMedia
