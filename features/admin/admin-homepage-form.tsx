@@ -31,6 +31,8 @@ import type {
   CloudinaryBrowserUploadResult,
   CloudinarySignedUploadPayload,
 } from "@/lib/cloudinary/types";
+import { prepareImageForUpload } from "@/lib/cloudinary/resize-for-upload";
+import { uploadSuccessMessage } from "@/lib/cloudinary/use-signed-upload";
 
 import styles from "./admin.module.css";
 
@@ -116,6 +118,7 @@ export function AdminHomepageForm(props: {
     setUploadStates((current) => ({ ...current, [path]: { status: "uploading", message: `Uploading ${file.name}...` } }));
 
     try {
+      const uploadFile = await prepareImageForUpload(file);
       const signatureResponse = await fetch("/api/admin/cloudinary/upload-signature", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -131,7 +134,7 @@ export function AdminHomepageForm(props: {
       }
 
       const uploadFormData = new FormData();
-      uploadFormData.append("file", file);
+      uploadFormData.append("file", uploadFile);
       uploadFormData.append("api_key", signatureResult.payload.apiKey);
       uploadFormData.append("timestamp", String(signatureResult.payload.timestamp));
       uploadFormData.append("folder", signatureResult.payload.folder);
@@ -152,11 +155,11 @@ export function AdminHomepageForm(props: {
           publicId: uploadResult.public_id,
           width: uploadResult.width ?? null,
           height: uploadResult.height ?? null,
-          alt: currentImage.alt || createDefaultAltText(file.name),
+          alt: currentImage.alt || createDefaultAltText(uploadFile.name),
         });
-      }, "Image preview updated locally.");
+      }, `Image preview updated locally${uploadFile.name !== file.name ? ` (${uploadFile.name})` : ""}.`);
 
-      setUploadStates((current) => ({ ...current, [path]: { status: "success", message: `${file.name} uploaded to Cloudinary and preview updated.` } }));
+      setUploadStates((current) => ({ ...current, [path]: { status: "success", message: `${uploadSuccessMessage(file, uploadFile).replace(/ uploaded\.$/u, "")} uploaded to Cloudinary and preview updated.` } }));
       setSelectedField(`${path}.alt`);
     } catch (error) {
       setUploadStates((current) => ({ ...current, [path]: { status: "error", message: error instanceof Error ? error.message : "Image upload failed." } }));

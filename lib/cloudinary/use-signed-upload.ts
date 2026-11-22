@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
+import { prepareImageForUpload } from "@/lib/cloudinary/resize-for-upload";
 import type {
   CloudinaryBrowserUploadResult,
   CloudinarySignedUploadPayload,
@@ -53,6 +54,7 @@ export function useCloudinarySignedUpload() {
     });
 
     try {
+      const uploadFile = await prepareImageForUpload(file);
       const signatureResponse = await fetch("/api/admin/cloudinary/upload-signature", {
         method: "POST",
         headers: {
@@ -82,7 +84,7 @@ export function useCloudinarySignedUpload() {
       }
 
       const uploadFormData = new FormData();
-      uploadFormData.append("file", file);
+      uploadFormData.append("file", uploadFile);
       uploadFormData.append("api_key", signatureResult.payload.apiKey);
       uploadFormData.append("timestamp", String(signatureResult.payload.timestamp));
       uploadFormData.append("folder", signatureResult.payload.folder);
@@ -106,14 +108,14 @@ export function useCloudinarySignedUpload() {
 
       setState({
         status: "success",
-        message: `${file.name} uploaded.`,
+        message: uploadSuccessMessage(file, uploadFile),
         slotId,
       });
 
       return {
         publicId: uploadResult.public_id,
         url,
-        fileName: file.name,
+        fileName: uploadFile.name,
         width: uploadResult.width,
         height: uploadResult.height,
       };
@@ -131,6 +133,18 @@ export function useCloudinarySignedUpload() {
   }
 
   return { state, upload };
+}
+
+export function uploadSuccessMessage(originalFile: File, uploadedFile: File) {
+  const uploadedName = uploadedFile.name;
+  if (uploadedFile === originalFile || uploadedFile.size >= originalFile.size) {
+    return `${uploadedName} uploaded.`;
+  }
+  return `${uploadedName} uploaded (${formatFileSize(originalFile.size)} to ${formatFileSize(uploadedFile.size)}).`;
+}
+
+function formatFileSize(size: number) {
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 async function readUploadErrorMessage(response: Response) {
