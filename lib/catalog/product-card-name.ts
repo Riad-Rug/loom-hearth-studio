@@ -75,18 +75,90 @@ function createCondensedRugTitle(input: ProductCardNameInput, title: string) {
     .trim();
 }
 
+export type ProductTitleParts = {
+  /** The title without its size: text before and after the dimension run. */
+  name: string;
+  /** The dimension run as written, with any "(…)" or "/ …" restatement, e.g. `6'5" × 4'2"`. */
+  size?: string;
+  /** Each measure of the first run, e.g. `['24"', '24"', '14"']`. */
+  measures: string[];
+  /** The third measure with its unit, taking the unit the first two share when it has none. */
+  height?: string;
+};
+
+const titleNumber = String.raw`\d{1,3}(?:\.\d+)?`;
+const footMark = String.raw`['’′]`;
+const inchMark = String.raw`["”″]`;
+const inchWord = String.raw`(?:inches|inch|in)(?![a-z])`;
+const footWord = String.raw`(?:feet|ft)(?![a-z])`;
+const metricWord = String.raw`(?:cm|mm|m)(?![a-z])`;
+const feetAndInches = String.raw`${titleNumber}\s*(?:${footMark}|${footWord})(?:\s*\d{1,2}(?:\.\d+)?\s*(?:${inchMark}|${inchWord})?)?`;
+const plainMeasure = String.raw`${titleNumber}(?:\s*(?:${inchWord}|${metricWord})|${inchMark})?`;
+const measure = String.raw`(?:${feetAndInches}|${plainMeasure})`;
+const measureSeparator = String.raw`\s*(?:[xX×]|by)\s*`;
+const dimensionRun = String.raw`${measure}(?:${measureSeparator}${measure}){1,2}`;
+const runPrefix = String.raw`(?:(?:[Aa]pprox(?:\.|imately)?|Ø)\s*)?`;
+const titleSizePattern = new RegExp(
+  String.raw`(?<![\w.'’′])(?<size>${runPrefix}(?<run>${dimensionRun})(?:\s*\/\s*${runPrefix}${dimensionRun}|\s*\(\s*${runPrefix}${dimensionRun}\s*\))*)(?!\.?\d)`,
+  "u",
+);
+const measureSeparatorPattern = new RegExp(measureSeparator, "u");
+const measureSuffixPattern = /^\d{1,3}(?:\.\d+)?(\s*[^\d\s].*)?$/u;
+
+/**
+ * Splits a product title into its name and its size, so the PDP can show the
+ * size on its own line and cards can drop it. Nothing is lost: text after the
+ * size ("with Diamond Motifs", ", Rust") stays in the name.
+ */
+export function parseProductTitle(title: string): ProductTitleParts {
+  const normalizedTitle = normalizeDimensionSeparators(title).replace(/\s+/gu, " ").trim();
+  const match = titleSizePattern.exec(normalizedTitle);
+  const size = match?.groups?.size;
+  const run = match?.groups?.run;
+
+  if (!match || !size || !run) {
+    return { name: normalizedTitle, measures: [] };
+  }
+
+  let before = normalizedTitle.slice(0, match.index);
+  let after = normalizedTitle.slice(match.index + size.length);
+
+  if (/\(\s*$/u.test(before) && /^\s*\)/u.test(after)) {
+    before = before.replace(/\(\s*$/u, "");
+    after = after.replace(/^\s*\)/u, "");
+  }
+
+  before = before.replace(/[\s,:;–—-]+$/u, "");
+  after = after.replace(/^\s*[–—-]\s*/u, " ").replace(/^[\s.,;:]+$/u, "").trim();
+
+  const name = /^[,;]/u.test(after) ? `${before}${after}` : [before, after].filter(Boolean).join(" ");
+  const measures = run.split(measureSeparatorPattern);
+
+  return {
+    name: name || normalizedTitle,
+    ...(name ? { size: size.trim() } : {}),
+    measures,
+    ...getTitleHeight(measures),
+  };
+}
+
+function getTitleHeight(measures: string[]): { height?: string } {
+  if (measures.length !== 3) {
+    return {};
+  }
+
+  const [first, second, third] = measures.map((value) => measureSuffixPattern.exec(value)?.[1] ?? "");
+
+  if (third) {
+    return { height: measures[2] };
+  }
+
+  return first && first === second ? { height: `${measures[2]}${first}` } : {};
+}
+
 function removeProductDimensions(title: string) {
-  return title
-    .replace(
-      /\b\d{1,3}(?:\.\d+)?["”]?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?["”]?\b/giu,
-      " ",
-    )
-    .replace(/\b\d{1,2}'\s*\d{0,2}"?\s*(?:[x×-]\s*)?\d{1,2}'\s*\d{0,2}"?(?=\s|$)/gu, " ")
-    .replace(
-      /\b\d{1,3}(?:\.\d+)?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)?\b/giu,
-      " ",
-    )
-    .replace(/\b\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)\b/giu, " ")
+  return parseProductTitle(title)
+    .name.replace(/\b\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)\b/giu, " ")
     .replace(/\s+/gu, " ")
     .trim();
 }

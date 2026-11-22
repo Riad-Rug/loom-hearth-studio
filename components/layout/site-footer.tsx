@@ -2,9 +2,11 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
+import { FooterNewsletter } from "@/components/layout/footer-newsletter";
 import { siteConfig } from "@/config/site";
 import { listUnavailableCategoryHrefs } from "@/lib/catalog/service";
 import { getHomepageContent } from "@/lib/homepage/content";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 
 const socialChannels = [
   {
@@ -90,12 +92,9 @@ export async function SiteFooter() {
             <p className="site-footer__eyebrow">Loom &amp; Hearth</p>
             <p className="site-footer__statement">Handmade Moroccan rugs, poufs, pillows and antiques.</p>
             <p className="site-footer__brand">
-              {content.footer.introBody ||
-                "One of each, sold direct from Casablanca. Every piece is photographed individually and approved in daylight before payment is captured."}
+              {content.footer.introBody}
             </p>
-            {content.footer.introMeta ? (
-              <p className="site-footer__meta">{content.footer.introMeta}</p>
-            ) : null}
+            <p className="site-footer__meta">{`Prices in USD · ${storePromiseCopy.shipping}.`}</p>
             {activeSocialChannels.length > 0 ? (
               <ul className="site-footer__social" aria-label="Follow Loom &amp; Hearth">
                 {activeSocialChannels.map((channel) => (
@@ -151,8 +150,10 @@ export async function SiteFooter() {
             </nav>
           </div>
         </div>
+        <FooterNewsletter />
         <p className="site-footer__legal-line">
-          © {currentYear} Loom &amp; Hearth · Wyoming LLC · Ships from Casablanca, Morocco
+          © {currentYear} Loom &amp; Hearth · Wyoming LLC · Ships from {storePromise.shipsFromCity},{" "}
+          {storePromise.shipsFromCountry}
         </p>
       </Container>
     </footer>

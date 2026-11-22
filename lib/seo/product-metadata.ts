@@ -1,12 +1,22 @@
 import type { ProductDetailPageViewModel } from "@/lib/catalog/contracts";
 import { productNameHasDimensions } from "@/lib/catalog/product-card-name";
+import { storePromise } from "@/lib/order/store-promise";
 import type { ProductCategory } from "@/types/domain";
 
 /**
  * Google truncates well before this, and the admin SEO field is free text, so
- * anything longer is cut at a word boundary rather than shipped whole.
+ * anything longer is cut rather than shipped whole.
  */
 const metaDescriptionMaxLength = 160;
+
+/**
+ * A sentence boundary is only worth stopping at when it keeps most of the copy;
+ * stopping after a 40-character opener throws away more than an ellipsis costs.
+ */
+const sentenceCutMinLength = 100;
+
+/** A full stop, ! or ? before a space, except the stop that closes "approx.", "e.g.", "i.e.", "St." or "No.". */
+const sentenceEndPattern = /(?:(?<!\b(?:[Aa]pprox|[Ee]\.g|[Ii]\.e|St|No))\.|[!?])["'”’)]*(?=\s)/gu;
 
 /**
  * Singular nouns for the fallback sentence. `getCategoryLabel` is the plural,
@@ -23,17 +33,31 @@ const categoryNouns: Record<ProductCategory, string> = {
   decor: "decor piece",
 };
 
-function truncateAtWordBoundary(value: string, maxLength: number) {
+/**
+ * Ends on the last full sentence that fits, so a snippet never stops on
+ * "…Selected for". When no sentence ends late enough, cuts at a word and says so
+ * with an ellipsis.
+ */
+export function truncateMetaDescription(value: string, maxLength = metaDescriptionMaxLength) {
   if (value.length <= maxLength) {
     return value;
   }
 
-  const truncated = value.slice(0, maxLength + 1);
-  const lastSpaceIndex = truncated.lastIndexOf(" ");
-  const candidate =
-    lastSpaceIndex > 0 ? truncated.slice(0, lastSpaceIndex) : value.slice(0, maxLength);
+  const window = value.slice(0, maxLength + 1);
+  const sentenceEnd = [...window.matchAll(sentenceEndPattern)]
+    .map((match) => match.index + match[0].length)
+    .filter((end) => end >= sentenceCutMinLength && end <= maxLength)
+    .at(-1);
 
-  return candidate.replace(/[\s,;:.\-–—]+$/u, "");
+  if (sentenceEnd !== undefined) {
+    return value.slice(0, sentenceEnd);
+  }
+
+  const wordWindow = value.slice(0, maxLength);
+  const lastSpaceIndex = wordWindow.lastIndexOf(" ");
+  const candidate = lastSpaceIndex > 0 ? wordWindow.slice(0, lastSpaceIndex) : value.slice(0, maxLength - 1);
+
+  return `${candidate.replace(/[\s,;:.&\-–—]+$/u, "")}…`;
 }
 
 /**
@@ -47,7 +71,7 @@ export function buildProductMetaDescription(product: ProductDetailPageViewModel)
   const seoDescription = product.seoDescription.replace(/\s+/gu, " ").trim();
 
   if (seoDescription) {
-    return truncateAtWordBoundary(seoDescription, metaDescriptionMaxLength);
+    return truncateMetaDescription(seoDescription);
   }
 
   const productLabel = product.type === "rug" ? "rug" : categoryNouns[product.category];
@@ -63,8 +87,7 @@ export function buildProductMetaDescription(product: ProductDetailPageViewModel)
 
   // Long product names can still overrun the budget, so the generated sentence
   // is held to the same limit as the admin field rather than shipped whole.
-  return truncateAtWordBoundary(
-    `${product.name}: one-of-a-kind Moroccan ${productLabel}${dimensions}, ${product.priceUsdLabel} USD. Exact-piece photos before payment, ships from Morocco to the US, 14-day returns.`,
-    metaDescriptionMaxLength,
+  return truncateMetaDescription(
+    `${product.name}: one-of-a-kind Moroccan ${productLabel}${dimensions}, ${product.priceUsdLabel} USD. Exact-piece photos before payment, ships from Morocco to the US, ${storePromise.returnWindowDays}-day returns.`,
   );
 }

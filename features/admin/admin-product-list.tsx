@@ -14,7 +14,7 @@ import { productCategoryOptions } from "@/lib/catalog/product-validation";
 
 import styles from "./admin.module.css";
 
-const statusOptions = ["all", "active", "draft", "sold", "archived"] as const;
+const statusOptions = ["all", "active", "draft", "reserved", "sold", "archived"] as const;
 const sortOptions = ["updated-desc", "updated-asc", "price-desc", "price-asc"] as const;
 
 export function AdminProductList(props: { items: AdminProductListItem[] }) {
@@ -24,6 +24,12 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
   const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]>("updated-desc");
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState("");
+
+  useEffect(() => {
+    if (!selectedProductIds.length && bulkAction) {
+      setBulkAction("");
+    }
+  }, [bulkAction, selectedProductIds.length]);
 
   if (!props.items.length) {
     return (
@@ -66,12 +72,6 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
   const selectedVisibleProductCount = visibleProductIds.filter((id) => selectedProductIdSet.has(id)).length;
   const allVisibleProductsSelected = visibleItems.length > 0 && selectedVisibleProductCount === visibleItems.length;
 
-  useEffect(() => {
-    if (!selectedProductIds.length && bulkAction) {
-      setBulkAction("");
-    }
-  }, [bulkAction, selectedProductIds.length]);
-
   function toggleProductSelection(productId: string) {
     setSelectedProductIds((currentIds) =>
       currentIds.includes(productId)
@@ -113,6 +113,7 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
             <option value="all">All statuses</option>
             <option value="active">Active</option>
             <option value="draft">Draft</option>
+            <option value="reserved">Reserved</option>
             <option value="sold">Sold</option>
             <option value="archived">Archived</option>
           </select>
@@ -408,6 +409,11 @@ function getStatusBadgeClassName(
 
   if (status === "sold") {
     return `${scopedStyles.statusBadge} ${scopedStyles.statusBadgeSold}`;
+  }
+
+  // Held by an open order: the same amber as an order awaiting approval.
+  if (status === "reserved") {
+    return `${scopedStyles.statusBadge} ${scopedStyles.statusBadgeWarning}`;
   }
 
   return `${scopedStyles.statusBadge} ${scopedStyles.statusBadgeArchived}`;

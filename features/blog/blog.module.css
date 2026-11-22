@@ -492,3 +492,44 @@
     height: 3.25rem;
   }
 }
+
+.productRail,
+.signupBlock {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.productRailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-5);
+}
+
+.productRailLink {
+  justify-self: start;
+  color: var(--color-green);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+.signupBlock {
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 26rem);
+  align-items: end;
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-panel);
+}
+
+.signupBlock p:last-child {
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .signupBlock {
+    grid-template-columns: 1fr;
+    padding: var(--space-5);
+  }
+}

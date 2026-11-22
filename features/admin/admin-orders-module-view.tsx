@@ -521,19 +521,12 @@ export function AdminOrdersModuleView(props: AdminOrdersModuleViewProps) {
         },
       }));
 
-      if (result.order) {
+      if (result.order && result.orderView) {
         const nextPersistedStatus = result.order.status;
+        const orderView = result.orderView;
 
         setItems((current) =>
-          current.map((item) =>
-            item.id === orderId
-              ? {
-                  ...item,
-                  status: nextPersistedStatus,
-                  statusLabel: capitalizeLabel(nextPersistedStatus),
-                }
-              : item,
-          ),
+          current.map((item) => (item.id === orderId ? { ...item, ...orderView } : item)),
         );
         setSelectedStatuses((current) => ({
           ...current,
@@ -1297,16 +1290,19 @@ function formatCount(value: number) {
 }
 
 // Status-specific confirm copy for the transitions that carry real
-// financial weight. "Paid" and "Refunded" get explicit wording because
-// neither one ever calls Stripe — this codebase has no
-// paymentIntents.capture/cancel or refunds.create call anywhere — so the
-// confirm dialog needs to say plainly that this only updates the website.
+// financial weight. Paid never calls Stripe, and Refunded never sends money
+// back, so both say so. Cancelled or Refunded on an order whose card is only
+// authorized does call Stripe: it releases the hold (lib/admin/orders.ts).
 function buildStatusConfirmationCopy(
   item: AdminOrderManagementItem,
   nextStatus: AdminOrderStatusOption,
 ): string {
   if (nextStatus === "paid") {
     return `Change order ${item.orderNumber} from "${capitalizeLabel(item.status)}" to "Paid"?\n\nMarking Paid only updates this website — it does NOT capture the payment in Stripe. Confirm you have already captured this payment in Stripe before continuing.`;
+  }
+
+  if ((nextStatus === "cancelled" || nextStatus === "refunded") && item.paymentStatus === "authorized") {
+    return `Cancel order ${item.orderNumber}?\n\nThis releases the buyer's card hold in Stripe now and puts the piece back on sale. Nothing was captured, so there is nothing to refund, and the order is recorded as Cancelled.`;
   }
 
   if (nextStatus === "refunded") {
@@ -1398,21 +1394,24 @@ type OrderAttention = { level: OrderAttentionLevel; label: string } | null;
 // active status filter. Rules are keyed off the same status/paymentStatus
 // combinations the rest of this codebase already treats as meaningful (e.g.
 // the "pending" + "authorized" pairing used for the reservation panel in
-// lib/account/dashboard.ts) so this stays consistent with what the customer
-// sees and with the authorize-then-capture 7-day window described in the
-// checkout/fulfillment docs.
-const authorizationWindowDays = 7;
+// lib/account/dashboard.ts). The hold expiry is the one the cron and the buyer's
+// account page use (holdExpiresAt, from lib/order/approval-deadline.ts).
 const photosPromiseDays = 2;
-const captureUrgentThresholdDays = 5;
+const captureUrgentThresholdDays = 2;
 
 function resolveOrderAttention(item: AdminOrderManagementItem): OrderAttention {
   const ageDays = Math.floor((Date.now() - new Date(item.placedAt).getTime()) / 86_400_000);
+  const holdDaysLeft = (new Date(item.holdExpiresAt).getTime() - Date.now()) / 86_400_000;
+
+  if (item.inventoryConflict) {
+    return { level: "urgent", label: "Stock conflict — refund or resolve" };
+  }
 
   if (item.status === "pending" && item.paymentStatus === "authorized") {
-    if (ageDays >= captureUrgentThresholdDays) {
+    if (holdDaysLeft <= captureUrgentThresholdDays) {
       return {
         level: "urgent",
-        label: `Auth expires in ~${Math.max(authorizationWindowDays - ageDays, 0)}d — capture or release`,
+        label: `Auth expires in ~${Math.max(Math.ceil(holdDaysLeft), 0)}d — capture or release`,
       };
     }
 

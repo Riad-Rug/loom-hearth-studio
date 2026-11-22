@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { withDefaultDelivery } from "@/lib/cloudinary/url";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -55,7 +56,7 @@ export function BlogIndexPageView({ posts }: BlogIndexPageViewProps) {
                 fill
                 priority
                 sizes="(max-width: 1100px) 100vw, 52vw"
-                src={featuredPost.images[0]?.src ?? ""}
+                src={withDefaultDelivery(featuredPost.images[0]?.src ?? "")}
               />
             ) : (
               <PlaceholderMedia
@@ -94,7 +95,7 @@ export function BlogIndexPageView({ posts }: BlogIndexPageViewProps) {
                   className={styles.postImage}
                   fill
                   sizes="(max-width: 1100px) 100vw, 33vw"
-                  src={post.images[0]?.src ?? ""}
+                  src={withDefaultDelivery(post.images[0]?.src ?? "", 800)}
                 />
               ) : (
                 <PlaceholderMedia

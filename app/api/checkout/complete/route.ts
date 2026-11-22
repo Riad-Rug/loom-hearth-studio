@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
+import type { CompleteOrderResponse } from "@/lib/checkout/complete-order-response";
 import { persistConfirmedStripePaymentIntentOrder } from "@/lib/order/service";
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<CompleteOrderResponse>> {
   const body = (await request.json()) as { paymentIntentId?: string };
 
   if (typeof body.paymentIntentId !== "string" || !body.paymentIntentId.startsWith("pi_")) {
@@ -15,6 +16,36 @@ export async function POST(request: Request) {
   const result = await persistConfirmedStripePaymentIntentOrder({
     paymentIntentId: body.paymentIntentId,
   });
+
+  if (result.status === "unavailable" || result.status === "oversold") {
+    return NextResponse.json(
+      result.status === "unavailable"
+        ? {
+            status: result.status,
+            order: null,
+            orderNumber: null,
+            cardHold: result.authorizationRelease,
+            unavailableItems: result.unavailableLines,
+            message: result.message,
+          }
+        : {
+            status: result.status,
+            order: null,
+            orderNumber: result.persistedOrder.orderNumber,
+            cardHold: result.authorizationRelease,
+            unavailableItems: (result.unavailableLines ?? []).map(({ productId, name }) => ({ productId, name })),
+            message: result.message,
+          },
+      { status: 409 },
+    );
+  }
+
+  if (result.status === "not-placed") {
+    return NextResponse.json(
+      { status: result.status, order: null, cardHold: result.authorizationRelease, message: result.message },
+      { status: 409 },
+    );
+  }
 
   if (result.status !== "created" && result.status !== "already-persisted") {
     return NextResponse.json(

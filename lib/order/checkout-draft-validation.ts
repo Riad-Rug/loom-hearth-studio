@@ -2,6 +2,7 @@ import "server-only";
 
 import { isSupportedCheckoutCountry, supportedCheckoutCountryLabels } from "@/config/supported-markets";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
+import { getPurchasableQuantity } from "@/lib/order/inventory-hold";
 import { calculateShippingUsd } from "@/lib/order/shipping";
 import { createStripeMetadataChunks } from "@/lib/stripe/service";
 import { validatePromoCode } from "@/lib/promos/service";
@@ -9,6 +10,8 @@ import type { OrderAddress } from "@/types/domain";
 import type { ProductVariant } from "@/types/domain/product";
 
 const orderDraftSnapshotMetadataKeyPrefix = "order_draft_snapshot_";
+// How many numbered chunks hold the snapshot; its suffix is not a number, so it is never read as a chunk.
+const orderDraftSnapshotChunkCountKey = "order_draft_snapshot_count";
 
 export type CheckoutOrderDraftLineItemRequest = {
   id: string;
@@ -51,6 +54,10 @@ export type CheckoutOrderDraftValidationIssue = {
   code: string;
   message: string;
   productId?: string;
+  // Set on every issue about one cart line.
+  lineItemId?: string;
+  // "insufficient-inventory" and "invalid-rug-quantity": how many units of the line can still be ordered.
+  availableQuantity?: number;
 };
 
 export type CheckoutOrderDraftValidationResult =
@@ -122,6 +129,7 @@ export async function validateCheckoutOrderDraft(input: {
         code: "product-not-found",
         message: `Product ${lineItem.productId} no longer exists in the catalog.`,
         productId: lineItem.productId,
+        lineItemId: lineItem.id,
       });
       return [];
     }
@@ -131,6 +139,7 @@ export async function validateCheckoutOrderDraft(input: {
         code: "product-unavailable",
         message: `Product ${product.id} is no longer available for checkout.`,
         productId: product.id,
+        lineItemId: lineItem.id,
       });
       return [];
     }
@@ -141,6 +150,8 @@ export async function validateCheckoutOrderDraft(input: {
           code: "invalid-rug-quantity",
           message: `Rug ${product.id} must be ordered in a quantity of 1.`,
           productId: product.id,
+          lineItemId: lineItem.id,
+          availableQuantity: product.fixedQuantity,
         });
         return [];
       }
@@ -164,50 +175,34 @@ export async function validateCheckoutOrderDraft(input: {
         code: "invalid-quantity",
         message: `Product ${product.id} quantity must be at least 1.`,
         productId: product.id,
+        lineItemId: lineItem.id,
       });
       return [];
     }
 
-    if (lineItem.variantName) {
-      const matchedVariant = product.variants.find((variant) => variant.name === lineItem.variantName);
+    const matchedVariant = lineItem.variantName
+      ? product.variants.find((variant) => variant.name === lineItem.variantName)
+      : undefined;
 
-      if (!matchedVariant) {
-        issues.push({
-          code: "variant-not-found",
-          message: `Product ${product.id} no longer has the selected variant.`,
-          productId: product.id,
-        });
-        return [];
-      }
-
-      if (lineItem.quantity > matchedVariant.inventory) {
-        issues.push({
-          code: "insufficient-inventory",
-          message: `Variant inventory for ${product.id} is lower than the requested quantity.`,
-          productId: product.id,
-        });
-        return [];
-      }
-
-      return [
-        {
-          id: lineItem.id,
-          productId: product.id,
-          productType: product.type,
-          name: product.name,
-          slug: product.slug,
-          quantity: lineItem.quantity,
-          priceUsd: matchedVariant.priceUsd ?? product.priceUsd,
-          variant: matchedVariant,
-        },
-      ];
+    if (lineItem.variantName && !matchedVariant) {
+      issues.push({
+        code: "variant-not-found",
+        message: `Product ${product.id} no longer has the selected variant.`,
+        productId: product.id,
+        lineItemId: lineItem.id,
+      });
+      return [];
     }
 
-    if (lineItem.quantity > product.inventory) {
+    const availableQuantity = getPurchasableQuantity(product, lineItem.variantName);
+
+    if (lineItem.quantity > availableQuantity) {
       issues.push({
         code: "insufficient-inventory",
-        message: `Product ${product.id} inventory is lower than the requested quantity.`,
+        message: `Only ${availableQuantity} of product ${product.id} can be ordered.`,
         productId: product.id,
+        lineItemId: lineItem.id,
+        availableQuantity,
       });
       return [];
     }
@@ -220,15 +215,16 @@ export async function validateCheckoutOrderDraft(input: {
         name: product.name,
         slug: product.slug,
         quantity: lineItem.quantity,
-        priceUsd: product.priceUsd,
-        variant: undefined,
+        priceUsd: matchedVariant?.priceUsd ?? product.priceUsd,
+        variant: matchedVariant,
       },
     ];
   });
 
-  const subtotalUsd = validatedLineItems.reduce(
-    (runningTotal, lineItem) => runningTotal + lineItem.priceUsd * lineItem.quantity,
-    0,
+  // Rounded to cents so the authorized amount carries no float error. The
+  // free-shipping threshold is compared in cents inside calculateShippingUsd.
+  const subtotalUsd = roundToCents(
+    validatedLineItems.reduce((runningTotal, lineItem) => runningTotal + lineItem.priceUsd * lineItem.quantity, 0),
   );
   let discountUsd = 0;
 
@@ -254,8 +250,9 @@ export async function validateCheckoutOrderDraft(input: {
     }
   }
 
-  const shippingUsd = calculateShippingUsd(subtotalUsd - discountUsd);
-  const totalUsd = subtotalUsd - discountUsd + shippingUsd;
+  const discountedSubtotalUsd = roundToCents(subtotalUsd - discountUsd);
+  const shippingUsd = calculateShippingUsd(discountedSubtotalUsd);
+  const totalUsd = roundToCents(discountedSubtotalUsd + shippingUsd);
 
   if (issues.length || !draft.billingAddress || !draft.shippingAddress) {
     return {
@@ -288,14 +285,21 @@ export async function validateCheckoutOrderDraft(input: {
 // Stripe metadata values are capped at 500 characters, so a validated
 // snapshot (two addresses, line items, totals) is JSON-stringified and
 // split across numbered keys, then reassembled in order on the way back.
+// Stripe merges metadata on update, so the chunks of a longer snapshot already
+// on the PaymentIntent (`currentMetadata`) are sent as "", which Stripe removes.
 export function buildCheckoutOrderDraftSnapshotMetadata(
   snapshot: CheckoutOrderDraftSnapshot,
+  currentMetadata: Record<string, string> = {},
 ): Record<string, string> {
-  const metadata: Record<string, string> = {};
+  const metadata: Record<string, string> = Object.fromEntries(
+    readSnapshotChunks(currentMetadata).map(({ key }) => [key, ""]),
+  );
+  const chunks = createStripeMetadataChunks(JSON.stringify(snapshot));
 
-  createStripeMetadataChunks(JSON.stringify(snapshot)).forEach((chunk, index) => {
+  chunks.forEach((chunk, index) => {
     metadata[`${orderDraftSnapshotMetadataKeyPrefix}${index}`] = chunk;
   });
+  metadata[orderDraftSnapshotChunkCountKey] = String(chunks.length);
 
   return metadata;
 }
@@ -303,26 +307,51 @@ export function buildCheckoutOrderDraftSnapshotMetadata(
 export function parseCheckoutOrderDraftSnapshotFromMetadata(
   metadata: Record<string, string | null | undefined>,
 ): CheckoutOrderDraftSnapshot | null {
-  const chunkedValue = Object.entries(metadata)
+  const chunks = readSnapshotChunks(metadata);
+  const countValue = metadata[orderDraftSnapshotChunkCountKey];
+
+  if (countValue !== undefined && countValue !== null) {
+    const count = Number(countValue);
+    const snapshotChunks = chunks.slice(0, count);
+
+    return Number.isInteger(count) &&
+      snapshotChunks.length === count &&
+      snapshotChunks.every((chunk, index) => chunk.index === index)
+      ? parseSnapshot(snapshotChunks.map((chunk) => chunk.value).join(""))
+      : null;
+  }
+
+  // Written before the chunk count: a longer snapshot written earlier may have
+  // left its tail behind, and no shorter run of chunks than the whole snapshot
+  // is valid JSON, so the first run that parses is the snapshot.
+  for (let end = 1; end <= chunks.length; end += 1) {
+    const snapshot = parseSnapshot(chunks.slice(0, end).map((chunk) => chunk.value).join(""));
+
+    if (snapshot) {
+      return snapshot;
+    }
+  }
+
+  return null;
+}
+
+function readSnapshotChunks(metadata: Record<string, string | null | undefined>) {
+  return Object.entries(metadata)
     .flatMap(([key, value]) => {
-      if (!key.startsWith(orderDraftSnapshotMetadataKeyPrefix) || typeof value !== "string") {
+      if (!key.startsWith(orderDraftSnapshotMetadataKeyPrefix) || typeof value !== "string" || !value) {
         return [];
       }
 
-      const suffix = Number(key.slice(orderDraftSnapshotMetadataKeyPrefix.length));
+      const index = Number(key.slice(orderDraftSnapshotMetadataKeyPrefix.length));
 
-      return Number.isInteger(suffix) ? [{ suffix, value }] : [];
+      return Number.isInteger(index) ? [{ key, index, value }] : [];
     })
-    .sort((left, right) => left.suffix - right.suffix)
-    .map((entry) => entry.value)
-    .join("");
+    .sort((left, right) => left.index - right.index);
+}
 
-  if (!chunkedValue) {
-    return null;
-  }
-
+function parseSnapshot(value: string): CheckoutOrderDraftSnapshot | null {
   try {
-    const parsed = JSON.parse(chunkedValue) as CheckoutOrderDraftSnapshot;
+    const parsed = JSON.parse(value) as CheckoutOrderDraftSnapshot;
 
     if (
       !parsed ||
@@ -339,4 +368,8 @@ export function parseCheckoutOrderDraftSnapshotFromMetadata(
   } catch {
     return null;
   }
+}
+
+function roundToCents(valueUsd: number): number {
+  return Math.round(valueUsd * 100) / 100;
 }

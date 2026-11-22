@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useId, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { submitNewsletterSignupAction } from "@/app/actions/newsletter";
 import {
   initialNewsletterSignupActionState,
   type NewsletterSignupActionState,
+  type NewsletterSignupSource,
 } from "@/lib/newsletter/actions-shared";
 import { trackNewsletterInterest } from "@/lib/analytics/gtag";
 
@@ -17,9 +18,11 @@ type NewsletterSignupIntentFormProps = {
   inputLabel: string;
   inputPlaceholder: string;
   ctaLabel: string;
+  source: NewsletterSignupSource;
 };
 
 export function NewsletterSignupIntentForm(props: NewsletterSignupIntentFormProps) {
+  const inputId = useId();
   const [email, setEmail] = useState("");
   const [actionState, formAction] = useActionState<NewsletterSignupActionState, FormData>(
     submitNewsletterSignupAction,
@@ -28,19 +31,20 @@ export function NewsletterSignupIntentForm(props: NewsletterSignupIntentFormProp
 
   useEffect(() => {
     if (actionState.status === "success") {
-      trackNewsletterInterest({ location: "homepage" });
+      trackNewsletterInterest({ location: props.source });
       setEmail("");
     }
-  }, [actionState.status]);
+  }, [actionState.status, props.source]);
 
   return (
     <form className={styles.newsletterForm} action={formAction}>
-      <label className={styles.newsletterLabel} htmlFor="newsletter-email">
+      <input type="hidden" name="source" value={props.source} />
+      <label className={styles.newsletterLabel} htmlFor={inputId}>
         {props.inputLabel}
       </label>
       <div className={styles.newsletterControls}>
         <input
-          id="newsletter-email"
+          id={inputId}
           className={styles.newsletterInput}
           name="email"
           type="email"

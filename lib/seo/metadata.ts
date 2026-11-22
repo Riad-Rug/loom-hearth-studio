@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { normalizePublicUrl, siteConfig } from "@/config/site";
+import { stripBrandSuffix } from "@/lib/seo/brand-suffix";
 import { getSeoSetting } from "@/lib/seo/settings";
 
 type BuildMetadataOptions = {
@@ -15,6 +16,12 @@ type BuildMetadataOptions = {
    * Takes precedence over `noIndex` when both are set.
    */
   noIndexFollow?: boolean;
+  /**
+   * "product" suppresses Next's own og:type, which cannot express it. The page
+   * renders ProductOpenGraphMeta (components/seo) for og:type and the product
+   * price tags, because Next's `metadata.other` emits `name=` attributes and
+   * Open Graph tags have to be `property=`.
+   */
   type?: "website" | "article" | "product";
   canonicalUrl?: string;
   ogTitle?: string;
@@ -23,17 +30,6 @@ type BuildMetadataOptions = {
   ogImageAlt?: string;
   ogImageWidth?: number;
   ogImageHeight?: number;
-  /**
-   * Product-only Open Graph tags consumed by Pinterest Rich Pins, Meta and
-   * other social scrapers. Only emitted when `type === "product"`.
-   */
-  product?: ProductOpenGraphOptions;
-};
-
-export type ProductOpenGraphOptions = {
-  priceAmount: number;
-  priceCurrency?: string;
-  availability: "instock" | "oos" | "preorder";
 };
 
 /**
@@ -65,9 +61,8 @@ export function buildMetadata({
   ogDescription,
   ogImageUrl,
   ogImageAlt,
-  ogImageWidth = defaultOgImageWidth,
-  ogImageHeight = defaultOgImageHeight,
-  product,
+  ogImageWidth,
+  ogImageHeight,
 }: BuildMetadataOptions): Metadata {
   const shouldIndex = !noIndex && !noIndexFollow;
   const shouldFollow = noIndexFollow || !noIndex;
@@ -89,8 +84,14 @@ export function buildMetadata({
       {
         url: resolvedOgImage,
         alt: ogImageAlt || siteConfig.name,
-        width: ogImageWidth,
-        height: ogImageHeight,
+        // The default image's size is known. A caller's own image with no size
+        // given gets none, since a wrong size is worse for scrapers than none.
+        ...(ogImageUrl
+          ? { width: ogImageWidth, height: ogImageHeight }
+          : {
+              width: ogImageWidth ?? defaultOgImageWidth,
+              height: ogImageHeight ?? defaultOgImageHeight,
+            }),
       },
     ],
   };
@@ -116,30 +117,7 @@ export function buildMetadata({
       description: resolvedOgDescription,
       images: [resolvedOgImage],
     },
-    other: type === "product" ? buildProductOpenGraphTags(product) : undefined,
   };
-}
-
-/**
- * Pinterest reads `og:type=product` plus the `product:*` price tags and
- * `og:availability` to turn a saved pin into a Product Rich Pin that shows live
- * price and stock. Values follow the Open Graph product spec:
- * https://developers.pinterest.com/docs/web-features/rich-pins-overview/
- */
-function buildProductOpenGraphTags(
-  product: ProductOpenGraphOptions | undefined,
-): NonNullable<Metadata["other"]> {
-  const tags: NonNullable<Metadata["other"]> = { "og:type": "product" };
-
-  if (!product || !Number.isFinite(product.priceAmount)) {
-    return tags;
-  }
-
-  tags["product:price:amount"] = product.priceAmount.toFixed(2);
-  tags["product:price:currency"] = product.priceCurrency || siteConfig.currency;
-  tags["og:availability"] = product.availability;
-
-  return tags;
 }
 
 export async function buildManagedMetadata({
@@ -158,7 +136,6 @@ export async function buildManagedMetadata({
   ogImageAlt,
   ogImageWidth,
   ogImageHeight,
-  product,
 }: BuildManagedMetadataOptions): Promise<Metadata> {
   const setting = await getSeoSetting({ entityType, entityKey });
   const managedTitle = cleanManagedString(setting?.title);
@@ -186,7 +163,6 @@ export async function buildManagedMetadata({
     ogImageAlt,
     ogImageWidth,
     ogImageHeight,
-    product,
   });
 }
 
@@ -202,43 +178,6 @@ function isDefaultOgImage(value: string) {
   return normalizePublicUrl(value) === absoluteUrl(siteConfig.ogImagePath);
 }
 
-/**
- * Words an admin may append to the brand name when hand-typing a `seoTitle`.
- * The legal/marketing name of the business is "Loom & Hearth Studio" (see the
- * domain) while `siteConfig.name` — and therefore the root title template — is
- * the shorter "Loom & Hearth", so both spellings show up in admin-entered
- * titles and both have to be recognised as a brand suffix.
- */
-const brandSuffixQualifiers = ["studio"];
-
-/**
- * Matches a trailing `<separator> <brand>` suffix, tolerating the ways a human
- * actually types the brand: any casing, loose spacing, "and" for "&", and an
- * optional trailing qualifier such as "Studio".
- *
- * Deliberately anchored with `$` so a product name that merely CONTAINS the
- * brand mid-string is never truncated.
- */
-function buildBrandSuffixPattern() {
-  const brandCore = escapeRegExp(siteConfig.name)
-    .replace(/\s+/gu, "\\s+")
-    .replace(/&/gu, "(?:&|and)");
-  const qualifier = `(?:\\s+(?:${brandSuffixQualifiers.join("|")}))?`;
-
-  return new RegExp(`\\s*(?:[|\\-–—:]\\s*)${brandCore}${qualifier}\\s*$`, "iu");
-}
-
 function normalizeTemplatedTitle(value: string) {
-  const brandSuffixPattern = buildBrandSuffixPattern();
-  let next = value.trim();
-
-  while (brandSuffixPattern.test(next)) {
-    next = next.replace(brandSuffixPattern, "").trim();
-  }
-
-  return next || siteConfig.name;
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return stripBrandSuffix(value) || siteConfig.name;
 }

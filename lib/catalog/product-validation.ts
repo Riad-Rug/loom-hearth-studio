@@ -11,10 +11,13 @@ import {
   productUniquenessTierOptions,
   trueOneOffUniquenessTier,
 } from "@/lib/admin/category-form-copy";
-import type { EntityStatus, MediaAsset, Product, ProductVariant } from "@/types/domain";
+import { isDuplicateProductCopy } from "@/lib/seo/content-audit";
+import type { MediaAsset, Product, ProductStatus, ProductVariant } from "@/types/domain";
 
 export const productTypeOptions = ["rug", "multiUnit"] as const;
-export const productStatusOptions = ["draft", "active", "sold", "archived"] as const;
+// "reserved" is listed so a reserved piece shows its real status in the admin
+// form; only an order can set or clear it (see updateAdminProductAction).
+export const productStatusOptions = ["draft", "active", "reserved", "sold", "archived"] as const;
 export const productCategoryOptions = [
   "rugs",
   "poufs",
@@ -182,7 +185,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
         ...sharedFields,
         type: "rug",
         category: sharedFields.category as Product["category"],
-        status: sharedFields.status as EntityStatus,
+        status: sharedFields.status as ProductStatus,
         rugStyle: readString(formData, "rugStyle"),
         dimensionsCm: {
           length: readNumber(formData, "dimensionsCmLength"),
@@ -201,7 +204,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
       ...sharedFields,
       type: "multiUnit",
       category: sharedFields.category as Product["category"],
-      status: sharedFields.status as EntityStatus,
+      status: sharedFields.status as ProductStatus,
       inventory: readInteger(formData, "inventory"),
       lowStockThreshold: readInteger(formData, "lowStockThreshold"),
       variants: parseVariants(readString(formData, "variantsJson")),
@@ -213,14 +216,25 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
   };
 }
 
+export type ProductMutationContext = {
+  /** Units of this product that orders hold or have sold; they still count toward a cut-from-one-rug cover total. */
+  committedUnits?: number;
+  /** The SEO description of every other product. */
+  otherSeoDescriptions?: readonly string[];
+  /** This product's SEO description before the save; absent when creating. */
+  storedSeoDescription?: string;
+};
+
 export function validateProductMutationInput(
   parsed: ProductFormParseResult,
+  context: ProductMutationContext = {},
 ): ProductMutationValidationResult {
   if (parsed.status === "invalid") {
     return parsed;
   }
 
   const input = parsed.value;
+  const committedUnits = context.committedUnits ?? 0;
   const fieldErrors: ProductMutationFieldErrors = {};
 
   if (!input.name.trim()) {
@@ -267,7 +281,7 @@ export function validateProductMutationInput(
         : "Catalog prefix does not match the selected category.";
   }
 
-  if (input.status === "active" || input.status === "sold") {
+  if (input.status === "active" || input.status === "reserved" || input.status === "sold") {
     const required = getPublishRequirements(input.category);
     const publishError = (field: string, fallback: string) =>
       getPublishErrorMessage(input.category, field, fallback);
@@ -450,6 +464,15 @@ export function validateProductMutationInput(
 
   if (!input.seoDescription.trim()) {
     fieldErrors.seoDescription = "SEO description is required.";
+  } else if (
+    // Only a description this save sets is checked, so products that already
+    // share copy stay saveable for unrelated edits; findDuplicateProductCopy
+    // (lib/seo/content-audit.ts) reports those.
+    (context.storedSeoDescription === undefined ||
+      !isDuplicateProductCopy(input.seoDescription, [context.storedSeoDescription])) &&
+    isDuplicateProductCopy(input.seoDescription, context.otherSeoDescriptions ?? [])
+  ) {
+    fieldErrors.seoDescription = "Another product already uses this SEO description. Write one for this piece.";
   }
 
   if (
@@ -504,25 +527,30 @@ export function validateProductMutationInput(
     // Uniqueness claims and stock counts must agree. Sold and archived rows are
     // exempt because their inventory is legitimately depleted; drafts only get
     // the upper bound so a work-in-progress listing stays saveable.
+    // A true one-off is tracked by status, so its inventory stays 1 through an
+    // order; cut covers are tracked by count, so held and sold covers count too.
     if (Number.isInteger(input.inventory) && input.inventory >= 0) {
-      const maximumInventory =
-        input.uniquenessTier === trueOneOffUniquenessTier
-          ? 1
-          : input.uniquenessTier === cutFromOneRugUniquenessTier
-            ? input.sourceCoverCount
-            : undefined;
+      const isTrueOneOff = input.uniquenessTier === trueOneOffUniquenessTier;
+      const maximumInventory = isTrueOneOff
+        ? 1
+        : input.uniquenessTier === cutFromOneRugUniquenessTier
+          ? input.sourceCoverCount
+          : undefined;
+      const accountedUnits = isTrueOneOff ? input.inventory : input.inventory + committedUnits;
+      const committedNote =
+        !isTrueOneOff && committedUnits > 0
+          ? ` (${input.inventory} on sale plus ${committedUnits} held or sold by orders)`
+          : "";
 
       if (maximumInventory !== undefined && Number.isInteger(maximumInventory)) {
-        if (input.inventory > maximumInventory) {
-          fieldErrors.inventory =
-            input.uniquenessTier === trueOneOffUniquenessTier
-              ? "A true one-off can only have an inventory of 1."
-              : `Inventory cannot exceed the ${maximumInventory} covers cut from that rug.`;
-        } else if (input.status === "active" && input.inventory !== maximumInventory) {
-          fieldErrors.inventory =
-            input.uniquenessTier === trueOneOffUniquenessTier
-              ? "A true one-off must be published with an inventory of 1."
-              : `Inventory must match the ${maximumInventory} covers cut from that rug.`;
+        if (accountedUnits > maximumInventory) {
+          fieldErrors.inventory = isTrueOneOff
+            ? "A true one-off can only have an inventory of 1."
+            : `Inventory cannot exceed the ${maximumInventory} covers cut from that rug${committedNote}.`;
+        } else if (input.status === "active" && accountedUnits !== maximumInventory) {
+          fieldErrors.inventory = isTrueOneOff
+            ? "A true one-off must be published with an inventory of 1."
+            : `Inventory must match the ${maximumInventory} covers cut from that rug${committedNote}.`;
         }
       }
     }
@@ -848,7 +876,7 @@ function isProductType(value: string): value is Product["type"] {
   return (productTypeOptions as readonly string[]).includes(value);
 }
 
-function isProductStatus(value: string): value is EntityStatus {
+function isProductStatus(value: string): value is ProductStatus {
   return (productStatusOptions as readonly string[]).includes(value);
 }
 

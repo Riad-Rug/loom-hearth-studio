@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { ContactPageView } from "@/features/content-pages/contact-page-view";
+import { supportReplyWindow } from "@/features/content-pages/support-reply";
 import { listCatalogProductCards, listHomepageFeaturedProductCards } from "@/lib/catalog/service";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import type { ProductCategory } from "@/types/domain";
@@ -13,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     entityKey: "contact",
     title: "Contact Loom & Hearth: Rug Inquiries & Trade",
     description:
-      "Ask about a piece, shipping outside the US, or a trade project. Personal reply within 24 hours, usually with photos or video.",
+      `Ask about a piece, shipping outside the US, or a trade project. Personal reply ${supportReplyWindow}, usually with photos or video.`,
     path: "/contact",
   });
 }

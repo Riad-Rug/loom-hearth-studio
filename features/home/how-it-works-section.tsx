@@ -2,6 +2,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { Section } from "@/components/layout/section";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 
 import styles from "./home-page.module.css";
 
@@ -13,14 +14,13 @@ const steps = [
   },
   {
     number: "Step 2",
-    title: "We Send You a Video",
-    description:
-      "You receive a video of the actual rug  texture, colour in natural light, colour under warm and cool indoor light, and size in context. Before any payment is taken.",
+    title: "We Send You Photos and Video",
+    description: `You receive ${storePromise.approvalMedia} of the actual piece ${storePromiseCopy.approvalTurnaround}: texture, colour in natural light, and size in context. Before any payment is taken.`,
   },
   {
     number: "Step 3",
-    title: "Confirm and We Ship",
-    description: "Once you are satisfied, payment is captured and your piece ships from Morocco with full tracking.",
+    title: "Approve and We Ship",
+    description: `Once you approve, payment is captured and your piece ships from ${storePromise.shipsFromCity} with full tracking.`,
   },
 ] as const;
 
@@ -32,8 +32,8 @@ export function HowItWorksSection() {
           <p className={styles.eyebrow}>HOW IT WORKS</p>
           <h2>See the exact piece in your light conditions before you pay.</h2>
           <p className={styles.sectionBody}>
-            Before payment is captured, we send a video of the actual piece in natural, warm, and cool light. If the
-            rug is not right for your room, the order stops there.
+            Before payment is captured, we send {storePromise.approvalMedia} of the actual piece. You have{" "}
+            {storePromiseCopy.decisionWindow} to decide. If it is not right for your room, the order stops there.
           </p>
         </div>
 

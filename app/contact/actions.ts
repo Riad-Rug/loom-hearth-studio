@@ -1,6 +1,7 @@
 "use server";
 
 import { contactData } from "@/features/content-pages/content-pages-data";
+import { supportReplyWindow } from "@/features/content-pages/support-reply";
 import { sendTransactionalEmailMessage } from "@/lib/email/service";
 
 const inquiryTypeLabels = {
@@ -45,7 +46,7 @@ export async function submitContactInquiry(
   if (honeypot) {
     return {
       tone: "success",
-      message: "Thanks. We will reply personally within 24 hours.",
+      message: `Thanks. We will reply personally ${supportReplyWindow}.`,
     };
   }
 
@@ -150,7 +151,7 @@ export async function submitContactInquiry(
   if (confirmationDeliveryResult.status !== "sent") {
     return {
       tone: "success",
-      message: `Thanks, ${firstName}. We received your message and will reply personally within 24 hours - usually with photos or a short video of the piece you asked about.`,
+      message: `Thanks, ${firstName}. We received your message and will reply personally ${supportReplyWindow}, usually with photos or video of the piece you asked about.`,
       name,
       email,
     };
@@ -158,7 +159,7 @@ export async function submitContactInquiry(
 
   return {
     tone: "success",
-    message: `Thanks, ${firstName}. We've sent a confirmation to ${email} and will reply personally within 24 hours - usually with photos or a short video of the piece you asked about.`,
+    message: `Thanks, ${firstName}. We've sent a confirmation to ${email} and will reply personally ${supportReplyWindow}, usually with photos or video of the piece you asked about.`,
     name,
     email,
   };
@@ -258,8 +259,8 @@ function createContactConfirmationHtml(input: {
 }) {
   return [
     `<p>Hi ${escapeHtml(input.name.split(/\s+/)[0] ?? input.name)},</p>`,
-    "<p>We received your message and will reply personally within 24 hours.</p>",
-    "<p>For rug inquiries, colour is confirmed before payment is taken. We may reply with photos or a short video of the actual piece.</p>",
+    `<p>We received your message and will reply personally ${supportReplyWindow}.</p>`,
+    "<p>For rug inquiries, colour is confirmed before payment is taken. We may reply with photos or video of the actual piece.</p>",
     `<p><strong>Reference:</strong> ${escapeHtml(input.requestNumber)}</p>`,
     `<p><strong>Your message</strong><br />${escapeHtml(input.message).replace(/\n/g, "<br />")}</p>`,
   ].join("");
@@ -276,9 +277,9 @@ function createContactConfirmationText(input: {
   return [
     `Hi ${firstName},`,
     "",
-    "We received your message and will reply personally within 24 hours.",
+    `We received your message and will reply personally ${supportReplyWindow}.`,
     "",
-    "For rug inquiries, colour is confirmed before payment is taken. We may reply with photos or a short video of the actual piece.",
+    "For rug inquiries, colour is confirmed before payment is taken. We may reply with photos or video of the actual piece.",
     "",
     `Reference: ${input.requestNumber}`,
     "",

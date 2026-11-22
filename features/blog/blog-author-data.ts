@@ -1,8 +1,9 @@
+import { storePromise } from "@/lib/order/store-promise";
 import type { BlogAuthor } from "@/types/domain";
 
 export const DEFAULT_BLOG_AUTHOR: BlogAuthor = {
   name: "Riad Labrini",
-  bio: "Riad Labrini is the founder of Loom & Hearth Studio. He sources and checks every rug in person in Morocco and photographs each piece in Casablanca.",
+  bio: `Riad Labrini is the founder of Loom & Hearth Studio. He sources and checks every rug in person in Morocco and photographs each piece in ${storePromise.shipsFromCity}.`,
   photoUrl: null,
 };
 

@@ -1,7 +1,9 @@
 import { unstable_noStore as noStore } from "next/cache";
+import { cache } from "react";
 
 import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
 import {
+  rugStyleCollections,
   rugStyleNavLinks,
   type RugStyleNavLink,
 } from "@/features/catalog/rug-style-collections";
@@ -9,16 +11,13 @@ import {
   formatProductPriceUsd,
   formatRugDimensions,
   formatRugWeight,
-  getCategoryLabel,
   getCategoryRoutePath,
-  getInventoryMessage,
   getInventoryState,
   getProductBadgeLabel,
-  getProductMerchandisingNote,
   getProductRoutePath,
   getProductRoutePattern,
-  isPurchasableProduct,
 } from "@/lib/catalog/helpers";
+import { getProductAvailability } from "@/lib/catalog/availability";
 import type {
   CatalogProductCardViewModel,
   CatalogProductSizeBucket,
@@ -26,8 +25,6 @@ import type {
   ProductDetailPageViewModel,
   ProductDetailSectionViewModel,
   ProductLinkViewModel,
-  ProductSpecificationViewModel,
-  ProductSupportPanelViewModel,
   RugProductDetailPageViewModel,
 } from "@/lib/catalog/contracts";
 import {
@@ -39,6 +36,7 @@ import {
   getRugFeatureLabel,
   humanizeProductToken,
   normalizeDimensionSeparators,
+  parseProductTitle,
   removeConstructionFromColor,
 } from "@/lib/catalog/product-card-name";
 import { normalizeSlug, productCategoryOptions } from "@/lib/catalog/product-validation";
@@ -48,7 +46,13 @@ import {
 } from "@/lib/catalog/random-selection";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
-import type { MediaAsset, Product, ProductCategory, RugProduct } from "@/types/domain";
+import { storePromise } from "@/lib/order/store-promise";
+import {
+  isProductIndexable,
+  isRugStylePageIndexable,
+  type ProductIndexFacts,
+} from "@/lib/seo/index-policy";
+import type { CloudinaryAssetRole, MediaAsset, Product, ProductCategory, RugProduct } from "@/types/domain";
 
 const defaultRugPalette = ["#F1E8D6", "#3A5F3A", "#C89B2A", "#B9562A", "#7A2B2B"] as const;
 const paletteLabelsByHex = new Map([
@@ -58,6 +62,16 @@ const paletteLabelsByHex = new Map([
   ["#B9562A", "Burnt orange"],
   ["#7A2B2B", "Burgundy"],
 ]);
+
+/**
+ * The header's style menu, a style page's metadata and body, and a rug page's
+ * breadcrumb all start from the same rug rows. React cache scopes both of these
+ * to one server render, so a request reads those rows once; outside a render
+ * (the sitemap route, scripts) each call reads afresh.
+ */
+const requestProductRepository = cache(() => createProductRepository());
+const listRugRows = cache((repository: ProductRepository) => repository.listByCategory("rugs"));
+
 export async function listCatalogProductCards(input?: {
   category?: ProductCategory;
   repository?: ProductRepository;
@@ -73,7 +87,7 @@ export async function listCatalogProductCards(input?: {
 /**
  * Does this category hold at least one piece a shopper can buy right now?
  * Rows alone are not enough: a category whose only listing is active but out of
- * stock (a notify-me presentation) counts as empty. See isPurchasableProduct.
+ * stock (a notify-me presentation) counts as empty.
  */
 export async function categoryHasPurchasableProducts(
   category: ProductCategory,
@@ -83,7 +97,7 @@ export async function categoryHasPurchasableProducts(
 
   const products = await repository.listByCategory(category);
 
-  return products.some(isPurchasableProduct);
+  return products.some((product) => getProductAvailability(product) === "available");
 }
 
 /**
@@ -101,7 +115,9 @@ export async function listUnavailableCategoryHrefs(
 
   const products = await repository.listAll();
   const purchasableCategories = new Set(
-    products.filter(isPurchasableProduct).map((product) => product.category),
+    products
+      .filter((product) => getProductAvailability(product) === "available")
+      .map((product) => product.category),
   );
 
   return productCategoryOptions
@@ -111,25 +127,24 @@ export async function listUnavailableCategoryHrefs(
 
 /**
  * Rug-style slugs with at least one piece a shopper can buy right now, so the
- * /shop/rugs style nav and the sitemap can list exactly the styles that have
- * stock instead of hardcoding which ones do. Rows alone are not enough here
- * either: a style whose every rug is sold counts as empty (see
- * isPurchasableProduct). Live read on every render — rugs are one of a kind, so
- * a style drops out when its last piece sells and returns on its own the moment
- * new stock lands. One listByCategory("rugs") per call.
+ * /shop/rugs style nav can list exactly the styles that have stock instead of
+ * hardcoding which ones do. Rows alone are not enough here
+ * either: a style whose every rug is sold or reserved counts as empty. Live read
+ * on every render — rugs are one of a kind, so a style drops out when its last
+ * piece sells and returns on its own the moment new stock lands.
  */
 export async function listAvailableRugStyleSlugs(
-  repository: ProductRepository = createProductRepository(),
+  repository: ProductRepository = requestProductRepository(),
 ): Promise<Set<string>> {
   noStore();
 
-  const products = await repository.listByCategory("rugs");
+  const products = await listRugRows(repository);
 
   return new Set(
     products
       .filter(
         (product): product is RugProduct =>
-          product.type === "rug" && isPurchasableProduct(product),
+          product.type === "rug" && getProductAvailability(product) === "available",
       )
       .map((product) => normalizeSlug(product.rugStyle))
       .filter(Boolean),
@@ -140,17 +155,14 @@ export async function listAvailableRugStyleSlugs(
  * Every rug style nav entry paired with whether it has something purchasable
  * behind it right now, so the header dropdown, the homepage strip and the
  * sibling strips can all gate on the same live check instead of each deciding
- * for themselves. Styles with no stock are served noindex by
- * app/shop/rugs/[style]/page.tsx, so linking one as a normal anchor would point
- * crawl signal at a page we are asking not to be indexed: callers must either
- * grey the entry (header, footer) or omit it (content strips).
+ * for themselves. Callers grey an empty style (header, footer) or omit it
+ * (content strips) so nobody is sent to a page with nothing to buy. Whether that
+ * page is indexed is a separate, slower rule: listIndexableRugStyleSlugs.
  *
  * Order and anchor text come from rugStyleNavLinks; this only adds liveness.
- * One listByCategory("rugs") per call, same cost profile as
- * listAvailableRugStyleSlugs above.
  */
 export async function listRugStyleNavLinks(
-  repository: ProductRepository = createProductRepository(),
+  repository: ProductRepository = requestProductRepository(),
 ): Promise<(RugStyleNavLink & { available: boolean })[]> {
   const availableStyles = await listAvailableRugStyleSlugs(repository);
 
@@ -162,7 +174,7 @@ export async function listRugStyleNavLinks(
 
 /** Style hrefs with nothing purchasable behind them, for `unavailableHrefs` consumers. */
 export async function listUnavailableRugStyleHrefs(
-  repository: ProductRepository = createProductRepository(),
+  repository: ProductRepository = requestProductRepository(),
 ): Promise<string[]> {
   const links = await listRugStyleNavLinks(repository);
 
@@ -170,38 +182,99 @@ export async function listUnavailableRugStyleHrefs(
 }
 
 /**
- * Route href paired with the last database write for every listed product, so
- * app/sitemap.ts can emit a real <lastmod> per product URL instead of leaving
- * the whole catalog dateless. Deliberately narrow: updatedAt is a persistence
- * timestamp with exactly one consumer, so it stays off the domain Product and
+ * Route href paired with the last database write for every product the index
+ * policy (lib/seo/index-policy.ts) wants in search, so app/sitemap.ts lists
+ * exactly the product pages that do not ask to be dropped, each with a real
+ * <lastmod>. Deliberately narrow: updatedAt is a persistence timestamp with
+ * exactly one consumer, so it stays off the domain Product and
  * CatalogProductCardViewModel types rather than being threaded through every
- * catalog surface for this one field. One listAllWithUpdatedAt() per call.
+ * catalog surface for this one field.
  */
 export async function listProductSitemapEntries(
+  now: Date,
   repository: ProductRepository = createProductRepository(),
 ): Promise<Array<{ href: string; updatedAt: Date }>> {
-  const records = await repository.listAllWithUpdatedAt();
+  const [records, soldDates] = await Promise.all([
+    repository.listAllWithUpdatedAt(),
+    repository.listSoldDates(),
+  ]);
 
-  return records.map(({ product, updatedAt }) => ({
-    href: getProductRoutePath(product),
-    updatedAt,
-  }));
+  return records
+    .filter(({ product }) => isProductIndexable(toIndexFacts(product, soldDates), now))
+    .map(({ product, updatedAt }) => ({
+      href: getProductRoutePath(product),
+      updatedAt,
+    }));
+}
+
+/**
+ * What the index policy needs to decide a product page's robots directive. The
+ * policy reads soldAt only for a sold piece, so no other status queries it.
+ */
+export async function getProductIndexFacts(
+  product: Pick<Product, "id" | "status">,
+  repository: ProductRepository = createProductRepository(),
+): Promise<ProductIndexFacts> {
+  noStore();
+
+  return {
+    status: product.status,
+    soldAt: product.status === "sold" ? await repository.getSoldAt(product.id) : null,
+  };
+}
+
+/**
+ * Rug-style slugs whose /shop/rugs/{style} page the index policy wants in search
+ * right now: the page's robots tag, the sitemap, and the rug breadcrumb all read
+ * this. The pieces are the rows listRugStyleProductCards shows on that page, sold
+ * ones included. "vintage" is skipped because /shop/rugs/vintage only redirects.
+ */
+export async function listIndexableRugStyleSlugs(
+  now: Date,
+  repository: ProductRepository = requestProductRepository(),
+): Promise<Set<string>> {
+  noStore();
+
+  const [products, soldDates] = await Promise.all([listRugRows(repository), repository.listSoldDates()]);
+
+  return new Set(
+    Object.entries(rugStyleCollections)
+      .filter(
+        ([slug, collection]) =>
+          collection.category === "rugs" &&
+          isRugStylePageIndexable(
+            {
+              hasGuideCopy: Boolean(collection.page?.guide.body.trim()),
+              pieces: products
+                .filter((product) => product.type === "rug" && normalizeSlug(product.rugStyle) === slug)
+                .map((product) => toIndexFacts(product, soldDates)),
+            },
+            now,
+          ),
+      )
+      .map(([slug]) => slug),
+  );
+}
+
+function toIndexFacts(
+  product: Pick<Product, "id" | "status">,
+  soldDates: ReadonlyMap<string, Date>,
+): ProductIndexFacts {
+  return { status: product.status, soldAt: soldDates.get(product.id) ?? null };
 }
 
 export async function listRugStyleProductCards(input: {
   style: string;
   repository?: ProductRepository;
 }): Promise<CatalogProductCardViewModel[]> {
-  const repository = input.repository ?? createProductRepository();
+  const repository = input.repository ?? requestProductRepository();
   const style = normalizeSlug(input.style);
-  const category = style === "vintage" ? "vintage" : "rugs";
-  const products = await repository.listByCategory(category);
 
   if (style === "vintage") {
-    return products.map(createCatalogProductCardViewModel);
+    return (await repository.listByCategory("vintage")).map(createCatalogProductCardViewModel);
   }
 
-  return products
+  return (await listRugRows(repository))
     .filter(
       (product): product is RugProduct =>
         product.type === "rug" && normalizeSlug(product.rugStyle) === style,
@@ -257,7 +330,7 @@ export async function listRandomInventoryProductCards(input?: {
 
 // Lean view model for checkout's "add to order" cross-sell — deliberately
 // not CatalogProductCardViewModel (which carries PDP-only fields like
-// merchandisingNote/routePattern/badge/description). cartProduct is the full
+// routePattern/badge/description). cartProduct is the full
 // server-validated Product so the client can call useCart().addProduct(...)
 // directly without ever re-deriving or trusting a client-supplied price,
 // mirroring how PDP's cartProduct field already works
@@ -311,10 +384,9 @@ export async function listAddToOrderCandidateProducts(input: {
   const allProducts = await repository.listAll();
 
   const candidates = allProducts
-    .filter((product) => product.status === "active")
+    .filter((product) => getProductAvailability(product) === "available")
     .filter((product) => !excludeProductIds.has(product.id))
     .filter((product) => categoryRank.has(product.category))
-    .filter((product) => product.type !== "multiUnit" || product.inventory > 0)
     .filter((product) => product.priceUsd > 0 && product.priceUsd <= priceCeilingUsd)
     .sort((left, right) => {
       const rankDelta = (categoryRank.get(left.category) ?? 0) - (categoryRank.get(right.category) ?? 0);
@@ -342,7 +414,7 @@ function createAddToOrderCandidateViewModel(product: Product): AddToOrderCandida
     image: primaryImage
       ? {
           src: buildProductCardImageUrl(primaryImage.publicId),
-          altText: primaryImage.altText,
+          altText: createImageAltText(product, primaryImage),
         }
       : undefined,
     cartProduct: product,
@@ -419,29 +491,26 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     sizeBucket: getProductSizeBucket(product),
     subtitle: createProductSubtitle(product),
     category: product.category,
-    status: product.status,
+    availability: getProductAvailability(product),
     type: product.type,
-    availabilityLabel:
-      product.status === "sold" ? "SOLD" : product.type === "rug" ? "ONE OF A KIND" : "Available now",
-    isOutOfStock: product.type === "multiUnit" && getInventoryState(product) === "outOfStock",
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
+    createdAt: product.createdAt,
     description: normalizeDimensionSeparators(product.description),
-    merchandisingNote: normalizeDimensionSeparators(getProductMerchandisingNote(product)),
     routePattern: getProductRoutePattern(product),
     badge: getProductBadgeLabel(product),
     primaryImage: primaryImage
       ? {
           src: buildProductCardImageUrl(primaryImage.publicId),
           publicId: primaryImage.publicId,
-          altText: primaryImage.altText,
+          altText: createImageAltText(product, primaryImage),
         }
       : undefined,
     secondaryImage: secondaryImage
       ? {
           src: buildProductCardImageUrl(secondaryImage.publicId),
           publicId: secondaryImage.publicId,
-          altText: secondaryImage.altText,
+          altText: createImageAltText(product, secondaryImage),
         }
       : undefined,
   };
@@ -480,6 +549,7 @@ function createProductDetailPageViewModel(
     2,
   );
   const similarRugs = createRecommendedProductCards(product, allProducts);
+  const gallery = createProductGallery(product);
   const crossSellRecommendations = createCrossSellRecommendationCards(
     product,
     allProducts,
@@ -493,22 +563,20 @@ function createProductDetailPageViewModel(
     name: product.name,
     subtitle: createProductSubtitle(product),
     category: product.category,
-    status: product.status,
+    availability: getProductAvailability(product),
     description: createProductDescriptionLead(product),
-    merchandisingNote: normalizeDimensionSeparators(getProductMerchandisingNote(product)),
     descriptionSections: createProductDescriptionSections(product),
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
     type: product.type,
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
-    gallery: createProductGallery(product),
+    gallery: gallery.items,
+    ogImageAlt: gallery.ogImageAlt,
     palette: createProductPalette(product),
     materialLabel: product.materials.join(", "),
     originLabel: product.origin,
     techniqueLabel: undefined,
-    specifications: createProductSpecifications(product),
-    supportPanels: createProductSupportPanels(product),
     detailSections: createProductDetailSections(product),
     similarRugs,
     crossSellRecommendations,
@@ -521,6 +589,7 @@ function createProductDetailPageViewModel(
     return {
       ...baseViewModel,
       type: "rug",
+      techniqueLabel: "Handwoven",
       rugStyle: product.rugStyle,
       quantityLabel: "1",
       dimensionsLabel: formatRugDimensions(product),
@@ -540,149 +609,11 @@ function createProductDetailPageViewModel(
     })),
     quantityMin: 1,
     inventoryState: getInventoryState(product),
-    inventoryMessage: getInventoryMessage(product),
+    inventoryMessage: createInventoryMessage(product),
     variantLabel: product.variants.length ? "Variant" : undefined,
     notifyMeLabel: product.notifyMeEnabled ? "Notify me when available" : undefined,
     cartProduct: product,
   };
-}
-
-function createProductSpecifications(product: Product): ProductSpecificationViewModel[] {
-  const specs: ProductSpecificationViewModel[] = [
-    { label: "Material", value: product.materials.join(", ") },
-    { label: "Origin", value: product.origin },
-  ];
-
-  if (product.type === "rug") {
-    specs.push(
-      { label: "Technique", value: "Handwoven" },
-      { label: "Dimensions", value: formatRugDimensions(product) },
-      { label: "Weight", value: formatRugWeight(product) },
-      { label: "Piece type", value: "ONE OF A KIND rug" },
-    );
-  } else {
-    if (product.dimensionsCm) {
-      specs.push({
-        label: "Dimensions",
-        value: `${product.dimensionsCm.length} × ${product.dimensionsCm.width} cm`,
-      });
-    }
-
-    if (product.weightKg) {
-      specs.push({ label: "Weight", value: `${product.weightKg.toFixed(1)} kg` });
-    }
-
-    specs.push(
-      { label: "Availability", value: createInventoryStateLabel(product) },
-      { label: "Ordering", value: "Project and destination reviewed before payment capture" },
-    );
-  }
-
-  if (product.ageClass?.trim()) {
-    specs.push({
-      label: "Age",
-      value: product.ageBasis?.trim()
-        ? `${product.ageClass.trim()} — ${product.ageBasis.trim()}`
-        : product.ageClass.trim(),
-    });
-  }
-
-  if (product.attributionRegion?.trim()) {
-    specs.push({ label: "Region", value: product.attributionRegion.trim() });
-  }
-
-  if (product.attributionConfidence?.trim()) {
-    specs.push({ label: "Attribution", value: product.attributionConfidence.trim() });
-  }
-
-  return specs;
-}
-
-function createProductSupportPanels(product: Product): ProductSupportPanelViewModel[] {
-  const region = product.attributionRegion?.trim() || product.origin;
-  const confidence = product.attributionConfidence?.trim();
-  const tradition =
-    product.type === "rug"
-      ? createRugTraditionLabel(product)
-      : `${getCategoryLabel(product.category)} sourced in Morocco`;
-  const provenanceItems = [
-    confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`,
-    `Tradition: ${tradition}`,
-  ];
-
-  const verificationItems =
-    product.verificationNotes?.filter(Boolean).length
-      ? product.verificationNotes.filter(Boolean).map(normalizeDimensionSeparators)
-      : product.type === "rug"
-        ? [
-            "We film the exact rug in natural, warm, and cool light.",
-            "You review and approve the video before payment is captured.",
-          ]
-        : [
-            "Availability and destination are reviewed before payment is captured.",
-            "Additional details can be requested through the inquiry flow.",
-          ];
-
-  const shippingItems =
-    product.shippingNotes?.filter(Boolean).length
-      ? product.shippingNotes.filter(Boolean).map(normalizeDimensionSeparators)
-      : [
-          "Ships from our Marrakech atelier via tracked international carrier.",
-          "Typical dispatch window is 24 to 48 hours.",
-          "Duties are included for US delivery.",
-        ];
-
-  const panels: ProductSupportPanelViewModel[] = [
-    {
-      id: "provenance",
-      eyebrow: "Provenance",
-      title: product.type === "rug" ? "Product attribution and origin" : "Collection origin and sourcing",
-      body:
-        product.provenanceNote?.trim() ||
-        "Woven in the High Atlas using locally spun wool. We source directly from weavers and cooperatives we have met in person in Morocco. Origin is recorded per piece; this rug is documented as High Atlas tradition.",
-      items: provenanceItems,
-    },
-    {
-      id: "verification",
-      eyebrow: "Verification",
-      title: product.type === "rug" ? "How this piece is confirmed before shipment" : "How availability is confirmed before shipment",
-      body:
-        product.type === "rug"
-          ? "Before we charge you, we film the exact rug in natural, warm, and cool light, and send the video for your approval. If the piece is not what you expected, you walk away. Nothing is captured until you say yes."
-          : "For multi-unit pieces, availability, destination, and delivery conditions are reviewed before payment is captured.",
-      items: verificationItems,
-    },
-    {
-      id: "shipping",
-      eyebrow: "Shipping",
-      title: "Shipping and delivery notes",
-      body:
-        "Ships from our Marrakech atelier via tracked international carrier, typically arriving 7 to 14 business days after dispatch. Duties are included for US delivery - no surprise charges at delivery.",
-      items: shippingItems,
-    },
-  ];
-
-  if (product.conditionNote?.trim()) {
-    panels.push({
-      id: "condition",
-      eyebrow: "Condition",
-      title: "Condition notes",
-      body: normalizeDimensionSeparators(product.conditionNote.trim()),
-      items: [],
-    });
-  }
-
-  if (product.sourcingNote?.trim()) {
-    panels.push({
-      id: "sourcing",
-      eyebrow: "Sourcing note",
-      title: "How this piece entered the stockroom",
-      body: normalizeDimensionSeparators(product.sourcingNote.trim()),
-      items: [],
-    });
-  }
-
-  return panels;
 }
 
 function getPrimaryImage(product: Product) {
@@ -741,19 +672,7 @@ function isRecommendableCandidate(
   product: Product,
   candidate: Product,
 ) {
-  if (candidate.id === product.id) {
-    return false;
-  }
-
-  if (candidate.status !== "active") {
-    return false;
-  }
-
-  if (candidate.type === "multiUnit" && candidate.inventory <= 0) {
-    return false;
-  }
-
-  return true;
+  return candidate.id !== product.id && getProductAvailability(candidate) === "available";
 }
 
 function getRecommendationScore(
@@ -905,41 +824,12 @@ function createRugHeroDescription(product: Extract<Product, { type: "rug" }>) {
   const featureText = feature ? ` with ${feature}` : "";
 
   return normalizeDimensionSeparators(
-    `${firstSentence || `A ONE OF A KIND Moroccan ${construction}${featureText} in ${material}.`} Selected for texture, scale, and exact-piece character, with final color confirmed by video before payment is captured.`,
+    `${firstSentence || `A ONE OF A KIND Moroccan ${construction}${featureText} in ${material}.`} Selected for texture, scale, and exact-piece character, with final color confirmed in ${storePromise.approvalMedia} before you are charged.`,
   ).replace(/\s+/gu, " ");
 }
 
 function createProductDescriptionSections(product: Product): ProductDetailSectionViewModel[] {
-  if (product.type === "rug") {
-    return [
-      {
-        title: "Materials",
-        body: `${product.materials.join(", ")} from ${product.origin}.`,
-      },
-      {
-        title: "Construction",
-        body: createRugConstructionDescription(product),
-      },
-      {
-        title: "Condition",
-        body: createConditionDescription(product),
-      },
-      {
-        title: "Provenance",
-        body: createProvenanceDescription(product),
-      },
-      {
-        title: "Care",
-        body: createCareDescription(product),
-      },
-    ].filter((section) => section.body.trim().length > 0);
-  }
-
   return [
-    {
-      title: "Materials",
-      body: `${product.materials.join(", ")} from ${product.origin}.`,
-    },
     {
       title: "Condition",
       body: createConditionDescription(product),
@@ -955,32 +845,14 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
   ].filter((section) => section.body.trim().length > 0);
 }
 
-function createRugConstructionDescription(product: Extract<Product, { type: "rug" }>) {
-  const construction = getRugConstructionLabel(product, product.name).toLowerCase();
-  const feature = getRugFeatureLabel(product.name).toLowerCase();
-  const dimensions = formatRugDimensions(product);
-  const weight = formatRugWeight(product);
-
-  return normalizeDimensionSeparators(
-    `Handwoven as a ${construction}${feature ? ` ${feature}` : ""}. Dimensions: ${dimensions}. Weight: ${weight}.`,
-  );
-}
-
 function createProvenanceDescription(product: Product) {
   const provenance = normalizeDimensionSeparators(product.provenanceNote?.trim() || "");
-  const region = product.attributionRegion?.trim() || product.origin;
+  const region = product.attributionRegion?.trim();
   const confidence = product.attributionConfidence?.trim();
-  const tradition =
-    product.type === "rug"
-      ? createRugTraditionLabel(product)
-      : `${getCategoryLabel(product.category)} sourced in Morocco`;
-  const parts = [
-    provenance,
-    confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`,
-    `Tradition: ${tradition}`,
-  ].filter(Boolean);
+  const regionLine = region ? (confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`) : "";
+  const traditionLine = product.type === "rug" ? `Tradition: ${createRugTraditionLabel(product)}` : "";
 
-  return parts.join("\n");
+  return [provenance, regionLine, traditionLine].filter(Boolean).join("\n");
 }
 
 function createConditionDescription(product: Product) {
@@ -1082,7 +954,14 @@ function createProductGallery(product: Product) {
     .slice()
     .sort((left, right) => left.sortOrder - right.sortOrder);
 
-  return images.map((image, index) => createGalleryItem(image, index));
+  const storedAltTexts = images.map((image) => image.altText.trim());
+
+  return {
+    items: images.map((image, index) => createGalleryItem(product, image, index, storedAltTexts)),
+    // A social card shows the first photo on its own, so its alt has no
+    // place in the gallery to give.
+    ogImageAlt: images[0] ? createGalleryAltText(product, images[0], storedAltTexts) : product.name,
+  };
 }
 
 function createProductPalette(product: Product) {
@@ -1099,10 +978,15 @@ function createProductPalette(product: Product) {
   });
 }
 
-function createGalleryItem(image: MediaAsset, index: number) {
+function createGalleryItem(
+  product: Product,
+  image: MediaAsset,
+  index: number,
+  storedAltTexts: readonly string[],
+) {
   return {
     id: image.id,
-    label: createGalleryLabel(image, index),
+    label: galleryRoleCopy[image.role]?.label ?? `Photo ${index + 1}`,
     src: buildCloudinaryUrl(image.publicId, {
       transformation: { w: 1600, q: "auto", f: "auto" },
     }),
@@ -1115,42 +999,74 @@ function createGalleryItem(image: MediaAsset, index: number) {
     width: image.width,
     height: image.height,
     publicId: image.publicId,
-    altText: image.altText,
+    altText: createGalleryAltText(
+      product,
+      image,
+      storedAltTexts,
+      storedAltTexts.length > 1 ? `photo ${index + 1} of ${storedAltTexts.length}` : undefined,
+    ),
     role: image.role,
   };
 }
 
-function createGalleryLabel(image: MediaAsset, index: number) {
-  if (image.role === "hero") {
-    return "Full product view";
+/**
+ * One alt per photo. The admin fills every image's alt with the product name, so
+ * stored text only stands when it was written for this photo: not the name and
+ * not shared with another photo of the piece. Otherwise the alt is the name, what
+ * the photo shows when its role says, and its place in the gallery when given.
+ */
+function createGalleryAltText(
+  product: Product,
+  image: MediaAsset,
+  storedAltTexts: readonly string[],
+  position?: string,
+) {
+  const storedAltText = image.altText.trim();
+  const isWrittenForThisPhoto =
+    storedAltText &&
+    !adminDefaultAltTextPattern.test(storedAltText) &&
+    storedAltText.toLowerCase() !== product.name.trim().toLowerCase() &&
+    storedAltTexts.filter((altText) => altText === storedAltText).length === 1;
+
+  if (isWrittenForThisPhoto) {
+    return storedAltText;
   }
 
-  if (image.role === "styled") {
-    return "Styled in room";
-  }
+  const productName = parseProductTitle(getDisplayProductName(product.name)).name;
 
-  if (image.role === "detail") {
-    return "Detail view";
-  }
-
-  if (image.role === "edge") {
-    return "Edge detail";
-  }
-
-  if (image.role === "back") {
-    return "Reverse side";
-  }
-
-  if (image.role === "scale") {
-    return "Scale reference";
-  }
-
-  if (image.role === "motif") {
-    return "Motif detail";
-  }
-
-  return `Gallery image ${String(index + 1).padStart(2, "0")}`;
+  return [productName, galleryRoleCopy[image.role]?.view, position].filter(Boolean).join(", ");
 }
+
+/** Alt text a person wrote, or the product name plus what the photo shows. */
+function createImageAltText(product: Product, image: MediaAsset) {
+  const storedAltText = image.altText.trim();
+
+  if (storedAltText && !adminDefaultAltTextPattern.test(storedAltText)) {
+    return storedAltText;
+  }
+
+  const productName = parseProductTitle(getDisplayProductName(product.name)).name;
+
+  return `${productName}, ${galleryRoleCopy[image.role]?.view ?? "photo"}`;
+}
+
+// The admin form fills an empty alt with "{product name} image {n}" (see
+// createDefaultImageAltText), which tells a screen reader nothing.
+const adminDefaultAltTextPattern = /\bimage \d+$/iu;
+
+const galleryRoleCopy: Record<CloudinaryAssetRole, { label: string; view: string } | null> = {
+  hero: { label: "Full product view", view: "full view" },
+  styled: { label: "Styled in room", view: "styled in a room" },
+  detail: { label: "Detail view", view: "close-up detail" },
+  edge: { label: "Edge detail", view: "edge detail" },
+  back: { label: "Reverse side", view: "reverse side" },
+  scale: { label: "Scale reference", view: "shown for scale" },
+  motif: { label: "Motif detail", view: "motif close-up" },
+  gallery: null,
+  thumbnail: null,
+  featured: null,
+  og: null,
+};
 
 function createDisplayProductTitle(product: Product) {
   return createProductCardDisplayName(product);
@@ -1161,9 +1077,9 @@ function createProductCardDimensionsLabel(product: Product) {
     return formatRugDimensionsShort(product);
   }
 
-  const dimensions = extractProductDimensions(product.name);
+  const { measures } = parseProductTitle(product.name);
 
-  return dimensions ? normalizeDimensionSeparators(dimensions) : undefined;
+  return measures.length ? measures.join(dimensionSeparator) : undefined;
 }
 
 function createProductSubtitle(product: Product) {
@@ -1180,22 +1096,6 @@ function createPrimaryMaterialsLabel(product: Product) {
   }
 
   return materials.map((label, index) => (index === 0 ? label : label.toLowerCase())).join(" & ");
-}
-
-function extractProductDimensions(title: string) {
-  const normalizedTitle = normalizeDimensionSeparators(title);
-  const titleDimensions =
-    normalizedTitle.match(
-      /\b\d{1,3}(?:\.\d+)?["”]?\s*[×x]\s*\d{1,3}(?:\.\d+)?["”]?\b/gu,
-    )?.[0] ??
-    normalizedTitle.match(
-      /\b\d{1,2}'\d{0,2}"\s*[×x]\s*\d{1,2}'\d{0,2}"\b/gu,
-    )?.[0] ??
-    normalizedTitle.match(
-      /\b\d{1,3}(?:\.\d+)?\s*(?:x|×|by)\s*\d{1,3}(?:\.\d+)?\s*(?:cm|in|inch|inches|ft|feet)\b/iu,
-    )?.[0];
-
-  return titleDimensions?.replace(/\s+/gu, " ").trim() || undefined;
 }
 
 function formatRugDimensionsShort(product: Extract<Product, { type: "rug" }>) {
@@ -1227,17 +1127,14 @@ function formatFeetAndInchesShort(valueCm: number) {
   return `${feet}'${inches}"`;
 }
 
-function createInventoryStateLabel(product: Extract<Product, { type: "multiUnit" }>) {
-  const inventoryState = getInventoryState(product);
-
-  if (inventoryState === "lowStock") {
-    return "Low stock";
+function createInventoryMessage(product: Extract<Product, { type: "multiUnit" }>) {
+  switch (getInventoryState(product)) {
+    case "outOfStock":
+      return "Out of stock.";
+    case "lowStock":
+      return `Only ${product.inventory} left.`;
+    case "inStock":
+      return "In stock.";
   }
-
-  if (inventoryState === "outOfStock") {
-    return "Out of stock";
-  }
-
-  return "In stock";
 }
 

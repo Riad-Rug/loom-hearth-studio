@@ -1,6 +1,8 @@
 import { allRugsNavLink, rugStyleNavLinks } from "@/features/catalog/rug-style-collections";
-import { freeShippingThresholdUsd } from "@/lib/order/shipping";
+import { storePromise } from "@/lib/order/store-promise";
 
+const promiseMedia = storePromise.approvalMedia.toUpperCase();
+const promiseOrigin = storePromise.shipsFromCity.toUpperCase();
 const productionSiteUrl = "https://www.loomandhearthstudio.com";
 const previewHostnames = new Set(["loom-hearth-studio.vercel.app"]);
 const apexHostname = "loomandhearthstudio.com";
@@ -49,18 +51,18 @@ export function normalizePublicUrl(value: string, fallbackBase = siteConfig.site
 
 export const siteConfig = {
   name: "Loom & Hearth",
+  alternateName: "Loom & Hearth Studio",
   description:
-    "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
+    `Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from ${storePromise.shipsFromCity}.`,
   siteUrl: normalizePublicSiteUrl(process.env.NEXT_PUBLIC_SITE_URL),
   locale: "en-US",
   currency: "USD",
   market: "US",
   ogImagePath: "/og/default-placeholder.jpg",
   tagline:
-    "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
-  announcementDesktop:
-    `SEE YOUR EXACT PIECE IN DAYLIGHT PHOTOS BEFORE YOU PAY · FREE SHIPPING OVER $${freeShippingThresholdUsd} · SHIPPING TO THE US · SHIPS FROM CASABLANCA`,
-  announcementMobile: `APPROVE YOUR PIECE BEFORE YOU PAY · FREE SHIPPING OVER $${freeShippingThresholdUsd} · SHIPPING TO THE US`,
+    `Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from ${storePromise.shipsFromCity}.`,
+  announcementDesktop: `SEE YOUR EXACT PIECE IN ${promiseMedia} BEFORE YOU PAY · FREE SHIPPING ON ORDERS OF $${storePromise.freeShippingThresholdUsd} OR MORE · SHIPS FROM ${promiseOrigin}`,
+  announcementMobile: `${promiseMedia} FIRST · FREE SHIPPING $${storePromise.freeShippingThresholdUsd}+`,
   primaryNav: [
     {
       label: "Collection",

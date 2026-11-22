@@ -11,21 +11,24 @@ import { CatalogFilterControls } from "@/features/catalog/catalog-filter-control
 import {
   catalogBelowGridEssays,
   catalogCategories,
+  type CatalogGuide,
+  type CatalogIntroParagraph,
   catalogIntros,
-  type CatalogIntroTier,
   catalogLanding,
+  catalogShippingScopeNote,
+  type CatalogViewport,
   genericSizeFilterOptions,
   rugSizeFilterOptions,
   type CatalogPriceFilter,
   type CatalogSizeFilter,
   type CatalogSortOption,
+  defaultCatalogSortOption,
 } from "@/features/catalog/catalog-data";
 import {
   countsTowardCategoryAvailability,
   matchesAvailability,
   matchesCategoryFilter,
   matchesPriceFilter,
-  matchesSearchQuery,
   matchesSizeFilter,
   parseCategoryFilter,
   parsePriceFilter,
@@ -42,6 +45,7 @@ import {
 import { CatalogHistoryRecorder } from "@/features/catalog/catalog-history-recorder";
 import { CatalogProductBrowser } from "@/features/catalog/catalog-product-browser";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
+import { searchCatalogProducts } from "@/lib/catalog/search";
 import type { ProductCategory } from "@/types/domain";
 
 import styles from "./catalog-page.module.css";
@@ -64,6 +68,7 @@ type CatalogPageViewProps = {
     description: string;
     bullets: readonly string[];
     href?: string;
+    guide?: CatalogGuide;
   };
   /**
    * Optional sub-category navigation rendered under the page lede — currently
@@ -78,6 +83,15 @@ type CatalogPageViewProps = {
    * its siblings ("Other rug types"), and the two read wrong under one label.
    */
   styleNavLabel?: string;
+  /**
+   * Where to send a shopper whose search found nothing: the categories and rug
+   * styles that currently have stock, decided by the server like `styleLinks`.
+   * Without it the empty search state only offers to clear the search.
+   */
+  searchFallbackLinks?: {
+    categories: readonly { label: string; href: string }[];
+    styles: readonly { label: string; href: string }[];
+  };
 };
 
 export function CatalogPageView({
@@ -86,6 +100,7 @@ export function CatalogPageView({
   collection,
   styleLinks,
   styleNavLabel = "Shop by style",
+  searchFallbackLinks,
 }: CatalogPageViewProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -102,7 +117,7 @@ export function CatalogPageView({
   const [sortOption, setSortOption] = useState<CatalogSortOption>(() =>
     parseSortOption(searchParams.get("sort")),
   );
-  const [hideSold, setHideSold] = useState(() => searchParams.get("availability") === "available");
+  const [availableOnly, setAvailableOnly] = useState(() => searchParams.get("availability") === "available");
   const [isEssayExpanded, setIsEssayExpanded] = useState(false);
   const categoryMeta =
     category ? catalogCategories.find((item) => item.key === category) ?? null : null;
@@ -142,17 +157,19 @@ export function CatalogPageView({
   );
   // A single tier is not a choice — every piece in view is that tier.
   const showSizeFilter = visibleSizeFilterOptions.length > 1;
-  const sortedProducts = useMemo(
-    () => sortCatalogProducts(products, sortOption),
-    [products, sortOption],
+  const trimmedQuery = searchQuery.trim();
+  // Search results arrive best match first. That order stands for the default
+  // sort; an explicit newest or price sort reorders them.
+  const searchedProducts = useMemo(
+    () => (trimmedQuery ? searchCatalogProducts(products, trimmedQuery) : products),
+    [products, trimmedQuery],
   );
-  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const sortedProducts = useMemo(
+    () => sortCatalogProducts(searchedProducts, sortOption),
+    [searchedProducts, sortOption],
+  );
   const filteredProducts = useMemo(() => {
     return sortedProducts.filter((product) => {
-      if (!matchesSearchQuery(product, normalizedQuery)) {
-        return false;
-      }
-
       if (!matchesCategoryFilter(product, activeCategories)) {
         return false;
       }
@@ -165,13 +182,13 @@ export function CatalogPageView({
         return false;
       }
 
-      if (!matchesAvailability(product, hideSold)) {
+      if (!matchesAvailability(product, availableOnly)) {
         return false;
       }
 
       return true;
     });
-  }, [activeCategories, hideSold, normalizedQuery, selectedPrices, selectedSizes, sortedProducts]);
+  }, [activeCategories, availableOnly, selectedPrices, selectedSizes, sortedProducts]);
   // How many products each category would contribute under the OTHER active
   // filters (price/size/search/availability), ignoring category selection
   // itself — so an option a shopper hasn't picked yet can be greyed out when
@@ -184,11 +201,7 @@ export function CatalogPageView({
 
     const counts: Partial<Record<ProductCategory, number>> = {};
 
-    for (const product of products) {
-      if (!matchesSearchQuery(product, normalizedQuery)) {
-        continue;
-      }
-
+    for (const product of searchedProducts) {
       if (!matchesPriceFilter(product, selectedPrices)) {
         continue;
       }
@@ -200,7 +213,7 @@ export function CatalogPageView({
       // Stricter than the grid's own availability filter: an out-of-stock
       // multi-unit piece still renders in the grid, but it must not keep its
       // category's checkbox tickable when nothing there can be bought.
-      if (!countsTowardCategoryAvailability(product, hideSold)) {
+      if (!countsTowardCategoryAvailability(product, availableOnly)) {
         continue;
       }
 
@@ -208,13 +221,12 @@ export function CatalogPageView({
     }
 
     return counts;
-  }, [hideSold, isCategoryFilterEnabled, normalizedQuery, products, selectedPrices, selectedSizes]);
+  }, [availableOnly, isCategoryFilterEnabled, searchedProducts, selectedPrices, selectedSizes]);
   const displayedProductCountLabel = `${filteredProducts.length} ${
     filteredProducts.length === 1 ? "piece" : "pieces"
   }`;
-  const internationalInquiryHref = "/contact?inquiryType=international-shipping" as Route;
   /**
-   * Which tiered header copy this view uses, if any (see `catalogIntros`). The
+   * Which header copy this view uses, if any (see `catalogIntros`). The
    * generic /shop landing is keyed "shop"; a category route is keyed by its
    * category. A rug-style collection is deliberately excluded even though its
    * `category` is set, because its own description is what the page is for.
@@ -223,56 +235,22 @@ export function CatalogPageView({
   const isLandingView = !category && !hasExactCategoryLink;
   const introKey = isLandingView ? "shop" : collection ? null : category ?? null;
   const intro = introKey ? catalogIntros[introKey] ?? null : null;
-  const belowGridEssay = introKey ? catalogBelowGridEssays[introKey] ?? null : null;
-  const belowGridEssayParagraphs = belowGridEssay ? heroCopy.split("\n\n") : [];
-
-  const renderIntroTier = (tier: CatalogIntroTier, tierClassName: string, tierKey: string) => (
-    <>
-      {tier.paragraphs.map((paragraph, index) => (
-        <p className={`${styles.lede} ${tierClassName}`} key={`${tierKey}-${index}`}>
-          {paragraph}
-        </p>
-      ))}
-      <p className={`${styles.shopHeaderTrustNote} ${tierClassName}`}>
-        {tier.closing.before}
-        {tier.closing.link ? (
-          <Link href={internationalInquiryHref}>{tier.closing.link}</Link>
-        ) : null}
-        {tier.closing.after}
-      </p>
-    </>
-  );
-
-  /**
-   * Default header for every view without tiered copy: the restock note, the
-   * shipping scope, then the route's editorial description.
-   */
-  const shippingScopeNote = (
-    <>
-      <p className={`${styles.shopHeaderTrustNote} ${styles.desktopCopy}`}>
-        Shipping to the US. Outside the US?{" "}
-        <Link href={internationalInquiryHref}>Send an inquiry</Link> and we&apos;ll confirm
-        shipping before you order.
-      </p>
-      <p className={`${styles.shopHeaderTrustNote} ${styles.tabletCopy}`}>
-        Shipping to the US. Outside the US?{" "}
-        <Link href={internationalInquiryHref}>Send an inquiry</Link>.
-      </p>
-      <p className={`${styles.shopHeaderTrustNote} ${styles.phoneCopy}`}>Shipping to the US.</p>
-    </>
-  );
+  const categoryEssay = introKey ? catalogBelowGridEssays[introKey] : undefined;
+  const belowGridEssay: CatalogGuide | null =
+    collection?.guide ?? (categoryEssay ? { ...categoryEssay, body: heroCopy } : null);
+  const belowGridEssayParagraphs = belowGridEssay ? belowGridEssay.body.split("\n\n") : [];
   const activeCategoryKey = serializeCategoryFilter(activeCategories);
   const activePriceKey = serializePriceFilter(selectedPrices);
   const activeSizeKey = serializeSizeFilter(selectedSizes);
   const activeFilterCount = [
-    Boolean(searchQuery.trim()),
+    Boolean(trimmedQuery),
     activeCategories.length > 0,
     selectedPrices.length > 0,
     selectedSizes.length > 0,
-    sortOption !== "newest",
-    hideSold,
+    sortOption !== defaultCatalogSortOption,
+    availableOnly,
   ].filter(Boolean).length;
-  const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${activeSizeKey}|${sortOption}|${hideSold}`;
+  const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${activeSizeKey}|${sortOption}|${availableOnly}`;
 
   // Reflect the filters into the address bar without a Next.js navigation: a real
   // navigation here (router.replace/push) re-runs the server component and refetches the
@@ -284,8 +262,8 @@ export function CatalogPageView({
       updateQueryParam(nextParams, "category", activeCategoryKey);
       updateQueryParam(nextParams, "price", activePriceKey);
       updateQueryParam(nextParams, "size", activeSizeKey);
-      updateQueryParam(nextParams, "sort", sortOption === "newest" ? "" : sortOption);
-      updateQueryParam(nextParams, "availability", hideSold ? "available" : "");
+      updateQueryParam(nextParams, "sort", sortOption === defaultCatalogSortOption ? "" : sortOption);
+      updateQueryParam(nextParams, "availability", availableOnly ? "available" : "");
 
       const nextQuery = nextParams.toString();
       const nextHref = nextQuery ? `${pathname}?${nextQuery}` : pathname;
@@ -297,7 +275,7 @@ export function CatalogPageView({
     }, 280);
 
     return () => window.clearTimeout(timer);
-  }, [activeCategoryKey, activePriceKey, activeSizeKey, hideSold, pathname, searchQuery, sortOption]);
+  }, [activeCategoryKey, activePriceKey, activeSizeKey, availableOnly, pathname, searchQuery, sortOption]);
 
   // Adopt filters that changed outside this component: the header's persistent search
   // bar (same-tab; it dispatches SHOP_QUERY_SYNC_EVENT after patching the address bar)
@@ -315,7 +293,7 @@ export function CatalogPageView({
       const nextSizes = parseSizeFilter(params.get("size"));
       const nextSizeKey = serializeSizeFilter(nextSizes);
       const nextSort = parseSortOption(params.get("sort"));
-      const nextHideSold = params.get("availability") === "available";
+      const nextAvailableOnly = params.get("availability") === "available";
 
       setSearchQuery((current) => (current === nextQuery ? current : nextQuery));
       // Compared by serialized value: a fresh array with the same keys must not
@@ -330,7 +308,7 @@ export function CatalogPageView({
         serializeSizeFilter(current) === nextSizeKey ? current : nextSizes,
       );
       setSortOption((current) => (current === nextSort ? current : nextSort));
-      setHideSold((current) => (current === nextHideSold ? current : nextHideSold));
+      setAvailableOnly((current) => (current === nextAvailableOnly ? current : nextAvailableOnly));
     }
 
     window.addEventListener("popstate", syncFromLocation);
@@ -359,8 +337,8 @@ export function CatalogPageView({
     setSelectedCategories([]);
     setSelectedPrices([]);
     setSelectedSizes([]);
-    setSortOption("newest");
-    setHideSold(false);
+    setSortOption(defaultCatalogSortOption);
+    setAvailableOnly(false);
   };
 
   return (
@@ -374,10 +352,10 @@ export function CatalogPageView({
               activeFilterCount={activeFilterCount}
               categoryAvailability={categoryAvailability}
               categoryMode={isCategoryFilterEnabled ? "select" : "navigate"}
-              hideSold={hideSold}
+              availableOnly={availableOnly}
               onCategoryToggle={handleCategoryToggle}
               onClearAll={clearAllFilters}
-              onHideSoldChange={setHideSold}
+              onAvailableOnlyChange={setAvailableOnly}
               onPriceToggle={handlePriceToggle}
               onSizeToggle={handleSizeToggle}
               onSortOptionChange={setSortOption}
@@ -400,16 +378,20 @@ export function CatalogPageView({
               </div>
               {intro ? (
                 <>
-                  {renderIntroTier(intro.desktop, styles.desktopCopy, "intro-desktop")}
-                  {renderIntroTier(intro.tablet, styles.tabletCopy, "intro-tablet")}
-                  {renderIntroTier(intro.phone, styles.phoneCopy, "intro-phone")}
+                  {intro.paragraphs.map((paragraph, index) => (
+                    <IntroParagraph className={styles.lede} key={index} runs={paragraph} />
+                  ))}
+                  <IntroParagraph className={styles.shopHeaderTrustNote} runs={intro.closing} />
                 </>
               ) : (
                 <>
                   <p className={styles.shopHeaderTrustNote}>
                     Each piece is individually made and won&apos;t be restocked.
                   </p>
-                  {shippingScopeNote}
+                  <IntroParagraph
+                    className={styles.shopHeaderTrustNote}
+                    runs={catalogShippingScopeNote}
+                  />
                   {heroCopy.split("\n\n").map((paragraph, index) => (
                     <p className={styles.lede} key={index}>
                       {paragraph}
@@ -437,6 +419,44 @@ export function CatalogPageView({
 
             {filteredProducts.length ? (
               <CatalogProductBrowser products={filteredProducts} filterKey={filterKey} />
+            ) : trimmedQuery && !searchedProducts.length ? (
+              <div className={styles.emptyCatalogState}>
+                <p className={styles.eyebrow}>No matches</p>
+                <h2>Nothing found for &ldquo;{trimmedQuery}&rdquo;.</h2>
+                <p>
+                  Try fewer words or a different spelling, or browse what the studio has right
+                  now.
+                </p>
+                {searchFallbackLinks?.categories.length ? (
+                  <nav aria-label="Browse by category" className={styles.styleNav}>
+                    <span className={styles.filterGroupLabel}>Shop by category</span>
+                    <div className={styles.styleNavLinks}>
+                      {searchFallbackLinks.categories.map((link) => (
+                        <Link key={link.href} className={styles.filterChip} href={link.href as Route}>
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </nav>
+                ) : null}
+                {searchFallbackLinks?.styles.length ? (
+                  <nav aria-label="Browse by rug style" className={styles.styleNav}>
+                    <span className={styles.filterGroupLabel}>Shop rugs by style</span>
+                    <div className={styles.styleNavLinks}>
+                      {searchFallbackLinks.styles.map((link) => (
+                        <Link key={link.href} className={styles.filterChip} href={link.href as Route}>
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </nav>
+                ) : null}
+                <div className={styles.sidebarActions}>
+                  <button className={styles.primaryAction} type="button" onClick={clearAllFilters}>
+                    Clear search
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className={styles.emptyCatalogState}>
                 <p className={styles.eyebrow}>No matches</p>
@@ -464,19 +484,26 @@ export function CatalogPageView({
             <h2>{belowGridEssay.heading}</h2>
             {belowGridEssayParagraphs[0] ? <p>{renderInline(belowGridEssayParagraphs[0])}</p> : null}
             {belowGridEssayParagraphs[1] ? (
-              <p className={isEssayExpanded ? undefined : styles.catalogEssayClamp}>
-                {renderInline(belowGridEssayParagraphs[1])}
-              </p>
-            ) : null}
-            {belowGridEssayParagraphs.length > 2 ? (
               <>
-                <div hidden={!isEssayExpanded} id="catalog-essay-rest">
-                  {belowGridEssayParagraphs.slice(2).map((paragraph, index) => (
-                    <p key={index}>{renderInline(paragraph)}</p>
-                  ))}
-                </div>
+                <p
+                  className={isEssayExpanded ? undefined : styles.catalogEssayClamp}
+                  id="catalog-essay-more"
+                >
+                  {renderInline(belowGridEssayParagraphs[1])}
+                </p>
+                {belowGridEssayParagraphs.length > 2 ? (
+                  <div hidden={!isEssayExpanded} id="catalog-essay-rest">
+                    {belowGridEssayParagraphs.slice(2).map((paragraph, index) => (
+                      <p key={index}>{renderInline(paragraph)}</p>
+                    ))}
+                  </div>
+                ) : null}
                 <button
-                  aria-controls="catalog-essay-rest"
+                  aria-controls={
+                    belowGridEssayParagraphs.length > 2
+                      ? "catalog-essay-more catalog-essay-rest"
+                      : "catalog-essay-more"
+                  }
                   aria-expanded={isEssayExpanded}
                   className={styles.catalogEssayToggle}
                   onClick={() => setIsEssayExpanded((value) => !value)}
@@ -485,6 +512,16 @@ export function CatalogPageView({
                   {isEssayExpanded ? "Read less" : "Read more"}
                 </button>
               </>
+            ) : null}
+            {belowGridEssay.faqs?.length ? (
+              <div className={styles.catalogEssayFaqs}>
+                {belowGridEssay.faqs.map((faq) => (
+                  <div key={faq.question}>
+                    <h3>{faq.question}</h3>
+                    <p>{renderInline(faq.answer)}</p>
+                  </div>
+                ))}
+              </div>
             ) : null}
           </div>
         </Section>
@@ -511,6 +548,54 @@ export function CatalogPageView({
         </div>
       </Section>
     </div>
+  );
+}
+
+const internationalInquiryHref = "/contact?inquiryType=international-shipping" as Route;
+
+const catalogViewports: readonly CatalogViewport[] = ["desktop", "tablet", "phone"];
+
+const hideOnViewport: Record<CatalogViewport, string> = {
+  desktop: styles.hideOnDesktop,
+  tablet: styles.hideOnTablet,
+  phone: styles.hideOnPhone,
+};
+
+function hideOutside(shownOn: readonly CatalogViewport[]) {
+  return catalogViewports
+    .filter((viewport) => !shownOn.includes(viewport))
+    .map((viewport) => hideOnViewport[viewport])
+    .join(" ");
+}
+
+/**
+ * One header paragraph, rendered once. Runs limited to some widths are hidden
+ * by CSS at the others, and the paragraph itself is hidden wherever none of
+ * its runs show, so it leaves no empty margin behind.
+ */
+function IntroParagraph({ className, runs }: { className: string; runs: CatalogIntroParagraph }) {
+  const shownOn = catalogViewports.filter((viewport) =>
+    runs.some((run) => typeof run === "string" || run.on.includes(viewport)),
+  );
+
+  return (
+    <p className={`${className} ${hideOutside(shownOn)}`}>
+      {runs.map((run, index) => {
+        if (typeof run === "string") {
+          return run;
+        }
+
+        return run.link ? (
+          <Link className={hideOutside(run.on)} href={internationalInquiryHref} key={index}>
+            {run.text}
+          </Link>
+        ) : (
+          <span className={hideOutside(run.on)} key={index}>
+            {run.text}
+          </span>
+        );
+      })}
+    </p>
   );
 }
 

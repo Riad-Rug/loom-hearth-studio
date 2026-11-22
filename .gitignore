@@ -15,4 +15,5 @@ yarn-error.log*
 pnpm-debug.log*
 .vercel
 .local/
+assets-src/
 *.dump

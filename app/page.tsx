@@ -36,7 +36,7 @@ export default async function HomePage() {
   const liveCategories = [
     ...new Set<ProductCategory>(
       allProducts
-        .filter((product) => product.status === "active")
+        .filter((product) => product.availability !== "sold" && product.availability !== "reserved")
         .map((product) => product.category),
     ),
   ];

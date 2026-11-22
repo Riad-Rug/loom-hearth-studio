@@ -4,11 +4,13 @@
 // catalog-page-view.tsx.
 import {
   catalogCategoryFilterOptions,
-  catalogPriceFilterOptions,
+  catalogSortOptions,
+  catalogPriceBands,
   genericSizeFilterOptions,
   type CatalogPriceFilter,
   type CatalogSizeFilter,
   type CatalogSortOption,
+  defaultCatalogSortOption,
 } from "@/features/catalog/catalog-data";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import type { ProductCategory } from "@/types/domain";
@@ -17,16 +19,13 @@ function matchesPriceBucket(
   product: CatalogProductCardViewModel,
   bucket: CatalogPriceFilter,
 ): boolean {
-  switch (bucket) {
-    case "under-300":
-      return product.priceUsd < 300;
-    case "300-600":
-      return product.priceUsd >= 300 && product.priceUsd <= 600;
-    case "600-plus":
-      return product.priceUsd > 600;
-    default:
-      return true;
+  const band = catalogPriceBands.find((candidate) => candidate.value === bucket);
+
+  if (!band) {
+    return true;
   }
+
+  return product.priceUsd >= band.min && (band.max === null || product.priceUsd < band.max);
 }
 
 // Multi-select, same shape as category: no selection means "every price".
@@ -39,28 +38,6 @@ export function matchesPriceFilter(
   }
 
   return selectedPrices.some((bucket) => matchesPriceBucket(product, bucket));
-}
-
-export function matchesSearchQuery(
-  product: CatalogProductCardViewModel,
-  normalizedQuery: string,
-): boolean {
-  if (!normalizedQuery) {
-    return true;
-  }
-
-  const haystack = [
-    product.displayName,
-    product.dimensionsLabel,
-    product.subtitle,
-    product.description,
-    product.merchandisingNote,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return haystack.includes(normalizedQuery);
 }
 
 // Multi-select, same shape as category and price: no selection means "every
@@ -93,30 +70,36 @@ export function matchesCategoryFilter(
   return selectedCategories.includes(product.category);
 }
 
+// "Available now" keeps only pieces a shopper can buy: a sold piece is gone and
+// a reserved one is held by an order while its buyer reviews photos, and an
+// out-of-stock multi-unit piece has nothing left.
 export function matchesAvailability(
   product: CatalogProductCardViewModel,
-  hideSold: boolean,
+  availableOnly: boolean,
 ): boolean {
-  if (!hideSold) {
+  if (!availableOnly) {
     return true;
   }
 
-  return product.status !== "sold";
+  return product.availability === "available";
 }
 
 /**
  * Whether a product counts toward its category's filter-sidebar availability.
- * Stricter than matchesAvailability on purpose: an out-of-stock multi-unit piece
- * still belongs in the grid (it keeps its unavailable/notify-me treatment on the
- * card), but it must not make a category's checkbox look tickable when checking
- * it would surface nothing a shopper can buy. Rugs are quantity-1 pieces with no
- * inventory, so they keep the plain matchesAvailability behaviour.
+ * An out-of-stock multi-unit piece never counts, so a category's checkbox does
+ * not look tickable when ticking it would surface nothing a shopper can buy.
  */
 export function countsTowardCategoryAvailability(
   product: CatalogProductCardViewModel,
-  hideSold: boolean,
+  availableOnly: boolean,
 ): boolean {
-  return matchesAvailability(product, hideSold) && !product.isOutOfStock;
+  return availableOnly ? product.availability === "available" : product.availability !== "outOfStock";
+}
+
+function listedAtMs(product: CatalogProductCardViewModel): number {
+  const parsed = product.createdAt ? Date.parse(product.createdAt) : Number.NaN;
+
+  return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
 }
 
 export function sortCatalogProducts(
@@ -129,14 +112,22 @@ export function sortCatalogProducts(
     case "price-desc":
       return [...products].sort((left, right) => right.priceUsd - left.priceUsd);
     case "newest":
+      // Array.sort is stable, so pieces listed at the same moment (a bulk import
+      // shares one createdAt) and pieces with no date keep the incoming order.
+      return [...products].sort((left, right) => {
+        const leftMs = listedAtMs(left);
+        const rightMs = listedAtMs(right);
+
+        return rightMs > leftMs ? 1 : rightMs < leftMs ? -1 : 0;
+      });
+    case "featured":
     default:
-      // Already in `updatedAt desc` order from the repository — no reorder needed.
       return products;
   }
 }
 
 export function parseSortOption(value: string | null): CatalogSortOption {
-  return value === "price-asc" || value === "price-desc" ? value : "newest";
+  return catalogSortOptions.find((option) => option.value === value)?.value ?? defaultCatalogSortOption;
 }
 
 /**
@@ -196,7 +187,7 @@ export function toggleCategoryFilter(
   return toggleMultiSelect(selectedCategories, category, categoryValues);
 }
 
-const priceValues = catalogPriceFilterOptions.map((option) => option.value);
+const priceValues = catalogPriceBands.map((band) => band.value);
 
 export function parsePriceFilter(value: string | null): CatalogPriceFilter[] {
   return parseMultiSelect(value, priceValues);

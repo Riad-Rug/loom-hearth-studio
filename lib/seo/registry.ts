@@ -1,6 +1,7 @@
 import { getBlogPostsState } from "@/lib/blog/posts";
 import { rugStyleCollections } from "@/features/catalog/rug-style-collections";
 import { getProductRoutePath } from "@/lib/catalog/helpers";
+import { storePromise } from "@/lib/order/store-promise";
 import { createProductRepository } from "@/lib/db/repositories/product-repository";
 
 export type SeoRegistryEntityType = "site" | "static_page" | "category" | "product" | "blog_post";
@@ -24,7 +25,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/",
     fallbackTitle: "Loom & Hearth",
     fallbackDescription:
-      "Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
+      `Handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from ${storePromise.shipsFromCity}.`,
   },
   {
     id: "static-about",
@@ -44,7 +45,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/contact",
     fallbackTitle: "Contact Loom & Hearth Studio",
     fallbackDescription:
-      "Contact Loom & Hearth for inquiries about handmade Moroccan rugs, poufs, pillows, antiques, and direct sourcing from Casablanca.",
+      `Contact Loom & Hearth for inquiries about handmade Moroccan rugs, poufs, pillows, antiques, and direct sourcing from ${storePromise.shipsFromCity}.`,
   },
   {
     id: "static-faq",
@@ -131,7 +132,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/shop",
     fallbackTitle: "Shop",
     fallbackDescription:
-      "Browse handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from Casablanca.",
+      `Browse handmade Moroccan rugs, poufs, pillows and antiques — one of each, sold direct from ${storePromise.shipsFromCity}.`,
   },
   {
     id: "category-rugs",
@@ -141,7 +142,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/shop/rugs",
     fallbackTitle: "Rugs",
     fallbackDescription:
-      "Browse handmade Moroccan rugs, including Beni Ourain and one-of-a-kind pieces sold direct from Casablanca.",
+      `Browse handmade Moroccan rugs, including Beni Ourain and one-of-a-kind pieces sold direct from ${storePromise.shipsFromCity}.`,
   },
   {
     id: "category-rugs-beni-ourain",
@@ -160,7 +161,7 @@ export const seoStaticRouteRegistry: SeoRegistryItem[] = [
     path: "/shop/poufs",
     fallbackTitle: "Poufs",
     fallbackDescription:
-      "Browse handmade Moroccan poufs and rug-based seating pieces sold direct from Casablanca.",
+      `Browse handmade Moroccan poufs and rug-based seating pieces sold direct from ${storePromise.shipsFromCity}.`,
   },
   {
     id: "category-pillows",

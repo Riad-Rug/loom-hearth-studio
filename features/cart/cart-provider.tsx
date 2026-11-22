@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -9,29 +10,23 @@ import {
   type ReactNode,
 } from "react";
 
-import { getCategoryLabel, getProductRoutePath } from "@/lib/catalog/helpers";
+import {
+  addProductToCart,
+  getAddedCartLine,
+  limitCartItems,
+  parseStoredCartItem,
+  setCartItemQuantity,
+  toCommerceItem,
+  type AddCartProductInput,
+  type CartLineLimit,
+  type CartLineStock,
+  type CartStoreItem,
+} from "@/features/cart/cart-items";
+import { trackCommerceEvent } from "@/lib/analytics/commerce-tracking";
+import type { ProductAvailability } from "@/lib/catalog/availability";
 import { calculateShippingUsd } from "@/lib/order/shipping";
-import type { Product } from "@/types/domain";
 
 const CART_STORAGE_KEY = "loom-hearth-studio.cart";
-
-export type CartStoreItem = {
-  id: string;
-  href: string;
-  productId: string;
-  productType: Product["type"];
-  productCategory: Product["category"];
-  name: string;
-  priceUsd: number;
-  quantity: number;
-  variantName?: string;
-};
-
-type AddCartProductInput = {
-  product: Product;
-  quantity: number;
-  variantName?: string;
-};
 
 type AppliedPromo = {
   code: string;
@@ -48,9 +43,18 @@ type CartContextValue = {
   promoMessage: string | null;
   shippingUsd: number;
   totalUsd: number;
+  // A line not checked against the catalog yet counts as available; checkout
+  // validates every line again before the card is authorized.
+  getItemAvailability: (item: CartStoreItem) => ProductAvailability;
+  hasUnavailableItems: boolean;
+  // The cart lowered this line to the units left since the shopper last set it.
+  isQuantityReduced: (item: CartStoreItem) => boolean;
   addProduct: (input: AddCartProductInput) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  limitItems: (limits: CartLineLimit[]) => void;
+  // A line keeps the price it was added at until this sets the price charged now; it also re-reads stock.
+  refreshItems: (prices: ReadonlyArray<{ id: string; priceUsd: number }>) => void;
   applyPromoCode: (code: string) => Promise<{ status: "success" | "error"; message: string }>;
   removePromoCode: () => void;
   clearCart: () => void;
@@ -66,6 +70,15 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartStoreItem[]>([]);
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+  const [stockByLineId, setStockByLineId] = useState<Partial<Record<string, CartLineStock>>>({});
+  const [reducedLineIds, setReducedLineIds] = useState<ReadonlySet<string>>(new Set());
+  const [stockReadCount, setStockReadCount] = useState(0);
+  // Quantities are part of the key so a changed line is checked against fresh stock.
+  const stockRequestKey = JSON.stringify(
+    items
+      .map((item) => ({ id: item.id, productId: item.productId, variantName: item.variantName, quantity: item.quantity }))
+      .sort((left, right) => left.id.localeCompare(right.id)),
+  );
 
   useEffect(() => {
     try {
@@ -78,14 +91,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const parsedValue = JSON.parse(storedValue) as unknown;
 
       if (Array.isArray(parsedValue)) {
-        setItems(parsedValue.filter(isCartStoreItem));
+        setItems(parsedValue.filter(parseStoredCartItem));
         return;
       }
 
       if (parsedValue && typeof parsedValue === "object") {
         const candidate = parsedValue as Partial<StoredCartState>;
         if (Array.isArray(candidate.items)) {
-          setItems(candidate.items.filter(isCartStoreItem));
+          setItems(candidate.items.filter(parseStoredCartItem));
         }
         if (candidate.promo && isAppliedPromo(candidate.promo)) {
           setAppliedPromo(candidate.promo);
@@ -106,7 +119,68 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [appliedPromo, items]);
 
   useEffect(() => {
-    if (!appliedPromo?.code || !items.length) {
+    const lines = JSON.parse(stockRequestKey) as Array<{ id: string; productId: string; variantName?: string }>;
+
+    if (!lines.length) {
+      return;
+    }
+
+    let cancelled = false;
+    void fetchLineStock(lines.map(({ id, productId, variantName }) => ({ id, productId, variantName }))).then((stock) => {
+      if (!cancelled && stock) {
+        setStockByLineId(stock);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [stockRequestKey, stockReadCount]);
+
+  // Keeps each line's cap at the units the shop has left, and lowers a line the
+  // stock no longer covers instead of letting checkout refuse it.
+  useEffect(() => {
+    const limits = items.flatMap((item) => {
+      const availableQuantity = stockByLineId[item.id]?.availableQuantity;
+
+      return availableQuantity !== undefined && (item.availableQuantity !== availableQuantity || item.quantity > availableQuantity)
+        ? [{ id: item.id, availableQuantity, reduced: item.quantity > availableQuantity }]
+        : [];
+    });
+
+    if (!limits.length) {
+      return;
+    }
+
+    setItems((currentItems) => limitCartItems(currentItems, limits));
+    // A line whose new cap is above its quantity is no longer held down by the stock.
+    setReducedLineIds((current) => {
+      const next = new Set(current);
+
+      for (const limit of limits) {
+        if (limit.reduced) {
+          next.add(limit.id);
+        } else {
+          next.delete(limit.id);
+        }
+      }
+
+      return next;
+    });
+  }, [items, stockByLineId]);
+
+  const getItemAvailability = useCallback(
+    (item: CartStoreItem) => stockByLineId[item.id]?.availability ?? "available",
+    [stockByLineId],
+  );
+  // Only lines that can be bought count toward the totals, the discount and free shipping.
+  const buyableItems = useMemo(
+    () => items.filter((item) => getItemAvailability(item) === "available"),
+    [getItemAvailability, items],
+  );
+
+  useEffect(() => {
+    if (!appliedPromo?.code || !buyableItems.length) {
       if (!items.length && appliedPromo) {
         setAppliedPromo(null);
       }
@@ -114,7 +188,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     let cancelled = false;
-    void validatePromo(appliedPromo.code, items).then((result) => {
+    void validatePromo(appliedPromo.code, buyableItems).then((result) => {
       if (cancelled) {
         return;
       }
@@ -134,11 +208,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [items, appliedPromo?.code]);
+  }, [items, buyableItems, appliedPromo?.code]);
 
   const value = useMemo<CartContextValue>(() => {
     const subtotalUsd = roundCurrency(
-      items.reduce((runningTotal, item) => runningTotal + item.priceUsd * item.quantity, 0),
+      buyableItems.reduce((runningTotal, item) => runningTotal + item.priceUsd * item.quantity, 0),
     );
     const discountUsd = Math.min(appliedPromo?.discountUsd ?? 0, subtotalUsd);
     const shippingUsd = calculateShippingUsd(subtotalUsd - discountUsd);
@@ -152,33 +226,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
       promoMessage: appliedPromo?.message ?? null,
       shippingUsd,
       totalUsd: roundCurrency(subtotalUsd - discountUsd + shippingUsd),
+      getItemAvailability,
+      hasUnavailableItems: items.some((item) => getItemAvailability(item) !== "available"),
+      isQuantityReduced: (item) => reducedLineIds.has(item.id),
       addProduct(input) {
+        const addedLine = getAddedCartLine(items, input);
+
         setItems((currentItems) => addProductToCart(currentItems, input));
+
+        if (addedLine) {
+          trackCommerceEvent({
+            name: "add_to_cart",
+            items: [toCommerceItem({ ...addedLine.item, quantity: addedLine.quantity })],
+          });
+        }
       },
       removeItem(id) {
         setItems((currentItems) => currentItems.filter((item) => item.id !== id));
       },
       updateQuantity(id, quantity) {
+        setItems((currentItems) => setCartItemQuantity(currentItems, id, quantity));
+        setReducedLineIds((current) => new Set([...current].filter((lineId) => lineId !== id)));
+      },
+      limitItems(limits) {
+        setItems((currentItems) => limitCartItems(currentItems, limits));
+      },
+      refreshItems(prices) {
+        const priceById = new Map(prices.map((line) => [line.id, line.priceUsd]));
+
         setItems((currentItems) =>
-          currentItems.flatMap((item) => {
-            if (item.id !== id) {
-              return [item];
-            }
-
-            if (item.productType === "rug") {
-              return [{ ...item, quantity: 1 }];
-            }
-
-            if (quantity < 1) {
-              return [];
-            }
-
-            return [{ ...item, quantity }];
-          }),
+          currentItems.map((item) => ({ ...item, priceUsd: priceById.get(item.id) ?? item.priceUsd })),
         );
+        setStockReadCount((count) => count + 1);
       },
       async applyPromoCode(code) {
-        const result = await validatePromo(code, items);
+        const result = await validatePromo(code, buyableItems);
 
         if (result.status === "success") {
           setAppliedPromo({
@@ -200,7 +282,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setAppliedPromo(null);
       },
     };
-  }, [appliedPromo, items]);
+  }, [appliedPromo, buyableItems, getItemAvailability, items, reducedLineIds]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
@@ -220,64 +302,6 @@ export function formatUsd(amount: number) {
     style: "currency",
     currency: "USD",
   }).format(amount);
-}
-
-export function getCartItemLabel(item: CartStoreItem) {
-  return getCategoryLabel(item.productCategory);
-}
-
-export function getCartItemQuantityRule(item: CartStoreItem) {
-  return item.productType === "rug" ? "Locked to 1" : "Quantity controls allowed";
-}
-
-function addProductToCart(
-  currentItems: CartStoreItem[],
-  input: AddCartProductInput,
-): CartStoreItem[] {
-  const nextItem = createCartStoreItem(input);
-  const existingItemIndex = currentItems.findIndex((item) => item.id === nextItem.id);
-
-  if (existingItemIndex === -1) {
-    return [...currentItems, nextItem];
-  }
-
-  return currentItems.map((item, index) => {
-    if (index !== existingItemIndex) {
-      return item;
-    }
-
-    if (item.productType === "rug") {
-      return { ...item, quantity: 1 };
-    }
-
-    return {
-      ...item,
-      quantity: item.quantity + nextItem.quantity,
-    };
-  });
-}
-
-function createCartStoreItem({
-  product,
-  quantity,
-  variantName,
-}: AddCartProductInput): CartStoreItem {
-  const normalizedQuantity = product.type === "rug" ? 1 : Math.max(1, quantity);
-
-  return {
-    id:
-      product.type === "multiUnit" && variantName
-        ? `${product.id}::${variantName}`
-        : product.id,
-    href: getProductRoutePath(product),
-    productId: product.id,
-    productType: product.type,
-    productCategory: product.category,
-    name: product.name,
-    priceUsd: product.priceUsd,
-    quantity: normalizedQuantity,
-    variantName,
-  };
 }
 
 async function validatePromo(code: string, items: CartStoreItem[]) {
@@ -324,28 +348,22 @@ async function validatePromo(code: string, items: CartStoreItem[]) {
   };
 }
 
-function isCartStoreItem(value: unknown): value is CartStoreItem {
-  if (!value || typeof value !== "object") {
-    return false;
+async function fetchLineStock(lines: Array<{ id: string; productId: string; variantName?: string }>) {
+  try {
+    const response = await fetch("/api/cart/availability", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lines }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return ((await response.json()) as { lines: Record<string, CartLineStock> }).lines;
+  } catch {
+    return null;
   }
-
-  const candidate = value as Partial<CartStoreItem>;
-
-  return (
-    typeof candidate.id === "string" &&
-    typeof candidate.href === "string" &&
-    typeof candidate.productId === "string" &&
-    (candidate.productType === "rug" || candidate.productType === "multiUnit") &&
-    (candidate.productCategory === "rugs" ||
-      candidate.productCategory === "vintage" ||
-      candidate.productCategory === "decor" ||
-      candidate.productCategory === "pillows" ||
-      candidate.productCategory === "poufs") &&
-    typeof candidate.name === "string" &&
-    typeof candidate.priceUsd === "number" &&
-    typeof candidate.quantity === "number" &&
-    (candidate.variantName === undefined || typeof candidate.variantName === "string")
-  );
 }
 
 function isAppliedPromo(value: unknown): value is AppliedPromo {

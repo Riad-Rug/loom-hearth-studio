@@ -56,8 +56,7 @@
   gap: var(--space-2);
 }
 
-.badges span,
-.freeShippingLine {
+.badges span {
   padding: 0.7rem 0.95rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
@@ -119,6 +118,23 @@
   }
 }
 
+.toggleFieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.toggleLegend {
+  margin-bottom: var(--space-3);
+  padding: 0;
+  color: var(--color-olive-thread);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .toggleGroup {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -127,7 +143,9 @@
 
 .toggleOption {
   display: grid;
-  gap: 0.3rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
   padding: var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -136,7 +154,22 @@
   cursor: pointer;
 }
 
-.toggleOption span {
+.toggleOption input {
+  margin: 0.2rem 0 0;
+  accent-color: var(--button-primary-bg);
+}
+
+.toggleOption:has(input:focus-visible) {
+  outline: 2px solid rgba(198, 106, 61, 0.5);
+  outline-offset: 2px;
+}
+
+.toggleText {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.toggleText span {
   color: var(--color-olive-thread);
   font-size: 0.84rem;
 }
@@ -448,6 +481,29 @@
 .itemRow h3 {
   margin: 0.2rem 0;
   font-size: 1.05rem;
+}
+
+.itemThumb {
+  position: relative;
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+}
+
+.itemThumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.itemText {
+  flex: 1;
+  min-width: 0;
 }
 
 .editCartLink {

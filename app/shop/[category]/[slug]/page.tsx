@@ -3,14 +3,18 @@ import type { Route } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
+import { ProductOpenGraphMeta } from "@/components/seo/product-open-graph-meta";
 import {
   getCategoryProductDetailByParams,
+  getProductIndexFacts,
   getProductRedirectPathForSlug,
 } from "@/lib/catalog/service";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
+import { isProductIndexable } from "@/lib/seo/index-policy";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { buildProductMetaDescription } from "@/lib/seo/product-metadata";
+import { applyProductTitle, buildProductTitle } from "@/lib/seo/product-title";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/schema";
 
 type CategoryProductPageProps = {
@@ -49,6 +53,7 @@ export default async function CategoryProductPage({
       <JsonLd
         data={productSchema({
           id: product.id,
+          catalogNumber: product.catalogNumber,
           name: product.name,
           description: product.description,
           path: productPath,
@@ -76,11 +81,7 @@ export default async function CategoryProductPage({
               ? product.palette.map((swatch) => swatch.label)
               : undefined,
           imageUrls: product.gallery.map((image) => image.src),
-          availability:
-            product.status === "sold" ||
-            (product.type === "multiUnit" && product.inventoryState === "outOfStock")
-              ? "outOfStock"
-              : "inStock",
+          availability: product.availability,
           isOneOfOne: product.category === "vintage",
           createdAt: product.cartProduct.createdAt,
         })}
@@ -95,6 +96,10 @@ export default async function CategoryProductPage({
           },
           { name: product.name, path: productPath },
         ])}
+      />
+      <ProductOpenGraphMeta
+        priceAmount={product.priceUsd}
+        availability={product.availability}
       />
       <ProductDetailPageView product={product} />
     </>
@@ -113,33 +118,31 @@ export async function generateMetadata({
   if (!product) {
     return buildMetadata({
       title: "Shop",
-      description: "Browse Moroccan rugs, poufs, pillows, and decor sourced in Marrakech and prepared for review-first buying.",
+      description: "Browse Moroccan rugs, poufs, pillows, and decor sourced in Morocco and prepared for review-first buying.",
       path: "/shop",
     });
   }
 
   const ogImage = product.gallery[0];
+  const title = buildProductTitle(product);
+  const indexFacts = await getProductIndexFacts(product.cartProduct);
 
-  return buildManagedMetadata({
-    entityType: "product",
-    entityKey: product.id,
-    title: product.seoTitle || product.name,
-    description: buildProductMetaDescription(product),
-    path: getCategoryProductPath(product),
-    type: "product",
-    ogImageUrl: ogImage?.src,
-    ogImageAlt: ogImage?.altText || product.name,
-    ogImageWidth: 1600,
-    ogImageHeight: 1200,
-    product: {
-      priceAmount: product.priceUsd,
-      availability:
-        product.status === "sold" ||
-        (product.type === "multiUnit" && product.inventoryState === "outOfStock")
-          ? "oos"
-          : "instock",
-    },
-  });
+  return applyProductTitle(
+    await buildManagedMetadata({
+      entityType: "product",
+      entityKey: product.id,
+      title: title.text,
+      description: buildProductMetaDescription(product),
+      path: getCategoryProductPath(product),
+      noIndexFollow: !isProductIndexable(indexFacts, new Date()),
+      type: "product",
+      ogImageUrl: ogImage?.src,
+      ogImageAlt: product.ogImageAlt,
+      ogImageWidth: 1600,
+      ogImageHeight: 1200,
+    }),
+    title,
+  );
 }
 
 function getCategoryProductPath(product: { category: string; slug: string }) {

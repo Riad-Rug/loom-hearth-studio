@@ -7,8 +7,13 @@ import {
   allRugsNavLink,
   getRugStyleCollection,
 } from "@/features/catalog/rug-style-collections";
-import { listRugStyleNavLinks, listRugStyleProductCards } from "@/lib/catalog/service";
+import {
+  listIndexableRugStyleSlugs,
+  listRugStyleNavLinks,
+  listRugStyleProductCards,
+} from "@/lib/catalog/service";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
+import { categoryOgImage } from "@/lib/seo/category-og-image";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
@@ -28,37 +33,29 @@ export async function generateMetadata({
     return buildMetadata({
       title: "Rugs",
       description:
-        "Browse handcrafted Moroccan rugs sourced in Marrakech and prepared for review-first buying.",
+        "Browse handcrafted Moroccan rugs sourced in Morocco and prepared for review-first buying.",
       path: "/shop/rugs",
     });
   }
 
-  // Every canonical rug style has a collection page, but one-of-a-kind stock
-  // means a style can legitimately stand at zero pieces for a while. Same rule
-  // that was applied by hand to /shop/decor — don't let an indexable page show
-  // "0 pieces" — except computed live per style, because which styles are empty
-  // changes every time a rug sells or lands.
-  //
-  // This is a second read of the same rows the page body loads below: nothing in
-  // this codebase wraps repository reads in React cache(), and service.ts leans
-  // on noStore() rather than memoisation, so generateMetadata and the render
-  // each issue their own query. Accepted deliberately — the alternative is
-  // hardcoding today's empty styles into the source, which is exactly the
-  // staleness this change removes.
-  const products = await listRugStyleProductCards({ style });
-  // Mirrors isPurchasableProduct against the card view model: active, and not an
-  // out-of-stock multi-unit listing.
-  const hasPurchasableProducts = products.some(
-    (product) => product.status === "active" && !product.isOutOfStock,
-  );
+  // One-of-a-kind stock means a style can stand at zero pieces for a while. The
+  // page stays indexed while a piece is for sale or sold recently enough to still
+  // rank (lib/seo/index-policy.ts), then asks to be dropped but keeps its links
+  // followed, since they all point at pages that want crawl signal. The rug rows
+  // read here are the ones the body below reuses (listRugRows in service.ts).
+  const [products, indexableStyles] = await Promise.all([
+    listRugStyleProductCards({ style }),
+    listIndexableRugStyleSlugs(new Date()),
+  ]);
 
   return buildManagedMetadata({
     entityType: "category",
     entityKey: `rugs-${style}`,
-    title: collection.title,
-    description: collection.description,
+    title: collection.page?.metaTitle ?? collection.title,
+    description: collection.page?.metaDescription ?? collection.description,
     path: `/shop/rugs/${style}`,
-    noIndex: !hasPurchasableProducts,
+    noIndexFollow: !indexableStyles.has(style),
+    ...categoryOgImage(products),
   });
 }
 
@@ -79,11 +76,9 @@ export default async function RugStylePage({ params }: RugStylePageProps) {
   // link, from the chip row on /shop/rugs, which left the six pages that should
   // rank for "beni ourain rug" and its siblings starved while /shop and
   // /shop/rugs absorbed the weight. Every stocked style now links to every other
-  // one under its own keyword-exact anchor. Styles with nothing purchasable are
-  // omitted rather than greyed — this is a content strip with no fixed slots,
-  // and their pages are served noindex, so an anchor here would aim crawl signal
-  // at a page we are asking Google to skip. They rejoin on their own the moment
-  // stock lands.
+  // one under its own keyword-exact anchor. Styles with nothing to buy are
+  // omitted rather than greyed, since this strip has no fixed slots to hold
+  // open. They rejoin on their own the moment stock lands.
   const siblingStyleLinks = styleNavLinks.filter(
     (link) => link.available && link.slug !== style,
   );
@@ -113,10 +108,11 @@ export default async function RugStylePage({ params }: RugStylePageProps) {
         category={collection.category}
         collection={{
           eyebrow: "Collection",
-          title: collection.title,
+          title: collection.page?.heading ?? collection.title,
           description: collection.description,
           bullets: collection.bullets,
           href: `/shop/rugs/${style}`,
+          guide: collection.page?.guide,
         }}
         products={products}
         styleLinks={

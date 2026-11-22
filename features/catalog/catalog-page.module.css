@@ -169,7 +169,7 @@
 }
 
 /* Category, price, and size are all multi-select groups, so they use checkboxes
-   rather than the chip (which now only serves the "Hide sold pieces" toggle).
+   rather than the chip (which now only serves the "Available now" toggle).
    Native control, site accent, same 1px/4px vocabulary. */
 .filterCheckList {
   display: grid;
@@ -609,6 +609,12 @@
     border-color 180ms ease;
 }
 
+/* Cards waiting behind "Show more" carry [hidden], which .productCard's
+   display: flex would otherwise defeat. */
+.productCard[hidden] {
+  display: none;
+}
+
 .productCard:hover,
 .productCard:focus-visible {
   border-color: rgba(34, 33, 38, 0.18);
@@ -834,34 +840,26 @@
   outline-offset: 2px;
 }
 
-/* Three-tier responsive copy for the shop header. The landing intro and the
-   shipping-scope note are authored once per tier and toggled by display rather
-   than truncated, the same vocabulary home-page.module.css uses for its
-   .desktopCopy/.mobileCopy pairs. The breakpoints are the catalog's own: 900px
-   is where the filter sidebar collapses above the grid, 768px where the grid
-   drops to phone gutters. */
-.tabletCopy,
-.phoneCopy {
-  display: none;
-}
-
-@media (max-width: 900px) {
-  .desktopCopy {
+/* Header runs hidden per width (see catalogIntros). The three queries never
+   overlap, so a run hidden at two widths carries two classes and source order
+   does not matter. 900px is where the filter sidebar collapses above the grid,
+   768px where the grid drops to phone gutters; the .02px offsets keep a
+   fractional viewport width from falling between two queries. */
+@media (min-width: 900.02px) {
+  .hideOnDesktop {
     display: none;
   }
+}
 
-  .tabletCopy {
-    display: block;
+@media (min-width: 768.02px) and (max-width: 900px) {
+  .hideOnTablet {
+    display: none;
   }
 }
 
 @media (max-width: 768px) {
-  .tabletCopy {
+  .hideOnPhone {
     display: none;
-  }
-
-  .phoneCopy {
-    display: block;
   }
 }
 
@@ -935,4 +933,22 @@
 .catalogEssayToggle:hover,
 .catalogEssayToggle:focus-visible {
   text-decoration-thickness: 2px;
+}
+
+.catalogEssayFaqs {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.catalogEssayFaqs h3 {
+  margin: 0 0 var(--space-2);
+  font-size: 1.15rem;
+}
+
+/* The global `a` reset would otherwise leave inline links reading as plain text. */
+.catalogEssay a {
+  color: var(--color-green);
+  text-decoration: underline;
+  text-underline-offset: 0.15rem;
 }

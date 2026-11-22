@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
+import { unavailableCopy } from "@/lib/catalog/availability";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
 import styles from "./catalog-page.module.css";
@@ -46,12 +47,18 @@ type ProductCardProps = {
    * `.productTitle` (the CSS rule is shared with the `h3` selector).
    */
   titleAs?: "h3" | "p";
+  /** Loads the primary image eagerly at high priority. Set it for the first row only. */
+  priority?: boolean;
+  /** Keeps the card's link in the markup while it waits behind "Show more". */
+  hidden?: boolean;
 };
 
 export function ProductCard({
   product,
   sizes = catalogCardSizes,
   titleAs = "h3",
+  priority = false,
+  hidden,
 }: ProductCardProps) {
   const Title = titleAs;
   const [imageFailed, setImageFailed] = useState(false);
@@ -83,6 +90,7 @@ export function ProductCard({
     <Link
       aria-label={product.displayName}
       className={styles.productCard}
+      hidden={hidden}
       href={product.href as Route}
     >
       <div className={styles.productMedia}>
@@ -93,10 +101,11 @@ export function ProductCard({
               className={`${styles.productImage} ${styles.productImagePrimary} ${
                 primaryImageLoaded ? styles.productImageLoaded : ""
               }`}
+              fetchPriority={priority ? "high" : undefined}
               fill
-              loading="lazy"
               onError={handlePrimaryImageError}
               onLoad={() => setPrimaryImageLoaded(true)}
+              priority={priority}
               sizes={sizes}
               src={primaryImage.src}
             />
@@ -128,8 +137,8 @@ export function ProductCard({
       <div className={styles.productContent}>
         <div className={styles.productTitleRow}>
           <Title className={styles.productTitle}>{product.displayName}</Title>
-          {product.status === "sold" ? (
-            <span className={styles.productMonoBadge}>SOLD</span>
+          {product.availability !== "available" ? (
+            <span className={styles.productMonoBadge}>{unavailableCopy[product.availability].label}</span>
           ) : null}
         </div>
         <p className={styles.productDimensions}>{product.subtitle}</p>

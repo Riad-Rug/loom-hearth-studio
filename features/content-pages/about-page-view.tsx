@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
 import { aboutBridge, aboutHero, aboutSections } from "@/features/content-pages/content-pages-data";
+import { staticImageSrc } from "@/lib/media/static-image";
 
 import styles from "./content-pages.module.css";
 
@@ -109,7 +110,7 @@ export function AboutPageView() {
             fill
             priority
             sizes="(max-width: 1100px) 100vw, 40vw"
-            src="/about/founder-portrait.png"
+            src={staticImageSrc("about/founder-portrait", "hero")}
           />
         </div>
       </section>

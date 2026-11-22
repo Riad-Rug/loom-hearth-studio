@@ -14,17 +14,22 @@ import type { Route } from "next";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, RefObject } from "react";
 
+import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
 import { useCart } from "@/features/cart/cart-provider";
 import { ProductCard, recommendationRailCardSizes } from "@/features/catalog/product-card";
 import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
 import { trackViewItem } from "@/lib/analytics/gtag";
+import { unavailableCopy, type ProductAvailability, type UnavailableReason } from "@/lib/catalog/availability";
 import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
-import { normalizeSlug } from "@/lib/catalog/product-validation";
+import { humanizeProductToken, parseProductTitle } from "@/lib/catalog/product-card-name";
+import { normalizeSlug, productRugStyleOptions } from "@/lib/catalog/product-validation";
+import { calculateShippingUsd } from "@/lib/order/shipping";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import {
   getTopRecommendationHistoryCategory,
   recordCategoryInterest,
@@ -41,35 +46,41 @@ import "./tailwind.css";
 type ProductDetailPageViewProps = {
   product: ProductDetailPageViewModel;
   /**
-   * Whether the rug's style page has something purchasable behind it right now.
-   * Only the rug route can answer that (it is a live catalog read), and while a
-   * style is empty its page is served noindex, so neither the breadcrumb nor the
-   * Style row may link to it. Defaults to true because the category route never
-   * renders a style level at all and has nothing to report.
+   * Whether the rug's style page is indexed right now (lib/seo/index-policy.ts).
+   * Only the rug route can answer that (it is a live catalog read), and while the
+   * page asks to be dropped neither the breadcrumb nor the Style row may link to
+   * it. Defaults to true because the category route never renders a style level
+   * at all and has nothing to report.
    */
-  rugStyleHasStock?: boolean;
+  rugStylePageIndexable?: boolean;
 };
 
-type DisplayGalleryItem = ProductDetailPageViewModel["gallery"][number] & {
-  tone?: "neutral" | "condition";
-};
+type GalleryItem = ProductDetailPageViewModel["gallery"][number];
 
 const PANEL_CARD = "grid gap-[var(--space-3)] p-[var(--space-4)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)]";
 const PANEL_EYEBROW = "text-[var(--color-green)] text-[0.72rem] font-semibold tracking-[0.08em] uppercase";
 const PRIMARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium";
+const SECONDARY_ACTION = "inline-flex items-center justify-center min-h-[3rem] px-[1rem] py-[0.8rem] border border-[color:var(--color-green)] rounded-[4px] bg-transparent text-[var(--color-green)] font-medium";
 const PURCHASE_MICROCOPY = "text-[var(--color-text-muted)] text-[0.92rem]";
+const APPROVAL_MICROCOPY = "Card authorized at checkout, charged only after your approval.";
+const LIGHTBOX_CONTROL = "px-[1rem] py-[0.6rem] border border-[color:var(--color-bg)] rounded-full bg-transparent text-[var(--color-bg)] text-[0.85rem] cursor-pointer";
 
 export function ProductDetailPageView({
   product,
-  rugStyleHasStock = true,
+  rugStylePageIndexable = true,
 }: ProductDetailPageViewProps) {
-  const gallery = useMemo(() => createDisplayGallery(product), [product]);
+  const gallery = product.gallery;
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [preferredHistoryCategory, setPreferredHistoryCategory] = useState<ProductCategory | null>(null);
   const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isPointerFine, setIsPointerFine] = useState(false);
-  const reserveProduct = useReserveProduct(product);
+  const enlargeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const { reserve: reserveProduct } = usePurchaseActions(product);
+  const purchaseState = product.availability;
+  const shippingCopy = getShippingCopy(product.priceUsd);
+  const contentsNote = getContentsNote(product);
+  const title = parseProductTitle(product.name);
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -99,7 +110,27 @@ export function ProductDetailPageView({
       }
       return new Set(previous).add(id);
     });
+
+    // The lightbox only renders a photo that loads. If the one it shows fails,
+    // move on to the next good photo, or close, so the open state never
+    // outlives the dialog and reopens it on the next thumbnail click.
+    if (isLightboxOpen && gallery[activeImageIndex]?.id === id) {
+      const nextIndex = findAdjacentViewableIndex(gallery, new Set(failedImageIds).add(id), activeImageIndex, 1);
+
+      if (nextIndex === null) {
+        closeLightbox();
+      } else {
+        setActiveImageIndex(nextIndex);
+      }
+    }
   };
+
+  function closeLightbox() {
+    setIsLightboxOpen(false);
+    // Headless UI returns focus to the button that opened the dialog, but that
+    // button unmounts once the shopper moves to another photo.
+    requestAnimationFrame(() => enlargeButtonRef.current?.focus());
+  }
 
   useEffect(() => {
     setPreferredHistoryCategory(getTopRecommendationHistoryCategory());
@@ -126,6 +157,25 @@ export function ProductDetailPageView({
   const activeImage = gallery[activeImageIndex] ?? gallery[0] ?? null;
   const activeImageBroken = activeImage ? failedImageIds.has(activeImage.id) : false;
   const activeImageAlt = activeImage?.altText || product.name;
+  const viewableImageIndexes = gallery.flatMap((item, index) =>
+    item.src && !failedImageIds.has(item.id) ? [index] : [],
+  );
+  const activeViewablePosition = viewableImageIndexes.indexOf(activeImageIndex);
+
+  function showAdjacentImage(step: 1 | -1) {
+    const nextIndex = findAdjacentViewableIndex(gallery, failedImageIds, activeImageIndex, step);
+
+    if (nextIndex !== null) {
+      setActiveImageIndex(nextIndex);
+    }
+  }
+
+  function handleLightboxKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      event.preventDefault();
+      showAdjacentImage(event.key === "ArrowLeft" ? -1 : 1);
+    }
+  }
   const displayedRecommendations = getDisplayedRecommendations(
     product.similarRugs,
     preferredHistoryCategory,
@@ -145,7 +195,7 @@ export function ProductDetailPageView({
     displayedCrossSellRecommendations,
     preferredHistoryCategory,
   );
-  const specRows = buildSpecificationRows(product, rugStyleHasStock);
+  const specRows = buildSpecificationRows(product, rugStylePageIndexable);
 
   return (
     <div className="grid gap-[var(--space-7)] max-[700px]:pb-[5rem]">
@@ -168,7 +218,7 @@ export function ProductDetailPageView({
                     >
                       {item.src && !failedImageIds.has(item.id) ? (
                         <NextImage
-                          alt={item.altText ? `${item.altText} — ${item.label}` : `${product.name} — ${item.label}`}
+                          alt={item.altText || product.name}
                           className="block object-cover object-center"
                           fill
                           loading="lazy"
@@ -178,11 +228,10 @@ export function ProductDetailPageView({
                         />
                       ) : (
                         <PlaceholderMedia
-                          alt={`${product.name} — ${item.label}`}
+                          alt={`${product.name}, ${item.label}`}
                           aspectRatio="1 / 1"
                           label={item.label}
                           sizes="5rem"
-                          tone={item.tone === "condition" ? "condition" : "neutral"}
                         />
                       )}
                     </Tab>
@@ -196,6 +245,7 @@ export function ProductDetailPageView({
                       className="h-[min(78vh,40rem)] max-[700px]:h-[60vh] flex items-center justify-center overflow-hidden border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)] max-[700px]:order-1"
                     >
                       <ProductHeroImage
+                        enlargeButtonRef={index === activeImageIndex ? enlargeButtonRef : undefined}
                         isBroken={failedImageIds.has(item.id)}
                         isPointerFine={isPointerFine}
                         item={item}
@@ -220,28 +270,42 @@ export function ProductDetailPageView({
           <div
             className="grid gap-[var(--space-4)] p-[var(--space-5)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-bg)] col-start-2 row-start-1 row-span-3 self-start sticky top-[var(--site-header-scroll-offset)] max-[1100px]:static max-[1100px]:col-start-auto max-[1100px]:row-start-auto max-[1100px]:row-span-1"
           >
-            <ProductBreadcrumb product={product} rugStyleHasStock={rugStyleHasStock} />
+            <ProductBreadcrumb product={product} rugStylePageIndexable={rugStylePageIndexable} />
 
             <div className="flex flex-wrap gap-[0.6rem]">
               <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-green)] rounded-full text-[var(--color-green)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
-                {product.status === "sold"
-                  ? "SOLD"
-                  : product.type === "rug"
-                    ? "1 OF 1"
-                    : "1 AVAILABLE"}
+                {getStatusPillLabel(product, purchaseState)}
               </span>
               <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-border)] rounded-full text-[var(--color-text-subtle)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
                 {product.catalogNumber}
               </span>
             </div>
 
-            <h1 className="text-[clamp(2.35rem,4vw,3.5rem)]">{product.name}</h1>
-            <p className="text-[var(--color-green)] text-[clamp(1.8rem,3vw,2.3rem)] leading-[1.26]">
-              {product.priceUsdLabel}
-            </p>
+            <h1 className="text-[clamp(1.65rem,4vw,3.5rem)]">
+              {title.name}
+              {title.size ? (
+                <>
+                  {" "}
+                  <span className="block mt-[0.4rem] [font-family:var(--font-body)] text-[clamp(1rem,1.6vw,1.2rem)] text-[var(--color-text-muted)]">
+                    {title.size}
+                  </span>
+                </>
+              ) : null}
+            </h1>
+            <div className="grid gap-[0.35rem]">
+              <p className="text-[var(--color-green)] text-[clamp(1.8rem,3vw,2.3rem)] leading-[1.26]">
+                {product.priceUsdLabel}
+              </p>
+              {purchaseState === "available" ? (
+                <p className={PURCHASE_MICROCOPY}>{shippingCopy.full}</p>
+              ) : null}
+              {contentsNote ? (
+                <p className="text-[var(--color-ink)] font-medium">{contentsNote.value}</p>
+              ) : null}
+            </div>
 
-            {product.status === "sold" ? (
-              <SoldPurchaseShell />
+            {purchaseState !== "available" ? (
+              <UnavailablePurchaseShell product={product} state={purchaseState} />
             ) : product.type === "rug" ? (
               <RugPurchaseShell product={product} />
             ) : (
@@ -253,14 +317,17 @@ export function ProductDetailPageView({
             <section className={PANEL_CARD} aria-label="Verification promise">
               <p className={PANEL_EYEBROW}>Verification promise</p>
               <p>
-                We send daylight photos of the exact piece, including wear and condition, before the charge is captured.
+                We send {storePromise.approvalMedia} of the exact piece, including wear and condition,{" "}
+                {storePromiseCopy.approvalTurnaround} of your order. Your card is charged only after you approve.
               </p>
             </section>
 
             <section className={PANEL_CARD} aria-label="Shipping and returns">
+              <p className={PANEL_EYEBROW}>Shipping and returns</p>
               <ul className="grid gap-[0.6rem] m-0 pl-[1.1rem] text-[var(--color-ink)] marker:text-[var(--color-green)]">
                 <li>
-                  Tracked shipping from Casablanca to the US. Outside the US?{" "}
+                  {storePromiseCopy.shipsFrom} to {storePromise.shipsToLabel}. Delivery in{" "}
+                  {storePromiseCopy.deliveryWindow} after dispatch. Outside the US?{" "}
                   <Link
                     className="underline underline-offset-2 text-[var(--color-green)]"
                     href={
@@ -270,18 +337,15 @@ export function ProductDetailPageView({
                     Send an inquiry first.
                   </Link>
                 </li>
-                <li>Approval before payment capture.</li>
-                <li>Condition is shown in photos, not softened in copy.</li>
-                <li>Questions handled directly before dispatch.</li>
+                <li>{storePromiseCopy.duties}</li>
+                <li>
+                  {storePromiseCopy.returns}{" "}
+                  <Link className="underline underline-offset-2 text-[var(--color-green)]" href="/returns-policy">
+                    Read the returns policy
+                  </Link>
+                </li>
               </ul>
             </section>
-
-            {product.merchandisingNote ? (
-              <section className={PANEL_CARD}>
-                <p className={PANEL_EYEBROW}>Availability</p>
-                <p>{product.merchandisingNote}</p>
-              </section>
-            ) : null}
           </div>
 
           <div className="grid gap-[var(--space-3)]">
@@ -314,7 +378,7 @@ export function ProductDetailPageView({
 
               {product.detailSections.map((section) => (
                 <section key={section.title}>
-                  <h3 className={PANEL_EYEBROW}>{section.title}</h3>
+                  <h2 className={PANEL_EYEBROW}>{section.title}</h2>
                   <p className="text-[var(--color-ink)] leading-[1.65]">{section.body}</p>
                 </section>
               ))}
@@ -371,12 +435,15 @@ export function ProductDetailPageView({
         </Section>
       ) : null}
 
-      {product.status !== "sold" ? (
+      {purchaseState === "available" ? (
         <div
           className="pdp-sticky-buy hidden max-[700px]:fixed max-[700px]:inset-x-0 max-[700px]:bottom-0 max-[700px]:z-40 max-[700px]:flex max-[700px]:items-center max-[700px]:justify-between max-[700px]:gap-[var(--space-3)] max-[700px]:px-[var(--space-4)] max-[700px]:py-[var(--space-3)] max-[700px]:pb-[calc(var(--space-3)_+_env(safe-area-inset-bottom))] max-[700px]:border-t max-[700px]:border-[color:var(--color-border)] max-[700px]:bg-[var(--color-bg)] max-[700px]:shadow-[0_-4px_12px_rgba(20,20,20,0.12)]"
         >
-          <span className="text-[var(--color-green)] text-[1.1rem] font-semibold whitespace-nowrap">
-            {product.priceUsdLabel}
+          <span className="grid">
+            <span className="text-[var(--color-green)] text-[1.1rem] font-semibold whitespace-nowrap">
+              {product.priceUsdLabel}
+            </span>
+            <span className="text-[var(--color-text-muted)] text-[0.78rem]">{shippingCopy.short}</span>
           </span>
           <button
             className="inline-flex items-center justify-center min-h-[3rem] px-[1.2rem] py-[0.7rem] border border-[color:var(--color-green)] rounded-[4px] bg-[var(--color-green)] text-[var(--color-bg)] font-medium whitespace-nowrap cursor-pointer"
@@ -392,24 +459,51 @@ export function ProductDetailPageView({
         <Dialog
           className="relative z-[1000]"
           open={isLightboxOpen}
-          onClose={() => setIsLightboxOpen(false)}
+          onClose={closeLightbox}
+          onKeyDown={handleLightboxKeyDown}
         >
           <DialogBackdrop className="fixed inset-0 bg-[rgba(20,20,20,0.9)]" />
           <div className="fixed inset-0 flex items-center justify-center p-[var(--space-5)]">
             <button
               aria-label="Close zoomed image"
-              className="absolute top-[var(--space-4)] right-[var(--space-4)] px-[1rem] py-[0.6rem] border border-[color:var(--color-bg)] rounded-full bg-transparent text-[var(--color-bg)] text-[0.85rem]"
+              className={`absolute top-[var(--space-4)] right-[var(--space-4)] ${LIGHTBOX_CONTROL}`}
               type="button"
-              onClick={() => setIsLightboxOpen(false)}
+              onClick={closeLightbox}
             >
               Close
             </button>
-            <DialogPanel>
+            {/* Headless UI closes the dialog on clicks outside the panel, so the
+                previous and next controls live inside it. */}
+            <DialogPanel className="grid justify-items-center gap-[var(--space-3)]">
               <img
                 alt={activeImageAlt}
-                className="block w-auto h-auto max-w-[92vw] max-h-[85vh] object-contain"
+                className="block w-auto h-auto max-w-[92vw] max-h-[78vh] object-contain"
                 src={activeImage.src}
+                onError={() => handleImageError(activeImage.id)}
               />
+              {viewableImageIndexes.length > 1 ? (
+                <div className="flex items-center gap-[var(--space-3)] text-[var(--color-bg)]">
+                  <button
+                    aria-label="Previous image"
+                    className={LIGHTBOX_CONTROL}
+                    type="button"
+                    onClick={() => showAdjacentImage(-1)}
+                  >
+                    Previous
+                  </button>
+                  <p aria-live="polite" className="m-0 text-[var(--color-bg)] text-[0.85rem] tabular-nums">
+                    {activeViewablePosition + 1} of {viewableImageIndexes.length}
+                  </p>
+                  <button
+                    aria-label="Next image"
+                    className={LIGHTBOX_CONTROL}
+                    type="button"
+                    onClick={() => showAdjacentImage(1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              ) : null}
             </DialogPanel>
           </div>
         </Dialog>
@@ -422,6 +516,7 @@ const LENS_SIZE = 180;
 const LENS_ZOOM = 2.5;
 
 function ProductHeroImage({
+  enlargeButtonRef,
   item,
   productName,
   isBroken,
@@ -430,7 +525,8 @@ function ProductHeroImage({
   onImageError,
   onOpenLightbox,
 }: {
-  item: DisplayGalleryItem;
+  enlargeButtonRef?: RefObject<HTMLButtonElement | null>;
+  item: GalleryItem;
   productName: string;
   isBroken: boolean;
   isPointerFine: boolean;
@@ -462,7 +558,6 @@ function ProductHeroImage({
         label="Photo pending"
         priority={priority}
         sizes="(max-width: 700px) 100vw, (max-width: 1100px) 90vw, 52vw"
-        tone={item.tone === "condition" ? "condition" : "neutral"}
       />
     );
   }
@@ -556,7 +651,8 @@ function ProductHeroImage({
       onPointerMove={handlePointerMove}
     >
       <button
-        aria-label={`View ${item.altText || productName} full size`}
+        ref={enlargeButtonRef}
+        aria-label={`Enlarge photo: ${item.altText || productName}`}
         className="block w-full h-full p-0 border-0 cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-green)] focus-visible:ring-offset-2"
         type="button"
         onClick={onOpenLightbox}
@@ -595,32 +691,97 @@ function ProductHeroImage({
   );
 }
 
+/** The next photo in `step` direction that has a source and has not failed, wrapping; null when there is none. */
+function findAdjacentViewableIndex(
+  gallery: GalleryItem[],
+  failedImageIds: ReadonlySet<string>,
+  fromIndex: number,
+  step: 1 | -1,
+) {
+  for (let offset = 1; offset < gallery.length; offset += 1) {
+    const index = (((fromIndex + step * offset) % gallery.length) + gallery.length) % gallery.length;
+    const item = gallery[index];
+
+    if (item?.src && !failedImageIds.has(item.id)) {
+      return index;
+    }
+  }
+
+  return null;
+}
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-function createDisplayGallery(product: ProductDetailPageViewModel): DisplayGalleryItem[] {
-  const allImages = product.gallery;
+function getContentsNote(product: ProductDetailPageViewModel): { label: string; value: string } | null {
+  if (product.type !== "multiUnit") {
+    return null;
+  }
 
-  return allImages.map((item, index) => ({
-    ...item,
-    label: index === allImages.length - 1 ? "Condition" : item.label,
-    tone: index === allImages.length - 1 ? ("condition" as const) : ("neutral" as const),
-  }));
+  switch (product.category) {
+    case "poufs":
+      return { label: "Ships as", value: "Flat and unstuffed. You fill it at home." };
+    case "pillows":
+      return product.cartProduct.insertIncluded
+        ? { label: "Includes", value: "Cover and insert." }
+        : { label: "Includes", value: "Cover only. No insert." };
+    default:
+      return null;
+  }
 }
 
-function buildSpecificationRows(product: ProductDetailPageViewModel, rugStyleHasStock: boolean) {
+/**
+ * Older poufs carry their height only in the title ("24\" × 24\" × 14\"").
+ * A recorded heightCm always wins.
+ */
+function formatMultiUnitSize(product: MultiUnitProductDetailPageViewModel) {
+  const { heightCm } = product.cartProduct;
+  const titleHeight = product.category === "poufs" ? parseProductTitle(product.name).height : undefined;
+  const height = heightCm
+    ? formatHeightInBothUnits(heightCm, "cm")
+    : titleHeight
+      ? formatTitleHeight(titleHeight)
+      : undefined;
+  const footprint = product.dimensionsCm ? formatMultiUnitDimensions(product.dimensionsCm) : undefined;
+
+  if (!height) {
+    return footprint;
+  }
+
+  return footprint ? `${footprint}, ${height} high` : `${height} high`;
+}
+
+/** "14\"" or "35 cm" from a title, in the footprint's "36 cm (14″)" form. Anything else is shown as written. */
+function formatTitleHeight(height: string) {
+  const match = /^(\d{1,3}(?:\.\d+)?)\s*(["”″]|inches|inch|in|cm)$/u.exec(height);
+
+  if (!match) {
+    return height;
+  }
+
+  return formatHeightInBothUnits(Number(match[1]), match[2] === "cm" ? "cm" : "in");
+}
+
+function formatHeightInBothUnits(value: number, unit: "cm" | "in") {
+  return unit === "cm"
+    ? `${value} cm (${Math.round(value / 2.54)}″)`
+    : `${Math.round(value * 2.54)} cm (${value}″)`;
+}
+
+function buildSpecificationRows(product: ProductDetailPageViewModel, rugStylePageIndexable: boolean) {
   const rows: { label: string; value: string; href?: Route }[] = [];
 
   const sizeValue =
-    product.type === "rug"
-      ? product.dimensionsLabel
-      : product.dimensionsCm
-        ? formatMultiUnitDimensions(product.dimensionsCm)
-        : undefined;
+    product.type === "rug" ? product.dimensionsLabel : formatMultiUnitSize(product);
 
   if (sizeValue) {
     rows.push({ label: "Size", value: sizeValue });
+  }
+
+  const contentsNote = getContentsNote(product);
+  if (contentsNote) {
+    rows.push(contentsNote);
   }
 
   rows.push(
@@ -629,11 +790,11 @@ function buildSpecificationRows(product: ProductDetailPageViewModel, rugStyleHas
   );
 
   if (product.type === "rug") {
-    const styleCrumb = getRugStyleCrumb(product, rugStyleHasStock);
+    const styleCrumb = getRugStyleCrumb(product, rugStylePageIndexable);
 
     rows.push({
       label: "Style",
-      value: product.rugStyle ?? "Handwoven rug",
+      value: getRugStyleLabel(product.rugStyle) || "Handwoven rug",
       ...(styleCrumb ? { href: styleCrumb.href } : {}),
     });
     if (product.techniqueLabel) {
@@ -657,6 +818,13 @@ function buildSpecificationRows(product: ProductDetailPageViewModel, rugStyleHas
   return rows;
 }
 
+/** Rows store either the admin label ("Beni Ourain") or its slug ("beni-ourain"); both read as the label. */
+function getRugStyleLabel(rugStyle: string) {
+  const slug = normalizeSlug(rugStyle);
+
+  return productRugStyleOptions.find((option) => normalizeSlug(option) === slug) ?? humanizeProductToken(rugStyle);
+}
+
 function extractConditionNote(product: ProductDetailPageViewModel) {
   const conditionSection =
     product.detailSections.find((section) => /condition/i.test(section.title))?.body ||
@@ -666,7 +834,7 @@ function extractConditionNote(product: ProductDetailPageViewModel) {
     return undefined;
   }
 
-  return `${conditionSection.split(/\n|(?<=[.!?])\s/u)[0]} Photo shown in the condition view.`;
+  return conditionSection.split(/\n|(?<=[.!?])\s/u)[0];
 }
 
 /**
@@ -682,12 +850,12 @@ function extractConditionNote(product: ProductDetailPageViewModel) {
  * and "vintage" is itself a key in rugStyleCollections, so a type-only check
  * would invent a /shop/rugs/vintage ancestor that the route does not serve.
  *
- * An empty style is dropped for the same reason the route drops it from the
- * schema: its page is noindex until stock lands, and a crawlable anchor from a
- * still-indexable sold-rug PDP would point crawl signal at it.
+ * A style whose page is not indexed is dropped for the same reason the route
+ * drops it from the schema: a crawlable anchor would point crawl signal at a page
+ * we are asking Google to drop.
  */
-function getRugStyleCrumb(product: ProductDetailPageViewModel, rugStyleHasStock: boolean) {
-  if (!rugStyleHasStock || product.type !== "rug" || product.category === "vintage") {
+function getRugStyleCrumb(product: ProductDetailPageViewModel, rugStylePageIndexable: boolean) {
+  if (!rugStylePageIndexable || product.type !== "rug" || product.category === "vintage") {
     return null;
   }
 
@@ -703,13 +871,13 @@ function getRugStyleCrumb(product: ProductDetailPageViewModel, rugStyleHasStock:
 
 function ProductBreadcrumb({
   product,
-  rugStyleHasStock,
+  rugStylePageIndexable,
 }: {
   product: ProductDetailPageViewModel;
-  rugStyleHasStock: boolean;
+  rugStylePageIndexable: boolean;
 }) {
   const categoryPath = getProductCategoryHref(product);
-  const styleCrumb = getRugStyleCrumb(product, rugStyleHasStock);
+  const styleCrumb = getRugStyleCrumb(product, rugStylePageIndexable);
   const items: Array<{ label: string; href?: Route }> = [
     { label: "Home", href: "/" },
     { label: "Shop", href: "/shop" },
@@ -834,27 +1002,84 @@ function RugPurchaseShell({
 }: {
   product: Extract<ProductDetailPageViewModel, { type: "rug" }>;
 }) {
-  const reserve = useReserveProduct(product);
+  const { reserve } = usePurchaseActions(product);
 
   return (
     <div className={PANEL_CARD}>
       <button className={`${PRIMARY_ACTION} cursor-pointer`} type="button" onClick={reserve}>
         Reserve this piece — {product.priceUsdLabel}
       </button>
-      <p className={PURCHASE_MICROCOPY}>
-        Card authorized now, charged only after your approval.
-      </p>
+      <p className={PURCHASE_MICROCOPY}>{APPROVAL_MICROCOPY}</p>
     </div>
   );
 }
 
-function SoldPurchaseShell() {
+/**
+ * Checkout applies the free-shipping threshold to the cart subtotal after
+ * discounts, so the page can only say what the piece does at full price.
+ */
+function getShippingCopy(priceUsd: number) {
+  if (calculateShippingUsd(priceUsd) === 0) {
+    return {
+      short: "Qualifies for free shipping",
+      full: `At full price, this piece qualifies for free shipping to ${storePromise.shipsToLabel}.`,
+    };
+  }
+
+  return { short: storePromiseCopy.shipping, full: `${storePromiseCopy.shipping}.` };
+}
+
+function getStatusPillLabel(product: ProductDetailPageViewModel, purchaseState: ProductAvailability) {
+  if (purchaseState !== "available") {
+    return unavailableCopy[purchaseState].label;
+  }
+
+  return product.type === "rug" ? "1 OF 1" : `${product.cartProduct.inventory} AVAILABLE`;
+}
+
+function UnavailablePurchaseShell({
+  product,
+  state,
+}: {
+  product: ProductDetailPageViewModel;
+  state: UnavailableReason;
+}) {
+  const similarInStock = product.similarRugs.slice(0, 3);
+  const copy = unavailableCopy[state];
+
   return (
     <div className={PANEL_CARD}>
-      <strong>This piece is sold.</strong>
-      <p className={PURCHASE_MICROCOPY}>
-        It remains in the catalog as a record. Browse the collection for available pieces.
-      </p>
+      <strong>{copy.headline}</strong>
+      {copy.note ? <p className={PURCHASE_MICROCOPY}>{copy.note}</p> : null}
+      <Link className={SECONDARY_ACTION} href={getProductCategoryHref(product)}>
+        Shop {getCategoryLabel(product.category)}
+      </Link>
+
+      {similarInStock.length ? (
+        <div className="grid gap-[var(--space-2)]">
+          <p className={PANEL_EYEBROW}>Available now</p>
+          <ul className="grid gap-[0.45rem] m-0 p-0 list-none">
+            {similarInStock.map((item) => (
+              <li key={item.id} className="flex flex-wrap justify-between gap-x-[var(--space-3)]">
+                <Link className="underline underline-offset-2 text-[var(--color-ink)]" href={item.href as Route}>
+                  {item.displayName}
+                </Link>
+                <span className="text-[var(--color-text-muted)]">{item.priceUsdLabel}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      <div className="grid gap-[var(--space-2)]">
+        <p className="font-medium text-[var(--color-ink)]">Get an email when new pieces arrive</p>
+        <NewsletterSignupIntentForm
+          source="sold-piece"
+          ctaLabel="Notify me"
+          inputLabel="Email address"
+          inputPlaceholder="Your email address"
+        />
+      </div>
     </div>
   );
 }
@@ -864,26 +1089,86 @@ function MultiUnitPurchaseShell({
 }: {
   product: MultiUnitProductDetailPageViewModel;
 }) {
-  const reserve = useReserveProduct(product);
+  const { quantityInCart, reserve, addToCart } = usePurchaseActions(product);
+  const [hasAddedToCart, setHasAddedToCart] = useState(false);
+  const { inventory } = product.cartProduct;
+  const isAllInCart = quantityInCart >= inventory;
+  const cartStatus = isAllInCart ? `All ${inventory} available are in your cart.` : `${quantityInCart} in your cart.`;
+
+  function handleAddToCart() {
+    if (isAllInCart) {
+      return;
+    }
+
+    addToCart();
+    setHasAddedToCart(true);
+  }
 
   return (
     <div className={PANEL_CARD}>
-      <button className={`${PRIMARY_ACTION} cursor-pointer`} type="button" onClick={reserve}>
-        Reserve this piece — {product.priceUsdLabel}
-      </button>
+      <div className="grid grid-cols-2 gap-[var(--space-2)] max-[700px]:grid-cols-1">
+        <button className={`${PRIMARY_ACTION} cursor-pointer`} type="button" onClick={reserve}>
+          Reserve this piece
+        </button>
+        {/* aria-disabled, not disabled: a native disabled button drops the
+            focus of the shopper who just pressed it to the page body. */}
+        <button
+          aria-disabled={isAllInCart}
+          className={`${SECONDARY_ACTION} cursor-pointer aria-disabled:cursor-default aria-disabled:opacity-60`}
+          type="button"
+          onClick={handleAddToCart}
+        >
+          Add to cart
+        </button>
+      </div>
+      {quantityInCart > 0 ? (
+        <p className={PURCHASE_MICROCOPY}>
+          {cartStatus}{" "}
+          <Link className="underline underline-offset-2 text-[var(--color-green)]" href="/cart">
+            View cart
+          </Link>
+        </p>
+      ) : null}
+      <p className="sr-only" role="status">
+        {hasAddedToCart ? `Added to cart. ${cartStatus}` : ""}
+      </p>
       <p className={PURCHASE_MICROCOPY}>
-        Availability is confirmed before any charge is captured.
+        {product.inventoryState === "lowStock" ? `${product.inventoryMessage} ` : ""}
+        {APPROVAL_MICROCOPY}
       </p>
     </div>
   );
 }
 
-function useReserveProduct(product: ProductDetailPageViewModel) {
-  const { addProduct } = useCart();
+function usePurchaseActions(product: ProductDetailPageViewModel) {
+  const { addProduct, items } = useCart();
   const router = useRouter();
+  const quantityInCart = items
+    .filter((item) => item.productId === product.id)
+    .reduce((total, item) => total + item.quantity, 0);
 
-  return () => {
-    addProduct({ product: product.cartProduct, quantity: 1 });
-    router.push("/checkout");
+  const image = product.gallery[0];
+  const cartInput = {
+    product: product.cartProduct,
+    quantity: 1,
+    imageUrl: image?.thumbSrc,
+    imageAlt: image?.altText,
+  };
+
+  return {
+    quantityInCart,
+    // Reserve is "buy this now": with Add to cart beside it, adding again
+    // would leave a shopper who clicked both with two of the piece.
+    reserve() {
+      if (quantityInCart === 0) {
+        addProduct(cartInput);
+      }
+      router.push("/checkout");
+    },
+    addToCart() {
+      addProduct(cartInput);
+      // The mini cart in features/cart/cart-drawer.tsx opens on this event.
+      window.dispatchEvent(new Event("loom-hearth:open-cart"));
+    },
   };
 }

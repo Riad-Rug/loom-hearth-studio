@@ -1,6 +1,5 @@
 import Image from "next/image";
 
-import { hasCloudinaryEnv } from "@/lib/cloudinary/config";
 import { createPlaceholderDataUrl } from "@/lib/media/placeholder";
 
 import styles from "./placeholder-media.module.css";
@@ -22,8 +21,6 @@ export function PlaceholderMedia({
   priority = false,
   tone = "neutral",
 }: PlaceholderMediaProps) {
-  const usingPlaceholderOnly = !hasCloudinaryEnv();
-
   return (
     <div className={styles.frame} data-tone={tone} style={{ aspectRatio }}>
       <Image
@@ -34,7 +31,6 @@ export function PlaceholderMedia({
         priority={priority}
         sizes={sizes}
         src={createPlaceholderDataUrl(label)}
-        unoptimized={usingPlaceholderOnly}
       />
       <span className={styles.label}>{label}</span>
     </div>

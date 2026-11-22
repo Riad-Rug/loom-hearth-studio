@@ -3,17 +3,21 @@ import type { Route } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
+import { ProductOpenGraphMeta } from "@/components/seo/product-open-graph-meta";
 import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
 import {
+  getProductIndexFacts,
   getProductRedirectPathForSlug,
   getRugProductDetailByParams,
-  listAvailableRugStyleSlugs,
+  listIndexableRugStyleSlugs,
 } from "@/lib/catalog/service";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
+import { isProductIndexable } from "@/lib/seo/index-policy";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { buildProductMetaDescription } from "@/lib/seo/product-metadata";
+import { applyProductTitle, buildProductTitle } from "@/lib/seo/product-title";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/schema";
 
 type RugProductPageProps = {
@@ -51,14 +55,12 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
     permanentRedirect(productPath as Route);
   }
 
-  // A style page is served noindex while nothing of that style is purchasable,
-  // and a sold rug's PDP stays indexable, so the last piece of a style to sell
-  // would otherwise keep a crawlable breadcrumb aimed at a page we are asking
-  // Google to ignore. The schema below and the visible trail drop the style
-  // level together in that case; the view is told the answer so it cannot
-  // disagree with the schema.
-  const rugStyleHasStock = collection
-    ? (await listAvailableRugStyleSlugs()).has(rugStyleSlug)
+  // The breadcrumb names the style level only while that style page is indexed
+  // (lib/seo/index-policy.ts), so a crawlable trail never points at a page we are
+  // asking Google to drop. The schema below and the visible trail decide
+  // together; the view is told the answer so it cannot disagree with the schema.
+  const rugStylePageIndexable = collection
+    ? (await listIndexableRugStyleSlugs(new Date())).has(rugStyleSlug)
     : false;
 
   return (
@@ -66,6 +68,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
       <JsonLd
         data={productSchema({
           id: product.id,
+          catalogNumber: product.catalogNumber,
           name: product.name,
           description: product.description,
           path: productPath,
@@ -88,7 +91,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
               ? product.palette.map((swatch) => swatch.label)
               : undefined,
           imageUrls: product.gallery.map((image) => image.src),
-          availability: product.status === "sold" ? "outOfStock" : "inStock",
+          availability: product.availability,
           isOneOfOne: true,
           createdAt: product.cartProduct.createdAt,
         })}
@@ -98,7 +101,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           { name: "Home", path: "/" },
           { name: "Shop", path: "/shop" },
           { name: getCategoryLabel(product.category), path: "/shop/rugs" },
-          ...(collection && rugStyleHasStock
+          ...(collection && rugStylePageIndexable
             ? [
                 {
                   name: collection.title,
@@ -109,7 +112,11 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           { name: product.name, path: productPath },
         ])}
       />
-      <ProductDetailPageView product={product} rugStyleHasStock={rugStyleHasStock} />
+      <ProductOpenGraphMeta
+        priceAmount={product.priceUsd}
+        availability={product.availability}
+      />
+      <ProductDetailPageView product={product} rugStylePageIndexable={rugStylePageIndexable} />
     </>
   );
 }
@@ -126,29 +133,31 @@ export async function generateMetadata({
   if (!product) {
     return buildMetadata({
       title: "Rugs",
-      description: "Browse handcrafted Moroccan rugs sourced in Marrakech and prepared for review-first buying.",
+      description: "Browse handcrafted Moroccan rugs sourced in Morocco and prepared for review-first buying.",
       path: "/shop/rugs",
     });
   }
 
   const ogImage = product.gallery[0];
+  const title = buildProductTitle(product);
+  const indexFacts = await getProductIndexFacts(product.cartProduct);
 
-  return buildManagedMetadata({
-    entityType: "product",
-    entityKey: product.id,
-    title: product.seoTitle || product.name,
-    description: buildProductMetaDescription(product),
-    path: getRugProductPath(product),
-    type: "product",
-    ogImageUrl: ogImage?.src,
-    ogImageAlt: ogImage?.altText || product.name,
-    ogImageWidth: 1600,
-    ogImageHeight: 1200,
-    product: {
-      priceAmount: product.priceUsd,
-      availability: product.status === "sold" ? "oos" : "instock",
-    },
-  });
+  return applyProductTitle(
+    await buildManagedMetadata({
+      entityType: "product",
+      entityKey: product.id,
+      title: title.text,
+      description: buildProductMetaDescription(product),
+      path: getRugProductPath(product),
+      noIndexFollow: !isProductIndexable(indexFacts, new Date()),
+      type: "product",
+      ogImageUrl: ogImage?.src,
+      ogImageAlt: product.ogImageAlt,
+      ogImageWidth: 1600,
+      ogImageHeight: 1200,
+    }),
+    title,
+  );
 }
 
 function getRugProductPath(product: { rugStyle: string; slug: string }) {

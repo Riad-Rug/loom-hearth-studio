@@ -4,7 +4,16 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { formatUsd, getCartItemLabel, useCart } from "@/features/cart/cart-provider";
+import { CartItemThumbnail } from "@/features/cart/cart-item-thumbnail";
+import {
+  getCartItemDetails,
+  getCartItemLabel,
+  getQuantityReducedNote,
+  unavailableCheckoutNote,
+  unavailableLineNote,
+} from "@/features/cart/cart-items";
+import { formatUsd, useCart } from "@/features/cart/cart-provider";
+import { FreeShippingProgress } from "@/features/cart/free-shipping-progress";
 
 import styles from "./cart-drawer.module.css";
 
@@ -15,7 +24,18 @@ export function CartDrawer() {
   const [isPointerFine, setIsPointerFine] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
   const shellRef = useRef<HTMLDivElement | null>(null);
-  const { itemCount, items, subtotalUsd, discountUsd, promoCode, totalUsd } = useCart();
+  const {
+    getItemAvailability,
+    hasUnavailableItems,
+    isQuantityReduced,
+    itemCount,
+    items,
+    subtotalUsd,
+    discountUsd,
+    promoCode,
+    shippingUsd,
+    totalUsd,
+  } = useCart();
   const visibleItems = items.slice(0, PREVIEW_ITEM_LIMIT);
   const hiddenItemCount = Math.max(0, items.length - PREVIEW_ITEM_LIMIT);
   const itemCountLabel = `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
@@ -154,7 +174,7 @@ export function CartDrawer() {
             <div className={styles.header}>
               <div>
                 <p className={styles.eyebrow}>Cart</p>
-                <h2>Mini Cart</h2>
+                <h2>Your cart</h2>
                 <p className={styles.headerMeta}>{`${itemCountLabel} ready to review.`}</p>
               </div>
               <button
@@ -163,37 +183,48 @@ export function CartDrawer() {
                 type="button"
                 onClick={() => setIsOpen(false)}
               >
-                x
+                <svg aria-hidden="true" fill="none" height="16" viewBox="0 0 16 16" width="16">
+                  <path
+                    d="M4 4l8 8M12 4l-8 8"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="1.5"
+                  />
+                </svg>
               </button>
             </div>
 
             <div className={styles.itemList}>
-              {visibleItems.map((item) => (
-                <article key={item.id} className={styles.itemRow}>
-                  <div className={styles.itemMedia}>
-                    <span>{getCartItemLabel(item)}</span>
-                  </div>
-                  <div className={styles.itemContent}>
-                    <div className={styles.itemTopline}>
-                      <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
-                      <p className={styles.itemPrice}>{formatUsd(item.priceUsd)}</p>
+              {visibleItems.map((item) => {
+                const availability = getItemAvailability(item);
+
+                return (
+                  <article key={item.id} className={styles.itemRow}>
+                    <CartItemThumbnail item={item} className={styles.itemMedia} />
+                    <div className={styles.itemContent}>
+                      <div className={styles.itemTopline}>
+                        <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
+                        <p className={styles.itemPrice}>{formatUsd(item.priceUsd)}</p>
+                      </div>
+                      <h3>
+                        <Link
+                          className={styles.itemLink}
+                          href={item.href as Route}
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {item.name}
+                        </Link>
+                      </h3>
+                      <p className={styles.itemMeta}>{getCartItemDetails(item)}</p>
+                      {availability !== "available" ? (
+                        <p className={styles.itemMeta}>{unavailableLineNote[availability]}</p>
+                      ) : isQuantityReduced(item) ? (
+                        <p className={styles.itemMeta}>{getQuantityReducedNote(item)}</p>
+                      ) : null}
                     </div>
-                    <h3>
-                      <Link
-                        className={styles.itemLink}
-                        href={item.href as Route}
-                        onClick={() => setIsOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                    </h3>
-                    <p className={styles.itemMeta}>
-                      Qty {item.quantity}
-                      {item.variantName ? ` ? ${item.variantName}` : ""}
-                    </p>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
 
             {hiddenItemCount > 0 ? (
@@ -213,18 +244,34 @@ export function CartDrawer() {
                   <strong>-{formatUsd(discountUsd)}</strong>
                 </div>
               ) : null}
+              <div className={styles.summaryRow}>
+                <span>Shipping</span>
+                <strong>{shippingUsd === 0 ? "Free" : formatUsd(shippingUsd)}</strong>
+              </div>
               <div className={styles.summaryTotal}>
                 <span>Total</span>
                 <strong>{formatUsd(totalUsd)}</strong>
               </div>
+              <FreeShippingProgress />
+              {hasUnavailableItems ? (
+                <p className={styles.itemMeta} role="status">
+                  {unavailableCheckoutNote}
+                </p>
+              ) : null}
               <div className={styles.actionGroup}>
-                <Link
-                  className={styles.checkoutButton}
-                  href="/checkout"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Checkout
-                </Link>
+                {hasUnavailableItems ? (
+                  <button className={styles.checkoutButton} disabled type="button">
+                    Checkout
+                  </button>
+                ) : (
+                  <Link
+                    className={styles.checkoutButton}
+                    href="/checkout"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Checkout
+                  </Link>
+                )}
                 <Link
                   className={styles.secondaryButton}
                   href="/shop"

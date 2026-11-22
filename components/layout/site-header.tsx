@@ -7,12 +7,10 @@ import {
 } from "@/lib/catalog/service";
 
 export async function SiteHeader() {
-  // Category and rug-style routes with nothing purchasable behind them stay in
-  // the menu but render inert (see SiteHeaderClient) — live check, so they come
-  // back on their own the moment stock lands. Style pages are served noindex
-  // while they are empty, so a crawlable anchor to one would be pointing crawl
-  // signal at a page we are asking Google to ignore; both sets feed the one
-  // unavailableHrefs list so the client keeps a single notion of "inert row".
+  // Category and rug-style routes with nothing to buy stay in the menu but
+  // render inert (see SiteHeaderClient), and come back on their own the moment
+  // stock lands. Both sets feed the one unavailableHrefs list so the client
+  // keeps a single notion of "inert row".
   const [{ isAuthenticated, firstName }, unavailableCategoryHrefs, unavailableRugStyleHrefs] =
     await Promise.all([
       getHeaderAuthState(),

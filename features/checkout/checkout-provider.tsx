@@ -10,30 +10,45 @@ import {
   type ReactNode,
 } from "react";
 
-import type { CartStoreItem } from "@/features/cart/cart-provider";
+import { limitCartItems, toCommerceItems, type CartLineLimit, type CartStoreItem } from "@/features/cart/cart-items";
 import { useCart } from "@/features/cart/cart-provider";
 import type { CheckoutStepKey } from "@/features/checkout/checkout-data";
-import { trackBeginCheckout } from "@/lib/analytics/gtag";
-import { emptyAddressFormValues, toOrderAddress, type AddressFormValues } from "@/lib/checkout/address-schema";
+import { trackCommerceEvent } from "@/lib/analytics/commerce-tracking";
+import { toOrderAddress, type AddressFormValues } from "@/lib/checkout/address-schema";
 import type { OrderAddress } from "@/types/domain";
 
-const CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout.v2";
-const CHECKOUT_STORAGE_VERSION = 2;
+const CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout.v3";
+const LEGACY_CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout.v2";
+const CHECKOUT_STORAGE_VERSION = 3;
 
-export type ShippingAddressMode = "same-as-billing" | "different";
+export type CheckoutAddresses = {
+  /** Carries the contact email and phone for the order. */
+  shipping: AddressFormValues;
+  /** null means the billing address is the shipping address. */
+  billing: AddressFormValues | null;
+};
 
 type StoredCheckoutState = {
   version: typeof CHECKOUT_STORAGE_VERSION;
-  billing: AddressFormValues | null;
-  shippingAddressMode: ShippingAddressMode;
-  shippingAddress: AddressFormValues | null;
+  addresses: CheckoutAddresses | null;
+};
+
+type FunnelStepEventName = "add_shipping_info" | "add_payment_info";
+
+// The order as the server priced it for the PaymentIntent; its total is the amount authorized.
+export type AuthorizedOrderSummary = {
+  items: Array<{ id: string; name: string; quantity: number; priceUsd: number }>;
+  subtotalUsd: number;
+  discountUsd: number;
+  shippingUsd: number;
+  totalUsd: number;
 };
 
 type PaymentIntentState = {
   status: "idle" | "creating" | "ready" | "error";
   clientSecret: string | null;
   paymentIntentId: string | null;
-  totalUsd: number | null;
+  summary: AuthorizedOrderSummary | null;
   message: string | null;
 };
 
@@ -64,11 +79,12 @@ type PaymentIntentValidationIssue = {
   code: string;
   message: string;
   productId?: string;
+  lineItemId?: string;
+  availableQuantity?: number;
 };
 
 const stepPathMap: Record<CheckoutStepKey, string> = {
-  billing: "/checkout",
-  shipping: "/checkout/shipping",
+  shipping: "/checkout",
   payment: "/checkout/payment",
   review: "/checkout/review",
   confirmation: "/checkout/confirmation",
@@ -78,7 +94,7 @@ const initialPaymentIntentState: PaymentIntentState = {
   status: "idle",
   clientSecret: null,
   paymentIntentId: null,
-  totalUsd: null,
+  summary: null,
   message: null,
 };
 
@@ -96,15 +112,12 @@ type CheckoutContextValue = {
   subtotalUsd: number;
   shippingUsd: number;
   totalUsd: number;
-  billing: AddressFormValues;
-  submitBilling: (values: AddressFormValues) => void;
-  shippingAddressMode: ShippingAddressMode;
-  setShippingAddressMode: (mode: ShippingAddressMode) => void;
-  shippingAddressDraft: AddressFormValues;
-  submitShipping: (values: AddressFormValues | null) => void;
+  hasHydrated: boolean;
+  addresses: CheckoutAddresses | null;
+  submitAddresses: (addresses: CheckoutAddresses) => void;
+  submitPaymentDetails: () => void;
   resolvedBillingAddress: OrderAddress | null;
   resolvedShippingAddress: OrderAddress | null;
-  canAccessShipping: boolean;
   canAccessPayment: boolean;
   canAccessReview: boolean;
   canAccessConfirmation: boolean;
@@ -115,18 +128,18 @@ type CheckoutContextValue = {
   setPlaceOrderState: (state: PlaceOrderState) => void;
   placedOrder: PlacedOrder | null;
   completeOrder: (order: PlacedOrder) => void;
+  // The order was not saved and its PaymentIntent was declined, so it must never
+  // be confirmed or reused: lower or drop the lines another order left short and
+  // start a new PaymentIntent for whatever is left.
+  restartCheckout: (input: { limits: CartLineLimit[]; message: string }) => void;
 };
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
-  const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd, clearCart, removeItem } = useCart();
-  const [step, setStep] = useState<CheckoutStepKey>("billing");
-  const [billing, setBilling] = useState<AddressFormValues>(emptyAddressFormValues);
-  const [shippingAddressMode, setShippingAddressMode] = useState<ShippingAddressMode>("same-as-billing");
-  const [shippingAddressDraft, setShippingAddressDraft] = useState<AddressFormValues>(emptyAddressFormValues);
-  const [billingSubmitted, setBillingSubmitted] = useState(false);
-  const [shippingSubmitted, setShippingSubmitted] = useState(false);
+  const { items, promoCode, discountUsd, shippingUsd, subtotalUsd, totalUsd, clearCart, limitItems } = useCart();
+  const [step, setStep] = useState<CheckoutStepKey>("shipping");
+  const [addresses, setAddresses] = useState<CheckoutAddresses | null>(null);
   const [paymentIntent, setPaymentIntent] = useState<PaymentIntentState>(initialPaymentIntentState);
   const [cartRecoveryMessage, setCartRecoveryMessage] = useState<string | null>(null);
   const [placeOrderState, setPlaceOrderState] = useState<PlaceOrderState>(initialPlaceOrderState);
@@ -134,28 +147,18 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [hasHydrated, setHasHydrated] = useState(false);
   const [paymentIntentRetryCount, setPaymentIntentRetryCount] = useState(0);
   const paymentIntentIdRef = useRef<string | null>(null);
+  // One request at a time: the server applies updates to a PaymentIntent in the
+  // order they reach Stripe, so two overlapping requests could leave the intent
+  // carrying the older cart while this page shows the newer one.
+  const paymentIntentRequestQueueRef = useRef<Promise<void>>(Promise.resolve());
   const hasTrackedBeginCheckout = useRef(false);
+  const trackedFunnelSteps = useRef(new Set<FunnelStepEventName>());
 
   useEffect(() => {
     try {
       const storedValue = window.localStorage.getItem(CHECKOUT_STORAGE_KEY);
-      const parsedValue = storedValue ? (JSON.parse(storedValue) as Partial<StoredCheckoutState>) : null;
-
-      if (parsedValue?.version === CHECKOUT_STORAGE_VERSION) {
-        if (parsedValue.billing) {
-          setBilling(parsedValue.billing);
-          setBillingSubmitted(true);
-        }
-
-        if (parsedValue.shippingAddressMode) {
-          setShippingAddressMode(parsedValue.shippingAddressMode);
-        }
-
-        if (parsedValue.shippingAddress) {
-          setShippingAddressDraft(parsedValue.shippingAddress);
-          setShippingSubmitted(true);
-        }
-      }
+      setAddresses(parseStoredCheckoutAddresses(storedValue ? (JSON.parse(storedValue) as unknown) : null));
+      window.localStorage.removeItem(LEGACY_CHECKOUT_STORAGE_KEY);
     } catch {
       // Ignore malformed local checkout data and continue with a clean guest checkout state.
     }
@@ -171,13 +174,11 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
     const storedState: StoredCheckoutState = {
       version: CHECKOUT_STORAGE_VERSION,
-      billing: billingSubmitted ? billing : null,
-      shippingAddressMode,
-      shippingAddress: shippingSubmitted ? shippingAddressDraft : null,
+      addresses,
     };
 
     window.localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(storedState));
-  }, [billing, billingSubmitted, hasHydrated, shippingAddressDraft, shippingAddressMode, shippingSubmitted]);
+  }, [addresses, hasHydrated]);
 
   useEffect(() => {
     function handlePopState() {
@@ -189,20 +190,16 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const hasCartItems = items.length > 0;
-  const resolvedBillingAddress = useMemo<OrderAddress | null>(
-    () => (billingSubmitted ? toOrderAddress(billing) : null),
-    [billing, billingSubmitted],
+  const resolvedShippingAddress = useMemo<OrderAddress | null>(
+    () => (addresses ? toOrderAddress(addresses.shipping) : null),
+    [addresses],
   );
-  const resolvedShippingAddress = useMemo<OrderAddress | null>(() => {
-    if (shippingAddressMode === "same-as-billing") {
-      return resolvedBillingAddress;
-    }
+  const resolvedBillingAddress = useMemo<OrderAddress | null>(
+    () => (addresses ? toOrderAddress(addresses.billing ?? addresses.shipping) : null),
+    [addresses],
+  );
 
-    return shippingSubmitted ? toOrderAddress(shippingAddressDraft) : null;
-  }, [resolvedBillingAddress, shippingAddressDraft, shippingAddressMode, shippingSubmitted]);
-
-  const canAccessShipping = hasCartItems && Boolean(resolvedBillingAddress);
-  const canAccessPayment = canAccessShipping && Boolean(resolvedShippingAddress);
+  const canAccessPayment = hasCartItems && Boolean(addresses);
   // Deliberately Boolean(clientSecret) rather than status === "ready": a
   // mid-checkout reprice (e.g. the cart changing while on Review) cycles
   // status through "ready" -> "creating" -> "ready" but keeps clientSecret
@@ -222,7 +219,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     }
 
     // Once an order is placed, there's nothing left to edit — browser-back
-    // into Billing/Shipping/Payment/Review (which would otherwise still show
+    // into Shipping/Payment/Review (which would otherwise still show
     // an enabled "Place order" for an already-completed order) redirects
     // straight back to the receipt instead.
     if (placedOrder && step !== "confirmation") {
@@ -231,24 +228,33 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     }
 
     if (step === "confirmation" && !canAccessConfirmation) {
-      setStep(canAccessReview ? "review" : "billing");
+      setStep(canAccessReview ? "review" : "shipping");
       return;
     }
 
     if (step === "review" && !canAccessReview) {
-      setStep(canAccessPayment ? "payment" : "billing");
+      setStep(canAccessPayment ? "payment" : "shipping");
       return;
     }
 
     if (step === "payment" && !canAccessPayment) {
-      setStep(canAccessShipping ? "shipping" : "billing");
+      setStep("shipping");
+    }
+  }, [canAccessConfirmation, canAccessPayment, canAccessReview, hasHydrated, placedOrder, step]);
+
+  useEffect(() => {
+    if (!hasHydrated || hasTrackedBeginCheckout.current || !items.length || placedOrder) {
       return;
     }
 
-    if (step === "shipping" && !canAccessShipping) {
-      setStep("billing");
-    }
-  }, [canAccessConfirmation, canAccessPayment, canAccessReview, canAccessShipping, hasHydrated, placedOrder, step]);
+    hasTrackedBeginCheckout.current = true;
+    trackCommerceEvent({
+      name: "begin_checkout",
+      items: toCommerceItems(items),
+      coupon: promoCode ?? undefined,
+      discountUsd,
+    });
+  }, [discountUsd, hasHydrated, items, placedOrder, promoCode]);
 
   const draftSignature = useMemo(
     () =>
@@ -275,72 +281,77 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     setPaymentIntent((current) => ({ ...current, status: "creating", message: null }));
 
-    requestPaymentIntent({
-      billingAddress: resolvedBillingAddress,
-      shippingAddress: resolvedShippingAddress,
-      items: items.map((item) => ({
-        id: item.id,
-        productId: item.productId,
-        productType: item.productType,
-        quantity: item.quantity,
-        variantName: item.variantName,
-      })),
-      promoCode: promoCode ?? undefined,
-      paymentIntentId: paymentIntentIdRef.current ?? undefined,
-    })
+    const sendRequest = () =>
+      requestPaymentIntent({
+        billingAddress: resolvedBillingAddress,
+        shippingAddress: resolvedShippingAddress,
+        items: items.map((item) => ({
+          id: item.id,
+          productId: item.productId,
+          productType: item.productType,
+          quantity: item.quantity,
+          variantName: item.variantName,
+        })),
+        promoCode: promoCode ?? undefined,
+        paymentIntentId: paymentIntentIdRef.current ?? undefined,
+      });
+    const request = paymentIntentRequestQueueRef.current.then(() => (cancelled ? null : sendRequest()));
+
+    paymentIntentRequestQueueRef.current = request.then(
+      () => undefined,
+      () => undefined,
+    );
+
+    request
       .then((result) => {
+        if (!result) {
+          return;
+        }
+
+        // Kept even when a newer request has superseded this one, so the newer
+        // request updates this intent instead of creating a second one.
+        if (result.status === "created" || result.status === "updated") {
+          paymentIntentIdRef.current = result.paymentIntentId;
+        }
+
         if (cancelled) {
           return;
         }
 
         if (result.status === "created" || result.status === "updated") {
-          paymentIntentIdRef.current = result.paymentIntentId;
           setPaymentIntent({
             status: "ready",
             clientSecret: result.clientSecret,
             paymentIntentId: result.paymentIntentId,
-            totalUsd: result.totalUsd,
+            summary: result.summary,
             message: null,
           });
           return;
         }
 
         if (result.status === "validation-error") {
-          // A validation-error can mean one specific cart line went stale
-          // (sold out / inventory ran out between page load and this
-          // request) rather than the whole draft being broken. Self-heal
-          // that narrow case by dropping only the offending line(s) instead
-          // of failing the entire order — but only when every reported
-          // issue can be traced back to a productId that's actually in the
-          // cart. If any issue can't be mapped to a cart line (e.g. a bad
-          // promo code, a missing address field), treat it as a real error
-          // instead of silently dropping items around an unrelated problem.
+          // A validation-error can mean specific cart lines went stale (sold
+          // out, or fewer units left than the line asks for, between page load
+          // and this request) rather than the whole draft being broken.
+          // Self-heal that narrow case by lowering or dropping only those
+          // lines, but only when every reported issue names a line actually
+          // in the cart. Any other issue (a bad promo code, a missing address
+          // field) is a real error, not a reason to change the cart around it.
           const issues = result.issues ?? [];
-          const staleProductIds = new Set(
-            issues
-              .filter(
-                (issue): issue is PaymentIntentValidationIssue & { productId: string } =>
-                  Boolean(issue.productId) && items.some((item) => item.productId === issue.productId),
-              )
-              .map((issue) => issue.productId),
-          );
-          const hasUnresolvableIssue = issues.some(
-            (issue) => !issue.productId || !staleProductIds.has(issue.productId),
-          );
+          const limits = issues.flatMap((issue) => {
+            const item = items.find((candidate) => candidate.id === issue.lineItemId);
 
-          if (staleProductIds.size > 0 && !hasUnresolvableIssue) {
-            const staleItems = items.filter((item) => staleProductIds.has(item.productId));
+            return item ? [{ id: item.id, availableQuantity: issue.availableQuantity ?? 0 }] : [];
+          });
 
-            staleItems.forEach((item) => removeItem(item.id));
-
-            setCartRecoveryMessage(
-              staleItems.length > 1
-                ? "A few items in your order just sold — we've removed them from your order. Your total has been updated."
-                : "That item just sold — we've removed it from your order. Your total has been updated.",
-            );
+          if (limits.length > 0 && limits.length === issues.length) {
+            limitItems(limits);
+            // Added to the notice, not swapped in: a restart's message there can hold
+            // the only reference to a card hold that was not released.
+            setCartRecoveryMessage((current) => [current, describeLimitedLines(items, limits)].filter(Boolean).join(" "));
 
             // Don't touch paymentIntent here: it's already "creating" (set
-            // above) and removing the stale line(s) changes draftSignature,
+            // above) and changing the stale line(s) changes draftSignature,
             // which naturally re-triggers this effect with the corrected
             // cart moments from now.
             return;
@@ -351,7 +362,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
           status: "error",
           clientSecret: null,
           paymentIntentId: null,
-          totalUsd: null,
+          summary: null,
           message: result.message,
         });
       })
@@ -361,7 +372,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
             status: "error",
             clientSecret: null,
             paymentIntentId: null,
-            totalUsd: null,
+            summary: null,
             message: "Could not prepare payment for this order. Check your connection and try again.",
           });
         }
@@ -379,6 +390,29 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     window.history.pushState(null, "", stepPathMap[next]);
   }
 
+  function trackFunnelStepOnce(name: FunnelStepEventName) {
+    if (trackedFunnelSteps.current.has(name)) {
+      return;
+    }
+
+    trackedFunnelSteps.current.add(name);
+    const funnelEvent = {
+      items: toCommerceItems(items),
+      coupon: promoCode ?? undefined,
+      discountUsd,
+    };
+
+    trackCommerceEvent(
+      name === "add_shipping_info"
+        ? {
+            ...funnelEvent,
+            name,
+            shippingTier: shippingUsd === 0 ? "Free shipping" : "Flat rate shipping",
+          }
+        : { ...funnelEvent, name },
+    );
+  }
+
   const value: CheckoutContextValue = {
     step,
     goToStep,
@@ -388,53 +422,19 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     subtotalUsd,
     shippingUsd,
     totalUsd,
-    billing,
-    submitBilling(values) {
-      setBilling(values);
-      setBillingSubmitted(true);
-
-      if (!hasTrackedBeginCheckout.current) {
-        hasTrackedBeginCheckout.current = true;
-        trackBeginCheckout({
-          currency: "USD",
-          value: totalUsd,
-          items: items.map((item) => ({
-            item_id: item.productId,
-            item_name: item.name,
-            item_category: item.productCategory,
-            item_variant: item.variantName,
-            price: item.priceUsd,
-            quantity: item.quantity,
-          })),
-        });
-      }
-
-      goToStep("shipping");
-    },
-    shippingAddressMode,
-    setShippingAddressMode(mode) {
-      setShippingAddressMode(mode);
-
-      if (mode === "same-as-billing") {
-        setShippingSubmitted(false);
-      }
-    },
-    shippingAddressDraft,
-    submitShipping(values) {
-      if (shippingAddressMode === "different") {
-        if (!values) {
-          return;
-        }
-
-        setShippingAddressDraft(values);
-        setShippingSubmitted(true);
-      }
-
+    hasHydrated,
+    addresses,
+    submitAddresses(nextAddresses) {
+      setAddresses(nextAddresses);
+      trackFunnelStepOnce("add_shipping_info");
       goToStep("payment");
+    },
+    submitPaymentDetails() {
+      trackFunnelStepOnce("add_payment_info");
+      goToStep("review");
     },
     resolvedBillingAddress,
     resolvedShippingAddress,
-    canAccessShipping,
     canAccessPayment,
     canAccessReview,
     canAccessConfirmation,
@@ -447,10 +447,32 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     setPlaceOrderState,
     placedOrder,
     completeOrder(order) {
+      // Fired from this handler rather than an effect so a re-render or a
+      // reload of the confirmation page cannot send it again.
+      trackCommerceEvent({
+        name: "purchase",
+        transactionId: order.orderNumber,
+        items: toCommerceItems(items),
+        coupon: promoCode ?? undefined,
+        discountUsd,
+        shippingUsd,
+      });
       setPlacedOrder(order);
       window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
       clearCart();
       goToStep("confirmation");
+    },
+    restartCheckout({ limits, message }) {
+      limitItems(limits);
+      // Cleared through the queue so a request still in flight cannot write
+      // the declined intent's id back after the restart.
+      paymentIntentRequestQueueRef.current = paymentIntentRequestQueueRef.current.then(() => {
+        paymentIntentIdRef.current = null;
+      });
+      setPlaceOrderState(initialPlaceOrderState);
+      setPaymentIntentRetryCount((count) => count + 1);
+      goToStep(limitCartItems(items, limits).length > 0 ? "payment" : "shipping");
+      setCartRecoveryMessage(message);
     },
   };
 
@@ -467,11 +489,30 @@ export function useCheckout() {
   return value;
 }
 
-function getStepFromPathname(pathname: string): CheckoutStepKey {
-  if (pathname === stepPathMap.shipping) {
-    return "shipping";
-  }
+function describeLimitedLines(items: CartStoreItem[], limits: CartLineLimit[]) {
+  const removedCount = limits.filter((limit) => limit.availableQuantity < 1).length;
+  const lowered = limits.flatMap((limit) => {
+    const item = items.find((candidate) => candidate.id === limit.id);
 
+    return item && limit.availableQuantity >= 1
+      ? [`${item.name}: only ${limit.availableQuantity} left, so we changed your quantity.`]
+      : [];
+  });
+
+  return [
+    removedCount > 1
+      ? "A few pieces in your order are no longer available, so we removed them."
+      : removedCount === 1
+        ? "A piece in your order is no longer available, so we removed it."
+        : "",
+    ...lowered,
+    "Your total has been updated.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function getStepFromPathname(pathname: string): CheckoutStepKey {
   if (pathname === stepPathMap.payment) {
     return "payment";
   }
@@ -484,7 +525,41 @@ function getStepFromPathname(pathname: string): CheckoutStepKey {
     return "confirmation";
   }
 
-  return "billing";
+  return "shipping";
+}
+
+function parseStoredCheckoutAddresses(value: unknown): CheckoutAddresses | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const candidate = value as Partial<StoredCheckoutState>;
+  const addresses = candidate.addresses as Partial<CheckoutAddresses> | null | undefined;
+
+  if (candidate.version !== CHECKOUT_STORAGE_VERSION || !addresses || !isAddressFormValues(addresses.shipping)) {
+    return null;
+  }
+
+  if (addresses.billing !== null && !isAddressFormValues(addresses.billing)) {
+    return null;
+  }
+
+  return { shipping: addresses.shipping, billing: addresses.billing };
+}
+
+function isAddressFormValues(value: unknown): value is AddressFormValues {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  const requiredFields = ["fullName", "email", "address1", "city", "state", "postalCode"];
+  const optionalFields = ["phone", "address2"];
+
+  return (
+    requiredFields.every((field) => typeof candidate[field] === "string") &&
+    optionalFields.every((field) => candidate[field] === undefined || typeof candidate[field] === "string")
+  );
 }
 
 type RequestPaymentIntentInput = {
@@ -505,10 +580,12 @@ type RequestPaymentIntentResult = {
   status: "created" | "updated" | "validation-error" | "api-error";
   clientSecret: string | null;
   paymentIntentId: string | null;
-  totalUsd: number | null;
+  summary: AuthorizedOrderSummary | null;
   issues?: PaymentIntentValidationIssue[];
   message: string;
 };
+
+const paymentIntentRequestTimeoutMs = 30_000;
 
 async function requestPaymentIntent(
   input: RequestPaymentIntentInput,
@@ -517,6 +594,7 @@ async function requestPaymentIntent(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
+    signal: AbortSignal.timeout(paymentIntentRequestTimeoutMs),
   });
 
   return (await response.json()) as RequestPaymentIntentResult;

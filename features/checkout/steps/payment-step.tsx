@@ -4,13 +4,14 @@ import { useState } from "react";
 import { PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 
 import { useCheckout } from "@/features/checkout/checkout-provider";
+import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 
 import styles from "@/features/checkout/checkout-page.module.css";
 
 export function PaymentStep() {
   const stripe = useStripe();
   const elements = useElements();
-  const { paymentIntent, goToStep, retryPaymentIntent } = useCheckout();
+  const { paymentIntent, goToStep, retryPaymentIntent, submitPaymentDetails } = useCheckout();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,7 +32,7 @@ export function PaymentStep() {
       return;
     }
 
-    goToStep("review");
+    submitPaymentDetails();
   }
 
   return (
@@ -103,8 +104,8 @@ export function PaymentStep() {
       ) : null}
 
       <p className={styles.promiseLine}>
-        Card authorized now, charged only after you approve pre-shipment photos and videos —
-        usually within 24 to 48 hours.
+        Card authorized now, charged only after you approve pre-shipment{" "}
+        {storePromise.approvalMedia}, usually {storePromiseCopy.approvalTurnaround}.
       </p>
 
       <div className={styles.stepActions}>

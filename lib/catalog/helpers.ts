@@ -28,22 +28,6 @@ export function getProductBadgeLabel(product: Product) {
   return getCategoryLabel(product.category);
 }
 
-export function getProductMerchandisingNote(product: Product) {
-  if (product.type === "rug") {
-    return "Unique item. Quantity is fixed to 1.";
-  }
-
-  if (product.inventory <= 0) {
-    return "Currently unavailable. Notify-me presentation remains available.";
-  }
-
-  if (product.inventory <= product.lowStockThreshold) {
-    return "Low-stock multi-unit item.";
-  }
-
-  return product.variants.length ? "Multi-unit item with variant selection." : "";
-}
-
 export function getCategoryLabel(category: ProductCategory) {
   switch (category) {
     case "rugs":
@@ -71,38 +55,9 @@ export function getInventoryState(product: MultiUnitProduct): LaunchInventorySta
   return "inStock";
 }
 
-/**
- * Can a shopper actually buy this piece right now? Rugs are unique, quantity-1
- * items with no inventory field at all, so their availability lives entirely in
- * `status`; multi-unit pieces (poufs, pillows, decor) additionally need stock on
- * hand, using the same `inventory <= 0` semantics as getInventoryState's
- * "outOfStock". A published-but-empty listing (active, inventory 0) is a
- * notify-me presentation, not something purchasable.
- */
-export function isPurchasableProduct(product: Product): boolean {
-  if (product.status !== "active") {
-    return false;
-  }
-
-  return product.type !== "multiUnit" || getInventoryState(product) !== "outOfStock";
-}
-
 /** Landing route for a category, e.g. "decor" -> "/shop/decor". */
 export function getCategoryRoutePath(category: ProductCategory) {
   return `/shop/${category}`;
-}
-
-export function getInventoryMessage(product: MultiUnitProduct) {
-  const inventoryState = getInventoryState(product);
-
-  switch (inventoryState) {
-    case "outOfStock":
-      return "This item is currently unavailable for launch orders.";
-    case "lowStock":
-      return `Only ${product.inventory} remaining in the current launch allocation.`;
-    case "inStock":
-      return "Available across the United States for launch.";
-  }
 }
 
 export function formatRugDimensions(product: RugProduct) {

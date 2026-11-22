@@ -44,8 +44,8 @@ const overrides = {
       "category-rugs":
         "Hand-knotted and flatwoven rugs, selected for pile density, construction, and weight underfoot.",
       "category-poufs":
-        "Rug-made and leather poufs. Real seating with a quieter footprint than upholstered furniture.",
-      "category-pillows": "Cactus-silk (sabra) and rug-based pillows. Flat-woven, low-shed, strong colour.",
+        "Poufs sewn from handmade wool rugs and Bettania. Real seating with a quieter footprint than upholstered furniture.",
+      "category-pillows": "Pillow covers sewn from handmade wool rugs and Bettania. Flatweave and pile, strong colour.",
       "category-decor":
         "Handmade Moroccan objects for shelves, consoles, and flat surfaces — brass, wood, clay.",
       "category-vintage":

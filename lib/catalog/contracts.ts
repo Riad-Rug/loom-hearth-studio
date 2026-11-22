@@ -1,3 +1,4 @@
+import type { ProductAvailability } from "@/lib/catalog/availability";
 import type { LaunchInventoryState } from "@/lib/catalog/helpers";
 import type {
   MultiUnitProduct,
@@ -26,19 +27,18 @@ export type CatalogProductCardViewModel = {
   sizeBucket?: CatalogProductSizeBucket;
   subtitle: string;
   category: ProductCategory;
-  status: Product["status"];
+  availability: ProductAvailability;
   type: Product["type"];
-  availabilityLabel: string;
-  /**
-   * Multi-unit piece with nothing left on the shelf (inventory <= 0). Always
-   * false for rugs, which are quantity-1 pieces with no inventory field — their
-   * availability reads from `status` instead.
-   */
-  isOutOfStock: boolean;
   priceUsd: number;
   priceUsdLabel: string;
+  /** ISO time the listing was created, for a "Newest" sort. */
+  createdAt?: string;
+  /** Same shape as the product page palette, for a colour filter and search. */
+  palette?: Array<{
+    hex: string;
+    label: string;
+  }>;
   description: string;
-  merchandisingNote: string;
   routePattern: string;
   badge: string;
   primaryImage?: {
@@ -64,19 +64,6 @@ export type ProductDetailSectionViewModel = {
   body: string;
 };
 
-export type ProductSpecificationViewModel = {
-  label: string;
-  value: string;
-};
-
-export type ProductSupportPanelViewModel = {
-  id: string;
-  eyebrow: string;
-  title: string;
-  body: string;
-  items: string[];
-};
-
 type ProductDetailPageViewModelBase = {
   id: string;
   catalogNumber: string;
@@ -84,9 +71,8 @@ type ProductDetailPageViewModelBase = {
   name: string;
   subtitle: string;
   category: ProductCategory;
-  status: Product["status"];
+  availability: ProductAvailability;
   description: string;
-  merchandisingNote: string;
   descriptionSections: ProductDetailSectionViewModel[];
   seoTitle: string;
   seoDescription: string;
@@ -106,6 +92,8 @@ type ProductDetailPageViewModelBase = {
     role: string;
     isDerived?: boolean;
   }>;
+  /** Alt for gallery[0] as the og:image, which shows it alone, so with no gallery position. */
+  ogImageAlt: string;
   palette: Array<{
     hex: string;
     label: string;
@@ -113,8 +101,6 @@ type ProductDetailPageViewModelBase = {
   materialLabel: string;
   originLabel: string;
   techniqueLabel?: string;
-  specifications: ProductSpecificationViewModel[];
-  supportPanels: ProductSupportPanelViewModel[];
   detailSections: ProductDetailSectionViewModel[];
   similarRugs: CatalogProductCardViewModel[];
   crossSellRecommendations: CatalogProductCardViewModel[];

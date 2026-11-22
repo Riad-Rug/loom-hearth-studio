@@ -1,10 +1,9 @@
 import type { MetadataRoute } from "next";
 
 import { policyPages } from "@/features/content-pages/content-pages-data";
-import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
 import {
   categoryHasPurchasableProducts,
-  listAvailableRugStyleSlugs,
+  listIndexableRugStyleSlugs,
   listProductSitemapEntries,
 } from "@/lib/catalog/service";
 import { getBlogPostsState } from "@/lib/blog/posts";
@@ -28,21 +27,20 @@ const staticRoutes = [
 // Google has stated it ignores both, so they are pure boilerplate here. Only
 // url and (where a real timestamp exists) lastModified are emitted.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // One clock for the whole file, so a sold rug and its style page cannot fall
+  // on different sides of the index window within a single response.
+  const now = new Date();
   const staticEntries = staticRoutes.map((path) => ({
     url: absoluteUrl(path),
   }));
 
-  // Rug-style category routes are listed live rather than hardcoded: the pages
-  // exist for every canonical style, but a style with nothing purchasable right
-  // now is served noindex (see app/shop/rugs/[style]/page.tsx), so it must not
-  // be advertised here either. Styles without a collection entry — "Unclassified"
-  // is the admin catch-all — have no page to point at.
-  const rugStyleEntries = [...(await listAvailableRugStyleSlugs())]
-    .filter((style) => getRugStyleCollection(style))
-    .sort()
-    .map((style) => ({
-      url: absoluteUrl(`/shop/rugs/${style}`),
-    }));
+  // Rug-style and product pages follow lib/seo/index-policy.ts, the same rule
+  // their robots tags read, so the policy never lists a page it noindexes. An
+  // admin SEO setting with robotsIndex off is not read here and can still
+  // noindex a listed page.
+  const rugStyleEntries = [...(await listIndexableRugStyleSlugs(now))].sort().map((style) => ({
+    url: absoluteUrl(`/shop/rugs/${style}`),
+  }));
 
   // /shop/decor gets the same treatment for the same reason, which is why it is
   // not in staticRoutes above: the page is served noindex while decor has nothing
@@ -65,7 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: absoluteUrl(`/${page.slug}`),
   }));
 
-  const productSitemapEntries = await listProductSitemapEntries();
+  const productSitemapEntries = await listProductSitemapEntries(now);
   const productEntries = productSitemapEntries.map((product) => ({
     url: absoluteUrl(product.href),
     lastModified: product.updatedAt,
