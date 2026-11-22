@@ -115,10 +115,11 @@ export function AdminHomepageForm(props: {
   }
 
   async function handleImageUpload(path: string, file: File) {
-    setUploadStates((current) => ({ ...current, [path]: { status: "uploading", message: `Uploading ${file.name}...` } }));
+    setUploadStates((current) => ({ ...current, [path]: { status: "uploading", message: `Resizing ${file.name}...` } }));
 
     try {
       const uploadFile = await prepareImageForUpload(file);
+      setUploadStates((current) => ({ ...current, [path]: { status: "uploading", message: `Uploading ${uploadFile.name}...` } }));
       const signatureResponse = await fetch("/api/admin/cloudinary/upload-signature", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

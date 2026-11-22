@@ -49,12 +49,17 @@ export function useCloudinarySignedUpload() {
   ): Promise<CloudinaryUploadOutcome> {
     setState({
       status: "uploading",
-      message: `Uploading ${file.name}...`,
+      message: `Resizing ${file.name}...`,
       slotId,
     });
 
     try {
       const uploadFile = await prepareImageForUpload(file);
+      setState({
+        status: "uploading",
+        message: `Uploading ${uploadFile.name}...`,
+        slotId,
+      });
       const signatureResponse = await fetch("/api/admin/cloudinary/upload-signature", {
         method: "POST",
         headers: {
