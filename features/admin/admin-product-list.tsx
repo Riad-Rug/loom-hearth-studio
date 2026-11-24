@@ -288,7 +288,10 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
                     <span className={getStatusBadgeClassName(item.status, styles)}>{formatStatusLabel(item.status)}</span>
                   </td>
                   <td>{item.homepageFeatured ? `Recommended${item.homepageRank ? ` #${item.homepageRank}` : ""}` : "Not recommended"}</td>
-                  <td className={styles.priceCell}>{item.priceLabel}</td>
+                  <td className={styles.priceCell}>
+                    {item.priceLabel}
+                    {item.isOnSale ? <span> · Sale</span> : null}
+                  </td>
                   <td>
                     <div className={styles.dateCell}>
                       <strong>{item.updatedAtLabel}</strong>

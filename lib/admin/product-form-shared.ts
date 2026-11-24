@@ -15,6 +15,7 @@ export type AdminProductFormValues = {
   category: Product["category"];
   description: string;
   priceUsd: string;
+  compareAtPriceUsd: string;
   acquisitionCostMad: string;
   images: Product["images"];
   materials: string[];

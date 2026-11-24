@@ -140,6 +140,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     category: categoryValue,
     description: readString(formData, "description"),
     priceUsd: readNumber(formData, "priceUsd"),
+    compareAtPriceUsd: readOptionalNonNegativeNumber(formData, "compareAtPriceUsd"),
     acquisitionCostMad: readOptionalNonNegativeNumber(formData, "acquisitionCostMad"),
     images: parseImages(readString(formData, "imagesJson")),
     materials: parseMaterials(readString(formData, "materialsJson")),
@@ -268,6 +269,14 @@ export function validateProductMutationInput(
 
   if (!Number.isFinite(input.priceUsd) || input.priceUsd < 0) {
     fieldErrors.priceUsd = "Price must be zero or greater.";
+  }
+
+  if (
+    input.compareAtPriceUsd !== undefined &&
+    (!Number.isFinite(input.compareAtPriceUsd) || input.compareAtPriceUsd <= input.priceUsd)
+  ) {
+    fieldErrors.compareAtPriceUsd =
+      "The compare-at price must be higher than the price. Leave it empty if the piece is not on sale.";
   }
 
   if (!input.origin.trim()) {

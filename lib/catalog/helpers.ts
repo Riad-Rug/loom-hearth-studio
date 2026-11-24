@@ -10,6 +10,22 @@ export function formatProductPriceUsd(priceUsd: number) {
   }).format(priceUsd);
 }
 
+/**
+ * The struck-through "was" price, or undefined when the piece is not on sale.
+ * Only a compare-at price above the current price counts.
+ */
+export function getCompareAtPriceUsd(product: { priceUsd: number; compareAtPriceUsd?: number }) {
+  return product.compareAtPriceUsd !== undefined && product.compareAtPriceUsd > product.priceUsd
+    ? product.compareAtPriceUsd
+    : undefined;
+}
+
+export function getCompareAtPriceUsdLabel(product: { priceUsd: number; compareAtPriceUsd?: number }) {
+  const compareAtPriceUsd = getCompareAtPriceUsd(product);
+
+  return compareAtPriceUsd === undefined ? undefined : formatProductPriceUsd(compareAtPriceUsd);
+}
+
 export function getProductRoutePath(product: Product) {
   return product.type === "rug" && product.category === "vintage"
     ? `/shop/vintage/${product.slug}`

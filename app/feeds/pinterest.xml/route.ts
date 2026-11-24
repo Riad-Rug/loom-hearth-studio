@@ -1,6 +1,6 @@
 import { siteConfig } from "@/config/site";
 import { getProductAvailability } from "@/lib/catalog/availability";
-import { getProductRoutePath } from "@/lib/catalog/helpers";
+import { getCompareAtPriceUsd, getProductRoutePath } from "@/lib/catalog/helpers";
 import { getRugTaxonomyDisplay } from "@/lib/catalog/rug-taxonomy";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository } from "@/lib/db/repositories/product-repository";
@@ -104,6 +104,7 @@ function buildItem(product: Product) {
   }
 
   const link = absoluteUrl(getProductRoutePath(product));
+  const compareAtPriceUsd = getCompareAtPriceUsd(product);
   const lines = [
     `<g:id>${escapeXml(product.catalogNumber || product.id)}</g:id>`,
     `<title>${escapeXml(product.name)}</title>`,
@@ -116,7 +117,14 @@ function buildItem(product: Product) {
         (image) =>
           `<g:additional_image_link>${escapeXml(buildFeedImageUrl(image.publicId))}</g:additional_image_link>`,
       ),
-    `<g:price>${product.priceUsd.toFixed(2)} ${siteConfig.currency}</g:price>`,
+    // Feed convention: g:price is the regular price and g:sale_price what the
+    // buyer pays, so a sale lists the former price first.
+    ...(compareAtPriceUsd === undefined
+      ? [`<g:price>${product.priceUsd.toFixed(2)} ${siteConfig.currency}</g:price>`]
+      : [
+          `<g:price>${compareAtPriceUsd.toFixed(2)} ${siteConfig.currency}</g:price>`,
+          `<g:sale_price>${product.priceUsd.toFixed(2)} ${siteConfig.currency}</g:sale_price>`,
+        ]),
     `<g:availability>${getAvailability(product)}</g:availability>`,
     `<g:condition>${getCondition(product)}</g:condition>`,
     `<g:brand>${escapeXml("Loom & Hearth Studio")}</g:brand>`,

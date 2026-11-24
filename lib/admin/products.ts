@@ -1,4 +1,4 @@
-import { formatProductPriceUsd, getProductRoutePath } from "@/lib/catalog/helpers";
+import { formatProductPriceUsd, getCompareAtPriceUsd, getProductRoutePath } from "@/lib/catalog/helpers";
 import { catalogProductInclude, mapCatalogProductRecordToDomainProduct } from "@/lib/catalog/product-mappers";
 import { formatRegionLabel, formatRugTypeLabel } from "@/lib/catalog/rug-taxonomy";
 import type { AdminProductFormValues } from "@/lib/admin/product-form-shared";
@@ -19,6 +19,7 @@ export type AdminProductListItem = {
   status: Product["status"];
   priceLabel: string;
   priceUsd: number;
+  isOnSale: boolean;
   homepageFeatured: boolean;
   homepageRank: number | null;
   updatedAtLabel: string;
@@ -128,6 +129,7 @@ export function createEmptyAdminProductFormValues(type: Product["type"]): AdminP
     category: type === "rug" ? "rugs" : "poufs",
     description: "",
     priceUsd: "",
+    compareAtPriceUsd: "",
     acquisitionCostMad: "",
     images: [],
     materials: [""],
@@ -201,6 +203,7 @@ function createAdminProductListItem(
     status: product.status,
     priceLabel: formatProductPriceUsd(product.priceUsd),
     priceUsd: product.priceUsd,
+    isOnSale: getCompareAtPriceUsd(product) !== undefined,
     homepageFeatured: product.homepageFeatured,
     homepageRank: product.homepageRank,
     updatedAtLabel: formatAdminDateLabel(updatedAt),
@@ -251,6 +254,7 @@ function createAdminProductFormValues(
     category: product.category,
     description: product.description,
     priceUsd: String(product.priceUsd),
+    compareAtPriceUsd: product.compareAtPriceUsd === undefined ? "" : String(product.compareAtPriceUsd),
     acquisitionCostMad: internal.acquisitionCostMad,
     images: product.images,
     materials: product.materials,

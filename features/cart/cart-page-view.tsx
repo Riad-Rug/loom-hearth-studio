@@ -11,7 +11,9 @@ import {
   getMaxQuantity,
   toCommerceItems,
   unavailableCheckoutNote,
+  getCartItemCompareAtLabel,
 } from "@/features/cart/cart-items";
+import { CompareAtPrice } from "@/components/commerce/compare-at-price";
 import { formatUsd, useCart } from "@/features/cart/cart-provider";
 import { FreeShippingProgress } from "@/features/cart/free-shipping-progress";
 import { trackCommerceEvent } from "@/lib/analytics/commerce-tracking";
@@ -118,7 +120,13 @@ export function CartPageView() {
                             <p className={styles.itemVariant}>{item.variantName}</p>
                           ) : null}
                         </div>
-                        <p className={styles.itemPrice}>{formatUsd(item.priceUsd)}</p>
+                        <p className={styles.itemPrice}>
+                          <CompareAtPrice
+                            className={styles.itemCompareAtPrice}
+                            label={getCartItemCompareAtLabel(item, formatUsd)}
+                          />{" "}
+                          {formatUsd(item.priceUsd)}
+                        </p>
                       </div>
                       <div className={styles.itemFooter}>
                         {item.productType === "rug" ? (

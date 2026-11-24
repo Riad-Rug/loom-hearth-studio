@@ -10,6 +10,7 @@ import {
 } from "@/features/catalog/rug-style-collections";
 import {
   formatProductPriceUsd,
+  getCompareAtPriceUsdLabel,
   formatRugDimensions,
   formatRugWeight,
   getCategoryRoutePath,
@@ -342,6 +343,7 @@ export type AddToOrderCandidateViewModel = {
   name: string;
   priceUsd: number;
   priceUsdLabel: string;
+  compareAtPriceUsdLabel?: string;
   image?: {
     src: string;
     altText: string;
@@ -412,6 +414,7 @@ function createAddToOrderCandidateViewModel(product: Product): AddToOrderCandida
     name: createProductCardDisplayName(product),
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
+    compareAtPriceUsdLabel: getCompareAtPriceUsdLabel(product),
     image: primaryImage
       ? {
           src: buildProductCardImageUrl(primaryImage.publicId),
@@ -496,6 +499,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     type: product.type,
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
+    compareAtPriceUsdLabel: getCompareAtPriceUsdLabel(product),
     createdAt: product.createdAt,
     description: normalizeDimensionSeparators(product.description),
     routePattern: getProductRoutePattern(product),
@@ -572,6 +576,7 @@ function createProductDetailPageViewModel(
     type: product.type,
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
+    compareAtPriceUsdLabel: getCompareAtPriceUsdLabel(product),
     gallery: gallery.items,
     ogImageAlt: gallery.ogImageAlt,
     palette: createProductPalette(product),
