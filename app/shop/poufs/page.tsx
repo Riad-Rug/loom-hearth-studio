@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
     entityType: "category",
     entityKey: "poufs",
     title: "Moroccan Poufs Sewn from Handwoven Wool",
-    description: `Handmade Moroccan poufs sewn from wool flatweaves and pile rugs, each one of a kind. See your exact pouf before payment; free US shipping from $${storePromise.freeShippingThresholdUsd}.`,
+    description: `Handmade Moroccan poufs sewn from wool flatweaves and pile rugs, each one of a kind. See your exact pouf before payment; ships worldwide, free from $${storePromise.freeShippingThresholdUsd}.`,
     path: "/shop/poufs",
     ...categoryOgImage(products),
   });

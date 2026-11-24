@@ -8,7 +8,7 @@ const inquiryTypeLabels = {
   "product-inquiry": "Product",
   "trade-request": "Trade / project",
   "order-question": "Order help",
-  "international-shipping": "Shipping outside the US",
+  "international-shipping": "Shipping question",
 } as const;
 
 type InquiryType = keyof typeof inquiryTypeLabels;

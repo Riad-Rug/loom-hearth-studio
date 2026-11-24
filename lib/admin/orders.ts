@@ -1,3 +1,4 @@
+import { formatAddressLocality, getCheckoutCountryLabel } from "@/config/supported-markets";
 import { db } from "@/lib/db/client";
 import { createOrderRepository } from "@/lib/db/repositories/order-repository";
 import type { FulfillmentOrchestrationResult } from "@/lib/fulfillment/contracts";
@@ -711,8 +712,8 @@ function createAdminOrderShippingAddress(address: Order["shippingAddress"]): Adm
     phone: address.phone?.trim() || null,
     addressLines: [
       address.address2 ? `${address.address1}, ${address.address2}` : address.address1,
-      `${address.city}, ${address.state} ${address.postalCode}`,
-      address.country,
+      formatAddressLocality(address),
+      getCheckoutCountryLabel(address.country),
     ],
   };
 }

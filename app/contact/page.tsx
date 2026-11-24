@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     entityKey: "contact",
     title: "Contact Loom & Hearth: Rug Inquiries & Trade",
     description:
-      `Ask about a piece, shipping outside the US, or a trade project. Personal reply ${supportReplyWindow}, usually with photos or video.`,
+      `Ask about a piece, shipping to your country, or a trade project. Personal reply ${supportReplyWindow}, usually with photos or video.`,
     path: "/contact",
   });
 }
@@ -76,8 +76,8 @@ function buildDefaultMessage(searchParams: Awaited<ContactPageProps["searchParam
 
   if (inquiryType === "international-shipping") {
     return productName
-      ? `Hello, I am outside the US. Could you confirm shipping and cost for ${productName} to my country?`
-      : "Hello, I am outside the US. Could you confirm whether you can ship to my country, and the cost?";
+      ? `Hello, I have a question about shipping ${productName} to my country.`
+      : "Hello, I have a question about shipping to my country.";
   }
 
   if (!productName) {

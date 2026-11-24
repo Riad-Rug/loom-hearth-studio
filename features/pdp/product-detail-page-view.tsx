@@ -326,17 +326,11 @@ export function ProductDetailPageView({
               <p className={PANEL_EYEBROW}>Shipping and returns</p>
               <ul className="grid gap-[0.6rem] m-0 pl-[1.1rem] text-[var(--color-ink)] marker:text-[var(--color-green)]">
                 <li>
-                  {storePromiseCopy.shipsFrom} to {storePromise.shipsToLabel}. Delivery in{" "}
-                  {storePromiseCopy.deliveryWindow} after dispatch. Outside the US?{" "}
-                  <Link
-                    className="underline underline-offset-2 text-[var(--color-green)]"
-                    href={
-                      `/contact?inquiryType=international-shipping&productName=${encodeURIComponent(product.name)}` as Route
-                    }
-                  >
-                    Send an inquiry first.
-                  </Link>
+                  {storePromiseCopy.shipsFrom} to {storePromise.shipsToLabel}. Dispatched within{" "}
+                  {storePromiseCopy.dispatchWindow} of your approval; delivery usually takes{" "}
+                  {storePromiseCopy.deliveryWindow} after dispatch.
                 </li>
+                <li>{storePromiseCopy.shipping}.</li>
                 <li>{storePromiseCopy.duties}</li>
                 <li>
                   {storePromiseCopy.returns}{" "}
@@ -1022,7 +1016,7 @@ function getShippingCopy(priceUsd: number) {
   if (calculateShippingUsd(priceUsd) === 0) {
     return {
       short: "Qualifies for free shipping",
-      full: `At full price, this piece qualifies for free shipping to ${storePromise.shipsToLabel}.`,
+      full: `At full price, this piece qualifies for free shipping, wherever you are.`,
     };
   }
 

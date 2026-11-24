@@ -9,6 +9,8 @@ const turnaroundHours = `${storePromise.approvalTurnaroundHours.min} to ${storeP
 const decisionDays = storePromise.decisionWindowDays;
 const returnWindowDays = storePromise.returnWindowDays;
 const deliveryWindow = storePromiseCopy.deliveryWindow;
+const dispatchWindow = storePromiseCopy.dispatchWindow;
+const restockingFeeTerms = storePromiseCopy.restockingFeeTerms;
 const shipsFrom = `${storePromise.shipsFromCity}, ${storePromise.shipsFromCountry}`;
 const freeShippingUsd = storePromise.freeShippingThresholdUsd;
 const flatShippingUsd = storePromise.flatShippingUsd;
@@ -152,7 +154,7 @@ export const faqItems: FaqItem[] = [
     group: "Shipping",
     question: "How long does shipping take?",
     answer:
-      `Orders ship from ${shipsFrom} to the United States. Once you approve your piece, delivery takes ${deliveryWindow}. Customs processing can add time outside our control. If you are outside the United States, you can still inquire and we will review shipping availability case by case before payment is captured. We send tracking when the order leaves ${storePromise.shipsFromCountry}.`,
+      `Orders ship from ${shipsFrom} to any country. Once you approve your piece, it is dispatched within ${dispatchWindow}, and delivery usually takes ${deliveryWindow} after that. Customs processing can add time outside our control. We send tracking when the order leaves ${storePromise.shipsFromCountry}.`,
     sortOrder: 12,
   },
   {
@@ -183,7 +185,7 @@ export const faqItems: FaqItem[] = [
     group: "Returns",
     question: "What is your return policy?",
     answer:
-      `${returnWindowDays} days from confirmed delivery, provided the piece is unwashed, unaltered, free of pet hair embedded in the pile, and free of strong odours. The buyer covers return shipping in all cases, except where an item was materially misdescribed in the listing. Refunds are processed within 5 business days of confirmed return receipt.`,
+      `${returnWindowDays} days from confirmed delivery, provided the piece is unwashed, unaltered, free of pet hair embedded in the pile, and free of strong odours. Returns are at the buyer's cost, and a restocking fee applies: ${restockingFeeTerms}. Return shipping and the restocking fee are both waived if a piece arrives damaged or doesn't match its listing. Refunds are processed within 5 business days of confirmed return receipt.`,
     sortOrder: 16,
   },
   {
@@ -244,13 +246,13 @@ Every item in the Loom & Hearth Studio collection is sourced in Morocco. All ord
 
 ## 2. Where we ship
 
-We currently ship to the **United States**. If you are outside the United States, you can still send an inquiry and we will review shipping availability case by case before payment is captured.
+We ship to **every country**. Checkout accepts addresses worldwide, and the shipping rate and process are the same wherever you are. Trade and wholesale orders ship anywhere too.
 
 ---
 
 ## 3. Shipping cost
 
-Shipping to the United States is **free on orders of $${freeShippingUsd} or more**. Orders under $${freeShippingUsd} ship for a **flat $${flatShippingUsd}**. The shipping amount is shown at checkout before payment. For other countries, shipping is quoted only after a case-by-case review before payment is captured.
+Shipping is **free on orders of $${freeShippingUsd} or more**, to any country. Orders under $${freeShippingUsd} ship for a **flat $${flatShippingUsd}**. The shipping amount is shown at checkout before payment.
 
 ---
 
@@ -258,7 +260,7 @@ Shipping to the United States is **free on orders of $${freeShippingUsd} or more
 
 Before your order ships, we send you ${approvalMedia} of the exact piece you ordered ${turnaround} of your order, shown in natural Moroccan light with a tape measure for scale. This is our pre-shipment verification process. It exists because color, texture, and scale are difficult to fully communicate through photographs alone, and we would rather you review the piece before it is packed than have uncertainty after delivery.
 
-You have ${decisionDays} days to review them. Once you approve, payment is captured and your order is packed and dispatched. If you say no, or we do not hear from you within ${decisionDays} days, the order is cancelled, the hold on your card is released, and you are not charged.
+You have ${decisionDays} days to review them. Once you approve, payment is captured and your order is packed and dispatched within ${dispatchWindow}. If you say no, or we do not hear from you within ${decisionDays} days, the order is cancelled, the hold on your card is released, and you are not charged.
 
 For the full details of how the verification works, see the [Terms of Service](https://www.loomandhearthstudio.com/terms-and-conditions).
 
@@ -268,18 +270,17 @@ For the full details of how the verification works, see the [Terms of Service](h
 
 We ship using **Aramex**, **DHL Express**, and **FedEx International**, selected based on the destination, package weight, and dimensions. You will be notified of the carrier and tracking number when your order is dispatched.
 
-We do not offer carrier selection as part of the current inquiry-first order process. We choose the carrier best suited to your shipment on a per-order basis.
+We do not offer carrier selection at checkout. We choose the carrier best suited to your shipment on a per-order basis.
 
 ---
 
 ## 6. Estimated delivery times
 
-All delivery time estimates below are measured from the **date of dispatch**, not the date of order. Allow ${turnaroundHours} for the pre-shipment verification window, plus the time you take to approve, before dispatch begins.
+All delivery time estimates below are measured from the **date of dispatch**, not the date of order. Allow ${turnaroundHours} for the pre-shipment verification window, plus the time you take to approve, plus ${dispatchWindow} to dispatch.
 
 | Destination | Estimated delivery after dispatch |
 |---|---|
-| United States | ${deliveryWindow} |
-| Other countries | Inquiry only. Shipping availability is reviewed case by case before payment is captured |
+| All countries | Usually ${deliveryWindow} |
 
 These are estimates, not guarantees. International shipments from Morocco pass through customs clearance, which can add time outside our control. Carrier delays, public holidays, and weather events can also affect timelines. We will always provide you with a tracking number so you can monitor your shipment in real time.
 
@@ -307,11 +308,11 @@ International shipments are occasionally held by customs for inspection. This is
 
 If your shipment is held by customs in your destination market:
 
-- You will typically receive a notice from the carrier or CBP directly.
+- You will typically receive a notice from the carrier or your customs authority directly.
 - Contact us immediately with the notice details and we will assist.
 - Do not pay any unexpected fee without contacting us first.
 
-We cannot initiate customs clearance on your behalf from our end once a shipment is in transit, but we can provide supporting documentation if CBP requests additional information about the origin or nature of the goods.
+We cannot initiate customs clearance on your behalf from our end once a shipment is in transit, but we can provide supporting documentation if customs requests additional information about the origin or nature of the goods.
 
 ---
 
@@ -487,11 +488,11 @@ In most cases, return shipping is at your expense. This includes:
 - Returns where the item matches its description but is not what you expected
 - Returns due to colour or size perception that was not resolved via the pre-shipment verification offer
 
-You are responsible for choosing a carrier, paying for shipping from your location back to Morocco, and ensuring the item is adequately packaged to arrive without damage. We strongly recommend using a tracked and insured service. Loom and Hearth Studio LLC is not responsible for items lost or damaged in return transit.
+You are responsible for choosing a carrier, paying for shipping from your location back to Morocco, and ensuring the item is adequately packaged to arrive without damage. We strongly recommend using a tracked service. Loom and Hearth Studio LLC is not responsible for items lost or damaged in return transit.
 
 ### Returns we cover
 
-If your return is approved on the basis of material misdescription, we will provide a prepaid return shipping label or reimburse your documented return shipping cost up to a reasonable amount for the destination. We will confirm the arrangement in writing before you ship.
+If a piece arrives damaged or doesn't match its listing, you pay neither return shipping nor the restocking fee. If your return is approved on that basis, we will provide a prepaid return shipping label or reimburse your documented return shipping cost up to a reasonable amount for the destination. We will confirm the arrangement in writing before you ship.
 
 ---
 
@@ -519,6 +520,8 @@ Refunds are issued to the original payment method used for the order. We cannot 
 
 **Partial refund:** We reserve the right to issue a partial refund if the returned item shows signs of use, odour, or damage not present at delivery that reduce its resale value. We will notify you of any deduction and the reason before processing.
 
+**Restocking fee:** A restocking fee of ${restockingFeeTerms} is deducted from every refund, except where a piece arrived damaged or doesn't match its listing. We confirm the amount in writing when we approve the return.
+
 **Return shipping costs:** Original shipping costs are non-refundable. If a separate shipping charge was agreed for your order, that amount is not included in your refund.
 
 ### Processing time
@@ -543,7 +546,7 @@ If your item arrives visibly damaged  meaning the damage occurred during interna
 - Photographs of the damaged item
 - Photographs of the outer packaging
 
-We will open a carrier investigation and work toward a resolution  replacement where possible, or a full refund if a replacement cannot be sourced. Do not discard the packaging until the investigation is resolved, as the carrier may require it as evidence.
+We will open a carrier investigation and work toward a resolution  replacement where possible, or a full refund if a replacement cannot be sourced. Do not discard the packaging until the investigation is resolved, as the carrier may require it as evidence. You pay no return shipping and no restocking fee for a piece damaged in transit.
 
 ---
 
@@ -553,7 +556,7 @@ We offer pre-shipment verification on every order. Before payment is captured an
 
 Accepting this offer is the most effective way to ensure you are completely happy with your purchase before it leaves Morocco. If after reviewing the photos and video you have any concerns  about colour, scale, texture, or anything else  tell us before confirming. That is the right moment to raise it.
 
-If you accepted the pre-shipment verification and confirmed you were happy with the item, and subsequently return it for reasons visible in the verification photos and video, that will be taken into account when assessing your return. This does not remove your right to return within ${returnWindowDays} days  but it is relevant to whether a return shipping cost exemption applies.
+If you accepted the pre-shipment verification and confirmed you were happy with the item, and subsequently return it for reasons visible in the verification photos and video, that will be taken into account when assessing your return. This does not remove your right to return within ${returnWindowDays} days  but it is relevant to whether the return shipping and restocking fee waiver applies.
 
 ---
 
@@ -854,7 +857,7 @@ If we cancel your order, we will notify you promptly by email and release any pa
 
 ### 4.1 Prices
 
-All prices are displayed in United States Dollars (USD). Shipping to the United States is free on orders of $${freeShippingUsd} or more; orders under $${freeShippingUsd} ship for a flat $${flatShippingUsd}, shown at checkout before payment. Prices for other countries are confirmed only after a case-by-case shipping review. Prices do not include return shipping. ${dutiesSentence}
+All prices are displayed in United States Dollars (USD). We ship to every country: shipping is free on orders of $${freeShippingUsd} or more; orders under $${freeShippingUsd} ship for a flat $${flatShippingUsd}, shown at checkout before payment. Prices do not include return shipping. ${dutiesSentence}
 
 We reserve the right to correct pricing errors on the site at any time. If an error is identified after you have placed an order, we will contact you to confirm whether you wish to proceed at the correct price, or cancel for a full release of any held funds.
 
@@ -904,8 +907,8 @@ We ship using DHL Express, FedEx International, or Aramex, selected based on des
 
 ### 6.3 Estimated delivery times
 
-- United States: ${deliveryWindow} from dispatch
-- Other countries: inquiry only, with shipping availability reviewed case by case before payment is captured
+- Dispatch: within ${dispatchWindow} of your approval
+- Delivery: usually ${deliveryWindow} from dispatch, for every country
 
 These are estimates, not guarantees. Customs clearance, carrier delays, and circumstances outside our control may extend delivery times. We will provide you with a tracking number when your order is dispatched so you can monitor progress.
 
@@ -927,7 +930,7 @@ ${dutiesSentence} Prices at checkout do not include them. If you have questions 
 
 Our full Return and Refund Policy is published at [loomandhearthstudio.com/returns-policy](https://www.loomandhearthstudio.com/returns-policy). That page governs all returns and takes precedence over any summary here.
 
-In brief: we accept returns within ${returnWindowDays} days of confirmed delivery for items in original, unaltered condition. Return shipping is at the buyer's cost except where an item was materially misdescribed in its listing. Refunds are issued within 5 business days of confirmed return receipt.
+In brief: we accept returns within ${returnWindowDays} days of confirmed delivery for items in original, unaltered condition. Return shipping is at the buyer's cost, and a restocking fee of ${restockingFeeTerms} applies. Both are waived if a piece arrives damaged or doesn't match its listing. Refunds are issued within 5 business days of confirmed return receipt.
 
 ---
 

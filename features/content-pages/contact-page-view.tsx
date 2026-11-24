@@ -60,7 +60,7 @@ const inquiryOptions: Array<{ value: InquiryType; label: string }> = [
   { value: "product-inquiry", label: "Product" },
   { value: "trade-request", label: "Trade / project" },
   { value: "order-question", label: "Order help" },
-  { value: "international-shipping", label: "Shipping outside the US" },
+  { value: "international-shipping", label: "Shipping" },
 ];
 
 const messagePlaceholders: Record<InquiryType, string> = {
@@ -70,7 +70,7 @@ const messagePlaceholders: Record<InquiryType, string> = {
     "Tell us about the project - rooms, sizes, timeline, and whether you'd like trade pricing.",
   "order-question": "Share your order number, what happened, and what you need next.",
   "international-shipping":
-    "Tell us the country and the piece; we quote shipping before any payment is taken.",
+    "Tell us the country and the piece you have in mind, and what you'd like to know about delivery.",
 };
 
 export function ContactPageView({
@@ -511,7 +511,7 @@ function getFormTitle(inquiryType: InquiryType) {
   }
 
   if (inquiryType === "international-shipping") {
-    return "Ask about shipping outside the US";
+    return "Ask about shipping";
   }
 
   return "Send a message";

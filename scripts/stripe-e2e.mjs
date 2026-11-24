@@ -119,7 +119,7 @@ async function runCheckout(browser, { productPath, label }) {
 const browser = await chromium.launch();
 
 // ---- Order A: pillow $96 -> $50 shipping -> capture path ----
-console.log("ORDER A: pillow, sub-$210, capture path");
+console.log("ORDER A: pillow, sub-$250, capture path");
 const orderA = await runCheckout(browser, {
   productPath: "/shop/pillows/hearth-stripe-pillow",
   label: "a",
@@ -158,7 +158,7 @@ console.log("A after capture:", {
 });
 
 // ---- Order B: rug $1500 -> free shipping -> cancel path ----
-console.log("\nORDER B: rug, over-$210, cancel path");
+console.log("\nORDER B: rug, over-$250, cancel path");
 const orderB = await runCheckout(browser, {
   productPath: "/shop/rugs/beni-ourain/beni",
   label: "b",

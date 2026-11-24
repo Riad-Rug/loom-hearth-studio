@@ -50,7 +50,8 @@ export function ShippingStep() {
       <form className={styles.panelStack} onSubmit={handleSubmit}>
         <AddressFields form={shippingForm} idPrefix="shipping" />
         <p className={styles.summaryNote}>
-          Estimated delivery: {storePromiseCopy.deliveryWindow} after your order ships.
+          Dispatched within {storePromiseCopy.dispatchWindow} of your approval; delivery usually takes{" "}
+          {storePromiseCopy.deliveryWindow} after that.
         </p>
 
         <fieldset className={styles.toggleFieldset}>

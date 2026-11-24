@@ -1,3 +1,4 @@
+import { storePromise } from "@/lib/order/store-promise";
 import type { ProductCategory } from "@/types/domain";
 
 export const catalogLanding = {
@@ -37,19 +38,14 @@ export type CatalogIntro = {
 const desktopOnly = (text: string): CatalogIntroRun => ({ text, on: ["desktop"] });
 const desktopAndTablet = (text: string): CatalogIntroRun => ({ text, on: ["desktop", "tablet"] });
 const phoneOnly = (text: string): CatalogIntroRun => ({ text, on: ["phone"] });
-const inquiryLink: CatalogIntroRun = {
-  text: "Send an inquiry",
-  on: ["desktop", "tablet"],
-  link: true,
-};
+const shipsWorldwide = `Ships worldwide from ${storePromise.shipsFromCity}`;
+const freeShippingClause = `, free on orders of $${storePromise.freeShippingThresholdUsd} or more`;
 
 /** The shipping line every shop header carries unless its intro says otherwise. */
 export const catalogShippingScopeNote: CatalogIntroParagraph = [
-  "Shipping to the US.",
-  desktopAndTablet(" Outside the US? "),
-  inquiryLink,
-  desktopOnly(" and we'll confirm shipping before you order"),
-  desktopAndTablet("."),
+  shipsWorldwide,
+  desktopAndTablet(freeShippingClause),
+  ".",
 ];
 
 /**
@@ -105,9 +101,8 @@ export const catalogIntros: Partial<Record<"shop" | ProductCategory, CatalogIntr
       ],
     ],
     closing: [
-      desktopAndTablet("Outside the US? "),
-      inquiryLink,
-      desktopOnly(" and we'll confirm shipping before you order"),
+      desktopAndTablet(shipsWorldwide),
+      desktopOnly(freeShippingClause),
       desktopAndTablet("."),
       phoneOnly(" Shop the collection below."),
     ],
@@ -128,9 +123,8 @@ export const catalogIntros: Partial<Record<"shop" | ProductCategory, CatalogIntr
       ],
     ],
     closing: [
-      desktopAndTablet("Outside the US? "),
-      inquiryLink,
-      desktopOnly(" and we'll confirm shipping before you order"),
+      desktopAndTablet(shipsWorldwide),
+      desktopOnly(freeShippingClause),
       desktopAndTablet(". "),
       "Shop the collection below.",
     ],
@@ -152,9 +146,8 @@ export const catalogIntros: Partial<Record<"shop" | ProductCategory, CatalogIntr
       ],
     ],
     closing: [
-      desktopAndTablet("Shipping to the US. Outside the US? "),
-      inquiryLink,
-      desktopOnly(" to confirm shipping before you order"),
+      desktopAndTablet(shipsWorldwide),
+      desktopOnly(freeShippingClause),
       desktopAndTablet("."),
       phoneOnly(" Shop the collection below."),
     ],
@@ -172,9 +165,8 @@ export const catalogIntros: Partial<Record<"shop" | ProductCategory, CatalogIntr
       ["Covers only; filling is not included."],
     ],
     closing: [
-      desktopAndTablet("Shipping to the US. Outside the US? "),
-      inquiryLink,
-      desktopOnly(" to confirm shipping before you order"),
+      desktopAndTablet(shipsWorldwide),
+      desktopOnly(freeShippingClause),
       desktopAndTablet("."),
       phoneOnly(" Shop the collection below."),
     ],

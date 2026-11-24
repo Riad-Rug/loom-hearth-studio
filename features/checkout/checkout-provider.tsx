@@ -19,7 +19,8 @@ import type { OrderAddress } from "@/types/domain";
 
 const CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout.v3";
 const LEGACY_CHECKOUT_STORAGE_KEY = "loom-hearth-studio.checkout.v2";
-const CHECKOUT_STORAGE_VERSION = 3;
+// v4: addresses carry a country (checkout ships worldwide).
+const CHECKOUT_STORAGE_VERSION = 4;
 
 export type CheckoutAddresses = {
   /** Carries the contact email and phone for the order. */
@@ -553,7 +554,7 @@ function isAddressFormValues(value: unknown): value is AddressFormValues {
   }
 
   const candidate = value as Record<string, unknown>;
-  const requiredFields = ["fullName", "email", "address1", "city", "state", "postalCode"];
+  const requiredFields = ["fullName", "email", "address1", "city", "country", "state", "postalCode"];
   const optionalFields = ["phone", "address2"];
 
   return (

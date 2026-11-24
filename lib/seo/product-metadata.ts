@@ -88,6 +88,6 @@ export function buildProductMetaDescription(product: ProductDetailPageViewModel)
   // Long product names can still overrun the budget, so the generated sentence
   // is held to the same limit as the admin field rather than shipped whole.
   return truncateMetaDescription(
-    `${product.name}: one-of-a-kind Moroccan ${productLabel}${dimensions}, ${product.priceUsdLabel} USD. Exact-piece photos before payment, ships from Morocco to the US, ${storePromise.returnWindowDays}-day returns.`,
+    `${product.name}: one-of-a-kind Moroccan ${productLabel}${dimensions}, ${product.priceUsdLabel} USD. Exact-piece photos before payment, ships worldwide from Morocco, ${storePromise.returnWindowDays}-day returns.`,
   );
 }

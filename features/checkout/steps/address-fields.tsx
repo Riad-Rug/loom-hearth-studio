@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 
+import { checkoutCountryOptions, requiresUsAddressFields } from "@/config/supported-markets";
 import { usStates } from "@/config/us-states";
 import type { AddressFormValues } from "@/lib/checkout/address-schema";
 
@@ -26,7 +27,28 @@ export function AddressFields({ form, idPrefix, includeContactFields = true }: A
   // screen. Re-check the ZIP whenever the state changes, but only once the
   // customer has actually reached that field.
   const stateValue = useWatch({ control: form.control, name: "state" });
+  const countryValue = useWatch({ control: form.control, name: "country" });
+  const isUsAddress = requiresUsAddressFields(countryValue);
   const isFirstRender = useRef(true);
+  const previousCountry = useRef(countryValue);
+
+  // A US state code means nothing in another country (and the reverse), so
+  // switching country clears the region rather than carrying it across.
+  useEffect(() => {
+    if (previousCountry.current === countryValue) {
+      return;
+    }
+
+    const wasUs = requiresUsAddressFields(previousCountry.current);
+    previousCountry.current = countryValue;
+
+    if (wasUs !== requiresUsAddressFields(countryValue)) {
+      form.setValue("state", "");
+      form.clearErrors(["state", "postalCode"]);
+    }
+    // form.setValue/clearErrors are stable; re-running only on country change is intentional.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countryValue]);
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -70,7 +92,7 @@ export function AddressFields({ form, idPrefix, includeContactFields = true }: A
             <span>Phone (optional)</span>
             <input
               id={`${idPrefix}-phone`}
-              placeholder="(555) 555-5555"
+              placeholder="+1 555 555 5555"
               type="tel"
               autoComplete="tel"
               inputMode="tel"
@@ -100,6 +122,27 @@ export function AddressFields({ form, idPrefix, includeContactFields = true }: A
         {errors.fullName ? (
           <em id={errorId("fullName")} role="alert" className={styles.fieldError}>
             {errors.fullName.message}
+          </em>
+        ) : null}
+      </label>
+      <label className={styles.field} htmlFor={`${idPrefix}-country`}>
+        <span>Country</span>
+        <select
+          id={`${idPrefix}-country`}
+          autoComplete="country"
+          aria-invalid={errors.country ? "true" : undefined}
+          aria-describedby={errors.country ? errorId("country") : undefined}
+          {...register("country")}
+        >
+          {checkoutCountryOptions.map((country) => (
+            <option key={country.code} value={country.code}>
+              {country.label}
+            </option>
+          ))}
+        </select>
+        {errors.country ? (
+          <em id={errorId("country")} role="alert" className={styles.fieldError}>
+            {errors.country.message}
           </em>
         ) : null}
       </label>
@@ -148,24 +191,34 @@ export function AddressFields({ form, idPrefix, includeContactFields = true }: A
         ) : null}
       </label>
       <label className={styles.field} htmlFor={`${idPrefix}-state`}>
-        <span>State</span>
-        <select
-          id={`${idPrefix}-state`}
-          defaultValue=""
-          autoComplete="address-level1"
-          aria-invalid={errors.state ? "true" : undefined}
-          aria-describedby={errors.state ? errorId("state") : undefined}
-          {...register("state")}
-        >
-          <option disabled value="">
-            Select a state
-          </option>
-          {usStates.map((state) => (
-            <option key={state.code} value={state.code}>
-              {state.name}
+        <span>{isUsAddress ? "State" : "State, province or region (if any)"}</span>
+        {isUsAddress ? (
+          <select
+            id={`${idPrefix}-state`}
+            autoComplete="address-level1"
+            aria-invalid={errors.state ? "true" : undefined}
+            aria-describedby={errors.state ? errorId("state") : undefined}
+            {...register("state")}
+          >
+            <option disabled value="">
+              Select a state
             </option>
-          ))}
-        </select>
+            {usStates.map((state) => (
+              <option key={state.code} value={state.code}>
+                {state.name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            id={`${idPrefix}-state`}
+            type="text"
+            autoComplete="address-level1"
+            aria-invalid={errors.state ? "true" : undefined}
+            aria-describedby={errors.state ? errorId("state") : undefined}
+            {...register("state")}
+          />
+        )}
         {errors.state ? (
           <em id={errorId("state")} role="alert" className={styles.fieldError}>
             {errors.state.message}
@@ -173,13 +226,13 @@ export function AddressFields({ form, idPrefix, includeContactFields = true }: A
         ) : null}
       </label>
       <label className={styles.field} htmlFor={`${idPrefix}-postalCode`}>
-        <span>ZIP code</span>
+        <span>{isUsAddress ? "ZIP code" : "Postal code (if any)"}</span>
         <input
           id={`${idPrefix}-postalCode`}
-          placeholder="90001"
+          placeholder={isUsAddress ? "90001" : undefined}
           type="text"
           autoComplete="postal-code"
-          inputMode="numeric"
+          inputMode={isUsAddress ? "numeric" : "text"}
           aria-invalid={errors.postalCode ? "true" : undefined}
           aria-describedby={errors.postalCode ? errorId("postalCode") : undefined}
           {...register("postalCode")}
@@ -189,10 +242,6 @@ export function AddressFields({ form, idPrefix, includeContactFields = true }: A
             {errors.postalCode.message}
           </em>
         ) : null}
-      </label>
-      <label className={styles.field} htmlFor={`${idPrefix}-country`}>
-        <span>Country</span>
-        <input id={`${idPrefix}-country`} readOnly autoComplete="country-name" tabIndex={-1} value="United States" />
       </label>
     </div>
   );
