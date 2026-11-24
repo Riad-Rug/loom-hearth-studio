@@ -576,7 +576,6 @@ function createProductDetailPageViewModel(
     palette: createProductPalette(product),
     materialLabel: product.materials.join(", "),
     originLabel: product.origin,
-    techniqueLabel: undefined,
     detailSections: createProductDetailSections(product),
     similarRugs,
     crossSellRecommendations,
@@ -589,7 +588,6 @@ function createProductDetailPageViewModel(
     return {
       ...baseViewModel,
       type: "rug",
-      techniqueLabel: "Handwoven",
       rugStyle: product.rugStyle,
       quantityLabel: "1",
       dimensionsLabel: formatRugDimensions(product),

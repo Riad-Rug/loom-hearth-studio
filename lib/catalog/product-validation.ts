@@ -3,7 +3,6 @@ import {
   categoryUsesField,
   cutFromOneRugUniquenessTier,
   getConditionalPublishRequirements,
-  getMinimumPublishPriceUsd,
   getPublishErrorMessage,
   getPublishRequirements,
   productDecorSubtypeOptions,
@@ -286,20 +285,10 @@ export function validateProductMutationInput(
     const publishError = (field: string, fallback: string) =>
       getPublishErrorMessage(input.category, field, fallback);
 
-    // Category price floors only bind at publish time; a draft may sit below
-    // one while the listing is still being priced.
-    const minimumPriceUsd = getMinimumPublishPriceUsd(input.category);
-
-    if (
-      minimumPriceUsd !== undefined &&
-      Number.isFinite(input.priceUsd) &&
-      input.priceUsd >= 0 &&
-      input.priceUsd < minimumPriceUsd
-    ) {
-      fieldErrors.priceUsd = publishError(
-        "priceUsd",
-        `Price must be at least $${minimumPriceUsd} before publishing.`,
-      );
+    // No category has a price floor (some pieces sell for a few dollars), but a
+    // $0 listing must never go live. Drafts may still sit at $0 while unpriced.
+    if (input.priceUsd === 0) {
+      fieldErrors.priceUsd = publishError("priceUsd", "Set a price above $0 before publishing.");
     }
 
     if (required.has("catalogNumber") && !input.catalogNumber) {

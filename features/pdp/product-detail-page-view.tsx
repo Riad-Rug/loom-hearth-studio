@@ -791,14 +791,16 @@ function buildSpecificationRows(product: ProductDetailPageViewModel, rugStylePag
 
   if (product.type === "rug") {
     const styleCrumb = getRugStyleCrumb(product, rugStylePageIndexable);
+    const styleLabel = getRugStyleLabel(product.rugStyle);
 
-    rows.push({
-      label: "Style",
-      value: getRugStyleLabel(product.rugStyle) || "Handwoven rug",
-      ...(styleCrumb ? { href: styleCrumb.href } : {}),
-    });
-    if (product.techniqueLabel) {
-      rows.push({ label: "Technique", value: product.techniqueLabel });
+    // An unfiled rug gets no Style row rather than a placeholder or a guessed
+    // construction claim.
+    if (styleLabel) {
+      rows.push({
+        label: "Style",
+        value: styleLabel,
+        ...(styleCrumb ? { href: styleCrumb.href } : {}),
+      });
     }
   }
 
@@ -821,6 +823,10 @@ function buildSpecificationRows(product: ProductDetailPageViewModel, rugStylePag
 /** Rows store either the admin label ("Beni Ourain") or its slug ("beni-ourain"); both read as the label. */
 function getRugStyleLabel(rugStyle: string) {
   const slug = normalizeSlug(rugStyle);
+
+  if (!slug || slug === "unclassified") {
+    return "";
+  }
 
   return productRugStyleOptions.find((option) => normalizeSlug(option) === slug) ?? humanizeProductToken(rugStyle);
 }

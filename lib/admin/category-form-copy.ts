@@ -121,11 +121,6 @@ export type CategoryFormCopy = {
   conditionalRequiredAtPublish: readonly CategoryConditionalRequirement[];
   /** Extra structured fields this category renders and stores. */
   extraFields: readonly CategoryExtraFieldKey[];
-  /**
-   * Publish-time price floor in USD. Drafts may sit below it; active and sold
-   * listings may not. Undefined means the category has no floor.
-   */
-  minimumPriceUsdAtPublish?: number;
   /** Overrides for publish-gate error messages, keyed by field error key. */
   publishErrors: Partial<Record<string, string>>;
 };
@@ -264,7 +259,6 @@ const pillowCategoryFormCopy: CategoryFormCopy = {
   requiredAtPublish: ["dimensionsCm", "weightKg", "uniquenessTier"],
   conditionalRequiredAtPublish: [],
   extraFields: ["uniquenessTier", "insertIncluded"],
-  minimumPriceUsdAtPublish: 30,
   publishErrors: {
     provenanceNote: "Explain how this cover was made before publishing.",
     sourcingNote: "Add a first-person making note before publishing.",
@@ -273,7 +267,6 @@ const pillowCategoryFormCopy: CategoryFormCopy = {
     weightKg: "Add the shipping weight before publishing a pillow.",
     uniquenessTier: "Say whether this cover can be repeated before publishing.",
     sourceCoverCount: "Record how many covers were cut from that rug before publishing.",
-    priceUsd: "Pillow covers publish at $30 or more. Raise the price or keep this a draft.",
   },
 };
 
@@ -375,10 +368,6 @@ export function getConditionalPublishRequirements(
   category: string,
 ): readonly CategoryConditionalRequirement[] {
   return getCategoryFormCopy(category).conditionalRequiredAtPublish;
-}
-
-export function getMinimumPublishPriceUsd(category: string) {
-  return getCategoryFormCopy(category).minimumPriceUsdAtPublish;
 }
 
 export function getPublishErrorMessage(category: string, field: string, fallback: string) {

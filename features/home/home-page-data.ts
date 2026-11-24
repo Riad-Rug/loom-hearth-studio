@@ -147,7 +147,7 @@ const defaultHomePageContent: HomePageContent = {
     eyebrow: `DIRECT FROM ${storePromise.shipsFromCity.toUpperCase()}`,
     title: "Woven by hand in the Atlas. Warm underfoot in your home.",
     paragraph:
-      "One-of-a-kind rugs, poufs and antiques, found and shipped by one person in Morocco — from $30.",
+      "One-of-a-kind rugs, poufs and antiques, found and shipped by one person in Morocco.",
     primaryCta: {
       label: "SHOP RUGS",
       href: "/shop/rugs",

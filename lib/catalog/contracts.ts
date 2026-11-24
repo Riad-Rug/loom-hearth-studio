@@ -100,7 +100,6 @@ type ProductDetailPageViewModelBase = {
   }>;
   materialLabel: string;
   originLabel: string;
-  techniqueLabel?: string;
   detailSections: ProductDetailSectionViewModel[];
   similarRugs: CatalogProductCardViewModel[];
   crossSellRecommendations: CatalogProductCardViewModel[];
