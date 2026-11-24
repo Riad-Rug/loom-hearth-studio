@@ -315,6 +315,9 @@ export function productSchema(input: {
   isOneOfOne?: boolean;
   /** Comma-joined materials as the PDP prints them (view model `materialLabel`). */
   material?: string;
+  /** Rug Type and Region, only when set from the new admin fields. */
+  rugTypeLabel?: string;
+  regionLabel?: string;
   /** Human-readable size, e.g. the rug view model's `dimensionsLabel`. */
   sizeLabel?: string;
   /**
@@ -461,6 +464,8 @@ export function productSchema(input: {
             },
           ]
         : []),
+      ...(input.rugTypeLabel ? [{ "@type": "PropertyValue", name: "Type", value: input.rugTypeLabel }] : []),
+      ...(input.regionLabel ? [{ "@type": "PropertyValue", name: "Region", value: input.regionLabel }] : []),
     ],
     offers: {
       "@type": "Offer",

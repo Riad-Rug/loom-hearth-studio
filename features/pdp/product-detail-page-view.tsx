@@ -26,8 +26,9 @@ import { getRugStyleCollection } from "@/features/catalog/rug-style-collections"
 import { trackViewItem } from "@/lib/analytics/gtag";
 import { unavailableCopy, type ProductAvailability, type UnavailableReason } from "@/lib/catalog/availability";
 import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
-import { humanizeProductToken, parseProductTitle } from "@/lib/catalog/product-card-name";
-import { normalizeSlug, productRugStyleOptions } from "@/lib/catalog/product-validation";
+import { parseProductTitle } from "@/lib/catalog/product-card-name";
+import { normalizeSlug } from "@/lib/catalog/product-validation";
+import { getRugTypeFromLegacyStyle } from "@/lib/catalog/rug-taxonomy";
 import { calculateShippingUsd } from "@/lib/order/shipping";
 import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import {
@@ -784,17 +785,19 @@ function buildSpecificationRows(product: ProductDetailPageViewModel, rugStylePag
   );
 
   if (product.type === "rug") {
+    // The existing style-collection link stays on whichever row names that
+    // collection: a construction style (Flatweave, Mixed technique,
+    // Boucherouite) is a Type; a place-named style (Azilal, Zemmour) a Region.
     const styleCrumb = getRugStyleCrumb(product, rugStylePageIndexable);
-    const styleLabel = getRugStyleLabel(product.rugStyle);
+    const styleHref = styleCrumb ? { href: styleCrumb.href } : {};
+    const styleIsType = Boolean(getRugTypeFromLegacyStyle(product.rugStyle));
 
-    // An unfiled rug gets no Style row rather than a placeholder or a guessed
-    // construction claim.
-    if (styleLabel) {
-      rows.push({
-        label: "Style",
-        value: styleLabel,
-        ...(styleCrumb ? { href: styleCrumb.href } : {}),
-      });
+    if (product.typeLabel) {
+      rows.push({ label: "Type", value: product.typeLabel, ...(styleIsType ? styleHref : {}) });
+    }
+
+    if (product.regionLabel) {
+      rows.push({ label: "Region", value: product.regionLabel, ...(styleIsType ? {} : styleHref) });
     }
   }
 
@@ -812,17 +815,6 @@ function buildSpecificationRows(product: ProductDetailPageViewModel, rugStylePag
   }
 
   return rows;
-}
-
-/** Rows store either the admin label ("Beni Ourain") or its slug ("beni-ourain"); both read as the label. */
-function getRugStyleLabel(rugStyle: string) {
-  const slug = normalizeSlug(rugStyle);
-
-  if (!slug || slug === "unclassified") {
-    return "";
-  }
-
-  return productRugStyleOptions.find((option) => normalizeSlug(option) === slug) ?? humanizeProductToken(rugStyle);
 }
 
 function extractConditionNote(product: ProductDetailPageViewModel) {

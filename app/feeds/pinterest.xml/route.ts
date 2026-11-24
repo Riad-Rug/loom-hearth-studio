@@ -1,6 +1,7 @@
 import { siteConfig } from "@/config/site";
 import { getProductAvailability } from "@/lib/catalog/availability";
 import { getProductRoutePath } from "@/lib/catalog/helpers";
+import { getRugTaxonomyDisplay } from "@/lib/catalog/rug-taxonomy";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository } from "@/lib/db/repositories/product-repository";
 import { absoluteUrl } from "@/lib/seo/metadata";
@@ -60,9 +61,15 @@ function getProductType(product: Product) {
 
   const base = `Home > ${categoryLabels[product.category]}`;
 
-  return product.type === "rug" && product.rugStyle
-    ? `${base} > ${product.rugStyle}`
-    : base;
+  if (product.type !== "rug") {
+    return base;
+  }
+
+  // New Type wins; the legacy style is the fallback, cleaned of "-type"
+  // qualifiers and never "Unclassified".
+  const typeLabel = getRugTaxonomyDisplay(product).typeLabel;
+
+  return typeLabel ? `${base} > ${typeLabel}` : base;
 }
 
 function getGoogleProductCategory(product: Product) {

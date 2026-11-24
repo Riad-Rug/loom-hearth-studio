@@ -7,9 +7,16 @@ import type { Route } from "next";
 
 import type { AdminProductActionState } from "@/lib/admin/product-actions-shared";
 import { getProductRoutePath } from "@/lib/catalog/helpers";
-import { normalizeSlug, parseProductFormData, validateProductMutationInput } from "@/lib/catalog/product-validation";
+import { deriveLegacyRugStyle, isUnclassifiedRugStyle } from "@/lib/catalog/rug-taxonomy";
+import {
+  newRegionOptionValue,
+  normalizeSlug,
+  parseProductFormData,
+  validateProductMutationInput,
+  type ProductMutationInput,
+} from "@/lib/catalog/product-validation";
 import { requireAdminRoleForMutation } from "@/lib/auth/service";
-import type { ProductMutationContext, ProductMutationInput } from "@/lib/catalog/product-validation";
+import type { ProductMutationContext } from "@/lib/catalog/product-validation";
 import {
   createProductRepository,
   isUniqueConstraintError,
@@ -18,6 +25,7 @@ import {
   type ProductStockState,
 } from "@/lib/db/repositories/product-repository";
 import { isOneOfOne, mergeStockEdit, type ProductEditBase } from "@/lib/order/inventory-hold";
+import { createRugRegionRepository } from "@/lib/db/repositories/rug-region-repository";
 import type { Product } from "@/types/domain";
 
 export async function createAdminProductAction(
@@ -54,6 +62,8 @@ export async function createAdminProductAction(
       fieldErrors: validation.fieldErrors,
     };
   }
+
+  await resolveRugRegionAndStyle(validation.value);
 
   try {
     if (await repository.slugExists({ slug: validation.value.slug })) {
@@ -163,6 +173,9 @@ export async function updateAdminProductAction(
     };
   }
 
+  // The update below saves parsed.value, so resolve the region on that.
+  await resolveRugRegionAndStyle(parsed.value);
+
   try {
     if (await repository.slugExists({ slug: validation.value.slug, excludeId: productId })) {
       return {
@@ -232,6 +245,7 @@ export async function duplicateAdminProductAction(productId: string) {
 
   const duplicate = await repository.create({
     ...product,
+    ...(product.type === "rug" ? { regionId: product.region?.id ?? null } : {}),
     id: undefined,
     catalogNumber: undefined,
     name: `${product.name} Copy`,
@@ -341,6 +355,8 @@ export async function bulkAdminProductsAction(formData: FormData) {
     const nextStatus = getBulkStatus(bulkAction);
     const nextProduct = {
       ...product,
+      ...(product.type === "rug" ? { regionId: product.region?.id ?? null } : {}),
+      originalStatus: product.status,
       status: nextStatus,
     };
     const validation = validateProductMutationInput(
@@ -449,6 +465,33 @@ function toEditBase(product: Product): ProductEditBase {
   return product.type === "multiUnit"
     ? { status: product.status, inventory: product.inventory, variants: product.variants }
     : { status: product.status, inventory: null, variants: [] };
+}
+
+/**
+ * "Add region" in the form: create (or reuse) the typed region and point the
+ * product at it. Then, for a rug still filed as Unclassified, derive its legacy
+ * style (the URL segment) from Type/Region, so it stops living under
+ * /shop/rugs/unclassified/. The old URL redirects to the new one.
+ */
+async function resolveRugRegionAndStyle(value: ProductMutationInput) {
+  if (value.type !== "rug") {
+    return;
+  }
+
+  const regionRepository = createRugRegionRepository();
+
+  if (value.regionId === newRegionOptionValue && value.newRegion) {
+    const region = await regionRepository.findOrCreate(value.newRegion);
+    value.regionId = region.id;
+    revalidatePath("/admin/products");
+  }
+
+  if (!isUnclassifiedRugStyle(value.rugStyle)) {
+    return;
+  }
+
+  const region = value.regionId ? await regionRepository.findById(value.regionId) : undefined;
+  value.rugStyle = deriveLegacyRugStyle(value.rugType, region ?? undefined);
 }
 
 function revalidateCatalogPaths(input: {

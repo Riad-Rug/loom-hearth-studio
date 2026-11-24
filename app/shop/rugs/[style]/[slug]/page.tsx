@@ -84,6 +84,8 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           // its own palette — `createProductPalette` falls back to a hard-coded
           // default palette otherwise, which would be fabricated colour data.
           material: product.materialLabel,
+          rugTypeLabel: product.schemaTypeLabel,
+          regionLabel: product.schemaRegionLabel,
           sizeLabel: product.dimensionsLabel,
           dimensionsCm: product.cartProduct.dimensionsCm,
           colorLabels:

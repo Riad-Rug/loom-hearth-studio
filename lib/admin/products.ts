@@ -1,5 +1,6 @@
 import { formatProductPriceUsd, getProductRoutePath } from "@/lib/catalog/helpers";
-import { mapCatalogProductRecordToDomainProduct } from "@/lib/catalog/product-mappers";
+import { catalogProductInclude, mapCatalogProductRecordToDomainProduct } from "@/lib/catalog/product-mappers";
+import { formatRegionLabel, formatRugTypeLabel } from "@/lib/catalog/rug-taxonomy";
 import type { AdminProductFormValues } from "@/lib/admin/product-form-shared";
 import { getProductRoutePreview } from "@/lib/catalog/product-validation";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
@@ -25,6 +26,10 @@ export type AdminProductListItem = {
   createdAtLabel: string;
   createdAt: string;
   routePath: string;
+  /** Rugs only; "" when not set yet. */
+  typeLabel: string;
+  regionLabel: string;
+  isRug: boolean;
 };
 
 export type AdminProductsPageData = {
@@ -46,6 +51,7 @@ export type AdminProductEditPageData = AdminProductFormPageData & {
 
 export async function getAdminProductsPageData(): Promise<AdminProductsPageData> {
   const records = await createRepositoryContext().client.catalogProduct.findMany({
+    include: catalogProductInclude,
     orderBy: {
       updatedAt: "desc",
     },
@@ -66,6 +72,7 @@ export async function getAdminProductsPageData(): Promise<AdminProductsPageData>
 
 export async function getAdminProductFormPageData(productId: string): Promise<AdminProductEditPageData | null> {
   const record = await createRepositoryContext().client.catalogProduct.findUnique({
+    include: catalogProductInclude,
     where: { id: productId },
   });
 
@@ -148,6 +155,9 @@ export function createEmptyAdminProductFormValues(type: Product["type"]): AdminP
     seoTitle: "",
     seoDescription: "",
     rugStyle: "",
+    rugType: "",
+    pileHeight: "",
+    regionId: "",
     dimensionsCmLength: "",
     dimensionsCmWidth: "",
     heightCm: "",
@@ -198,6 +208,10 @@ function createAdminProductListItem(
     createdAtLabel: formatAdminDateLabel(createdAt),
     createdAt: createdAt.toISOString(),
     routePath: getProductRoutePath(product),
+    typeLabel:
+      product.type === "rug" && product.rugType ? formatRugTypeLabel(product.rugType, product.pileHeight) : "",
+    regionLabel: product.type === "rug" && product.region ? formatRegionLabel(product.region) : "",
+    isRug: product.type === "rug",
   };
 }
 
@@ -265,6 +279,9 @@ function createAdminProductFormValues(
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
     rugStyle: product.type === "rug" ? product.rugStyle : "",
+    rugType: product.type === "rug" ? product.rugType ?? "" : "",
+    pileHeight: product.type === "rug" ? product.pileHeight ?? "" : "",
+    regionId: product.type === "rug" ? product.region?.id ?? "" : "",
     dimensionsCmLength: product.dimensionsCm ? String(product.dimensionsCm.length) : "",
     dimensionsCmWidth: product.dimensionsCm ? String(product.dimensionsCm.width) : "",
     heightCm: product.heightCm ? String(product.heightCm) : "",

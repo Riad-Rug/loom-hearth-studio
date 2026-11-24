@@ -2,6 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { cache } from "react";
 
 import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
+import { cleanLegacyAttributionText, getRugTaxonomyDisplay } from "@/lib/catalog/rug-taxonomy";
 import {
   rugStyleCollections,
   rugStyleNavLinks,
@@ -575,7 +576,7 @@ function createProductDetailPageViewModel(
     ogImageAlt: gallery.ogImageAlt,
     palette: createProductPalette(product),
     materialLabel: product.materials.join(", "),
-    originLabel: product.origin,
+    originLabel: getDisplayOrigin(product),
     detailSections: createProductDetailSections(product),
     similarRugs,
     crossSellRecommendations,
@@ -589,6 +590,7 @@ function createProductDetailPageViewModel(
       ...baseViewModel,
       type: "rug",
       rugStyle: product.rugStyle,
+      ...pickRugTaxonomyLabels(product),
       quantityLabel: "1",
       dimensionsLabel: formatRugDimensions(product),
       placementNote: createRugPlacementNote(product),
@@ -611,6 +613,18 @@ function createProductDetailPageViewModel(
     variantLabel: product.variants.length ? "Variant" : undefined,
     notifyMeLabel: product.notifyMeEnabled ? "Notify me when available" : undefined,
     cartProduct: product,
+  };
+}
+
+function pickRugTaxonomyLabels(product: RugProduct) {
+  const display = getRugTaxonomyDisplay(product);
+
+  return {
+    typeLabel: display.typeLabel,
+    regionLabel: display.regionLabel,
+    // Only the new fields feed structured data; the legacy fallback is display-only.
+    schemaTypeLabel: display.hasType ? display.typeLabel : undefined,
+    schemaRegionLabel: display.hasRegion ? display.regionLabel : undefined,
   };
 }
 
@@ -845,12 +859,18 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
 
 function createProvenanceDescription(product: Product) {
   const provenance = normalizeDimensionSeparators(product.provenanceNote?.trim() || "");
-  const region = product.attributionRegion?.trim();
+  // Rugs use the sorted Region ("Glaoui, Taznakht"), falling back to the legacy
+  // attribution with "-type"/"-style" stripped. The Tradition line is gone: it
+  // guessed construction from the title, and the Type row now states it.
+  const region =
+    product.type === "rug"
+      ? getRugTaxonomyDisplay(product).regionLabel
+      : cleanLegacyAttributionText(product.attributionRegion);
   const confidence = product.attributionConfidence?.trim();
-  const regionLine = region ? (confidence ? `Region: ${region} (${confidence})` : `Region: ${region}`) : "";
-  const traditionLine = product.type === "rug" ? `Tradition: ${createRugTraditionLabel(product)}` : "";
+  const showConfidence = confidence && confidence.toLowerCase() !== "not stated";
+  const regionLine = region ? (showConfidence ? `Region: ${region} (${confidence})` : `Region: ${region}`) : "";
 
-  return [provenance, regionLine, traditionLine].filter(Boolean).join("\n");
+  return [provenance, regionLine].filter(Boolean).join("\n");
 }
 
 function createConditionDescription(product: Product) {
@@ -933,13 +953,6 @@ function createRugPlacementNote(product: Extract<Product, { type: "rug" }>) {
   }
 
   return "Size can anchor a seating area, bedroom, or dining zone; confirm exact placement against your room measurements before payment is captured.";
-}
-
-function createRugTraditionLabel(product: Extract<Product, { type: "rug" }>) {
-  const construction = getRugConstructionLabel(product, product.name).replace(/\s+Rug$/u, "");
-  const feature = getRugFeatureLabel(product.name).replace(/^with\s+/iu, "");
-
-  return feature ? `${construction} with ${feature}` : construction;
 }
 
 function getFirstSentence(value: string) {
@@ -1136,3 +1149,8 @@ function createInventoryMessage(product: Extract<Product, { type: "multiUnit" }>
   }
 }
 
+
+/** The origin field as buyers see it: "-type" qualifiers stripped. */
+function getDisplayOrigin(product: Product) {
+  return cleanLegacyAttributionText(product.origin) ?? "Morocco";
+}

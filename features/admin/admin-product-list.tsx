@@ -22,6 +22,7 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
   const [statusFilter, setStatusFilter] = useState<(typeof statusOptions)[number]>("all");
   const [categoryFilter, setCategoryFilter] = useState<"all" | (typeof productCategoryOptions)[number]>("all");
   const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]>("updated-desc");
+  const [taxonomyFilter, setTaxonomyFilter] = useState<"all" | "unset">("all");
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState("");
 
@@ -49,7 +50,10 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
     const matchesStatus = statusFilter === "all" ? true : item.status === statusFilter;
     const matchesCategory = categoryFilter === "all" ? true : item.category === categoryFilter;
 
-    return matchesQuery && matchesStatus && matchesCategory;
+    const matchesTaxonomy =
+      taxonomyFilter === "all" ? true : item.isRug && (!item.typeLabel || !item.regionLabel);
+
+    return matchesQuery && matchesStatus && matchesCategory && matchesTaxonomy;
   });
 
   const visibleItems = filteredItems.slice().sort((left, right) => {
@@ -133,6 +137,17 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
                 {formatCategoryLabel(category)}
               </option>
             ))}
+          </select>
+        </label>
+
+        <label className={styles.toolbarField}>
+          <span>Type / Region</span>
+          <select
+            onChange={(event) => setTaxonomyFilter(event.target.value as "all" | "unset")}
+            value={taxonomyFilter}
+          >
+            <option value="all">All products</option>
+            <option value="unset">Type/Region not set</option>
           </select>
         </label>
 
@@ -228,6 +243,8 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
                 </th>
                 <th>Product</th>
                 <th>Category</th>
+                <th>Type</th>
+                <th>Region</th>
                 <th>Status</th>
                 <th>Recommended</th>
                 <th>Price</th>
@@ -265,6 +282,8 @@ export function AdminProductList(props: { items: AdminProductListItem[] }) {
                     </div>
                   </td>
                   <td>{formatCategoryLabel(item.category)}</td>
+                  <td>{item.isRug ? item.typeLabel || "Not set" : "—"}</td>
+                  <td>{item.isRug ? item.regionLabel || "Not set" : "—"}</td>
                   <td>
                     <span className={getStatusBadgeClassName(item.status, styles)}>{formatStatusLabel(item.status)}</span>
                   </td>

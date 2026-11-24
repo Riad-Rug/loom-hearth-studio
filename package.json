@@ -22,6 +22,7 @@
     "postinstall": "prisma generate",
     "catalog:bootstrap": "node scripts/bootstrap-launch-catalog.mjs",
     "catalog:backfill-rug-style-labels": "node scripts/backfill-rug-style-labels.mjs",
+    "catalog:backfill-rug-type-region": "node scripts/backfill-rug-type-region.mjs",
     "db:sync-from-prod": "bash ./scripts/sync-local-db-from-neon.sh",
     "test:images": "node --test scripts/check-image-budget.test.mjs"
   },

@@ -1,3 +1,4 @@
+import type { PileHeight, RugRegionSummary, RugType } from "@/lib/catalog/rug-taxonomy";
 import type { EntityStatus, MediaAsset, SeoFields } from "@/types/domain/common";
 
 /** "reserved": a one-of-one piece held by an order awaiting the buyer's approval. */
@@ -65,7 +66,12 @@ export type ProductBase = SeoFields & {
 
 export type RugProduct = ProductBase & {
   type: "rug";
+  /** Legacy style; still decides legacy /shop/rugs/<style>/<slug> URLs. */
   rugStyle: string;
+  rugType?: RugType;
+  /** Only set when rugType is "pile". */
+  pileHeight?: PileHeight;
+  region?: RugRegionSummary;
   dimensionsCm: {
     length: number;
     width: number;

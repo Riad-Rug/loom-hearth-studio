@@ -11,6 +11,7 @@ import {
   trueOneOffUniquenessTier,
 } from "@/lib/admin/category-form-copy";
 import { isDuplicateProductCopy } from "@/lib/seo/content-audit";
+import { deriveLegacyRugStyle, isPileHeight, isRugType } from "@/lib/catalog/rug-taxonomy";
 import type { MediaAsset, Product, ProductStatus, ProductVariant } from "@/types/domain";
 
 export const productTypeOptions = ["rug", "multiUnit"] as const;
@@ -55,12 +56,20 @@ export const mediaTypeOptions = ["image", "video"] as const satisfies ReadonlyAr
 type InternalProductFields = {
   acquisitionCostMad?: number;
   soldAt?: string;
+  /** Status when the form was opened; absent for new products. Decides whether a save is a first publish. */
+  originalStatus?: string;
 };
 
+/** Sentinel region value: create the region typed into the "Add region" fields. */
+export const newRegionOptionValue = "__new__";
+
 export type ProductMutationInput =
-  | (Omit<Extract<Product, { type: "rug" }>, "id" | "fixedQuantity"> & {
+  | (Omit<Extract<Product, { type: "rug" }>, "id" | "fixedQuantity" | "region"> & {
       id?: string;
       fixedQuantity: number;
+      /** undefined = leave unchanged; null = clear. */
+      regionId?: string | null;
+      newRegion?: { name: string; parentId?: string };
     } & InternalProductFields)
   | (Omit<Extract<Product, { type: "multiUnit" }>, "id"> & { id?: string } & InternalProductFields);
 
@@ -168,6 +177,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
     seoDescription: readString(formData, "seoDescription"),
     homepageFeatured: readBoolean(formData, "homepageFeatured"),
     homepageRank: readOptionalInteger(formData, "homepageRank"),
+    originalStatus: readOptionalString(formData, "originalStatus"),
   };
 
   const urlState = getUrlState(formData, {
@@ -185,7 +195,7 @@ export function parseProductFormData(formData: FormData): ProductFormParseResult
         type: "rug",
         category: sharedFields.category as Product["category"],
         status: sharedFields.status as ProductStatus,
-        rugStyle: readString(formData, "rugStyle"),
+        ...parseRugTaxonomy(formData),
         dimensionsCm: {
           length: readNumber(formData, "dimensionsCmLength"),
           width: readNumber(formData, "dimensionsCmWidth"),
@@ -476,10 +486,35 @@ export function validateProductMutationInput(
       fieldErrors.category = 'Rug products must use the "rugs" or "vintage" category.';
     }
 
+    // rugStyle is no longer picked in the admin; it is kept (existing rugs) or
+    // derived from Type/Region (new rugs) because it still decides the URL.
+    // It may be a legacy style option or a region name ("Middle Atlas").
     if (!input.rugStyle.trim()) {
-      fieldErrors.rugStyle = "Rug style is required.";
-    } else if (!(productRugStyleOptions as readonly string[]).includes(input.rugStyle)) {
-      fieldErrors.rugStyle = "Choose one of the canonical rug styles.";
+      fieldErrors.rugType = "Choose a type so the rug gets a working URL.";
+    }
+
+    if (input.regionId === newRegionOptionValue && !input.newRegion?.name.trim()) {
+      fieldErrors.regionId = "Enter the new region's name, or pick an existing region.";
+    }
+
+    // Type, pile height, and region are required when a draft is first
+    // published. Rugs that are already live may save without them (so a price
+    // edit is never blocked); the form shows a warning instead.
+    const isFirstPublish =
+      (input.status === "active" || input.status === "sold") &&
+      input.originalStatus !== "active" &&
+      input.originalStatus !== "sold";
+
+    if (isFirstPublish) {
+      if (!input.rugType) {
+        fieldErrors.rugType = "Choose a type before publishing.";
+      } else if (input.rugType === "pile" && !input.pileHeight) {
+        fieldErrors.pileHeight = "Choose a pile height before publishing.";
+      }
+
+      if (!input.regionId) {
+        fieldErrors.regionId = "Choose a region before publishing.";
+      }
     }
 
     if (!Number.isFinite(input.dimensionsCm.length) || input.dimensionsCm.length <= 0) {
@@ -617,6 +652,31 @@ export function getProductRoutePreview(input: {
   }
 
   return isProductCategory(input.category) ? `/shop/${input.category}/${input.slug}` : "";
+}
+
+function parseRugTaxonomy(formData: FormData) {
+  const rugTypeValue = readOptionalString(formData, "rugType");
+  const rugType = isRugType(rugTypeValue) ? rugTypeValue : undefined;
+  const pileHeightValue = readOptionalString(formData, "pileHeight");
+  const pileHeight = rugType === "pile" && isPileHeight(pileHeightValue) ? pileHeightValue : undefined;
+  const regionId = readOptionalString(formData, "regionId") ?? null;
+  const newRegion =
+    regionId === newRegionOptionValue
+      ? {
+          name: readString(formData, "newRegionName"),
+          parentId: readOptionalString(formData, "newRegionParentId"),
+        }
+      : undefined;
+
+  return {
+    // Existing rugs submit their stored style; new rugs submit one the form
+    // derived from Type/Region. Fall back to the type alone as a safety net.
+    rugStyle: readString(formData, "rugStyle") || deriveLegacyRugStyle(rugType, undefined),
+    rugType,
+    pileHeight,
+    regionId,
+    newRegion,
+  };
 }
 
 function readString(formData: FormData, key: string) {

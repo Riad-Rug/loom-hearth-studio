@@ -29,9 +29,18 @@ import {
   cloudinaryAssetRoleOptions,
   getProductRoutePreview,
   mediaTypeOptions,
+  newRegionOptionValue,
   normalizeSlug,
-  productRugStyleOptions,
 } from "@/lib/catalog/product-validation";
+import {
+  deriveLegacyRugStyle,
+  formatRegionLabel,
+  isRugType,
+  pileHeightOptions,
+  isUnclassifiedRugStyle,
+  rugTypeOptions,
+  type RugRegionSummary,
+} from "@/lib/catalog/rug-taxonomy";
 
 import styles from "./admin.module.css";
 
@@ -42,6 +51,7 @@ type AdminProductFormProps = {
   product: AdminProductFormValues;
   // Set while an order holds this piece ("reserved"), so the form can say which.
   heldByOrderNumber?: string | null;
+  regions: RugRegionSummary[];
   action: (
     state: AdminProductActionState,
     formData: FormData,
@@ -107,7 +117,26 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [soldAt, setSoldAt] = useState(props.product.soldAt);
   const [seoTitle, setSeoTitle] = useState(props.product.seoTitle);
   const [seoDescription, setSeoDescription] = useState(props.product.seoDescription);
-  const [rugStyle, setRugStyle] = useState(props.product.rugStyle);
+  const [rugType, setRugType] = useState(props.product.rugType);
+  const [pileHeight, setPileHeight] = useState(props.product.pileHeight);
+  const [regionId, setRegionId] = useState(props.product.regionId);
+  const [newRegionName, setNewRegionName] = useState("");
+  const [newRegionParentId, setNewRegionParentId] = useState("");
+  // rugStyle is no longer edited: an existing rug keeps its stored style (it
+  // decides the live URL); a new rug, or one still filed as Unclassified, gets
+  // one derived from Type/Region (the old URL then redirects).
+  const rugStyle = useMemo(
+    () =>
+      (!isUnclassifiedRugStyle(props.product.rugStyle) && props.product.rugStyle) ||
+      deriveLegacyRugStyle(
+        isRugType(rugType) ? rugType : undefined,
+        props.regions.find((region) => region.id === regionId),
+      ),
+    [props.product.rugStyle, props.regions, regionId, rugType],
+  );
+  const isAlreadyLive = props.product.status === "active" || props.product.status === "sold";
+  const isMissingTaxonomy =
+    !rugType || !regionId || (rugType === "pile" && !pileHeight) || (regionId === newRegionOptionValue && !newRegionName.trim());
   const [dimensionsCmLength, setDimensionsCmLength] = useState(props.product.dimensionsCmLength);
   const [dimensionsCmWidth, setDimensionsCmWidth] = useState(props.product.dimensionsCmWidth);
   const [heightCm, setHeightCm] = useState(props.product.heightCm);
@@ -215,7 +244,9 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setSoldAt(props.product.soldAt);
     setSeoTitle(props.product.seoTitle);
     setSeoDescription(props.product.seoDescription);
-    setRugStyle(props.product.rugStyle);
+    setRugType(props.product.rugType);
+    setPileHeight(props.product.pileHeight);
+    setRegionId(props.product.regionId);
     setDimensionsCmLength(props.product.dimensionsCmLength);
     setDimensionsCmWidth(props.product.dimensionsCmWidth);
     setHeightCm(props.product.heightCm);
@@ -311,6 +342,9 @@ export function AdminProductForm(props: AdminProductFormProps) {
       <input name="paletteJson" type="hidden" value={JSON.stringify(props.product.palette)} />
       <input name="variantsJson" type="hidden" value={JSON.stringify(variants)} />
       <input name="originalRoutePath" type="hidden" value={props.product.routePath} />
+      {props.mode === "edit" ? (
+        <input name="originalStatus" type="hidden" value={props.product.status} />
+      ) : null}
       <input name="confirmUrlChange" type="hidden" value={confirmUrlChange ? "true" : "false"} />
       <input name="notifyMeEnabled" type="hidden" value={notifyMeEnabled ? "true" : "false"} />
       <input name="homepageFeatured" type="hidden" value={homepageFeatured ? "true" : "false"} />
@@ -978,20 +1012,82 @@ export function AdminProductForm(props: AdminProductFormProps) {
         {type === "rug" ? (
           <section className={styles.card}>
             <p className={styles.cardEyebrow}>Rug details</p>
+            <input name="rugStyle" type="hidden" value={rugStyle} />
+            {isAlreadyLive && isMissingTaxonomy ? (
+              <p role="status">
+                <strong>Type and Region are not set for this live rug.</strong> Saving still works; the
+                product page falls back to the old style and region until you set them.
+              </p>
+            ) : null}
             <label className={styles.formField}>
-              <span>Rug style</span>
-              <select
-                name="rugStyle"
-                value={rugStyle}
-                onChange={(event) => setRugStyle(event.target.value)}
-              >
-                <option value="">Choose rug style</option>
-                {productRugStyleOptions.map((option) => (
-                  <option key={option} value={option}>{option}</option>
+              <span>Type</span>
+              <select name="rugType" value={rugType} onChange={(event) => setRugType(event.target.value)}>
+                <option value="">Choose type</option>
+                {rugTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
                 ))}
               </select>
-              <em>{state.fieldErrors.rugStyle}</em>
+              {!isUnclassifiedRugStyle(props.product.rugStyle) ? <em>Previously: {props.product.rugStyle}</em> : null}
+              <em>{state.fieldErrors.rugType}</em>
             </label>
+            {rugType === "pile" ? (
+              <label className={styles.formField}>
+                <span>Pile height</span>
+                <select name="pileHeight" value={pileHeight} onChange={(event) => setPileHeight(event.target.value)}>
+                  <option value="">Choose pile height</option>
+                  {pileHeightOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <em>{state.fieldErrors.pileHeight}</em>
+              </label>
+            ) : null}
+            <label className={styles.formField}>
+              <span>Region</span>
+              <select name="regionId" value={regionId} onChange={(event) => setRegionId(event.target.value)}>
+                <option value="">Choose region</option>
+                {props.regions.map((region) => (
+                  <option key={region.id} value={region.id}>
+                    {formatRegionLabel(region)}
+                  </option>
+                ))}
+                <option value={newRegionOptionValue}>+ Add region…</option>
+              </select>
+              {props.product.attributionRegion ? <em>Previously: {props.product.attributionRegion}</em> : null}
+              <em>{state.fieldErrors.regionId}</em>
+            </label>
+            {regionId === newRegionOptionValue ? (
+              <>
+                <label className={styles.formField}>
+                  <span>New region name</span>
+                  <input
+                    name="newRegionName"
+                    value={newRegionName}
+                    onChange={(event) => setNewRegionName(event.target.value)}
+                  />
+                </label>
+                <label className={styles.formField}>
+                  <span>Parent region (optional)</span>
+                  <select
+                    name="newRegionParentId"
+                    value={newRegionParentId}
+                    onChange={(event) => setNewRegionParentId(event.target.value)}
+                  >
+                    <option value="">No parent</option>
+                    {props.regions.map((region) => (
+                      <option key={region.id} value={region.id}>
+                        {formatRegionLabel(region)}
+                      </option>
+                    ))}
+                  </select>
+                  <em>Shown to buyers as “{newRegionName.trim() || "Name"}{newRegionParentId ? `, ${props.regions.find((region) => region.id === newRegionParentId)?.name ?? ""}` : ""}”.</em>
+                </label>
+              </>
+            ) : null}
             <label className={styles.formField}>
               <span>Fixed quantity</span>
               <input

@@ -69,6 +69,8 @@ export default async function CategoryProductPage({
           // footprint comes off the domain record so both product types can
           // supply it when it was measured.
           material: product.materialLabel,
+          rugTypeLabel: product.type === "rug" ? product.schemaTypeLabel : undefined,
+          regionLabel: product.type === "rug" ? product.schemaRegionLabel : undefined,
           sizeLabel: product.type === "rug" ? product.dimensionsLabel : undefined,
           dimensionsCm: product.cartProduct.dimensionsCm,
           // Colour is only sent when the piece carries its own recorded palette.
