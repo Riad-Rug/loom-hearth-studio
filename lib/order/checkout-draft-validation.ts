@@ -1,6 +1,6 @@
 import "server-only";
 
-import { isSupportedCheckoutCountry, supportedCheckoutCountryLabels } from "@/config/supported-markets";
+import { isSupportedCheckoutCountry, requiresUsAddressFields } from "@/config/supported-markets";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
 import { getPurchasableQuantity } from "@/lib/order/inventory-hold";
 import { calculateShippingUsd } from "@/lib/order/shipping";
@@ -88,13 +88,14 @@ export async function validateCheckoutOrderDraft(input: {
     ["billing", draft.billingAddress],
     ["shipping", draft.shippingAddress],
   ] as const) {
+    // State and postal code are only required for US addresses; many
+    // countries have neither.
     const requiredFields = [
       address?.fullName,
       address?.email,
       address?.address1,
       address?.city,
-      address?.state,
-      address?.postalCode,
+      ...(address && requiresUsAddressFields(address.country) ? [address.state, address.postalCode] : []),
     ];
 
     if (!address || requiredFields.some((value) => !value || value.trim().length === 0)) {
@@ -108,7 +109,7 @@ export async function validateCheckoutOrderDraft(input: {
   if (draft.shippingAddress && !isSupportedCheckoutCountry(draft.shippingAddress.country)) {
     issues.push({
       code: "unsupported-market",
-      message: `Checkout only supports ${supportedCheckoutCountryLabels.US} shipping addresses.`,
+      message: "Choose a valid shipping country.",
     });
   }
 

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { isSupportedCheckoutCountry, supportedCheckoutCountryLabels } from "@/config/supported-markets";
+import { isSupportedCheckoutCountry, requiresUsAddressFields } from "@/config/supported-markets";
 import type {
   LaunchCheckoutValidationIssue,
   LaunchCheckoutValidationResult,
@@ -63,24 +63,28 @@ export async function validateCheckoutSessionRequestAgainstLaunchCatalog(input: 
   ) {
     issues.push({
       code: "unsupported-market",
-      message: `Launch Checkout only supports ${supportedCheckoutCountryLabels.US} shipping addresses.`,
+      message: "Choose a valid shipping country.",
     });
   }
 
   if (parsedSnapshot?.shippingAddress) {
+    const shippingAddress = parsedSnapshot.shippingAddress;
+    // State and postal code are only required for US addresses; many
+    // countries have neither.
     const requiredShippingFields = [
-      parsedSnapshot.shippingAddress.fullName,
-      parsedSnapshot.shippingAddress.email,
-      parsedSnapshot.shippingAddress.address1,
-      parsedSnapshot.shippingAddress.city,
-      parsedSnapshot.shippingAddress.state,
-      parsedSnapshot.shippingAddress.postalCode,
+      shippingAddress.fullName,
+      shippingAddress.email,
+      shippingAddress.address1,
+      shippingAddress.city,
+      ...(requiresUsAddressFields(shippingAddress.country)
+        ? [shippingAddress.state, shippingAddress.postalCode]
+        : []),
     ];
 
     if (requiredShippingFields.some((value) => value.trim().length === 0)) {
       issues.push({
         code: "missing-shipping-address",
-        message: `Launch Checkout requires a complete ${supportedCheckoutCountryLabels.US} shipping address.`,
+        message: "Launch Checkout requires a complete shipping address.",
       });
     }
   }

@@ -263,6 +263,18 @@ const CONTEMPORARY_CONDITION_PATTERN = /contemporary|newly\s+made/i;
  * on a promotional calendar, so the honest answer is a rolling window rather
  * than a stored expiry date.
  */
+/**
+ * Checkout ships to every country at the same rate, but Google caps how many
+ * countries one return policy may list, so the structured data names the main
+ * markets rather than all ~250. This only scopes the rich-result claim; it
+ * does not limit where checkout ships (config/supported-markets.ts).
+ */
+const structuredDataShippingCountries = [
+  "US", "CA", "GB", "IE", "AU", "NZ", "DE", "FR", "NL", "BE", "LU", "ES",
+  "PT", "IT", "CH", "AT", "DK", "SE", "NO", "FI", "PL", "CZ", "GR", "AE",
+  "SA", "QA", "KW", "IL", "JP", "KR", "SG", "HK", "MA", "ZA", "MX", "BR",
+];
+
 const PRICE_VALIDITY_DAYS = 90;
 
 // A reserved piece cannot be bought now and may come back, which is what
@@ -462,7 +474,7 @@ export function productSchema(input: {
       seller: { "@id": `${absoluteUrl("/")}#organization` },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
-        applicableCountry: ["US"],
+        applicableCountry: structuredDataShippingCountries,
         returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
         merchantReturnDays: storePromise.returnWindowDays,
         returnMethod: "https://schema.org/ReturnByMail",
@@ -471,12 +483,14 @@ export function productSchema(input: {
             ? "https://schema.org/ReturnFeesCustomerResponsibility"
             : "https://schema.org/FreeReturn",
       },
-      shippingDetails: ["US"].map((country) => ({
+      // One rule ships everywhere, so a single shipping detail covers every
+      // listed destination.
+      shippingDetails: [structuredDataShippingCountries].map((countries) => ({
         "@type": "OfferShippingDetails",
-        shippingDestination: {
+        shippingDestination: countries.map((country) => ({
           "@type": "DefinedRegion",
           addressCountry: country,
-        },
+        })),
         // Shipping is free at or above the order threshold and a flat fee below
         // it, so the rate is not a constant — it is whatever checkout would
         // actually charge, computed by the same function checkout uses
@@ -494,16 +508,20 @@ export function productSchema(input: {
         },
         // Figures come from storePromise (lib/order/store-promise.ts). A piece
         // ships only once its buyer approves the photos, so handling runs from
-        // the order to that approval: the photo turnaround, plus up to the
-        // whole decision window (none for a buyer who approves at once). The
-        // delivery window in business days is the transit time to the US.
+        // the order to dispatch: the photo turnaround, plus up to the whole
+        // decision window (none for a buyer who approves at once), plus the
+        // dispatch window after approval. The delivery window in business days
+        // is the transit time after dispatch, the same for every destination.
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
           handlingTime: {
             "@type": "QuantitativeValue",
-            minValue: Math.ceil(storePromise.approvalTurnaroundHours.min / 24),
+            minValue:
+              Math.ceil(storePromise.approvalTurnaroundHours.min / 24) + storePromise.dispatchBusinessDays.min,
             maxValue:
-              Math.ceil(storePromise.approvalTurnaroundHours.max / 24) + storePromise.decisionWindowDays,
+              Math.ceil(storePromise.approvalTurnaroundHours.max / 24) +
+              storePromise.decisionWindowDays +
+              storePromise.dispatchBusinessDays.max,
             unitCode: "DAY",
           },
           transitTime: {

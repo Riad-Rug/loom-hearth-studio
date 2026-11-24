@@ -29,7 +29,7 @@ export async function generateMetadata({ searchParams }: ShopPageProps): Promise
     entityKey: "shop",
     title: "Shop Handmade Moroccan Rugs, Poufs & Pillows",
     description:
-      `Moroccan rugs, poufs, pillows and decor, one of each. Approve ${storePromise.approvalMedia} of your piece before you pay. Ships from ${storePromise.shipsFromCity} to ${storePromise.shipsToLabel}.`,
+      `Moroccan rugs, poufs, pillows and decor, one of each. Approve ${storePromise.approvalMedia} of your piece before you pay. Ships worldwide from ${storePromise.shipsFromCity}.`,
     path: "/shop",
     noIndexFollow: isSearchResults,
   });

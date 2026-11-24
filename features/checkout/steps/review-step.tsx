@@ -6,6 +6,7 @@ import type { PaymentIntent, Stripe, StripeElements } from "@stripe/stripe-js";
 
 import Link from "next/link";
 
+import { formatAddressLocality, getCheckoutCountryLabel } from "@/config/supported-markets";
 import { formatUsd, useCart } from "@/features/cart/cart-provider";
 import { useCheckout } from "@/features/checkout/checkout-provider";
 import type { CompleteOrderResponse } from "@/lib/checkout/complete-order-response";
@@ -190,7 +191,8 @@ export function ReviewStep() {
           <>
             <p>{resolvedShippingAddress.fullName}</p>
             <p>{resolvedShippingAddress.address1}{resolvedShippingAddress.address2 ? `, ${resolvedShippingAddress.address2}` : ""}</p>
-            <p>{resolvedShippingAddress.city}, {resolvedShippingAddress.state} {resolvedShippingAddress.postalCode}</p>
+            <p>{formatAddressLocality(resolvedShippingAddress)}</p>
+            <p>{getCheckoutCountryLabel(resolvedShippingAddress.country)}</p>
             <p>{resolvedShippingAddress.email}</p>
           </>
         ) : (
@@ -211,7 +213,8 @@ export function ReviewStep() {
           <>
             <p>{resolvedBillingAddress.fullName}</p>
             <p>{resolvedBillingAddress.address1}{resolvedBillingAddress.address2 ? `, ${resolvedBillingAddress.address2}` : ""}</p>
-            <p>{resolvedBillingAddress.city}, {resolvedBillingAddress.state} {resolvedBillingAddress.postalCode}</p>
+            <p>{formatAddressLocality(resolvedBillingAddress)}</p>
+            <p>{getCheckoutCountryLabel(resolvedBillingAddress.country)}</p>
           </>
         ) : (
           <p>Complete billing details before reviewing your order.</p>

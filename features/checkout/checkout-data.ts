@@ -16,6 +16,6 @@ export const checkoutSummary = {
   taxUsdLabel: "$0.00",
   totalUsdLabel: "$0.00",
   guestLabel: "Guest checkout",
-  marketLabel: `Shipping to ${storePromise.shipsToLabel}`,
+  marketLabel: "Ships worldwide",
   currencyLabel: "Prices shown in USD",
 } as const;
