@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { inspect } from "node:util";
 
-import { mapCatalogProductRecordToDomainProduct, mapProductMutationInputToCreateInput, mapProductMutationInputToUpdateInput } from "@/lib/catalog/product-mappers";
+import { catalogProductInclude, mapCatalogProductRecordToDomainProduct, mapProductMutationInputToCreateInput, mapProductMutationInputToUpdateInput } from "@/lib/catalog/product-mappers";
 import type { ProductMutationInput } from "@/lib/catalog/product-validation";
 import { createRepositoryContext, type RepositoryContext } from "@/lib/db";
 import { mergeStatusEdit, mergeStockEdit, type ProductEditBase } from "@/lib/order/inventory-hold";
@@ -76,6 +76,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async listAll() {
     const products = await this.context.client.catalogProduct.findMany({
+      include: catalogProductInclude,
       where: {
         status: { in: storefrontProductStatuses },
       },
@@ -89,6 +90,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async listListedByIds(ids: string[]) {
     const products = await this.context.client.catalogProduct.findMany({
+      include: catalogProductInclude,
       where: {
         id: { in: ids },
         status: { in: storefrontProductStatuses },
@@ -102,6 +104,7 @@ export class PrismaProductRepository implements ProductRepository {
   // alongside the mapped domain product.
   async listAllWithUpdatedAt() {
     const products = await this.context.client.catalogProduct.findMany({
+      include: catalogProductInclude,
       where: {
         status: { in: storefrontProductStatuses },
       },
@@ -136,6 +139,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async listByCategory(category: Product["category"]) {
     const products = await this.context.client.catalogProduct.findMany({
+      include: catalogProductInclude,
       where: {
         category,
         status: { in: storefrontProductStatuses },
@@ -150,6 +154,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async listHomepageFeatured(limit: number) {
     const products = await this.context.client.catalogProduct.findMany({
+      include: catalogProductInclude,
       where: {
         homepageFeatured: true,
         status: "active",
@@ -186,6 +191,7 @@ export class PrismaProductRepository implements ProductRepository {
   // deterministically so the caller's seed is the only source of randomness.
   async listInventoryEligible() {
     const products = await this.context.client.catalogProduct.findMany({
+      include: catalogProductInclude,
       where: {
         status: "active",
         OR: [{ type: "rug" }, { inventory: { gt: 0 } }],
@@ -198,6 +204,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async getBySlug(slug: string) {
     const product = await this.context.client.catalogProduct.findFirst({
+      include: catalogProductInclude,
       where: {
         slug,
         status: { in: storefrontProductStatuses },
@@ -209,6 +216,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async getByPreviousSlug(slug: string) {
     const product = await this.context.client.catalogProduct.findFirst({
+      include: catalogProductInclude,
       where: {
         previousSlugs: { has: slug },
         status: { in: storefrontProductStatuses },
@@ -223,6 +231,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async listForAdmin() {
     const products = await this.context.client.catalogProduct.findMany({
+      include: catalogProductInclude,
       orderBy: {
         updatedAt: "desc",
       },
@@ -233,6 +242,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async getById(id: string) {
     const product = await this.context.client.catalogProduct.findUnique({
+      include: catalogProductInclude,
       where: {
         id,
       },
@@ -246,6 +256,7 @@ export class PrismaProductRepository implements ProductRepository {
 
     try {
       const createdProduct = await this.context.client.catalogProduct.create({
+      include: catalogProductInclude,
         data,
       });
 
@@ -316,6 +327,7 @@ export class PrismaProductRepository implements ProductRepository {
           : { ...input, ...kept };
 
       const updatedProduct = await tx.catalogProduct.update({
+        include: catalogProductInclude,
         where: {
           id: input.id,
         },

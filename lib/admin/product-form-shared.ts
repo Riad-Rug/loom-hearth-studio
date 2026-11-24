@@ -42,6 +42,9 @@ export type AdminProductFormValues = {
   seoTitle: string;
   seoDescription: string;
   rugStyle: string;
+  rugType: string;
+  pileHeight: string;
+  regionId: string;
   dimensionsCmLength: string;
   dimensionsCmWidth: string;
   heightCm: string;

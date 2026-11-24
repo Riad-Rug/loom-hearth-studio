@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { updateAdminProductAction } from "@/app/(admin)/admin/products/actions";
 import { AdminProductForm } from "@/features/admin/admin-product-form";
+import { createRugRegionRepository } from "@/lib/db/repositories/rug-region-repository";
 import { getAdminProductFormPageData } from "@/lib/admin/products";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,10 @@ export default async function AdminProductDetailPage({
   params,
 }: AdminProductDetailPageProps) {
   const resolvedParams = await params;
-  const pageData = await getAdminProductFormPageData(resolvedParams.id);
+  const [pageData, regions] = await Promise.all([
+    getAdminProductFormPageData(resolvedParams.id),
+    createRugRegionRepository().listAll(),
+  ]);
 
   if (!pageData) {
     notFound();
@@ -29,6 +33,7 @@ export default async function AdminProductDetailPage({
       heldByOrderNumber={pageData.heldByOrderNumber}
       mode="edit"
       product={pageData.product}
+      regions={regions}
       title={pageData.title}
     />
   );

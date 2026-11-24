@@ -111,6 +111,13 @@ type ProductDetailPageViewModelBase = {
 export type RugProductDetailPageViewModel = ProductDetailPageViewModelBase & {
   type: "rug";
   rugStyle: RugProduct["rugStyle"];
+  /** Specifications "Type" row; undefined hides the row. */
+  typeLabel?: string;
+  /** Specifications "Region" row; undefined hides the row. */
+  regionLabel?: string;
+  /** Set only from the new Type/Region fields, for JSON-LD. */
+  schemaTypeLabel?: string;
+  schemaRegionLabel?: string;
   quantityLabel: "1";
   dimensionsLabel: string;
   placementNote: string;

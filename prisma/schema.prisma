@@ -251,6 +251,12 @@ model CatalogProduct {
   seoTitle         String
   seoDescription   String          @db.Text
   rugStyle         String?
+  /// Rug type: flatweave | pile | mixed | boucherouite. Supersedes rugStyle for display; rugStyle still drives legacy URLs.
+  rugType          String?
+  /// "medium" | "high"; only meaningful when rugType = "pile".
+  pileHeight       String?
+  regionId         String?
+  region           RugRegion?      @relation(fields: [regionId], references: [id], onDelete: SetNull)
   faceFabricSource String?
   uniquenessTier   String?
   sourceCoverCount Int?
@@ -277,6 +283,19 @@ model CatalogProduct {
   @@index([type, status])
   @@index([status, soldAt])
   @@index([homepageFeatured, homepageRank])
+  @@index([regionId])
+}
+
+/// Managed list of places a rug comes from. A region with a parent displays as "Child, Parent".
+model RugRegion {
+  id        String           @id @default(cuid())
+  name      String           @unique
+  slug      String           @unique
+  parentId  String?
+  parent    RugRegion?       @relation("RugRegionParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children  RugRegion[]      @relation("RugRegionParent")
+  products  CatalogProduct[]
+  createdAt DateTime         @default(now())
 }
 
 

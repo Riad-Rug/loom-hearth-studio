@@ -1,11 +1,36 @@
 import { Prisma, type CatalogProduct } from "@prisma/client";
 
+import { isPileHeight, isRugType, type RugRegionSummary } from "@/lib/catalog/rug-taxonomy";
 import type { Product } from "@/types/domain";
 import type { ProductMutationInput } from "@/lib/catalog/product-validation";
 
 type PrismaProductCategory = CatalogProduct["category"];
 
-export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): Product {
+/** Every product read includes its region (and the region's parent) for display. */
+export const catalogProductInclude = {
+  region: { include: { parent: true } },
+} satisfies Prisma.CatalogProductInclude;
+
+export type CatalogProductRecord = Prisma.CatalogProductGetPayload<{
+  include: typeof catalogProductInclude;
+}>;
+
+export function mapRugRegionRecord(
+  region: { id: string; name: string; slug: string; parent?: { id: string; name: string; slug: string } | null } | null,
+): RugRegionSummary | undefined {
+  if (!region) {
+    return undefined;
+  }
+
+  return {
+    id: region.id,
+    name: region.name,
+    slug: region.slug,
+    ...(region.parent ? { parent: { id: region.parent.id, name: region.parent.name, slug: region.parent.slug } } : {}),
+  };
+}
+
+export function mapCatalogProductRecordToDomainProduct(record: CatalogProductRecord): Product {
   const baseProduct = {
     id: record.id,
     catalogNumber: record.catalogNumber ?? undefined,
@@ -57,6 +82,9 @@ export function mapCatalogProductRecordToDomainProduct(record: CatalogProduct): 
       ...baseProduct,
       type: "rug",
       rugStyle: record.rugStyle ?? "",
+      rugType: isRugType(record.rugType) ? record.rugType : undefined,
+      pileHeight: record.rugType === "pile" && isPileHeight(record.pileHeight) ? record.pileHeight : undefined,
+      region: mapRugRegionRecord(record.region),
       dimensionsCm: record.dimensionsCm as Extract<Product, { type: "rug" }>["dimensionsCm"],
       weightKg: Number(record.weightKg ?? 0),
       fixedQuantity: record.fixedQuantity === 1 ? 1 : 1,
@@ -108,6 +136,9 @@ export function mapProductMutationInputToCreateInput(
     seoTitle: input.seoTitle,
     seoDescription: input.seoDescription,
     rugStyle: input.type === "rug" ? input.rugStyle : null,
+    rugType: input.type === "rug" ? input.rugType || null : null,
+    pileHeight: input.type === "rug" && input.rugType === "pile" ? input.pileHeight || null : null,
+    region: input.type === "rug" && input.regionId ? { connect: { id: input.regionId } } : undefined,
     dimensionsCm: input.dimensionsCm
       ? (sanitizeJsonValue(input.dimensionsCm) as Prisma.InputJsonValue)
       : Prisma.JsonNull,
@@ -175,6 +206,14 @@ export function mapProductMutationInputToUpdateInput(
     seoTitle: input.seoTitle,
     seoDescription: input.seoDescription,
     rugStyle: input.type === "rug" ? input.rugStyle : null,
+    rugType: input.type === "rug" ? input.rugType || null : null,
+    pileHeight: input.type === "rug" && input.rugType === "pile" ? input.pileHeight || null : null,
+    region:
+      input.type !== "rug" || input.regionId === undefined
+        ? undefined
+        : input.regionId
+          ? { connect: { id: input.regionId } }
+          : { disconnect: true },
     dimensionsCm: input.dimensionsCm
       ? (sanitizeJsonValue(input.dimensionsCm) as Prisma.InputJsonValue)
       : Prisma.JsonNull,
