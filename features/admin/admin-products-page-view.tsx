@@ -19,6 +19,9 @@ export function AdminProductsPageView(props: AdminProductsPageData) {
         <Link className={styles.navLink} href={"/admin/products/new" as Route}>
           Create product
         </Link>
+        <Link className={styles.navLink} href={"/admin/products/regions" as Route}>
+          Rug regions
+        </Link>
       </div>
 
       <AdminProductList items={props.items} />

@@ -14,6 +14,13 @@ export function createRegionSlug(name: string) {
     .replace(/^-+|-+$/gu, "");
 }
 
+export type RugRegionUsage = RugRegionSummary & { productCount: number; childCount: number };
+
+export type RugRegionDeleteResult =
+  | { status: "deleted"; name: string; slug: string }
+  | { status: "inUse"; name: string; productCount: number; childCount: number }
+  | { status: "notFound" };
+
 export class PrismaRugRegionRepository {
   constructor(private readonly context: RepositoryContext) {}
 
@@ -30,6 +37,53 @@ export class PrismaRugRegionRepository {
     const region = await this.context.client.rugRegion.findUnique({ where: { id }, include: { parent: true } });
 
     return mapRugRegionRecord(region) ?? null;
+  }
+
+  /** Every region with how many products (any status) and sub-regions use it. */
+  async listWithUsage(): Promise<RugRegionUsage[]> {
+    const regions = await this.context.client.rugRegion.findMany({
+      include: { parent: true, _count: { select: { products: true, children: true } } },
+      orderBy: { name: "asc" },
+    });
+
+    return regions.map((region) => ({
+      ...mapRugRegionRecord(region)!,
+      productCount: region._count.products,
+      childCount: region._count.children,
+    }));
+  }
+
+  /**
+   * Deletes a region only while nothing uses it. The schema would otherwise
+   * quietly clear the Region of every product on it (onDelete: SetNull) and
+   * detach its sub-regions, so any product, archived or draft included, or any
+   * sub-region blocks the delete. Checked and deleted in one transaction so a
+   * product saved onto the region in between cannot be stripped.
+   */
+  async deleteIfUnused(id: string): Promise<RugRegionDeleteResult> {
+    return this.context.client.$transaction(async (tx) => {
+      const region = await tx.rugRegion.findUnique({
+        where: { id },
+        include: { _count: { select: { products: true, children: true } } },
+      });
+
+      if (!region) {
+        return { status: "notFound" };
+      }
+
+      if (region._count.products > 0 || region._count.children > 0) {
+        return {
+          status: "inUse",
+          name: region.name,
+          productCount: region._count.products,
+          childCount: region._count.children,
+        };
+      }
+
+      await tx.rugRegion.delete({ where: { id } });
+
+      return { status: "deleted", name: region.name, slug: region.slug };
+    });
   }
 
   /** Returns the existing region when the name is already taken (case-insensitive). */
