@@ -1117,6 +1117,12 @@ export function AdminProductForm(props: AdminProductFormProps) {
               </select>
               {props.product.attributionRegion ? <em>Previously: {props.product.attributionRegion}</em> : null}
               <em>{state.fieldErrors.regionId}</em>
+              <em>
+                <a href="/admin/products/regions" target="_blank" rel="noreferrer">
+                  Manage regions
+                </a>{" "}
+                (delete one no product uses)
+              </em>
             </label>
             {regionId === newRegionOptionValue ? (
               <>
