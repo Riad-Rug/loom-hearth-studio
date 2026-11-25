@@ -1,87 +1,116 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import type { Metadata, Route } from "next";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
+import { allRugsNavLink, getRugStyleCollection } from "@/features/catalog/rug-style-collections";
+import { retiredRugPageRedirects, type RugFacet } from "@/lib/catalog/rug-facets";
 import {
-  allRugsNavLink,
-  getRugStyleCollection,
-} from "@/features/catalog/rug-style-collections";
-import {
-  listIndexableRugStyleSlugs,
-  listRugStyleNavLinks,
-  listRugStyleProductCards,
+  getRugFacetPage,
+  getRugFacetTitle,
+  listIndexableRugFacetSlugs,
+  listRugFacetLinks,
+  listRugFacetProductCards,
+  listRugFilterOptions,
 } from "@/lib/catalog/service";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { categoryOgImage } from "@/lib/seo/category-og-image";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
 
-type RugStylePageProps = {
+/**
+ * A rug Type (/shop/rugs/pile) or Region (/shop/rugs/azilal) page. The old
+ * style URLs that match a Type or Region slug (azilal, zemmour, beni-ourain,
+ * boujad, boucherouite, flatweave-hanbel, mixed-technique) are these pages, at
+ * the same address; retired ones redirect (next.config.ts and below).
+ */
+type RugFacetPageProps = {
   params: Promise<{
     style: string;
   }>;
 };
 
-export async function generateMetadata({
-  params,
-}: RugStylePageProps): Promise<Metadata> {
-  const style = normalizeSlug((await params).style);
-  const collection = getRugStyleCollection(style);
+async function resolveFacet(rawSlug: string): Promise<RugFacet> {
+  const slug = normalizeSlug(rawSlug);
+  const redirectTo = retiredRugPageRedirects[slug];
 
-  if (!collection) {
+  if (redirectTo) {
+    permanentRedirect(redirectTo as Route);
+  }
+
+  const facet = await getRugFacetPage(slug);
+
+  if (!facet) {
+    notFound();
+  }
+
+  return facet;
+}
+
+/** Written copy when the slug has it, else a plain header built from the Type or Region name. */
+function getFacetCopy(facet: RugFacet) {
+  const collection = getRugStyleCollection(facet.slug);
+  const title = getRugFacetTitle(facet);
+  const fallbackDescription =
+    facet.kind === "type"
+      ? `Moroccan ${facet.name.toLowerCase()} rugs. Each rug is the exact piece photographed, reviewed as an individual piece before it is listed.`
+      : `Moroccan rugs from ${facet.name}. Each rug is the exact piece photographed, reviewed as an individual piece before it is listed.`;
+
+  return {
+    title,
+    heading: collection?.page?.heading ?? title,
+    metaTitle: collection?.page?.metaTitle ?? title,
+    description: collection?.description ?? fallbackDescription,
+    metaDescription: collection?.page?.metaDescription ?? collection?.description ?? fallbackDescription,
+    bullets: collection?.bullets ?? [],
+    guide: collection?.page?.guide,
+  };
+}
+
+export async function generateMetadata({ params }: RugFacetPageProps): Promise<Metadata> {
+  const slug = normalizeSlug((await params).style);
+  const facet = await getRugFacetPage(slug);
+
+  if (!facet) {
     return buildMetadata({
       title: "Rugs",
-      description:
-        "Browse handcrafted Moroccan rugs sourced in Morocco and prepared for review-first buying.",
+      description: "Browse handcrafted Moroccan rugs sourced in Morocco and prepared for review-first buying.",
       path: "/shop/rugs",
     });
   }
 
-  // One-of-a-kind stock means a style can stand at zero pieces for a while. The
-  // page stays indexed while a piece is for sale or sold recently enough to still
-  // rank (lib/seo/index-policy.ts), then asks to be dropped but keeps its links
-  // followed, since they all point at pages that want crawl signal. The rug rows
-  // read here are the ones the body below reuses (listRugRows in service.ts).
-  const [products, indexableStyles] = await Promise.all([
-    listRugStyleProductCards({ style }),
-    listIndexableRugStyleSlugs(new Date()),
+  // Indexed only while the page has its written guide copy and a piece whose
+  // own page is indexable (lib/seo/index-policy.ts); otherwise noindex, follow.
+  const [products, indexableSlugs] = await Promise.all([
+    listRugFacetProductCards({ facet }),
+    listIndexableRugFacetSlugs(new Date()),
   ]);
+  const copy = getFacetCopy(facet);
 
   return buildManagedMetadata({
     entityType: "category",
-    entityKey: `rugs-${style}`,
-    title: collection.page?.metaTitle ?? collection.title,
-    description: collection.page?.metaDescription ?? collection.description,
-    path: `/shop/rugs/${style}`,
-    noIndexFollow: !indexableStyles.has(style),
+    entityKey: `rugs-${facet.slug}`,
+    title: copy.metaTitle,
+    description: copy.metaDescription,
+    path: `/shop/rugs/${facet.slug}`,
+    noIndexFollow: !indexableSlugs.has(facet.slug),
     ...categoryOgImage(products),
   });
 }
 
-export default async function RugStylePage({ params }: RugStylePageProps) {
-  const style = normalizeSlug((await params).style);
-  const collection = getRugStyleCollection(style);
-
-  if (!collection) {
-    notFound();
-  }
-
-  const [products, styleNavLinks] = await Promise.all([
-    listRugStyleProductCards({ style }),
-    listRugStyleNavLinks(),
+export default async function RugFacetPage({ params }: RugFacetPageProps) {
+  const facet = await resolveFacet((await params).style);
+  const [products, facetLinks, filterOptions] = await Promise.all([
+    listRugFacetProductCards({ facet }),
+    listRugFacetLinks(),
+    listRugFilterOptions(),
   ]);
+  const copy = getFacetCopy(facet);
+  const path = `/shop/rugs/${facet.slug}`;
 
-  // Before this strip existed each style page had exactly one inbound internal
-  // link, from the chip row on /shop/rugs, which left the six pages that should
-  // rank for "beni ourain rug" and its siblings starved while /shop and
-  // /shop/rugs absorbed the weight. Every stocked style now links to every other
-  // one under its own keyword-exact anchor. Styles with nothing to buy are
-  // omitted rather than greyed, since this strip has no fixed slots to hold
-  // open. They rejoin on their own the moment stock lands.
-  const siblingStyleLinks = styleNavLinks.filter(
-    (link) => link.available && link.slug !== style,
-  );
+  // Every stocked Type and Region page links to every other one under the
+  // same anchor the menu uses; ones with nothing to buy are left out.
+  const siblingLinks = facetLinks.filter((link) => link.slug !== facet.slug);
 
   return (
     <>
@@ -91,11 +120,11 @@ export default async function RugStylePage({ params }: RugStylePageProps) {
             { name: "Home", path: "/" },
             { name: "Shop", path: "/shop" },
             { name: "Rugs", path: "/shop/rugs" },
-            { name: collection.title, path: `/shop/rugs/${style}` },
+            { name: copy.title, path },
           ]),
           itemListSchema({
-            path: `/shop/rugs/${style}`,
-            name: collection.title,
+            path,
+            name: copy.title,
             items: products.map((product) => ({
               name: product.name,
               path: product.href,
@@ -105,20 +134,19 @@ export default async function RugStylePage({ params }: RugStylePageProps) {
         ]}
       />
       <CatalogPageView
-        category={collection.category}
+        category="rugs"
         collection={{
-          eyebrow: "Collection",
-          title: collection.page?.heading ?? collection.title,
-          description: collection.description,
-          bullets: collection.bullets,
-          href: `/shop/rugs/${style}`,
-          guide: collection.page?.guide,
+          eyebrow: facet.kind === "type" ? "Rug type" : "Rug region",
+          title: copy.heading,
+          description: copy.description,
+          bullets: copy.bullets,
+          href: path,
+          guide: copy.guide,
         }}
         products={products}
-        styleLinks={
-          siblingStyleLinks.length ? [allRugsNavLink, ...siblingStyleLinks] : undefined
-        }
-        styleNavLabel="Other rug types"
+        rugFilterOptions={filterOptions}
+        styleLinks={siblingLinks.length ? [allRugsNavLink, ...siblingLinks] : undefined}
+        styleNavLabel="Other rug types and regions"
       />
     </>
   );

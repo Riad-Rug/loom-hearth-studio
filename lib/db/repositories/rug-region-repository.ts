@@ -1,4 +1,5 @@
 import { mapRugRegionRecord } from "@/lib/catalog/product-mappers";
+import { reservedRugPageSlugs } from "@/lib/catalog/rug-facets";
 import type { RugRegionSummary } from "@/lib/catalog/rug-taxonomy";
 import { createRepositoryContext, type RepositoryContext } from "@/lib/db";
 
@@ -46,7 +47,13 @@ export class PrismaRugRegionRepository {
     const baseSlug = createRegionSlug(name) || "region";
     let slug = baseSlug;
 
-    for (let suffix = 2; await this.context.client.rugRegion.findUnique({ where: { slug } }); suffix += 1) {
+    // A region's page is /shop/rugs/<slug>, so it may not take a Type page's
+    // slug or a retired one that redirects ("pile" → "pile-2").
+    for (
+      let suffix = 2;
+      reservedRugPageSlugs.has(slug) || (await this.context.client.rugRegion.findUnique({ where: { slug } }));
+      suffix += 1
+    ) {
       slug = `${baseSlug}-${suffix}`;
     }
 

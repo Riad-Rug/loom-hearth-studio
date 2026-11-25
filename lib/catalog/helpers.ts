@@ -1,4 +1,5 @@
 import { normalizeSlug } from "@/lib/catalog/product-validation";
+import { formatCmAsFeetInches, formatCmAsInches } from "@/lib/catalog/size-format";
 import type { MultiUnitProduct, Product, ProductCategory, RugProduct } from "@/types/domain";
 
 export type LaunchInventoryState = "inStock" | "lowStock" | "outOfStock";
@@ -79,7 +80,7 @@ export function getCategoryRoutePath(category: ProductCategory) {
 export function formatRugDimensions(product: RugProduct) {
   const multiplicationSymbol = "\u00d7";
 
-  return `${product.dimensionsCm.length} ${multiplicationSymbol} ${product.dimensionsCm.width} cm (approx. ${formatFeetAndInches(product.dimensionsCm.length)} ${multiplicationSymbol} ${formatFeetAndInches(product.dimensionsCm.width)})`;
+  return `${product.dimensionsCm.length} ${multiplicationSymbol} ${product.dimensionsCm.width} cm (approx. ${formatCmAsFeetInches(product.dimensionsCm.length)} ${multiplicationSymbol} ${formatCmAsFeetInches(product.dimensionsCm.width)})`;
 }
 
 export function formatRugWeight(product: RugProduct) {
@@ -88,24 +89,9 @@ export function formatRugWeight(product: RugProduct) {
 
 export function formatMultiUnitDimensions(dimensionsCm: { length: number; width: number }) {
   const multiplicationSymbol = "×";
-  const formatInches = (valueCm: number) => `${Math.round(valueCm / 2.54)}″`;
-
-  return `${dimensionsCm.length} ${multiplicationSymbol} ${dimensionsCm.width} cm (${formatInches(dimensionsCm.length)} ${multiplicationSymbol} ${formatInches(dimensionsCm.width)})`;
+  return `${dimensionsCm.length} ${multiplicationSymbol} ${dimensionsCm.width} cm (${formatCmAsInches(dimensionsCm.length)} ${multiplicationSymbol} ${formatCmAsInches(dimensionsCm.width)})`;
 }
 
-function formatFeetAndInches(valueCm: number) {
-  const totalInches = Math.round(valueCm / 2.54);
-  const feet = Math.floor(totalInches / 12);
-  const inches = totalInches % 12;
-
-  // Merchant-facing long dimensions often read better on the foot mark,
-  // but smaller widths should keep their actual inch remainder.
-  if (feet >= 6 && inches <= 4) {
-    return `${feet}'0"`;
-  }
-
-  return `${feet}'${inches}"`;
-}
 
 
 

@@ -98,7 +98,7 @@ const searchFields: readonly {
 }[] = [
   { weight: 10, read: (product) => `${product.name} ${product.displayName}` },
   { weight: 7, read: (product) => categoryAliases[product.category] },
-  { weight: 6, read: (product) => product.rugStyle },
+  { weight: 6, read: (product) => product.rugFacetText },
   { weight: 5, read: (product) => product.subtitle },
   { weight: 4, read: (product) => product.palette?.map((color) => color.label).join(" ") },
   { weight: 3, read: (product) => product.materialLabel },
@@ -112,7 +112,6 @@ const searchFields: readonly {
 export type SearchableProduct = CatalogProductCardViewModel &
   Partial<{
     materialLabel: string;
-    rugStyle: string;
     palette: ReadonlyArray<{ label: string }>;
   }>;
 

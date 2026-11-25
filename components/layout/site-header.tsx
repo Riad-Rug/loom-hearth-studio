@@ -1,31 +1,42 @@
 import { SiteHeaderClient } from "@/components/layout/site-header-client";
 import { siteConfig } from "@/config/site";
+import { allRugsNavLink } from "@/features/catalog/rug-style-collections";
 import { getHeaderAuthState } from "@/lib/auth/header-session";
-import {
-  listUnavailableCategoryHrefs,
-  listUnavailableRugStyleHrefs,
-} from "@/lib/catalog/service";
+import { listRugFacetLinks, listUnavailableCategoryHrefs } from "@/lib/catalog/service";
 
 export async function SiteHeader() {
-  // Category and rug-style routes with nothing to buy stay in the menu but
-  // render inert (see SiteHeaderClient), and come back on their own the moment
-  // stock lands. Both sets feed the one unavailableHrefs list so the client
-  // keeps a single notion of "inert row".
-  const [{ isAuthenticated, firstName }, unavailableCategoryHrefs, unavailableRugStyleHrefs] =
-    await Promise.all([
-      getHeaderAuthState(),
-      listUnavailableCategoryHrefs(),
-      listUnavailableRugStyleHrefs(),
-    ]);
-
-  const unavailableHrefs = [...unavailableCategoryHrefs, ...unavailableRugStyleHrefs];
+  // Categories with nothing to buy stay in the menu but render inert (see
+  // SiteHeaderClient). Rug Type and Region pages with nothing to buy are left
+  // out of the Rugs submenu instead, and return on their own when stock lands.
+  const [{ isAuthenticated, firstName }, unavailableHrefs, rugFacetLinks] = await Promise.all([
+    getHeaderAuthState(),
+    listUnavailableCategoryHrefs(),
+    listRugFacetLinks(),
+  ]);
+  const typeLinks = rugFacetLinks.filter((link) => link.kind === "type");
+  const regionLinks = rugFacetLinks.filter((link) => link.kind === "region");
+  const rugSubmenu = [
+    allRugsNavLink,
+    ...(typeLinks.length ? [{ heading: "By type" }, ...typeLinks] : []),
+    ...(regionLinks.length ? [{ heading: "By region" }, ...regionLinks] : []),
+  ];
+  const primaryNav = siteConfig.primaryNav.map((item) =>
+    "items" in item
+      ? {
+          ...item,
+          items: item.items.map((subItem) =>
+            subItem.href === "/shop/rugs" ? { ...subItem, items: rugSubmenu } : subItem,
+          ),
+        }
+      : item,
+  );
 
   return (
     <SiteHeaderClient
       announcementDesktop={siteConfig.announcementDesktop}
       announcementMobile={siteConfig.announcementMobile}
       brandName={siteConfig.name}
-      primaryNav={siteConfig.primaryNav}
+      primaryNav={primaryNav}
       unavailableHrefs={unavailableHrefs}
       isAuthenticated={isAuthenticated}
       accountFirstName={firstName}

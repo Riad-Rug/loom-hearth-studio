@@ -69,6 +69,10 @@ export interface ProductRepository {
   getStockState(id: string): Promise<ProductStockState | null>;
   delete(id: string): Promise<void>;
   slugExists(input: { slug: string; excludeId?: string }): Promise<boolean>;
+  findHomepageRankHolder(input: {
+    rank: number;
+    excludeId?: string;
+  }): Promise<{ name: string; catalogNumber?: string } | null>;
 }
 
 export class PrismaProductRepository implements ProductRepository {
@@ -415,6 +419,21 @@ export class PrismaProductRepository implements ProductRepository {
     });
 
     return Boolean(existingProduct);
+  }
+
+  /** Another featured, non-archived product already holding this homepage rank. */
+  async findHomepageRankHolder(input: { rank: number; excludeId?: string }) {
+    const holder = await this.context.client.catalogProduct.findFirst({
+      where: {
+        homepageFeatured: true,
+        homepageRank: input.rank,
+        status: { not: "archived" },
+        ...(input.excludeId ? { id: { not: input.excludeId } } : {}),
+      },
+      select: { name: true, catalogNumber: true },
+    });
+
+    return holder ? { name: holder.name, catalogNumber: holder.catalogNumber ?? undefined } : null;
   }
 }
 

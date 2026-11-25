@@ -33,6 +33,12 @@ export type CatalogProductCardViewModel = {
   priceUsdLabel: string;
   /** Struck-through former price; set only while the piece is on sale. */
   compareAtPriceUsdLabel?: string;
+  /** Rugs: Type slug for the Type filter ("pile"). */
+  rugTypeSlug?: string;
+  /** Rugs: Region slug and its parent's, for the Region filter (["tiflet", "zemmour"]). */
+  rugRegionSlugs?: string[];
+  /** Rugs: "Pile (hand-knotted) Tiflet, Zemmour", for search. */
+  rugFacetText?: string;
   /** ISO time the listing was created, for a "Newest" sort. */
   createdAt?: string;
   /** Same shape as the product page palette, for a colour filter and search. */
@@ -114,14 +120,14 @@ type ProductDetailPageViewModelBase = {
 
 export type RugProductDetailPageViewModel = ProductDetailPageViewModelBase & {
   type: "rug";
-  rugStyle: RugProduct["rugStyle"];
+  /** Type page slug ("pile"), for the Type row link. */
+  typeSlug?: string;
+  /** Region slug first, then its parent's, for the breadcrumb and Region row link. */
+  regionSlugs: string[];
   /** Specifications "Type" row; undefined hides the row. */
   typeLabel?: string;
   /** Specifications "Region" row; undefined hides the row. */
   regionLabel?: string;
-  /** Set only from the new Type/Region fields, for JSON-LD. */
-  schemaTypeLabel?: string;
-  schemaRegionLabel?: string;
   quantityLabel: "1";
   dimensionsLabel: string;
   placementNote: string;

@@ -20,8 +20,11 @@ type SiteHeaderNavLink = {
  * links with an `in` check, so a link that could carry children would make a
  * child-bearing top-level entry silently render as a sixth dropdown.
  */
+/** A non-link label inside a submenu ("By type", "By region"). */
+type SiteHeaderNavHeading = { heading: string };
+
 type SiteHeaderNavSubItem = SiteHeaderNavLink & {
-  items?: readonly SiteHeaderNavLink[];
+  items?: readonly (SiteHeaderNavLink | SiteHeaderNavHeading)[];
 };
 
 type SiteHeaderNavGroup = {
@@ -740,7 +743,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                               aria-haspopup="true"
                               aria-expanded={isSubmenuOpen}
                               aria-controls={submenuId}
-                              aria-label={`${subItem.label} by style`}
+                              aria-label={`${subItem.label} by type and region`}
                               onClick={() => toggleSubmenu(submenuId)}
                               onKeyDown={(event) =>
                                 handleSubmenuTriggerKeyDown(event, submenuId)
@@ -760,7 +763,15 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                               inert={!isSubmenuOpen}
                               onKeyDown={(event) => handleSubmenuPanelKeyDown(event, submenuId)}
                             >
-                              {submenuItems.map((styleItem) => renderGroupLink(styleItem))}
+                              {submenuItems.map((styleItem) =>
+                                "heading" in styleItem ? (
+                                  <p key={styleItem.heading} className="site-header__nav-submenu-heading">
+                                    {styleItem.heading}
+                                  </p>
+                                ) : (
+                                  renderGroupLink(styleItem)
+                                ),
+                              )}
                             </div>
                           </div>
                         );
@@ -866,7 +877,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                             aria-haspopup="true"
                             aria-expanded={isSubmenuOpen}
                             aria-controls={submenuId}
-                            aria-label={`${subItem.label} by style`}
+                            aria-label={`${subItem.label} by type and region`}
                             onClick={() => toggleSubmenu(submenuId)}
                           />
                         </div>
@@ -880,7 +891,13 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
                           inert={!isSubmenuOpen}
                         >
                           {submenuItems.map((styleItem) =>
-                            renderMobileGroupLink(styleItem, "site-header__mobile-link--nested"),
+                            "heading" in styleItem ? (
+                              <p key={`mobile-${styleItem.heading}`} className="site-header__mobile-submenu-heading">
+                                {styleItem.heading}
+                              </p>
+                            ) : (
+                              renderMobileGroupLink(styleItem, "site-header__mobile-link--nested")
+                            ),
                           )}
                         </div>
                       </div>

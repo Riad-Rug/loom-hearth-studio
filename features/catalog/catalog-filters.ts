@@ -223,3 +223,60 @@ export function toggleSizeFilter(
 ): CatalogSizeFilter[] {
   return toggleMultiSelect(selectedSizes, size, sizeValues);
 }
+
+/**
+ * Type and Region filter options, in menu order (lib/catalog/rug-facets.ts).
+ * Slugs are data-driven (regions are added in the admin), so the valid values
+ * come from the options the server passed rather than a fixed list.
+ */
+export type RugFilterOption = {
+  kind: "type" | "region";
+  slug: string;
+  label: string;
+  /** Regions only: shown indented under this parent. */
+  parentSlug?: string;
+};
+
+export function parseRugFacetFilter(value: string | null, options: readonly RugFilterOption[]): string[] {
+  return parseMultiSelect(value, options.map((option) => option.slug));
+}
+
+export function serializeRugFacetFilter(selected: readonly string[], options: readonly RugFilterOption[]): string {
+  return serializeMultiSelect(selected, options.map((option) => option.slug));
+}
+
+export function toggleRugFacetFilter(
+  selected: readonly string[],
+  slug: string,
+  options: readonly RugFilterOption[],
+): string[] {
+  return toggleMultiSelect(selected, slug, options.map((option) => option.slug));
+}
+
+// Multi-select, no selection means every rug. A parent region matches its
+// children's rugs because a card carries its region's parent slug too.
+export function matchesRugTypeFilter(product: CatalogProductCardViewModel, selectedTypes: readonly string[]) {
+  return !selectedTypes.length || (product.rugTypeSlug !== undefined && selectedTypes.includes(product.rugTypeSlug));
+}
+
+export function matchesRugRegionFilter(product: CatalogProductCardViewModel, selectedRegions: readonly string[]) {
+  return !selectedRegions.length || (product.rugRegionSlugs ?? []).some((slug) => selectedRegions.includes(slug));
+}
+
+/**
+ * The options worth offering for these products: each Type or Region with at
+ * least one rug a shopper can buy, so an empty one never shows. A group with a
+ * single option is no choice and is dropped by the caller.
+ */
+export function listOfferedRugFilterOptions(
+  options: readonly RugFilterOption[],
+  products: readonly CatalogProductCardViewModel[],
+) {
+  const buyable = products.filter((product) => product.availability === "available");
+
+  return options.filter((option) =>
+    buyable.some((product) =>
+      option.kind === "type" ? product.rugTypeSlug === option.slug : product.rugRegionSlugs?.includes(option.slug),
+    ),
+  );
+}

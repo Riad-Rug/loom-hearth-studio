@@ -65,8 +65,7 @@ function getProductType(product: Product) {
     return base;
   }
 
-  // New Type wins; the legacy style is the fallback, cleaned of "-type"
-  // qualifiers and never "Unclassified".
+  // Type field only; a rug without one stays at the category level.
   const typeLabel = getRugTaxonomyDisplay(product).typeLabel;
 
   return typeLabel ? `${base} > ${typeLabel}` : base;

@@ -1,6 +1,6 @@
 import type { InventoryHold } from "@prisma/client";
 
-import { trueOneOffUniquenessTier } from "@/lib/admin/category-form-copy";
+import { isOneOfOneUniquenessTier } from "@/lib/admin/category-form-copy";
 import type { Order, Product } from "@/types/domain";
 import type { ProductVariant } from "@/types/domain/product";
 
@@ -56,7 +56,7 @@ export class InventoryUnavailableError extends Error {
 // One-of-one pieces are tracked by status (active, reserved, sold) and by the
 // order holding them, through "sold" too; everything else by unit count.
 export function isOneOfOne(product: { type: string; uniquenessTier?: string | null }) {
-  return product.type === "rug" || product.uniquenessTier === trueOneOffUniquenessTier;
+  return product.type === "rug" || isOneOfOneUniquenessTier(product.uniquenessTier);
 }
 
 // How many units of a listed product (of one variant, when named) an order could

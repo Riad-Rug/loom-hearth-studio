@@ -1,10 +1,10 @@
 /**
  * Rug Type (how a rug is made) and Region (where it comes from).
  *
- * Type is a fixed list; Region is a managed table (RugRegion). Both supersede
- * the legacy rugStyle / attributionRegion fields for display. Those legacy
- * fields stay in the data: rugStyle still decides legacy product URLs, and
- * both are the display fallback until a rug has been sorted in the admin.
+ * Type is a fixed list; Region is a managed table (RugRegion). They are the
+ * only source for the Type and Region shown to shoppers, and for the shop's
+ * Type and Region pages and filters. The legacy rugStyle column now only
+ * stores each rug's URL segment (see deriveRugUrlSegment).
  */
 
 export const rugTypeOptions = [
@@ -13,28 +13,24 @@ export const rugTypeOptions = [
     label: "Flatweave (Hanbel)",
     slug: "flatweave-hanbel",
     construction: "Handwoven flatweave (hanbel)",
-    legacyRugStyle: "Flatweave (Hanbel)",
   },
   {
     value: "pile",
     label: "Pile (hand-knotted)",
     slug: "pile",
     construction: "Hand-knotted pile",
-    legacyRugStyle: undefined,
   },
   {
     value: "mixed",
     label: "Mixed technique",
     slug: "mixed-technique",
     construction: "Handwoven flatweave with raised hand-knotted motifs",
-    legacyRugStyle: "Mixed technique",
   },
   {
     value: "boucherouite",
     label: "Boucherouite",
     slug: "boucherouite",
     construction: "Handmade from discarded fabrics",
-    legacyRugStyle: "Boucherouite",
   },
 ] as const;
 
@@ -107,84 +103,38 @@ export function cleanLegacyAttributionText(value: string | null | undefined) {
   return cleaned && !hiddenLegacyValues.has(cleaned.toLowerCase()) ? cleaned : undefined;
 }
 
-/** The legacy rugStyle that maps one-to-one onto a Type, if any. */
-export function getRugTypeFromLegacyStyle(rugStyle: string | null | undefined): RugType | undefined {
-  const style = rugStyle?.trim().toLowerCase();
-
-  return rugTypeOptions.find((option) => option.legacyRugStyle?.toLowerCase() === style)?.value;
-}
-
-// Legacy style collections a region maps onto (Tiflet and Khemisset sit under
-// Zemmour). Only used to pick a working legacy URL segment for new rugs.
-const legacyStyleByRegionSlug: Record<string, string> = {
-  azilal: "Azilal",
-  "beni-ourain": "Beni Ourain",
-  "beni-m-guild": "Beni M'Guild",
-  boujad: "Boujad",
-  zemmour: "Zemmour",
-};
-
 /**
- * New rugs no longer pick a rugStyle in the admin, but rugStyle still decides
- * their /shop/rugs/<style>/<slug> URL until per-type URLs land. Derive it from
- * the Type when the Type has its own collection, else from the Region: its
- * collection when it has one, else the top-level region's name (Glaoui under
- * Taznakht files as "Taznakht"; Middle Atlas as "Middle Atlas"). Only a rug
- * with neither falls back to "Unclassified".
+ * The URL segment a rug lives under, /shop/rugs/<segment>/<slug>. It is stored
+ * in the legacy rugStyle column so every existing rug keeps its URL; only rugs
+ * that have never been live get this new path: their Region, or their Type
+ * while no Region is set.
  */
-export function deriveLegacyRugStyle(rugType: RugType | undefined, region: RugRegionSummary | undefined) {
-  if (rugType) {
-    const fromType = getRugTypeOption(rugType).legacyRugStyle;
-
-    if (fromType) {
-      return fromType;
-    }
-  }
-
-  const regionStyle =
-    (region && legacyStyleByRegionSlug[region.slug]) ||
-    (region?.parent && legacyStyleByRegionSlug[region.parent.slug]);
-
-  return regionStyle || region?.parent?.name || region?.name || "Unclassified";
+export function deriveRugUrlSegment(rugType: RugType | undefined, region: RugRegionSummary | undefined) {
+  return region?.slug ?? (rugType ? getRugTypeOption(rugType).slug : "unclassified");
 }
 
 export type RugTaxonomyDisplay = {
-  /** "Pile (hand-knotted), high pile"; legacy style text as fallback; undefined when nothing showable. */
+  /** "Pile (hand-knotted), high pile"; undefined when Type is not set. */
   typeLabel?: string;
-  /** "Tiflet, Zemmour"; cleaned legacy attributionRegion as fallback. */
+  /** "Tiflet, Zemmour"; undefined when Region is not set. */
   regionLabel?: string;
-  /** Construction line for the product page; undefined when the type is unknown (no guessed claim). */
+  /** Construction line for the product page; undefined when Type is not set (no guessed claim). */
   construction?: string;
-  /** True only when the new fields are set (feeds and JSON-LD use only these). */
-  hasType: boolean;
-  hasRegion: boolean;
 };
 
 /**
- * Buyer-facing Type / Region / Construction for a rug. New fields win; until
- * a rug is sorted, fall back to the legacy fields with "-type" qualifiers
- * stripped and "Unclassified" / "Not Stated" never shown.
+ * Buyer-facing Type / Region / Construction for a rug, from the Type and
+ * Region fields only. An unset field stays undefined so its row is hidden:
+ * the legacy rugStyle / attributionRegion are never shown in their place.
  */
 export function getRugTaxonomyDisplay(rug: {
   rugType?: RugType;
   pileHeight?: PileHeight;
   region?: RugRegionSummary;
-  rugStyle?: string;
-  attributionRegion?: string;
 }): RugTaxonomyDisplay {
-  const legacyType = getRugTypeFromLegacyStyle(rug.rugStyle);
-
   return {
-    typeLabel: rug.rugType
-      ? formatRugTypeLabel(rug.rugType, rug.pileHeight)
-      : cleanLegacyAttributionText(rug.rugStyle),
-    regionLabel: rug.region ? formatRegionLabel(rug.region) : cleanLegacyAttributionText(rug.attributionRegion),
-    construction: rug.rugType
-      ? formatRugConstructionLine(rug.rugType, rug.pileHeight)
-      : legacyType
-        ? formatRugConstructionLine(legacyType)
-        : undefined,
-    hasType: Boolean(rug.rugType),
-    hasRegion: Boolean(rug.region),
+    typeLabel: rug.rugType ? formatRugTypeLabel(rug.rugType, rug.pileHeight) : undefined,
+    regionLabel: rug.region ? formatRegionLabel(rug.region) : undefined,
+    construction: rug.rugType ? formatRugConstructionLine(rug.rugType, rug.pileHeight) : undefined,
   };
 }

@@ -7,7 +7,8 @@ export type ProductCardNameInput = {
   name: string;
   type: Product["type"];
   category: Product["category"];
-  rugStyle?: string;
+  /** A rug's Region name ("Azilal"), used when the title names no construction. */
+  regionName?: string;
   cardName?: string;
 };
 
@@ -226,18 +227,18 @@ export function removeConstructionFromColor(value: string) {
 }
 
 export function getRugConstructionLabel(
-  product: { rugStyle?: string; category: Product["category"] },
+  product: { regionName?: string; category: Product["category"] },
   title: string,
 ) {
   if (/flat\s*weave|flatweave/iu.test(title)) {
     return "Flatweave";
   }
 
-  if (/beni\s+ourain/iu.test(title) || /beni\s+ourain/iu.test(product.rugStyle ?? "")) {
+  if (/beni\s+ourain/iu.test(title) || /beni\s+ourain/iu.test(product.regionName ?? "")) {
     return "Beni Ourain Rug";
   }
 
-  if (/kilim/iu.test(title) || /kilim/iu.test(product.rugStyle ?? "")) {
+  if (/kilim/iu.test(title) || /kilim/iu.test(product.regionName ?? "")) {
     return "Kilim Rug";
   }
 
@@ -245,7 +246,7 @@ export function getRugConstructionLabel(
     return "Vintage Rug";
   }
 
-  const styleLabel = humanizeProductToken(product.rugStyle ?? "");
+  const styleLabel = humanizeProductToken(product.regionName ?? "");
 
   return styleLabel ? `${styleLabel} Rug` : "Moroccan Rug";
 }

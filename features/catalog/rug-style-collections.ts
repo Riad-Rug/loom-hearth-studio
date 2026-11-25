@@ -1,6 +1,10 @@
 import type { CatalogGuide } from "@/features/catalog/catalog-data";
 
-/** Copy for a style's own /shop/rugs/[style] page. */
+/**
+ * Written copy for a rug Type or Region page, keyed by its slug
+ * (lib/catalog/rug-facets.ts). A Type or Region without an entry gets a plain
+ * header and stays noindex until its guide copy is written here.
+ */
 export type RugStylePageCopy = {
   /** The page's H1. */
   heading: string;
@@ -314,44 +318,6 @@ export type RugStyleCollectionSlug = keyof typeof rugStyleCollections;
 export function getRugStyleCollection(slug: string): RugStyleCollection | null {
   return rugStyleCollections[slug as RugStyleCollectionSlug] ?? null;
 }
-
-
-/**
- * The rug styles that get their own nav entry, in the order they should be
- * offered to a shopper (roughly search demand, best-known first). "vintage" is
- * deliberately absent: it is its own category with its own /shop/vintage
- * landing route, not a rug style nested under /shop/rugs.
- *
- * Single source of truth for anchor text. Every surface that links a style page
- * — the header dropdown, the homepage strip, the /shop/rugs chip row, the
- * sibling "Other rug types" strip — reads its label from here, so each of these
- * six pages accumulates one consistent, keyword-exact anchor instead of a
- * different phrasing per surface.
- */
-export const rugStyleNavSlugs = [
-  "beni-ourain",
-  "azilal",
-  "boujad",
-  "zemmour",
-  "beni-m-guild",
-  "boucherouite",
-  "flatweave-hanbel",
-  "mixed-technique",
-] as const satisfies readonly RugStyleCollectionSlug[];
-
-export type RugStyleNavSlug = (typeof rugStyleNavSlugs)[number];
-
-export type RugStyleNavLink = {
-  slug: RugStyleNavSlug;
-  href: string;
-  label: string;
-};
-
-export const rugStyleNavLinks: readonly RugStyleNavLink[] = rugStyleNavSlugs.map((slug) => ({
-  slug,
-  href: `/shop/rugs/${slug}`,
-  label: rugStyleCollections[slug].title,
-}));
 
 /** Anchor for the parent rugs landing route, used as the first item in style menus. */
 export const allRugsNavLink = {

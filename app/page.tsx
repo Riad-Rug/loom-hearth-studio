@@ -4,7 +4,7 @@ import { HomePageView } from "@/features/home/home-page-view";
 import {
   listCatalogProductCards,
   listRandomInventoryProductCards,
-  listRugStyleNavLinks,
+  listRugFacetLinks,
   listUnavailableCategoryHrefs,
 } from "@/lib/catalog/service";
 import { getHomepageContent } from "@/lib/homepage/content";
@@ -31,7 +31,7 @@ export default async function HomePage() {
       listRandomInventoryProductCards({ limit: 24 }),
       listCatalogProductCards(),
       listUnavailableCategoryHrefs(),
-      listRugStyleNavLinks(),
+      listRugFacetLinks(),
     ]);
   const liveCategories = [
     ...new Set<ProductCategory>(
@@ -46,7 +46,7 @@ export default async function HomePage() {
       content={content}
       inventoryProducts={inventoryProducts}
       liveCategories={liveCategories}
-      rugStyleLinks={rugStyleLinks.filter((link) => link.available)}
+      rugStyleLinks={rugStyleLinks}
       unavailableCategoryHrefs={unavailableCategoryHrefs}
     />
   );

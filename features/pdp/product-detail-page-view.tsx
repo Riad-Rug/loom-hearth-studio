@@ -29,7 +29,7 @@ import { unavailableCopy, type ProductAvailability, type UnavailableReason } fro
 import { formatMultiUnitDimensions, getCategoryLabel } from "@/lib/catalog/helpers";
 import { parseProductTitle } from "@/lib/catalog/product-card-name";
 import { normalizeSlug } from "@/lib/catalog/product-validation";
-import { getRugTypeFromLegacyStyle } from "@/lib/catalog/rug-taxonomy";
+import type { RugPageLinks } from "@/lib/catalog/service";
 import { calculateShippingUsd } from "@/lib/order/shipping";
 import { storePromise, storePromiseCopy } from "@/lib/order/store-promise";
 import {
@@ -48,16 +48,16 @@ import "./tailwind.css";
 type ProductDetailPageViewProps = {
   product: ProductDetailPageViewModel;
   /**
-   * Whether the rug's style page is indexed right now (lib/seo/index-policy.ts).
-   * Only the rug route can answer that (it is a live catalog read), and while the
-   * page asks to be dropped neither the breadcrumb nor the Style row may link to
-   * it. Defaults to true because the category route never renders a style level
-   * at all and has nothing to report.
+   * The rug's breadcrumb Region level and Type / Region row links, each only
+   * while that page is indexed (getRugPageLinks, a live catalog read only the
+   * rug route makes). Absent on the category route: no level, no links.
    */
-  rugStylePageIndexable?: boolean;
+  rugLinks?: RugPageLinks;
 };
 
 type GalleryItem = ProductDetailPageViewModel["gallery"][number];
+
+const noRugLinks: RugPageLinks = {};
 
 const PANEL_CARD = "grid gap-[var(--space-3)] p-[var(--space-4)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-panel)]";
 const PANEL_EYEBROW = "text-[var(--color-green)] text-[0.72rem] font-semibold tracking-[0.08em] uppercase";
@@ -69,7 +69,7 @@ const LIGHTBOX_CONTROL = "px-[1rem] py-[0.6rem] border border-[color:var(--color
 
 export function ProductDetailPageView({
   product,
-  rugStylePageIndexable = true,
+  rugLinks = noRugLinks,
 }: ProductDetailPageViewProps) {
   const gallery = product.gallery;
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -197,7 +197,7 @@ export function ProductDetailPageView({
     displayedCrossSellRecommendations,
     preferredHistoryCategory,
   );
-  const specRows = buildSpecificationRows(product, rugStylePageIndexable);
+  const specRows = buildSpecificationRows(product, rugLinks);
 
   return (
     <div className="grid gap-[var(--space-7)] max-[700px]:pb-[5rem]">
@@ -272,7 +272,7 @@ export function ProductDetailPageView({
           <div
             className="grid gap-[var(--space-4)] p-[var(--space-5)] border border-[color:var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-bg)] col-start-2 row-start-1 row-span-3 self-start sticky top-[var(--site-header-scroll-offset)] max-[1100px]:static max-[1100px]:col-start-auto max-[1100px]:row-start-auto max-[1100px]:row-span-1"
           >
-            <ProductBreadcrumb product={product} rugStylePageIndexable={rugStylePageIndexable} />
+            <ProductBreadcrumb product={product} rugLinks={rugLinks} />
 
             <div className="flex flex-wrap gap-[0.6rem]">
               <span className="inline-flex items-center justify-center px-[0.45rem] py-[0.28rem] border border-[color:var(--color-green)] rounded-full text-[var(--color-green)] [font-family:var(--font-mono)] text-[0.68rem] tracking-[0.08em] uppercase">
@@ -778,7 +778,7 @@ function formatHeightInBothUnits(value: number, unit: "cm" | "in") {
     : `${Math.round(value * 2.54)} cm (${value}″)`;
 }
 
-function buildSpecificationRows(product: ProductDetailPageViewModel, rugStylePageIndexable: boolean) {
+function buildSpecificationRows(product: ProductDetailPageViewModel, rugLinks: RugPageLinks) {
   const rows: { label: string; value: string; href?: Route }[] = [];
 
   const sizeValue =
@@ -799,19 +799,22 @@ function buildSpecificationRows(product: ProductDetailPageViewModel, rugStylePag
   );
 
   if (product.type === "rug") {
-    // The existing style-collection link stays on whichever row names that
-    // collection: a construction style (Flatweave, Mixed technique,
-    // Boucherouite) is a Type; a place-named style (Azilal, Zemmour) a Region.
-    const styleCrumb = getRugStyleCrumb(product, rugStylePageIndexable);
-    const styleHref = styleCrumb ? { href: styleCrumb.href } : {};
-    const styleIsType = Boolean(getRugTypeFromLegacyStyle(product.rugStyle));
-
+    // Type and Region come only from their own fields; an unset one is hidden.
+    // Each links to its page while that page is indexed.
     if (product.typeLabel) {
-      rows.push({ label: "Type", value: product.typeLabel, ...(styleIsType ? styleHref : {}) });
+      rows.push({
+        label: "Type",
+        value: product.typeLabel,
+        ...(rugLinks.typeHref ? { href: rugLinks.typeHref as Route } : {}),
+      });
     }
 
     if (product.regionLabel) {
-      rows.push({ label: "Region", value: product.regionLabel, ...(styleIsType ? {} : styleHref) });
+      rows.push({
+        label: "Region",
+        value: product.regionLabel,
+        ...(rugLinks.regionHref ? { href: rugLinks.regionHref as Route } : {}),
+      });
     }
   }
 
@@ -840,50 +843,21 @@ function extractConditionNote(product: ProductDetailPageViewModel) {
     return undefined;
   }
 
-  return conditionSection.split(/\n|(?<=[.!?])\s/u)[0];
-}
-
-/**
- * The style level of a rug's hierarchy, or null when the product has no style
- * page to point at. The derivation deliberately repeats what the rug PDP route
- * does for its BreadcrumbList JSON-LD (app/shop/rugs/[style]/[slug]/page.tsx):
- * normalize the stored rugStyle, look the collection up, and drop the level when
- * the lookup misses, so a rug filed as "Unclassified" is skipped in both places
- * and the visible trail can never describe a different hierarchy than the schema.
- *
- * Vintage rugs are excluded on category rather than on type, because they carry a
- * rugStyle too but live at /shop/vintage/{slug} with no style page above them —
- * and "vintage" is itself a key in rugStyleCollections, so a type-only check
- * would invent a /shop/rugs/vintage ancestor that the route does not serve.
- *
- * A style whose page is not indexed is dropped for the same reason the route
- * drops it from the schema: a crawlable anchor would point crawl signal at a page
- * we are asking Google to drop.
- */
-function getRugStyleCrumb(product: ProductDetailPageViewModel, rugStylePageIndexable: boolean) {
-  if (!rugStylePageIndexable || product.type !== "rug" || product.category === "vintage") {
-    return null;
-  }
-
-  const styleSlug = normalizeSlug(product.rugStyle);
-  const collection = getRugStyleCollection(styleSlug);
-
-  if (!collection) {
-    return null;
-  }
-
-  return { label: collection.title, href: `/shop/rugs/${styleSlug}` as Route };
+  // The whole note: "Unused. No defects found." must not lose its second sentence.
+  return conditionSection.replace(/\s*\n\s*/gu, " ").trim();
 }
 
 function ProductBreadcrumb({
   product,
-  rugStylePageIndexable,
+  rugLinks,
 }: {
   product: ProductDetailPageViewModel;
-  rugStylePageIndexable: boolean;
+  rugLinks: RugPageLinks;
 }) {
   const categoryPath = getProductCategoryHref(product);
-  const styleCrumb = getRugStyleCrumb(product, rugStylePageIndexable);
+  const styleCrumb = rugLinks.breadcrumb
+    ? { label: rugLinks.breadcrumb.label, href: rugLinks.breadcrumb.href as Route }
+    : null;
   const items: Array<{ label: string; href?: Route }> = [
     { label: "Home", href: "/" },
     { label: "Shop", href: "/shop" },
