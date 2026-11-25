@@ -1499,7 +1499,7 @@
   background: rgba(23, 105, 90, 0.03);
 }
 
-.inlineActionLink:hover,
+.inlineActionLink:hover:not(:disabled),
 .inlineActionLink:focus-visible,
 .secondaryActionLink:hover,
 .secondaryActionLink:focus-visible {
@@ -1508,11 +1508,18 @@
   outline: none;
 }
 
-.inlineActionLinkPrimary:hover,
+.inlineActionLinkPrimary:hover:not(:disabled),
 .inlineActionLinkPrimary:focus-visible {
   border-color: var(--button-primary-bg-hover);
   background: var(--button-primary-bg-hover);
   outline: none;
+}
+
+/* A disabled action (e.g. "Delete region" on a region still in use) must not
+   look clickable; the hover rules above skip it. */
+.inlineActionLink:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .dangerAction:hover,
