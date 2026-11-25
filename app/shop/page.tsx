@@ -5,7 +5,7 @@ import { catalogCategoryFilterOptions } from "@/features/catalog/catalog-data";
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
 import {
   listCatalogProductCards,
-  listRugStyleNavLinks,
+  listRugFacetLinks,
   listUnavailableCategoryHrefs,
 } from "@/lib/catalog/service";
 import { storePromise } from "@/lib/order/store-promise";
@@ -43,7 +43,7 @@ function hasSearchQuery(value: string | string[] | undefined) {
 export default async function ShopPage() {
   const [products, styleNavLinks, unavailableCategoryHrefs] = await Promise.all([
     listCatalogProductCards(),
-    listRugStyleNavLinks(),
+    listRugFacetLinks(),
     listUnavailableCategoryHrefs(),
   ]);
   // Where a search with no results can send the shopper: only pages with stock
@@ -52,7 +52,7 @@ export default async function ShopPage() {
     categories: catalogCategoryFilterOptions.filter(
       (option) => !unavailableCategoryHrefs.includes(option.href),
     ),
-    styles: styleNavLinks.filter((link) => link.available),
+    styles: styleNavLinks,
   };
 
   return (

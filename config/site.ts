@@ -1,4 +1,4 @@
-import { allRugsNavLink, rugStyleNavLinks } from "@/features/catalog/rug-style-collections";
+import { allRugsNavLink } from "@/features/catalog/rug-style-collections";
 import { storePromise } from "@/lib/order/store-promise";
 
 const promiseMedia = storePromise.approvalMedia.toUpperCase();
@@ -72,12 +72,10 @@ export const siteConfig = {
         {
           href: "/shop/rugs",
           label: "Rugs",
-          // Each rug style page used to be reachable from one place only, the chip
-          // row on /shop/rugs, which left the style pages starved of internal link
-          // weight next to /shop and /shop/rugs. Hanging the styles off this row
-          // puts a keyword-exact anchor to every one of them in the rendered HTML
-          // of every page on the site.
-          items: [allRugsNavLink, ...rugStyleNavLinks],
+          // SiteHeader replaces these with the live Type and Region pages that
+          // have a rug to buy, so a keyword-exact anchor to each is in the
+          // rendered HTML of every page (components/layout/site-header.tsx).
+          items: [allRugsNavLink],
         },
         { href: "/shop/vintage", label: "Vintage Rugs" },
         { href: "/shop/poufs", label: "Poufs" },

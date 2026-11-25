@@ -3,11 +3,8 @@ import { cache } from "react";
 
 import { getUpsellCategoryOrder } from "@/lib/catalog/companion-categories";
 import { cleanLegacyAttributionText, getRugTaxonomyDisplay } from "@/lib/catalog/rug-taxonomy";
-import {
-  rugStyleCollections,
-  rugStyleNavLinks,
-  type RugStyleNavLink,
-} from "@/features/catalog/rug-style-collections";
+import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
+import { buildRugFacets, getRugFacetSlugs, rugMatchesFacet, type RugFacet } from "@/lib/catalog/rug-facets";
 import {
   formatProductPriceUsd,
   getCompareAtPriceUsdLabel,
@@ -46,8 +43,11 @@ import {
   getInventoryShuffleSeed,
   shuffleWithSeed,
 } from "@/lib/catalog/random-selection";
+import { isPlaceholderAltText } from "@/lib/catalog/image-alt";
+import { formatCmAsFeetInches } from "@/lib/catalog/size-format";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/url";
 import { createProductRepository, type ProductRepository } from "@/lib/db/repositories/product-repository";
+import { createRugRegionRepository } from "@/lib/db/repositories/rug-region-repository";
 import { storePromise } from "@/lib/order/store-promise";
 import {
   isProductIndexable,
@@ -128,59 +128,74 @@ export async function listUnavailableCategoryHrefs(
 }
 
 /**
- * Rug-style slugs with at least one piece a shopper can buy right now, so the
- * /shop/rugs style nav can list exactly the styles that have stock instead of
- * hardcoding which ones do. Rows alone are not enough here
- * either: a style whose every rug is sold or reserved counts as empty. Live read
- * on every render — rugs are one of a kind, so a style drops out when its last
- * piece sells and returns on its own the moment new stock lands.
+ * Every rug Type and Region facet (lib/catalog/rug-facets.ts), built from the
+ * live region table. Cached per request: the header, the page and its metadata
+ * all ask.
  */
-export async function listAvailableRugStyleSlugs(
-  repository: ProductRepository = requestProductRepository(),
-): Promise<Set<string>> {
-  noStore();
+export const listRugFacets = cache(async (): Promise<RugFacet[]> => {
+  return buildRugFacets(await createRugRegionRepository().listAll());
+});
 
-  const products = await listRugRows(repository);
+/** The facet with its own /shop/rugs/<slug> page, or null (unknown slug, or a filter-only region like Morocco). */
+export async function getRugFacetPage(slug: string): Promise<RugFacet | null> {
+  const facet = (await listRugFacets()).find((candidate) => candidate.slug === normalizeSlug(slug));
 
-  return new Set(
-    products
-      .filter(
-        (product): product is RugProduct =>
-          product.type === "rug" && getProductAvailability(product) === "available",
-      )
-      .map((product) => normalizeSlug(product.rugStyle))
-      .filter(Boolean),
-  );
+  return facet?.hasLandingPage ? facet : null;
 }
+
+export type RugFacetLink = {
+  kind: RugFacet["kind"];
+  slug: string;
+  href: string;
+  label: string;
+};
 
 /**
- * Every rug style nav entry paired with whether it has something purchasable
- * behind it right now, so the header dropdown, the homepage strip and the
- * sibling strips can all gate on the same live check instead of each deciding
- * for themselves. Callers grey an empty style (header, footer) or omit it
- * (content strips) so nobody is sent to a page with nothing to buy. Whether that
- * page is indexed is a separate, slower rule: listIndexableRugStyleSlugs.
- *
- * Order and anchor text come from rugStyleNavLinks; this only adds liveness.
+ * Links to every Type and Region page with a rug a shopper can buy right now,
+ * in facet order. The Rugs menu, the homepage strip, the /shop/rugs chips and
+ * the sibling strip on each page all use this, so a Type or Region with no
+ * active rug disappears everywhere at once and returns when stock lands.
+ * Live read on every render.
  */
-export async function listRugStyleNavLinks(
+export async function listRugFacetLinks(
   repository: ProductRepository = requestProductRepository(),
-): Promise<(RugStyleNavLink & { available: boolean })[]> {
-  const availableStyles = await listAvailableRugStyleSlugs(repository);
+): Promise<RugFacetLink[]> {
+  noStore();
 
-  return rugStyleNavLinks.map((link) => ({
-    ...link,
-    available: availableStyles.has(link.slug),
-  }));
+  const [facets, rugs] = await Promise.all([listRugFacets(), listRugRows(repository)]);
+  const availableRugs = rugs.filter(
+    (product): product is RugProduct => product.type === "rug" && getProductAvailability(product) === "available",
+  );
+
+  return facets
+    .filter((facet) => facet.hasLandingPage && availableRugs.some((rug) => rugMatchesFacet(rug, facet)))
+    .map((facet) => ({
+      kind: facet.kind,
+      slug: facet.slug,
+      href: `/shop/rugs/${facet.slug}`,
+      label: getRugFacetTitle(facet),
+    }));
 }
 
-/** Style hrefs with nothing purchasable behind them, for `unavailableHrefs` consumers. */
-export async function listUnavailableRugStyleHrefs(
-  repository: ProductRepository = requestProductRepository(),
-): Promise<string[]> {
-  const links = await listRugStyleNavLinks(repository);
+/** Anchor text for a facet page: its written collection title, else "<name> Rugs". */
+export function getRugFacetTitle(facet: Pick<RugFacet, "kind" | "slug" | "name">) {
+  const collection = getRugStyleCollection(facet.slug);
 
-  return links.filter((link) => !link.available).map((link) => link.href);
+  if (collection) {
+    return collection.title;
+  }
+
+  return facet.kind === "type" && facet.slug === "pile" ? "Hand-Knotted Pile Rugs" : `${facet.name} Rugs`;
+}
+
+/** Filter options for the Type and Region filters: every facet, in order. Callers hide the ones with no rug in view. */
+export async function listRugFilterOptions() {
+  return (await listRugFacets()).map((facet) => ({
+    kind: facet.kind,
+    slug: facet.slug,
+    label: facet.name,
+    ...(facet.parentSlug ? { parentSlug: facet.parentSlug } : {}),
+  }));
 }
 
 /**
@@ -226,35 +241,40 @@ export async function getProductIndexFacts(
 }
 
 /**
- * Rug-style slugs whose /shop/rugs/{style} page the index policy wants in search
- * right now: the page's robots tag, the sitemap, and the rug breadcrumb all read
- * this. The pieces are the rows listRugStyleProductCards shows on that page, sold
- * ones included. "vintage" is skipped because /shop/rugs/vintage only redirects.
+ * Type and Region pages the index policy wants in search right now: the page's
+ * robots tag, the sitemap, the rug breadcrumb and the spec-row links all read
+ * this. A page needs its written guide copy and a piece whose own page is
+ * indexable (lib/seo/index-policy.ts); the pieces are the rows that page shows,
+ * sold ones included.
  */
-export async function listIndexableRugStyleSlugs(
+export async function listIndexableRugFacetSlugs(
   now: Date,
   repository: ProductRepository = requestProductRepository(),
 ): Promise<Set<string>> {
   noStore();
 
-  const [products, soldDates] = await Promise.all([listRugRows(repository), repository.listSoldDates()]);
+  const [facets, rugs, soldDates] = await Promise.all([
+    listRugFacets(),
+    listRugRows(repository),
+    repository.listSoldDates(),
+  ]);
 
   return new Set(
-    Object.entries(rugStyleCollections)
+    facets
       .filter(
-        ([slug, collection]) =>
-          collection.category === "rugs" &&
+        (facet) =>
+          facet.hasLandingPage &&
           isRugStylePageIndexable(
             {
-              hasGuideCopy: Boolean(collection.page?.guide.body.trim()),
-              pieces: products
-                .filter((product) => product.type === "rug" && normalizeSlug(product.rugStyle) === slug)
+              hasGuideCopy: Boolean(getRugStyleCollection(facet.slug)?.page?.guide.body.trim()),
+              pieces: rugs
+                .filter((product): product is RugProduct => product.type === "rug" && rugMatchesFacet(product, facet))
                 .map((product) => toIndexFacts(product, soldDates)),
             },
             now,
           ),
       )
-      .map(([slug]) => slug),
+      .map((facet) => facet.slug),
   );
 }
 
@@ -265,22 +285,55 @@ function toIndexFacts(
   return { status: product.status, soldAt: soldDates.get(product.id) ?? null };
 }
 
-export async function listRugStyleProductCards(input: {
-  style: string;
+export type RugPageLinks = {
+  /** The breadcrumb level between Rugs and the rug: its Region page. */
+  breadcrumb?: { label: string; href: string };
+  typeHref?: string;
+  regionHref?: string;
+};
+
+/**
+ * Where a rug's breadcrumb and its Type / Region rows link. Each target must be
+ * an indexed page right now (lib/seo/index-policy.ts), so no crawlable link
+ * points at a page that asks to be dropped. The breadcrumb level is the Region:
+ * the rug's own region page, else its parent's (Tiflet → Zemmour). Vintage rugs
+ * live under /shop/vintage and have no level here.
+ */
+export async function getRugPageLinks(product: {
+  category: ProductCategory;
+  typeSlug?: string;
+  regionSlugs: readonly string[];
+}): Promise<RugPageLinks> {
+  if (product.category === "vintage") {
+    return {};
+  }
+
+  const [facets, indexable] = await Promise.all([listRugFacets(), listIndexableRugFacetSlugs(new Date())]);
+  const page = (slug: string | undefined) =>
+    slug && indexable.has(slug) ? facets.find((facet) => facet.slug === slug && facet.hasLandingPage) : undefined;
+  const regionPage = product.regionSlugs.map(page).find(Boolean);
+  const typePage = page(product.typeSlug);
+
+  return {
+    ...(regionPage
+      ? {
+          breadcrumb: { label: getRugFacetTitle(regionPage), href: `/shop/rugs/${regionPage.slug}` },
+          regionHref: `/shop/rugs/${regionPage.slug}`,
+        }
+      : {}),
+    ...(typePage ? { typeHref: `/shop/rugs/${typePage.slug}` } : {}),
+  };
+}
+
+/** The rugs on a Type or Region page (a parent region includes its children's rugs). */
+export async function listRugFacetProductCards(input: {
+  facet: RugFacet;
   repository?: ProductRepository;
 }): Promise<CatalogProductCardViewModel[]> {
   const repository = input.repository ?? requestProductRepository();
-  const style = normalizeSlug(input.style);
-
-  if (style === "vintage") {
-    return (await repository.listByCategory("vintage")).map(createCatalogProductCardViewModel);
-  }
 
   return (await listRugRows(repository))
-    .filter(
-      (product): product is RugProduct =>
-        product.type === "rug" && normalizeSlug(product.rugStyle) === style,
-    )
+    .filter((product): product is RugProduct => product.type === "rug" && rugMatchesFacet(product, input.facet))
     .map(createCatalogProductCardViewModel);
 }
 
@@ -500,6 +553,7 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
     priceUsd: product.priceUsd,
     priceUsdLabel: formatProductPriceUsd(product.priceUsd),
     compareAtPriceUsdLabel: getCompareAtPriceUsdLabel(product),
+    ...(product.type === "rug" ? createRugFacetFields(product) : {}),
     createdAt: product.createdAt,
     description: normalizeDimensionSeparators(product.description),
     routePattern: getProductRoutePattern(product),
@@ -521,6 +575,18 @@ function createCatalogProductCardViewModel(product: Product): CatalogProductCard
   };
 }
 
+/** Type/Region filter keys and searchable names for a rug card. */
+function createRugFacetFields(product: RugProduct) {
+  const { typeSlug, regionSlugs } = getRugFacetSlugs(product);
+  const display = getRugTaxonomyDisplay(product);
+
+  return {
+    rugTypeSlug: typeSlug,
+    rugRegionSlugs: regionSlugs,
+    rugFacetText: [display.typeLabel, display.regionLabel].filter(Boolean).join(" ") || undefined,
+  };
+}
+
 function buildProductCardImageUrl(publicId: string) {
   return buildCloudinaryUrl(publicId, {
     transformation: { c: "limit", w: 1000, f: "auto", q: "auto" },
@@ -532,7 +598,7 @@ function createProductCardDisplayName(product: Product) {
     name: product.name,
     type: product.type,
     category: product.category,
-    rugStyle: product.type === "rug" ? product.rugStyle : undefined,
+    regionName: product.type === "rug" ? product.region?.name : undefined,
     cardName: product.cardName,
   });
 }
@@ -594,8 +660,8 @@ function createProductDetailPageViewModel(
     return {
       ...baseViewModel,
       type: "rug",
-      rugStyle: product.rugStyle,
       ...pickRugTaxonomyLabels(product),
+      ...getRugFacetSlugs(product),
       quantityLabel: "1",
       dimensionsLabel: formatRugDimensions(product),
       placementNote: createRugPlacementNote(product),
@@ -627,9 +693,6 @@ function pickRugTaxonomyLabels(product: RugProduct) {
   return {
     typeLabel: display.typeLabel,
     regionLabel: display.regionLabel,
-    // Only the new fields feed structured data; the legacy fallback is display-only.
-    schemaTypeLabel: display.hasType ? display.typeLabel : undefined,
-    schemaRegionLabel: display.hasRegion ? display.regionLabel : undefined,
   };
 }
 
@@ -712,8 +775,17 @@ function getProductSimilarityScore(product: Product, candidate: Product) {
     score += 6;
   }
 
-  if (product.type === "rug" && candidate.type === "rug" && product.rugStyle === candidate.rugStyle) {
-    score += 7;
+  if (product.type === "rug" && candidate.type === "rug") {
+    const productFacets = getRugFacetSlugs(product);
+    const candidateFacets = getRugFacetSlugs(candidate);
+
+    if (productFacets.regionSlugs.some((slug) => candidateFacets.regionSlugs.includes(slug))) {
+      score += 5;
+    }
+
+    if (productFacets.typeSlug && productFacets.typeSlug === candidateFacets.typeSlug) {
+      score += 3;
+    }
   }
 
   if (product.type === candidate.type) {
@@ -823,7 +895,7 @@ function createProductDescriptionLead(product: Product) {
 
 function createRugHeroDescription(product: Extract<Product, { type: "rug" }>) {
   const titleAndDescription = `${product.name} ${product.description}`;
-  const construction = getRugConstructionLabel(product, product.name)
+  const construction = getRugConstructionLabel({ ...product, regionName: product.region?.name }, product.name)
     .replace(/\s+Rug$/u, "")
     .toLowerCase();
   const color = removeConstructionFromColor(getPrimaryColorFromTitle(product.name)).toLowerCase();
@@ -864,9 +936,9 @@ function createProductDescriptionSections(product: Product): ProductDetailSectio
 
 function createProvenanceDescription(product: Product) {
   const provenance = normalizeDimensionSeparators(product.provenanceNote?.trim() || "");
-  // Rugs use the sorted Region ("Glaoui, Taznakht"), falling back to the legacy
-  // attribution with "-type"/"-style" stripped. The Tradition line is gone: it
-  // guessed construction from the title, and the Type row now states it.
+  // Rugs use the Region field only ("Glaoui, Taznakht"); no Region, no line.
+  // The Tradition line is gone: it guessed construction from the title, and
+  // the Type row now states it.
   const region =
     product.type === "rug"
       ? getRugTaxonomyDisplay(product).regionLabel
@@ -1039,8 +1111,7 @@ function createGalleryAltText(
 ) {
   const storedAltText = image.altText.trim();
   const isWrittenForThisPhoto =
-    storedAltText &&
-    !adminDefaultAltTextPattern.test(storedAltText) &&
+    !isPlaceholderAltText(storedAltText) &&
     storedAltText.toLowerCase() !== product.name.trim().toLowerCase() &&
     storedAltTexts.filter((altText) => altText === storedAltText).length === 1;
 
@@ -1057,7 +1128,7 @@ function createGalleryAltText(
 function createImageAltText(product: Product, image: MediaAsset) {
   const storedAltText = image.altText.trim();
 
-  if (storedAltText && !adminDefaultAltTextPattern.test(storedAltText)) {
+  if (!isPlaceholderAltText(storedAltText)) {
     return storedAltText;
   }
 
@@ -1066,9 +1137,6 @@ function createImageAltText(product: Product, image: MediaAsset) {
   return `${productName}, ${galleryRoleCopy[image.role]?.view ?? "photo"}`;
 }
 
-// The admin form fills an empty alt with "{product name} image {n}" (see
-// createDefaultImageAltText), which tells a screen reader nothing.
-const adminDefaultAltTextPattern = /\bimage \d+$/iu;
 
 const galleryRoleCopy: Record<CloudinaryAssetRole, { label: string; view: string } | null> = {
   hero: { label: "Full product view", view: "full view" },
@@ -1116,8 +1184,8 @@ function createPrimaryMaterialsLabel(product: Product) {
 
 function formatRugDimensionsShort(product: Extract<Product, { type: "rug" }>) {
   const imperialLabel = [
-    formatFeetAndInchesShort(product.dimensionsCm.length),
-    formatFeetAndInchesShort(product.dimensionsCm.width),
+    formatCmAsFeetInches(product.dimensionsCm.length),
+    formatCmAsFeetInches(product.dimensionsCm.width),
   ].join(dimensionSeparator);
   const metricLabel = formatCentimetersShort(product.dimensionsCm);
 
@@ -1133,14 +1201,6 @@ function formatCentimetersShort(dimensionsCm: { length: number; width: number } 
   }
 
   return `${Math.round(length)}${dimensionSeparator}${Math.round(width)} cm`;
-}
-
-function formatFeetAndInchesShort(valueCm: number) {
-  const totalInches = Math.round(valueCm / 2.54);
-  const feet = Math.floor(totalInches / 12);
-  const inches = totalInches % 12;
-
-  return `${feet}'${inches}"`;
 }
 
 function createInventoryMessage(product: Extract<Product, { type: "multiUnit" }>) {

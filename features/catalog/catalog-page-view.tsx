@@ -26,20 +26,27 @@ import {
 } from "@/features/catalog/catalog-data";
 import {
   countsTowardCategoryAvailability,
+  listOfferedRugFilterOptions,
   matchesAvailability,
   matchesCategoryFilter,
   matchesPriceFilter,
+  matchesRugRegionFilter,
+  matchesRugTypeFilter,
   matchesSizeFilter,
   parseCategoryFilter,
   parsePriceFilter,
+  parseRugFacetFilter,
   parseSizeFilter,
   parseSortOption,
+  type RugFilterOption,
   serializeCategoryFilter,
   serializePriceFilter,
+  serializeRugFacetFilter,
   serializeSizeFilter,
   sortCatalogProducts,
   toggleCategoryFilter,
   togglePriceFilter,
+  toggleRugFacetFilter,
   toggleSizeFilter,
 } from "@/features/catalog/catalog-filters";
 import { CatalogHistoryRecorder } from "@/features/catalog/catalog-history-recorder";
@@ -58,6 +65,7 @@ const SHOP_QUERY_SYNC_EVENT = "lh:shop-query-sync";
 
 // Stable identity so the category-disabled branch never invalidates memos.
 const noCategoriesSelected: readonly ProductCategory[] = [];
+const noRugFilterOptions: readonly RugFilterOption[] = [];
 
 type CatalogPageViewProps = {
   category?: ProductCategory;
@@ -83,6 +91,15 @@ type CatalogPageViewProps = {
    * its siblings ("Other rug types"), and the two read wrong under one label.
    */
   styleNavLabel?: string;
+  /** A second link row under the first (/shop/rugs: "Shop by region" under "Shop by type"). */
+  secondaryStyleLinks?: readonly { label: string; href: string }[];
+  secondaryStyleNavLabel?: string;
+  /**
+   * Rug Type and Region filter options (every facet, in menu order). Only the
+   * ones with a buyable rug in this view are shown; a group with one option
+   * is left out.
+   */
+  rugFilterOptions?: readonly RugFilterOption[];
   /**
    * Where to send a shopper whose search found nothing: the categories and rug
    * styles that currently have stock, decided by the server like `styleLinks`.
@@ -100,6 +117,9 @@ export function CatalogPageView({
   collection,
   styleLinks,
   styleNavLabel = "Shop by style",
+  secondaryStyleLinks,
+  secondaryStyleNavLabel,
+  rugFilterOptions = noRugFilterOptions,
   searchFallbackLinks,
 }: CatalogPageViewProps) {
   const pathname = usePathname();
@@ -118,6 +138,18 @@ export function CatalogPageView({
     parseSortOption(searchParams.get("sort")),
   );
   const [availableOnly, setAvailableOnly] = useState(() => searchParams.get("availability") === "available");
+  const [selectedRugTypes, setSelectedRugTypes] = useState<string[]>(() =>
+    parseRugFacetFilter(searchParams.get("type"), rugFilterOptions),
+  );
+  const [selectedRugRegions, setSelectedRugRegions] = useState<string[]>(() =>
+    parseRugFacetFilter(searchParams.get("region"), rugFilterOptions),
+  );
+  const offeredRugFilterOptions = useMemo(
+    () => listOfferedRugFilterOptions(rugFilterOptions, products),
+    [products, rugFilterOptions],
+  );
+  const rugTypeOptions = offeredRugFilterOptions.filter((option) => option.kind === "type");
+  const rugRegionOptions = offeredRugFilterOptions.filter((option) => option.kind === "region");
   const [isEssayExpanded, setIsEssayExpanded] = useState(false);
   const categoryMeta =
     category ? catalogCategories.find((item) => item.key === category) ?? null : null;
@@ -186,9 +218,13 @@ export function CatalogPageView({
         return false;
       }
 
+      if (!matchesRugTypeFilter(product, selectedRugTypes) || !matchesRugRegionFilter(product, selectedRugRegions)) {
+        return false;
+      }
+
       return true;
     });
-  }, [activeCategories, availableOnly, selectedPrices, selectedSizes, sortedProducts]);
+  }, [activeCategories, availableOnly, selectedPrices, selectedRugRegions, selectedRugTypes, selectedSizes, sortedProducts]);
   // How many products each category would contribute under the OTHER active
   // filters (price/size/search/availability), ignoring category selection
   // itself — so an option a shopper hasn't picked yet can be greyed out when
@@ -242,6 +278,8 @@ export function CatalogPageView({
   const activeCategoryKey = serializeCategoryFilter(activeCategories);
   const activePriceKey = serializePriceFilter(selectedPrices);
   const activeSizeKey = serializeSizeFilter(selectedSizes);
+  const activeRugTypeKey = serializeRugFacetFilter(selectedRugTypes, rugFilterOptions);
+  const activeRugRegionKey = serializeRugFacetFilter(selectedRugRegions, rugFilterOptions);
   const activeFilterCount = [
     Boolean(trimmedQuery),
     activeCategories.length > 0,
@@ -249,8 +287,10 @@ export function CatalogPageView({
     selectedSizes.length > 0,
     sortOption !== defaultCatalogSortOption,
     availableOnly,
+    selectedRugTypes.length > 0,
+    selectedRugRegions.length > 0,
   ].filter(Boolean).length;
-  const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${activeSizeKey}|${sortOption}|${availableOnly}`;
+  const filterKey = `${searchQuery.trim()}|${activeCategoryKey}|${activePriceKey}|${activeSizeKey}|${sortOption}|${availableOnly}|${activeRugTypeKey}|${activeRugRegionKey}`;
 
   // Reflect the filters into the address bar without a Next.js navigation: a real
   // navigation here (router.replace/push) re-runs the server component and refetches the
@@ -264,6 +304,8 @@ export function CatalogPageView({
       updateQueryParam(nextParams, "size", activeSizeKey);
       updateQueryParam(nextParams, "sort", sortOption === defaultCatalogSortOption ? "" : sortOption);
       updateQueryParam(nextParams, "availability", availableOnly ? "available" : "");
+      updateQueryParam(nextParams, "type", activeRugTypeKey);
+      updateQueryParam(nextParams, "region", activeRugRegionKey);
 
       const nextQuery = nextParams.toString();
       const nextHref = nextQuery ? `${pathname}?${nextQuery}` : pathname;
@@ -275,7 +317,17 @@ export function CatalogPageView({
     }, 280);
 
     return () => window.clearTimeout(timer);
-  }, [activeCategoryKey, activePriceKey, activeSizeKey, availableOnly, pathname, searchQuery, sortOption]);
+  }, [
+    activeCategoryKey,
+    activePriceKey,
+    activeRugRegionKey,
+    activeRugTypeKey,
+    activeSizeKey,
+    availableOnly,
+    pathname,
+    searchQuery,
+    sortOption,
+  ]);
 
   // Adopt filters that changed outside this component: the header's persistent search
   // bar (same-tab; it dispatches SHOP_QUERY_SYNC_EVENT after patching the address bar)
@@ -294,6 +346,8 @@ export function CatalogPageView({
       const nextSizeKey = serializeSizeFilter(nextSizes);
       const nextSort = parseSortOption(params.get("sort"));
       const nextAvailableOnly = params.get("availability") === "available";
+      const nextRugTypes = parseRugFacetFilter(params.get("type"), rugFilterOptions);
+      const nextRugRegions = parseRugFacetFilter(params.get("region"), rugFilterOptions);
 
       setSearchQuery((current) => (current === nextQuery ? current : nextQuery));
       // Compared by serialized value: a fresh array with the same keys must not
@@ -309,6 +363,16 @@ export function CatalogPageView({
       );
       setSortOption((current) => (current === nextSort ? current : nextSort));
       setAvailableOnly((current) => (current === nextAvailableOnly ? current : nextAvailableOnly));
+      setSelectedRugTypes((current) =>
+        serializeRugFacetFilter(current, rugFilterOptions) === serializeRugFacetFilter(nextRugTypes, rugFilterOptions)
+          ? current
+          : nextRugTypes,
+      );
+      setSelectedRugRegions((current) =>
+        serializeRugFacetFilter(current, rugFilterOptions) === serializeRugFacetFilter(nextRugRegions, rugFilterOptions)
+          ? current
+          : nextRugRegions,
+      );
     }
 
     window.addEventListener("popstate", syncFromLocation);
@@ -318,7 +382,7 @@ export function CatalogPageView({
       window.removeEventListener("popstate", syncFromLocation);
       window.removeEventListener(SHOP_QUERY_SYNC_EVENT, syncFromLocation);
     };
-  }, [isCategoryFilterEnabled]);
+  }, [isCategoryFilterEnabled, rugFilterOptions]);
 
   const handleCategoryToggle = (value: ProductCategory) => {
     setSelectedCategories((current) => toggleCategoryFilter(current, value));
@@ -339,6 +403,8 @@ export function CatalogPageView({
     setSelectedSizes([]);
     setSortOption(defaultCatalogSortOption);
     setAvailableOnly(false);
+    setSelectedRugTypes([]);
+    setSelectedRugRegions([]);
   };
 
   return (
@@ -356,6 +422,24 @@ export function CatalogPageView({
               onCategoryToggle={handleCategoryToggle}
               onClearAll={clearAllFilters}
               onAvailableOnlyChange={setAvailableOnly}
+              rugFacetGroups={[
+                {
+                  key: "type",
+                  label: "Type",
+                  options: rugTypeOptions.length > 1 ? rugTypeOptions : [],
+                  selected: selectedRugTypes,
+                  onToggle: (slug: string) =>
+                    setSelectedRugTypes((current) => toggleRugFacetFilter(current, slug, rugFilterOptions)),
+                },
+                {
+                  key: "region",
+                  label: "Region",
+                  options: rugRegionOptions.length > 1 ? rugRegionOptions : [],
+                  selected: selectedRugRegions,
+                  onToggle: (slug: string) =>
+                    setSelectedRugRegions((current) => toggleRugFacetFilter(current, slug, rugFilterOptions)),
+                },
+              ]}
               onPriceToggle={handlePriceToggle}
               onSizeToggle={handleSizeToggle}
               onSortOptionChange={setSortOption}
@@ -404,6 +488,22 @@ export function CatalogPageView({
                   <span className={styles.filterGroupLabel}>{styleNavLabel}</span>
                   <div className={styles.styleNavLinks}>
                     {styleLinks.map((styleLink) => (
+                      <Link
+                        key={styleLink.href}
+                        className={styles.filterChip}
+                        href={styleLink.href as Route}
+                      >
+                        {styleLink.label}
+                      </Link>
+                    ))}
+                  </div>
+                </nav>
+              ) : null}
+              {secondaryStyleLinks?.length && secondaryStyleNavLabel ? (
+                <nav aria-label={secondaryStyleNavLabel} className={styles.styleNav}>
+                  <span className={styles.filterGroupLabel}>{secondaryStyleNavLabel}</span>
+                  <div className={styles.styleNavLinks}>
+                    {secondaryStyleLinks.map((styleLink) => (
                       <Link
                         key={styleLink.href}
                         className={styles.filterChip}

@@ -2,14 +2,19 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { ProductCard } from "@/features/catalog/product-card";
-import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
 import {
   deriveBlogProductAssociation,
   type BlogProductAssociation,
 } from "@/features/blog/blog-product-association";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 import { getCategoryLabel } from "@/lib/catalog/helpers";
-import { listCatalogProductCards, listRugStyleProductCards } from "@/lib/catalog/service";
+import { retiredRugPageRedirects } from "@/lib/catalog/rug-facets";
+import {
+  getRugFacetPage,
+  getRugFacetTitle,
+  listCatalogProductCards,
+  listRugFacetProductCards,
+} from "@/lib/catalog/service";
 
 import styles from "./blog.module.css";
 
@@ -20,27 +25,40 @@ type BlogProductRailProps = {
   post: { body: string; slug: string; title: string; categorySlug: string };
 };
 
-async function listInStock(association: BlogProductAssociation) {
-  const products: CatalogProductCardViewModel[] =
-    association.kind === "rugStyle"
-      ? await listRugStyleProductCards({ style: association.style })
-      : await listCatalogProductCards({ category: association.category });
+/** The post's rug collection as a Type or Region page (a retired one resolves to where it redirects). */
+async function resolveRugFacet(style: string) {
+  const redirect = retiredRugPageRedirects[style];
 
-  return products
-    .filter((product) => product.availability === "available")
-    .slice(0, railSize);
+  return getRugFacetPage(redirect?.startsWith("/shop/rugs/") ? redirect.slice("/shop/rugs/".length) : style);
 }
 
-function describe(association: BlogProductAssociation) {
-  if (association.kind === "rugStyle") {
-    const title = getRugStyleCollection(association.style)?.title ?? "Moroccan rugs";
+async function listInStock(association: BlogProductAssociation) {
+  const facet = association.kind === "rugStyle" ? await resolveRugFacet(association.style) : null;
+  const products: CatalogProductCardViewModel[] = facet
+    ? await listRugFacetProductCards({ facet })
+    : await listCatalogProductCards({ category: association.kind === "rugStyle" ? "rugs" : association.category });
 
-    return { heading: "In stock from this tradition", linkLabel: `See all ${title}`, href: `/shop/rugs/${association.style}` };
+  return {
+    facet,
+    products: products.filter((product) => product.availability === "available").slice(0, railSize),
+  };
+}
+
+function describe(
+  association: BlogProductAssociation,
+  facet: Awaited<ReturnType<typeof resolveRugFacet>>,
+) {
+  if (facet) {
+    return {
+      heading: "In stock from this tradition",
+      linkLabel: `See all ${getRugFacetTitle(facet)}`,
+      href: `/shop/rugs/${facet.slug}`,
+    };
   }
 
-  const label = getCategoryLabel(association.category);
+  const category = association.kind === "rugStyle" ? "rugs" : association.category;
 
-  return { heading: "In stock now", linkLabel: `See all ${label}`, href: `/shop/${association.category}` };
+  return { heading: "In stock now", linkLabel: `See all ${getCategoryLabel(category)}`, href: `/shop/${category}` };
 }
 
 /** Renders nothing when the post has no catalog association or nothing in it can be bought now. */
@@ -51,13 +69,13 @@ export async function BlogProductRail({ post }: BlogProductRailProps) {
     return null;
   }
 
-  const products = await listInStock(association);
+  const { facet, products } = await listInStock(association);
 
   if (products.length === 0) {
     return null;
   }
 
-  const { heading, linkLabel, href } = describe(association);
+  const { heading, linkLabel, href } = describe(association, facet);
 
   return (
     <section className={styles.productRail} aria-labelledby="blog-product-rail-heading">

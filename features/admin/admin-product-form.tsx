@@ -33,7 +33,7 @@ import {
   normalizeSlug,
 } from "@/lib/catalog/product-validation";
 import {
-  deriveLegacyRugStyle,
+  deriveRugUrlSegment,
   formatRegionLabel,
   isRugType,
   pileHeightOptions,
@@ -41,6 +41,8 @@ import {
   rugTypeOptions,
   type RugRegionSummary,
 } from "@/lib/catalog/rug-taxonomy";
+import { describeImageRole, isPlaceholderAltText } from "@/lib/catalog/image-alt";
+import { findMismatchedNameSize } from "@/lib/catalog/size-format";
 
 import styles from "./admin.module.css";
 
@@ -141,17 +143,18 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [regionId, setRegionId] = useState(props.product.regionId);
   const [newRegionName, setNewRegionName] = useState("");
   const [newRegionParentId, setNewRegionParentId] = useState("");
-  // rugStyle is no longer edited: an existing rug keeps its stored style (it
-  // decides the live URL); a new rug, or one still filed as Unclassified, gets
-  // one derived from Type/Region (the old URL then redirects).
+  // rugStyle now only holds the URL segment. A rug that has been live keeps its
+  // stored one (every existing URL stays); a new or draft rug, or one still
+  // filed as Unclassified, gets /shop/rugs/<region>/ (mirrors the save action).
+  const isNeverLive = props.mode === "create" || props.product.status === "draft";
   const rugStyle = useMemo(
     () =>
-      (!isUnclassifiedRugStyle(props.product.rugStyle) && props.product.rugStyle) ||
-      deriveLegacyRugStyle(
+      (!isNeverLive && !isUnclassifiedRugStyle(props.product.rugStyle) && props.product.rugStyle) ||
+      deriveRugUrlSegment(
         isRugType(rugType) ? rugType : undefined,
         props.regions.find((region) => region.id === regionId),
       ),
-    [props.product.rugStyle, props.regions, regionId, rugType],
+    [isNeverLive, props.product.rugStyle, props.regions, regionId, rugType],
   );
   const isAlreadyLive = props.product.status === "active" || props.product.status === "sold";
   const isMissingTaxonomy =
@@ -183,14 +186,18 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [homepageFeatured, setHomepageFeatured] = useState(props.product.homepageFeatured);
   const [homepageRank, setHomepageRank] = useState(props.product.homepageRank);
   const [confirmUrlChange, setConfirmUrlChange] = useState(false);
+  const nameSizeMismatch = useMemo(
+    () => findMismatchedNameSize(name, Number(dimensionsCmLength), Number(dimensionsCmWidth)),
+    [dimensionsCmLength, dimensionsCmWidth, name],
+  );
   const cardNameInput = useMemo(
     () => ({
       name,
       type,
       category,
-      rugStyle: type === "rug" ? rugStyle : undefined,
+      regionName: type === "rug" ? props.regions.find((region) => region.id === regionId)?.name : undefined,
     }),
-    [category, name, rugStyle, type],
+    [category, name, props.regions, regionId, type],
   );
   const autoCardName = useMemo(() => getAutoProductCardName(cardNameInput), [cardNameInput]);
   const needsCardName = Boolean(name.trim()) && isProductCardNameAutoShortened(cardNameInput);
@@ -343,9 +350,9 @@ export function AdminProductForm(props: AdminProductFormProps) {
         return {
           ...image,
           publicId: result.publicId,
-          altText:
-            image.altText.trim() ||
-            createDefaultImageAltText(result.fileName, name, image.sortOrder),
+          // A descriptive default so the photo is never saved without alt
+          // text (rows without it are dropped); flagged below until rewritten.
+          altText: isPlaceholderAltText(image.altText) ? describeImageRole(name, image.role) : image.altText,
           mediaType: "image" as const,
           width: result.width,
           height: result.height,
@@ -445,6 +452,15 @@ export function AdminProductForm(props: AdminProductFormProps) {
               value={name}
               onChange={(event) => setName(event.target.value)}
             />
+            {nameSizeMismatch ? (
+              <em>
+                The name says {nameSizeMismatch.found}, but {dimensionsCmLength} × {dimensionsCmWidth} cm is{" "}
+                {nameSizeMismatch.expected} (rounded to the nearest inch, as on the product page).{" "}
+                <button type="button" onClick={() => setName(nameSizeMismatch.fixedName)}>
+                  Use {nameSizeMismatch.expected}
+                </button>
+              </em>
+            ) : null}
             <em>{state.fieldErrors.name}</em>
           </label>
           {needsCardName ? (
@@ -977,6 +993,12 @@ export function AdminProductForm(props: AdminProductFormProps) {
                     value={image.altText}
                     onChange={(event) => updateImage(index, { altText: event.target.value })}
                   />
+                  {image.publicId && needsAltTextRewrite(image, name) ? (
+                    <em>
+                      Placeholder text. Describe what this photo shows (colours, motif, setting) so it
+                      reads well to search engines and screen readers.
+                    </em>
+                  ) : null}
                 </label>
                 <label className={styles.formField}>
                   <span>Sort order</span>
@@ -1264,14 +1286,9 @@ export function AdminProductForm(props: AdminProductFormProps) {
   );
 }
 
-function createDefaultImageAltText(fileName: string, productName: string, imageNumber: number) {
-  const cleanedFileName = fileName.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
-
-  if (productName.trim()) {
-    return `${productName.trim()} image ${imageNumber}`;
-  }
-
-  return cleanedFileName || `Product image ${imageNumber}`;
+/** Placeholder alt, or the untouched upload default: either way nobody described the photo yet. */
+function needsAltTextRewrite(image: { altText: string; role: ProductImageRow["role"] }, productName: string) {
+  return isPlaceholderAltText(image.altText) || image.altText.trim() === describeImageRole(productName, image.role);
 }
 
 function formatProductCategory(category: AdminProductFormValues["category"]) {

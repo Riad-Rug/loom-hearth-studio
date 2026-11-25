@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { CatalogPageView } from "@/features/catalog/catalog-page-view";
-import { listCatalogProductCards, listRugStyleNavLinks } from "@/lib/catalog/service";
+import { listCatalogProductCards, listRugFacetLinks, listRugFilterOptions } from "@/lib/catalog/service";
 import { categoryOgImage } from "@/lib/seo/category-og-image";
 import { buildManagedMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema, itemListSchema } from "@/lib/seo/schema";
@@ -22,18 +22,17 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RugsPage() {
-  const [products, styleNavLinks] = await Promise.all([
+  const [products, facetLinks, filterOptions] = await Promise.all([
     listCatalogProductCards({ category: "rugs" }),
-    listRugStyleNavLinks(),
+    listRugFacetLinks(),
+    listRugFilterOptions(),
   ]);
 
-  // Only styles with something to buy get a chip, since a chip leading to a
-  // style with nothing to buy is a dead end. Labels come
-  // from rugStyleNavLinks rather than the admin's rugStyle options, so the chip
-  // here reads "Beni Ourain Rugs" — the same anchor the header, the homepage
-  // strip and the sibling strips give that page, which is the whole point of
-  // pushing link weight down to these six routes.
-  const styleLinks = styleNavLinks.filter((link) => link.available);
+  // Crawlable links to every Type and Region page with something to buy, under
+  // the same anchor the menu and the sibling strips use. The filters in the
+  // sidebar narrow this page in place; these links go to the indexable pages.
+  const typeLinks = facetLinks.filter((link) => link.kind === "type");
+  const regionLinks = facetLinks.filter((link) => link.kind === "region");
 
   return (
     <>
@@ -55,7 +54,15 @@ export default async function RugsPage() {
           }),
         ]}
       />
-      <CatalogPageView category="rugs" products={products} styleLinks={styleLinks} />
+      <CatalogPageView
+        category="rugs"
+        products={products}
+        rugFilterOptions={filterOptions}
+        styleLinks={typeLinks.length ? typeLinks : undefined}
+        styleNavLabel="Shop by type"
+        secondaryStyleLinks={regionLinks.length ? regionLinks : undefined}
+        secondaryStyleNavLabel="Shop by region"
+      />
     </>
   );
 }

@@ -7,7 +7,7 @@ import type { Route } from "next";
 
 import type { AdminProductActionState } from "@/lib/admin/product-actions-shared";
 import { getProductRoutePath } from "@/lib/catalog/helpers";
-import { deriveLegacyRugStyle, isUnclassifiedRugStyle } from "@/lib/catalog/rug-taxonomy";
+import { deriveRugUrlSegment, isUnclassifiedRugStyle } from "@/lib/catalog/rug-taxonomy";
 import {
   newRegionOptionValue,
   normalizeSlug,
@@ -72,6 +72,12 @@ export async function createAdminProductAction(
         message: "A persisted product already uses that slug.",
         fieldErrors: { slug: "Choose a different slug." },
       };
+    }
+
+    const rankConflict = await findHomepageRankConflict(repository, validation.value);
+
+    if (rankConflict) {
+      return rankConflict;
     }
 
     const createdProduct = await repository.create(validation.value);
@@ -183,6 +189,12 @@ export async function updateAdminProductAction(
         message: "A persisted product already uses that slug.",
         fieldErrors: { slug: "Choose a different slug." },
       };
+    }
+
+    const rankConflict = await findHomepageRankConflict(repository, validation.value, productId);
+
+    if (rankConflict) {
+      return rankConflict;
     }
 
     const updatedProduct = await repository.update({ ...parsed.value, id: productId }, { loaded });
@@ -467,11 +479,39 @@ function toEditBase(product: Product): ProductEditBase {
     : { status: product.status, inventory: null, variants: [] };
 }
 
+/** Two featured products may not share a homepage rank. */
+async function findHomepageRankConflict(
+  repository: ProductRepository,
+  value: ProductMutationInput,
+  excludeId?: string,
+): Promise<AdminProductActionState | null> {
+  if (!value.homepageFeatured || value.homepageRank === null) {
+    return null;
+  }
+
+  const holder = await repository.findHomepageRankHolder({ rank: value.homepageRank, excludeId });
+
+  if (!holder) {
+    return null;
+  }
+
+  const label = holder.catalogNumber ? `${holder.catalogNumber} (${holder.name})` : holder.name;
+
+  return {
+    status: "error",
+    message: `Homepage rank ${value.homepageRank} is already used.`,
+    fieldErrors: {
+      homepageRank: `${label} already has rank ${value.homepageRank}. Pick another rank or change that product first.`,
+    },
+  };
+}
+
 /**
  * "Add region" in the form: create (or reuse) the typed region and point the
- * product at it. Then, for a rug still filed as Unclassified, derive its legacy
- * style (the URL segment) from Type/Region, so it stops living under
- * /shop/rugs/unclassified/. The old URL redirects to the new one.
+ * product at it. Then set the rug's URL segment (stored in rugStyle):
+ * - a rug that has been live keeps its segment, so every existing URL stays;
+ * - a new or draft rug, or one still filed as Unclassified, gets the new path
+ *   /shop/rugs/<region>/<slug> (the Type when no Region is set yet).
  */
 async function resolveRugRegionAndStyle(value: ProductMutationInput) {
   if (value.type !== "rug") {
@@ -486,12 +526,14 @@ async function resolveRugRegionAndStyle(value: ProductMutationInput) {
     revalidatePath("/admin/products");
   }
 
-  if (!isUnclassifiedRugStyle(value.rugStyle)) {
+  const neverLive = value.originalStatus === undefined || value.originalStatus === "draft";
+
+  if (!neverLive && !isUnclassifiedRugStyle(value.rugStyle)) {
     return;
   }
 
   const region = value.regionId ? await regionRepository.findById(value.regionId) : undefined;
-  value.rugStyle = deriveLegacyRugStyle(value.rugType, region ?? undefined);
+  value.rugStyle = deriveRugUrlSegment(value.rugType, region ?? undefined);
 }
 
 function revalidateCatalogPaths(input: {

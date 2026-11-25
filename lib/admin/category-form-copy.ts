@@ -25,6 +25,7 @@ export const productUniquenessTierOptions = [
   "True one-off",
   "Mom can repeat this design",
   "Cut from one rug",
+  "Sewn from several rugs",
 ] as const;
 
 export const productDecorSubtypeOptions = [
@@ -34,6 +35,13 @@ export const productDecorSubtypeOptions = [
 
 export const cutFromOneRugUniquenessTier = "Cut from one rug";
 export const trueOneOffUniquenessTier = "True one-off";
+/** Pieced together from several different rugs (e.g. LH-P-0003). */
+export const sewnFromSeveralRugsUniquenessTier = "Sewn from several rugs";
+
+/** Tiers that make a piece one of one: it cannot be made again, so stock is 1. */
+export function isOneOfOneUniquenessTier(tier: string | null | undefined) {
+  return tier === trueOneOffUniquenessTier || tier === sewnFromSeveralRugsUniquenessTier;
+}
 export const antiqueDecorSubtype = "antique";
 
 export type CategoryCopyFieldKey =

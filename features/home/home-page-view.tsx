@@ -249,8 +249,8 @@ export function HomePageView({
             A single surviving style would read as an odd one-item list rather
             than a way to browse, so the row waits for two. */}
         {rugStyleLinks.length > 1 ? (
-          <nav aria-label="Shop Moroccan rugs by style" className={styles.rugStyleNav}>
-            <p className={styles.rugStyleNavLabel}>Shop Moroccan rugs by style</p>
+          <nav aria-label="Shop Moroccan rugs by type and region" className={styles.rugStyleNav}>
+            <p className={styles.rugStyleNavLabel}>Shop Moroccan rugs by type and region</p>
             <div className={styles.filterChips}>
               {rugStyleLinks.map((link) => (
                 <Link

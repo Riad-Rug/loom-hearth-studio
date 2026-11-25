@@ -212,6 +212,10 @@ const nextConfig: NextConfig = {
         destination: "/shop/rugs",
         permanent: true,
       },
+      // Retired category pages (lib/catalog/rug-facets.ts retiredRugPageRedirects).
+      // Exact paths: rug pages under these segments keep their URLs.
+      { source: "/shop/rugs/beni-m-guild", destination: "/shop/rugs/middle-atlas", permanent: true },
+      { source: "/shop/rugs/vintage", destination: "/shop/vintage", permanent: true },
     ];
   },
 };

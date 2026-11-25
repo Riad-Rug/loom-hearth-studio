@@ -11,6 +11,7 @@ import {
   type CatalogSizeFilterOption,
   type CatalogSortOption,
 } from "@/features/catalog/catalog-data";
+import type { RugFilterOption } from "@/features/catalog/catalog-filters";
 import type { ProductCategory } from "@/types/domain";
 
 // null when the category group isn't a filter at all (category-scoped routes);
@@ -53,6 +54,14 @@ type CatalogFilterControlsProps = {
   onAvailableOnlyChange: (value: boolean) => void;
   activeFilterCount: number;
   onClearAll: () => void;
+  /** Rug Type and Region multi-selects; a group with no options is not shown. */
+  rugFacetGroups?: readonly {
+    key: string;
+    label: string;
+    options: readonly RugFilterOption[];
+    selected: readonly string[];
+    onToggle: (slug: string) => void;
+  }[];
 };
 
 export function CatalogFilterControls({
@@ -72,6 +81,7 @@ export function CatalogFilterControls({
   onAvailableOnlyChange,
   activeFilterCount,
   onClearAll,
+  rugFacetGroups = [],
 }: CatalogFilterControlsProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobileLayout, setIsMobileLayout] = useState(false);
@@ -158,6 +168,47 @@ export function CatalogFilterControls({
             </div>
           </div>
         ) : null}
+
+        {rugFacetGroups
+          .filter((group) => group.options.length > 0)
+          .map((group) => (
+            <div
+              key={group.key}
+              aria-labelledby={`${groupsId}-${group.key}`}
+              className={styles.filterGroup}
+              role="group"
+            >
+              <span className={styles.filterGroupLabel} id={`${groupsId}-${group.key}`}>
+                {group.label}
+              </span>
+              <div className={styles.filterCheckList}>
+                {group.options.map((option) => {
+                  const isChecked = group.selected.includes(option.slug);
+                  // A child region sits under its parent when the parent is offered too.
+                  const isNested = Boolean(
+                    option.parentSlug && group.options.some((candidate) => candidate.slug === option.parentSlug),
+                  );
+
+                  return (
+                    <label
+                      key={option.slug}
+                      className={styles.filterCheck}
+                      data-active={isChecked ? "true" : undefined}
+                      style={isNested ? { paddingInlineStart: "1.25rem" } : undefined}
+                    >
+                      <input
+                        checked={isChecked}
+                        className={styles.filterCheckInput}
+                        type="checkbox"
+                        onChange={() => group.onToggle(option.slug)}
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
 
         <div aria-labelledby={priceLabelId} className={styles.filterGroup} role="group">
           <span className={styles.filterGroupLabel} id={priceLabelId}>

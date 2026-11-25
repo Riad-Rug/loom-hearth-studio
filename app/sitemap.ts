@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { policyPages } from "@/features/content-pages/content-pages-data";
 import {
   categoryHasPurchasableProducts,
-  listIndexableRugStyleSlugs,
+  listIndexableRugFacetSlugs,
   listProductSitemapEntries,
 } from "@/lib/catalog/service";
 import { getBlogPostsState } from "@/lib/blog/posts";
@@ -34,11 +34,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: absoluteUrl(path),
   }));
 
-  // Rug-style and product pages follow lib/seo/index-policy.ts, the same rule
+  // Rug Type/Region and product pages follow lib/seo/index-policy.ts, the same rule
   // their robots tags read, so the policy never lists a page it noindexes. An
   // admin SEO setting with robotsIndex off is not read here and can still
   // noindex a listed page.
-  const rugStyleEntries = [...(await listIndexableRugStyleSlugs(now))].sort().map((style) => ({
+  const rugStyleEntries = [...(await listIndexableRugFacetSlugs(now))].sort().map((style) => ({
     url: absoluteUrl(`/shop/rugs/${style}`),
   }));
 

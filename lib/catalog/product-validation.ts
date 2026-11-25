@@ -5,13 +5,13 @@ import {
   getConditionalPublishRequirements,
   getPublishErrorMessage,
   getPublishRequirements,
+  isOneOfOneUniquenessTier,
   productDecorSubtypeOptions,
   productFaceFabricSourceOptions,
   productUniquenessTierOptions,
-  trueOneOffUniquenessTier,
 } from "@/lib/admin/category-form-copy";
 import { isDuplicateProductCopy } from "@/lib/seo/content-audit";
-import { deriveLegacyRugStyle, isPileHeight, isRugType } from "@/lib/catalog/rug-taxonomy";
+import { deriveRugUrlSegment, isPileHeight, isRugType } from "@/lib/catalog/rug-taxonomy";
 import type { MediaAsset, Product, ProductStatus, ProductVariant } from "@/types/domain";
 
 export const productTypeOptions = ["rug", "multiUnit"] as const;
@@ -253,6 +253,21 @@ export function validateProductMutationInput(
 
   if (input.cardName && input.cardName.length > 60) {
     fieldErrors.cardName = "Card name must be 60 characters or fewer.";
+  }
+
+  const leftoverFields = [
+    ["name", input.name],
+    ["cardName", input.cardName],
+    ["origin", input.origin],
+    ["attributionRegion", input.attributionRegion],
+  ] as const;
+
+  for (const [field, value] of leftoverFields) {
+    const problem = findLeftoverTextProblem(value, input.slug);
+
+    if (problem && !fieldErrors[field]) {
+      fieldErrors[field] = problem;
+    }
   }
 
   if (!input.slug) {
@@ -563,7 +578,7 @@ export function validateProductMutationInput(
     // A true one-off is tracked by status, so its inventory stays 1 through an
     // order; cut covers are tracked by count, so held and sold covers count too.
     if (Number.isInteger(input.inventory) && input.inventory >= 0) {
-      const isTrueOneOff = input.uniquenessTier === trueOneOffUniquenessTier;
+      const isTrueOneOff = isOneOfOneUniquenessTier(input.uniquenessTier);
       const maximumInventory = isTrueOneOff
         ? 1
         : input.uniquenessTier === cutFromOneRugUniquenessTier
@@ -578,11 +593,11 @@ export function validateProductMutationInput(
       if (maximumInventory !== undefined && Number.isInteger(maximumInventory)) {
         if (accountedUnits > maximumInventory) {
           fieldErrors.inventory = isTrueOneOff
-            ? "A true one-off can only have an inventory of 1."
+            ? "A one-of-one piece can only have an inventory of 1."
             : `Inventory cannot exceed the ${maximumInventory} covers cut from that rug${committedNote}.`;
         } else if (input.status === "active" && accountedUnits !== maximumInventory) {
           fieldErrors.inventory = isTrueOneOff
-            ? "A true one-off must be published with an inventory of 1."
+            ? "A one-of-one piece must be published with an inventory of 1."
             : `Inventory must match the ${maximumInventory} covers cut from that rug${committedNote}.`;
         }
       }
@@ -678,9 +693,9 @@ function parseRugTaxonomy(formData: FormData) {
       : undefined;
 
   return {
-    // Existing rugs submit their stored style; new rugs submit one the form
-    // derived from Type/Region. Fall back to the type alone as a safety net.
-    rugStyle: readString(formData, "rugStyle") || deriveLegacyRugStyle(rugType, undefined),
+    // Live rugs submit their stored URL segment; new rugs one the form derived
+    // from Region/Type. Fall back to the type alone as a safety net.
+    rugStyle: readString(formData, "rugStyle") || deriveRugUrlSegment(rugType, undefined),
     rugType,
     pileHeight,
     regionId,
@@ -723,6 +738,37 @@ function readOptionalNonNegativeInteger(formData: FormData, key: string) {
   const value = readString(formData, key);
   if (!value) return undefined;
   return readStrictInteger(value, Number.NaN);
+}
+
+/**
+ * Pasted-in leftovers that should never reach the shop: a field label kept in
+ * front of the value ("ORIGIN — High Atlas, Morocco", "Region: Azilal"), a
+ * web address, or a URL slug where words belong ("azilal-rug-4x6").
+ */
+export function findLeftoverTextProblem(value: string | undefined, slug?: string) {
+  const text = value?.trim();
+
+  if (!text) {
+    return undefined;
+  }
+
+  const labelPrefix =
+    text.match(/^([A-Z][A-Z &/]{2,})\s*[—–:-]\s*\S/u) ??
+    text.match(/^(origin|region|attribution region|name|card name|title|type|style)\s*[—–:]\s*\S/iu);
+
+  if (labelPrefix) {
+    return `Remove the “${labelPrefix[1].trim()}” label from the start; keep only the value.`;
+  }
+
+  if (/https?:\/\/|www\./iu.test(text)) {
+    return "Remove the web address; this field is shown to shoppers as text.";
+  }
+
+  if ((slug && text === slug) || /^[a-z0-9]+(?:-[a-z0-9]+){2,}$/u.test(text)) {
+    return "This looks like a URL slug. Write it in words, as shoppers should see it.";
+  }
+
+  return undefined;
 }
 
 function readOptionalNonNegativeNumber(formData: FormData, key: string) {

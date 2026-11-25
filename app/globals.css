@@ -513,6 +513,22 @@ h6 {
   transform: none;
 }
 
+/* The Rugs submenu lists every stocked Type and Region, so it can grow tall. */
+.site-header__nav-submenu {
+  max-height: min(75vh, 36rem);
+  overflow-y: auto;
+}
+
+.site-header__nav-submenu-heading,
+.site-header__mobile-submenu-heading {
+  margin: 0.5rem 0.6rem 0.15rem;
+  color: var(--color-green);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .site-header__search-form {
   position: relative;
   display: inline-flex;

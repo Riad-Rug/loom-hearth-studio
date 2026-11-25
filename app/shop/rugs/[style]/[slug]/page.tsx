@@ -4,15 +4,13 @@ import { notFound, permanentRedirect } from "next/navigation";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { ProductOpenGraphMeta } from "@/components/seo/product-open-graph-meta";
-import { getRugStyleCollection } from "@/features/catalog/rug-style-collections";
-import { getCategoryLabel } from "@/lib/catalog/helpers";
+import { getCategoryLabel, getProductRoutePath } from "@/lib/catalog/helpers";
 import {
   getProductIndexFacts,
   getProductRedirectPathForSlug,
+  getRugPageLinks,
   getRugProductDetailByParams,
-  listIndexableRugStyleSlugs,
 } from "@/lib/catalog/service";
-import { normalizeSlug } from "@/lib/catalog/product-validation";
 import { ProductDetailPageView } from "@/features/pdp/product-detail-page-view";
 import { isProductIndexable } from "@/lib/seo/index-policy";
 import { buildManagedMetadata, buildMetadata } from "@/lib/seo/metadata";
@@ -47,21 +45,17 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
     notFound();
   }
 
-  const productPath = getRugProductPath(product);
-  const rugStyleSlug = normalizeSlug(product.rugStyle);
-  const collection = getRugStyleCollection(rugStyleSlug);
+  // The stored URL segment, unchanged for every existing rug.
+  const productPath = getProductRoutePath(product.cartProduct);
 
   if (`/shop/rugs/${resolvedParams.style}/${resolvedParams.slug}` !== productPath) {
     permanentRedirect(productPath as Route);
   }
 
-  // The breadcrumb names the style level only while that style page is indexed
-  // (lib/seo/index-policy.ts), so a crawlable trail never points at a page we are
-  // asking Google to drop. The schema below and the visible trail decide
-  // together; the view is told the answer so it cannot disagree with the schema.
-  const rugStylePageIndexable = collection
-    ? (await listIndexableRugStyleSlugs(new Date())).has(rugStyleSlug)
-    : false;
+  // The breadcrumb's middle level is the rug's Region page, named only while
+  // that page is indexed (lib/seo/index-policy.ts). The schema below and the
+  // visible trail read the same answer, so they cannot disagree.
+  const rugLinks = await getRugPageLinks(product);
 
   return (
     <>
@@ -85,8 +79,8 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           // its own palette — `createProductPalette` falls back to a hard-coded
           // default palette otherwise, which would be fabricated colour data.
           material: product.materialLabel,
-          rugTypeLabel: product.schemaTypeLabel,
-          regionLabel: product.schemaRegionLabel,
+          rugTypeLabel: product.typeLabel,
+          regionLabel: product.regionLabel,
           sizeLabel: product.dimensionsLabel,
           dimensionsCm: product.cartProduct.dimensionsCm,
           colorLabels:
@@ -104,13 +98,8 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
           { name: "Home", path: "/" },
           { name: "Shop", path: "/shop" },
           { name: getCategoryLabel(product.category), path: "/shop/rugs" },
-          ...(collection && rugStylePageIndexable
-            ? [
-                {
-                  name: collection.title,
-                  path: `/shop/rugs/${rugStyleSlug}`,
-                },
-              ]
+          ...(rugLinks.breadcrumb
+            ? [{ name: rugLinks.breadcrumb.label, path: rugLinks.breadcrumb.href }]
             : []),
           { name: product.name, path: productPath },
         ])}
@@ -119,7 +108,7 @@ export default async function RugProductPage({ params }: RugProductPageProps) {
         priceAmount={product.priceUsd}
         availability={product.availability}
       />
-      <ProductDetailPageView product={product} rugStylePageIndexable={rugStylePageIndexable} />
+      <ProductDetailPageView product={product} rugLinks={rugLinks} />
     </>
   );
 }
@@ -151,7 +140,7 @@ export async function generateMetadata({
       entityKey: product.id,
       title: title.text,
       description: buildProductMetaDescription(product),
-      path: getRugProductPath(product),
+      path: getProductRoutePath(product.cartProduct),
       noIndexFollow: !isProductIndexable(indexFacts, new Date()),
       type: "product",
       ogImageUrl: ogImage?.src,
@@ -161,8 +150,4 @@ export async function generateMetadata({
     }),
     title,
   );
-}
-
-function getRugProductPath(product: { rugStyle: string; slug: string }) {
-  return `/shop/rugs/${normalizeSlug(product.rugStyle)}/${product.slug}`;
 }
