@@ -303,6 +303,8 @@ export function productSchema(input: {
   description: string;
   path: string;
   priceUsdLabel: string;
+  /** The struck-through former price ("$549.00") while the piece is on sale. */
+  compareAtPriceUsdLabel?: string;
   category: string;
   /**
    * The piece's own recorded age class (Prisma CatalogProduct.ageClass), which
@@ -348,6 +350,7 @@ export function productSchema(input: {
   // Number() — reads it. Parsed once here and reused for the Offer price and
   // for the shipping-rate threshold below.
   const priceValue = input.priceUsdLabel.replace(/[$,]/g, "");
+  const compareAtPriceValue = input.compareAtPriceUsdLabel?.replace(/[$,]/g, "");
 
   /**
    * itemCondition follows the piece's own recorded age class, not its storefront
@@ -470,7 +473,22 @@ export function productSchema(input: {
     offers: {
       "@type": "Offer",
       priceCurrency: "USD",
+      // Always the price checkout charges. A sale adds the former price as a
+      // strikethrough price specification (Google merchant listings).
       price: priceValue,
+      ...(compareAtPriceValue
+        ? {
+            priceSpecification: [
+              { "@type": "UnitPriceSpecification", price: priceValue, priceCurrency: "USD" },
+              {
+                "@type": "UnitPriceSpecification",
+                priceType: "https://schema.org/StrikethroughPrice",
+                price: compareAtPriceValue,
+                priceCurrency: "USD",
+              },
+            ],
+          }
+        : {}),
       ...(validFrom ? { validFrom } : {}),
       priceValidUntil,
       availability,

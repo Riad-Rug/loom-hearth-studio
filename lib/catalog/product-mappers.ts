@@ -41,6 +41,9 @@ export function mapCatalogProductRecordToDomainProduct(record: CatalogProductRec
     category: mapPrismaProductCategoryToDomain(record.category),
     description: record.description,
     priceUsd: Number(record.priceUsd),
+    ...(record.compareAtPriceUsd !== null && record.compareAtPriceUsd !== undefined
+      ? { compareAtPriceUsd: Number(record.compareAtPriceUsd) }
+      : {}),
     images: record.images as Product["images"],
     materials: record.materials as Product["materials"],
     palette: Array.isArray(record.palette) ? (record.palette as Product["palette"]) : [],
@@ -113,6 +116,9 @@ export function mapProductMutationInputToCreateInput(
     category: mapDomainProductCategoryToPrisma(input.category),
     description: input.description,
     priceUsd: createPrismaDecimal(input.priceUsd),
+    // Empty means "not on sale", so a cleared field clears the column.
+    compareAtPriceUsd:
+      input.compareAtPriceUsd === undefined ? null : createPrismaDecimal(input.compareAtPriceUsd),
     acquisitionCostMad:
       input.acquisitionCostMad === undefined
         ? undefined
@@ -183,6 +189,9 @@ export function mapProductMutationInputToUpdateInput(
     category: mapDomainProductCategoryToPrisma(input.category),
     description: input.description,
     priceUsd: createPrismaDecimal(input.priceUsd),
+    // Empty means "not on sale", so a cleared field clears the column.
+    compareAtPriceUsd:
+      input.compareAtPriceUsd === undefined ? null : createPrismaDecimal(input.compareAtPriceUsd),
     acquisitionCostMad:
       input.acquisitionCostMad === undefined
         ? undefined

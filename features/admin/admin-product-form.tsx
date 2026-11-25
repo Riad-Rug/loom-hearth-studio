@@ -44,6 +44,24 @@ import {
 
 import styles from "./admin.module.css";
 
+/** "Shows as on sale: $549 → $489 (11% off)." for the admin, or how to use the field. */
+function getSaleHint(price: string, compareAt: string) {
+  const priceValue = Number(price);
+  const compareAtValue = Number(compareAt);
+
+  if (!compareAt.trim()) {
+    return "Fill in the former price to show this piece as on sale.";
+  }
+
+  if (!Number.isFinite(priceValue) || !Number.isFinite(compareAtValue) || compareAtValue <= priceValue) {
+    return "Must be higher than the price.";
+  }
+
+  const percentOff = Math.round(((compareAtValue - priceValue) / compareAtValue) * 100);
+
+  return `Shows as on sale: $${compareAtValue} \u2192 $${priceValue} (${percentOff}% off).`;
+}
+
 type AdminProductFormProps = {
   mode: "create" | "edit";
   title: string;
@@ -94,6 +112,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
   const [category, setCategory] = useState(props.product.category);
   const [description, setDescription] = useState(props.product.description);
   const [priceUsd, setPriceUsd] = useState(props.product.priceUsd);
+  const [compareAtPriceUsd, setCompareAtPriceUsd] = useState(props.product.compareAtPriceUsd);
   const [acquisitionCostMad, setAcquisitionCostMad] = useState(props.product.acquisitionCostMad);
   const [origin, setOrigin] = useState(props.product.origin);
   const [attributionRegion, setAttributionRegion] = useState(props.product.attributionRegion);
@@ -221,6 +240,7 @@ export function AdminProductForm(props: AdminProductFormProps) {
     setCategory(props.product.category);
     setDescription(props.product.description);
     setPriceUsd(props.product.priceUsd);
+    setCompareAtPriceUsd(props.product.compareAtPriceUsd);
     setAcquisitionCostMad(props.product.acquisitionCostMad);
     setOrigin(props.product.origin);
     setAttributionRegion(props.product.attributionRegion);
@@ -506,6 +526,22 @@ export function AdminProductForm(props: AdminProductFormProps) {
               onChange={(event) => setPriceUsd(event.target.value)}
             />
             <em>{state.fieldErrors.priceUsd}</em>
+          </label>
+          <label className={styles.formField}>
+            <span>Compare-at price (USD, optional)</span>
+            <input
+              name="compareAtPriceUsd"
+              step="0.01"
+              type="number"
+              min="0"
+              value={compareAtPriceUsd}
+              onChange={(event) => setCompareAtPriceUsd(event.target.value)}
+            />
+            <small>
+              {getSaleHint(priceUsd, compareAtPriceUsd)} Use only a price this piece was really offered at. Checkout
+              always charges the price above.
+            </small>
+            <em>{state.fieldErrors.compareAtPriceUsd}</em>
           </label>
           <label className={styles.formField}>
             <span>Acquisition cost (MAD)</span>

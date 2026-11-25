@@ -1,5 +1,7 @@
 import "server-only";
 
+import { getCompareAtPriceUsd } from "@/lib/catalog/helpers";
+import { db } from "@/lib/db/client";
 import { createPromoRepository } from "@/lib/db/repositories/promo-repository";
 import type { ProductCategory } from "@/types/domain";
 
@@ -61,8 +63,18 @@ export async function validatePromoCode(input: {
     );
   }
 
+  // Promo codes never stack on a sale price. Which items are on sale is read
+  // from the catalog here, not taken from the caller, so a client cannot opt
+  // a sale item back in.
+  const saleProductIds = await listSaleProductIds(input.items.map((item) => item.productId));
+  const fullPriceItems = input.items.filter((item) => !saleProductIds.has(item.productId));
+
+  if (input.items.length > 0 && fullPriceItems.length === 0) {
+    return invalidResult(promoCode, input.subtotalUsd, "Promo codes can't be used on sale items.");
+  }
+
   const eligibleSubtotalUsd = getEligibleSubtotalUsd({
-    items: input.items,
+    items: fullPriceItems,
     scopeType: promo.scopeType,
     scopeCategory: promo.scopeCategory,
     scopeProductIds: Array.isArray(promo.scopeProductIds) ? (promo.scopeProductIds as string[]) : [],
@@ -112,6 +124,28 @@ export async function recordPromoRedemption(input: {
     code: promo.code,
     discountUsd: input.discountUsd,
   });
+}
+
+async function listSaleProductIds(productIds: string[]) {
+  if (!productIds.length) {
+    return new Set<string>();
+  }
+
+  const products = await db.catalogProduct.findMany({
+    where: { id: { in: [...new Set(productIds)] }, compareAtPriceUsd: { not: null } },
+    select: { id: true, priceUsd: true, compareAtPriceUsd: true },
+  });
+
+  return new Set(
+    products
+      .filter((product) =>
+        getCompareAtPriceUsd({
+          priceUsd: Number(product.priceUsd),
+          compareAtPriceUsd: product.compareAtPriceUsd === null ? undefined : Number(product.compareAtPriceUsd),
+        }) !== undefined,
+      )
+      .map((product) => product.id),
+  );
 }
 
 function getEligibleSubtotalUsd(input: {

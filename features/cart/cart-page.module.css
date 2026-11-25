@@ -314,3 +314,10 @@
     width: 100%;
   }
 }
+
+/* Former price, struck through before the sale price. */
+.itemCompareAtPrice {
+  color: var(--color-text-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}

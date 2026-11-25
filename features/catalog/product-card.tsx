@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
+import { CompareAtPrice } from "@/components/commerce/compare-at-price";
 import { unavailableCopy } from "@/lib/catalog/availability";
 import type { CatalogProductCardViewModel } from "@/lib/catalog/contracts";
 
@@ -139,10 +140,15 @@ export function ProductCard({
           <Title className={styles.productTitle}>{product.displayName}</Title>
           {product.availability !== "available" ? (
             <span className={styles.productMonoBadge}>{unavailableCopy[product.availability].label}</span>
+          ) : product.compareAtPriceUsdLabel ? (
+            <span className={styles.productMonoBadge}>Sale</span>
           ) : null}
         </div>
         <p className={styles.productDimensions}>{product.subtitle}</p>
-        <p className={styles.productPrice}>{product.priceUsdLabel}</p>
+        <p className={styles.productPrice}>
+          {product.priceUsdLabel}
+          <CompareAtPrice className={styles.productCompareAtPrice} label={product.compareAtPriceUsdLabel} />
+        </p>
       </div>
     </Link>
   );

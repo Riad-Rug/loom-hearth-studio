@@ -58,6 +58,7 @@ export default async function CategoryProductPage({
           description: product.description,
           path: productPath,
           priceUsdLabel: product.priceUsdLabel,
+          compareAtPriceUsdLabel: product.compareAtPriceUsdLabel,
           category: product.category,
           // Real recorded condition for schema's itemCondition, read off the
           // domain record the view model already carries; the storefront

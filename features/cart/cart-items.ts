@@ -1,5 +1,5 @@
 import { unavailableCopy, type ProductAvailability, type UnavailableReason } from "@/lib/catalog/availability";
-import { getCategoryLabel, getProductRoutePath } from "@/lib/catalog/helpers";
+import { getCategoryLabel, getCompareAtPriceUsd, getProductRoutePath } from "@/lib/catalog/helpers";
 import type { CommerceItem } from "@/lib/analytics/commerce-events";
 import type { Product } from "@/types/domain";
 
@@ -11,6 +11,8 @@ export type CartStoreItem = {
   productCategory: Product["category"];
   name: string;
   priceUsd: number;
+  /** Former price shown struck through; display only, never charged. */
+  compareAtPriceUsd?: number;
   quantity: number;
   variantName?: string;
   imageUrl?: string;
@@ -43,6 +45,13 @@ const productCategories: ReadonlyArray<Product["category"]> = [
   "poufs",
 ];
 
+/** "$549.00" while the line is still below its former price; undefined otherwise. */
+export function getCartItemCompareAtLabel(item: CartStoreItem, format: (value: number) => string) {
+  const compareAtPriceUsd = getCompareAtPriceUsd(item);
+
+  return compareAtPriceUsd === undefined ? undefined : format(compareAtPriceUsd);
+}
+
 export function getMaxQuantity(item: CartStoreItem) {
   if (item.productType === "rug") {
     return 1;
@@ -71,6 +80,7 @@ export function createCartStoreItem({
     productCategory: product.category,
     name: product.name,
     priceUsd: product.priceUsd,
+    compareAtPriceUsd: getCompareAtPriceUsd(product),
     quantity: 1,
     variantName,
     imageUrl,

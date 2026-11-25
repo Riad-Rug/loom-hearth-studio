@@ -31,6 +31,8 @@ export type CatalogProductCardViewModel = {
   type: Product["type"];
   priceUsd: number;
   priceUsdLabel: string;
+  /** Struck-through former price; set only while the piece is on sale. */
+  compareAtPriceUsdLabel?: string;
   /** ISO time the listing was created, for a "Newest" sort. */
   createdAt?: string;
   /** Same shape as the product page palette, for a colour filter and search. */
@@ -79,6 +81,8 @@ type ProductDetailPageViewModelBase = {
   type: Product["type"];
   priceUsd: number;
   priceUsdLabel: string;
+  /** Struck-through former price; set only while the piece is on sale. */
+  compareAtPriceUsdLabel?: string;
   gallery: Array<{
     id: string;
     label: string;

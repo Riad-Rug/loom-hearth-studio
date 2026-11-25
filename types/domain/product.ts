@@ -22,6 +22,11 @@ export type ProductBase = SeoFields & {
   category: ProductCategory;
   description: string;
   priceUsd: number;
+  /**
+   * The former price, shown struck through while the piece is on sale. Always
+   * above priceUsd; display only — checkout charges priceUsd.
+   */
+  compareAtPriceUsd?: number;
   images: MediaAsset[];
   materials: string[];
   palette: string[];

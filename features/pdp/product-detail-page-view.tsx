@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, RefObject } from "react";
 
+import { CompareAtPrice } from "@/components/commerce/compare-at-price";
 import { NewsletterSignupIntentForm } from "@/components/analytics/newsletter-signup-intent-form";
 import { PlaceholderMedia } from "@/components/media/placeholder-media";
 import { Section } from "@/components/layout/section";
@@ -296,6 +297,15 @@ export function ProductDetailPageView({
             <div className="grid gap-[0.35rem]">
               <p className="text-[var(--color-green)] text-[clamp(1.8rem,3vw,2.3rem)] leading-[1.26]">
                 {product.priceUsdLabel}
+                <CompareAtPrice
+                  className="ml-[0.6rem] text-[var(--color-text-muted)] text-[0.6em] align-middle"
+                  label={product.compareAtPriceUsdLabel}
+                />
+                {product.compareAtPriceUsdLabel ? (
+                  <span className="ml-[0.6rem] align-middle inline-block rounded-full border border-[color:var(--color-green)] px-[0.55rem] py-[0.1rem] text-[0.42em] uppercase tracking-[0.08em]">
+                    Sale
+                  </span>
+                ) : null}
               </p>
               {purchaseState === "available" ? (
                 <p className={PURCHASE_MICROCOPY}>{shippingCopy.full}</p>
@@ -437,6 +447,10 @@ export function ProductDetailPageView({
           <span className="grid">
             <span className="text-[var(--color-green)] text-[1.1rem] font-semibold whitespace-nowrap">
               {product.priceUsdLabel}
+              <CompareAtPrice
+                className="ml-[0.4rem] text-[var(--color-text-muted)] text-[0.8rem] font-normal"
+                label={product.compareAtPriceUsdLabel}
+              />
             </span>
             <span className="text-[var(--color-text-muted)] text-[0.78rem]">{shippingCopy.short}</span>
           </span>

@@ -952,3 +952,10 @@
   text-decoration: underline;
   text-underline-offset: 0.15rem;
 }
+
+/* Former price, struck through next to a sale price. */
+.productCompareAtPrice {
+  margin-left: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.8em;
+}

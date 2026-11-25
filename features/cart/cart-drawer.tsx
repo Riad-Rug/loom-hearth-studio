@@ -11,7 +11,9 @@ import {
   getQuantityReducedNote,
   unavailableCheckoutNote,
   unavailableLineNote,
+  getCartItemCompareAtLabel,
 } from "@/features/cart/cart-items";
+import { CompareAtPrice } from "@/components/commerce/compare-at-price";
 import { formatUsd, useCart } from "@/features/cart/cart-provider";
 import { FreeShippingProgress } from "@/features/cart/free-shipping-progress";
 
@@ -204,7 +206,13 @@ export function CartDrawer() {
                     <div className={styles.itemContent}>
                       <div className={styles.itemTopline}>
                         <p className={styles.itemCategory}>{getCartItemLabel(item)}</p>
-                        <p className={styles.itemPrice}>{formatUsd(item.priceUsd)}</p>
+                        <p className={styles.itemPrice}>
+                          <CompareAtPrice
+                            className={styles.itemCompareAtPrice}
+                            label={getCartItemCompareAtLabel(item, formatUsd)}
+                          />{" "}
+                          {formatUsd(item.priceUsd)}
+                        </p>
                       </div>
                       <h3>
                         <Link
